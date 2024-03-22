@@ -5,8 +5,9 @@ import lombok.Getter;
 
 @Getter
 @MappedSuperclass
-public class Common extends BaseEntity{
+public class Common extends BaseEntity {
 
   private String imageUrl;
+
   private String contact;
 }

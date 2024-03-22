@@ -8,7 +8,10 @@ import lombok.Getter;
 public class CommonTrans extends BaseEntity {
 
   private String title;
+
   private String content;
+
   private String address;
+
   private String time;
 }
