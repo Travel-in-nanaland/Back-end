@@ -28,6 +28,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // mariadb for server database
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    // h2 database for test
+    testImplementation 'com.h2database:h2'
+
     // querydsl for spring boot 3.x
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
