@@ -5,6 +5,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,4 +16,9 @@ public class Nature extends Common {
 
   @OneToMany(mappedBy = "nature", cascade = CascadeType.REMOVE, orphanRemoval = true)
   private List<NatureTrans> natureTrans;
+
+  @Builder
+  public Nature(String imageUrl, String contact) {
+    super(imageUrl, contact);
+  }
 }

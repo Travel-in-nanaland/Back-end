@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,4 +28,13 @@ public class ExperienceTrans extends CommonTrans {
   private String details;
 
   private String amenity;
+
+  @Builder
+  public ExperienceTrans(String title, String content, String address, String time, String intro,
+      String details, String amenity) {
+    super(title, content, address, time);
+    this.intro = intro;
+    this.details = details;
+    this.amenity = amenity;
+  }
 }

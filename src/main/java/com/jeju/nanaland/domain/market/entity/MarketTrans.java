@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,4 +24,10 @@ public class MarketTrans extends CommonTrans {
   private Language language;
 
   private String amenity;
+
+  @Builder
+  public MarketTrans(String title, String content, String address, String time, String amenity) {
+    super(title, content, address, time);
+    this.amenity = amenity;
+  }
 }
