@@ -30,12 +30,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends BaseEntity {
 
-  @NotBlank
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
   private Member member;
 
   @NotBlank
+  @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private StoryCategory storyCategory;
 
@@ -43,7 +44,7 @@ public class Story extends BaseEntity {
   @Column(nullable = false)
   private String title;
 
-  @NotNull
+  @NotBlank
   @Column(nullable = false)
   private String content;
 

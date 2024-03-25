@@ -26,17 +26,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
-  @NotBlank
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
   private Member member;
 
-  @NotBlank
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
-  @NotBlank
+  @NotNull
   @Column(nullable = false)
   private Long postId;
 
@@ -48,11 +48,11 @@ public class Review extends BaseEntity {
   @Column(nullable = false)
   private String title;
 
-  @NotNull
   @Builder.Default
   private String content = "";
 
-  @NotNull
   @Builder.Default
+  @NotNull
+  @Column(nullable = false)
   private Float rating = 0F;
 }

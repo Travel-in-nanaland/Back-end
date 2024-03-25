@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
 
-  @NotBlank
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
@@ -49,7 +49,6 @@ public class Member extends BaseEntity {
   @Column(nullable = false, unique = true)
   private String nickname;
 
-  @NotNull
   private String description;
 
   @ElementCollection(targetClass = Role.class)
@@ -57,11 +56,9 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
-  @NotNull
   @Column(columnDefinition = "TEXT")
   private String accessToken;
 
-  @NotNull
   @Column(columnDefinition = "TEXT")
   private String refreshToken;
 
