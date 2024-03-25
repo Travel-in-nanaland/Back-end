@@ -14,6 +14,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,21 +30,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
 
+  @NotBlank
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
 
+  @NotBlank
   @Column(nullable = false, unique = true, updatable = false)
   private String email;
 
+  @NotBlank
   @Column(nullable = false)
   private String password;
 
   private String profileUrl;
 
+  @NotBlank
   @Column(nullable = false, unique = true)
   private String nickname;
 
+  @NotNull
   private String description;
 
   @ElementCollection(targetClass = Role.class)
@@ -50,9 +57,11 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
+  @NotNull
   @Column(columnDefinition = "TEXT")
   private String accessToken;
 
+  @NotNull
   @Column(columnDefinition = "TEXT")
   private String refreshToken;
 

@@ -9,6 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -24,14 +26,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
+  @NotBlank
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
   private Member member;
 
+  @NotBlank
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
+  @NotBlank
   @Column(nullable = false)
   private Long postId;
 
@@ -39,12 +44,15 @@ public class Review extends BaseEntity {
   @ElementCollection
   private List<String> imageUrls = new ArrayList<>();
 
+  @NotBlank
   @Column(nullable = false)
   private String title;
 
+  @NotNull
   @Builder.Default
   private String content = "";
 
+  @NotNull
   @Builder.Default
   private Float rating = 0F;
 }
