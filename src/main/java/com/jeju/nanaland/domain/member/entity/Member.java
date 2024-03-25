@@ -14,9 +14,12 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,7 +29,7 @@ import lombok.NoArgsConstructor;
 public class Member extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "language_id")
+  @JoinColumn(name = "language_id", nullable = false)
   private Language language;
 
   @Column(nullable = false, unique = true, updatable = false)
@@ -55,4 +58,19 @@ public class Member extends BaseEntity {
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
+
+  @Builder
+  public Member(Language language, String email, String password, String profileUrl,
+      String nickname, String description) {
+    this.language = language;
+    this.email = email;
+    this.password = password;
+    this.profileUrl = (profileUrl != null) ? profileUrl : "";
+    this.nickname = nickname;
+    this.description = (description != null) ? description : "";
+    this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
+    this.accessToken = "";
+    this.refreshToken = "";
+    this.favorites = new ArrayList<>();
+  }
 }
