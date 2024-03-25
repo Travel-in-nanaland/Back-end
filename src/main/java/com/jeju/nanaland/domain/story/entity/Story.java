@@ -18,15 +18,12 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends BaseEntity {
 
@@ -48,11 +45,20 @@ public class Story extends BaseEntity {
   @Column(nullable = false)
   private String content;
 
-  @Builder.Default
   @ElementCollection
-  private List<String> imageUrls = new ArrayList<>();
+  private List<String> imageUrls;
 
-  @Builder.Default
   @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE, orphanRemoval = true)
-  private List<Comment> comments = new ArrayList<>();
+  private List<Comment> comments;
+
+  @Builder
+  public Story(Member member, StoryCategory storyCategory, String title, String content,
+      List<String> imageUrls) {
+    this.member = member;
+    this.storyCategory = storyCategory;
+    this.title = title;
+    this.content = content;
+    this.imageUrls = (imageUrls != null) ? imageUrls : new ArrayList<>();
+    this.comments = new ArrayList<>();
+  }
 }

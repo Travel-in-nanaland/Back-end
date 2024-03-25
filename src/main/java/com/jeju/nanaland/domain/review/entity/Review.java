@@ -14,15 +14,12 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
@@ -40,19 +37,28 @@ public class Review extends BaseEntity {
   @Column(nullable = false)
   private Long postId;
 
-  @Builder.Default
   @ElementCollection
-  private List<String> imageUrls = new ArrayList<>();
+  private List<String> imageUrls;
 
   @NotBlank
   @Column(nullable = false)
   private String title;
 
-  @Builder.Default
-  private String content = "";
+  private String content;
 
-  @Builder.Default
   @NotNull
   @Column(nullable = false)
-  private Float rating = 0F;
+  private Float rating;
+
+  @Builder
+  public Review(Member member, Category category, Long postId, List<String> imageUrls, String title,
+      String content, Float rating) {
+    this.member = member;
+    this.category = category;
+    this.postId = postId;
+    this.imageUrls = (imageUrls != null) ? imageUrls : new ArrayList<>();
+    this.title = title;
+    this.content = (content != null) ? content : "";
+    this.rating = (rating != null) ? rating : 0F;
+  }
 }
