@@ -5,16 +5,17 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Nature extends Common {
 
-  @OneToMany(mappedBy = "nature", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @OneToMany(mappedBy = "nature", cascade = CascadeType.REMOVE)
   private List<NatureTrans> natureTrans;
 
   @Builder

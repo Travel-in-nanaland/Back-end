@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.common.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,14 +9,16 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @MappedSuperclass
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class CommonTrans extends BaseEntity {
 
   private String title;
 
+  @Column(columnDefinition = "TEXT")
   private String content;
 
+  @Column(columnDefinition = "TEXT")
   private String address;
 
   private String time;
