@@ -1,8 +1,6 @@
 package com.jeju.nanaland.global.exception;
 
 import com.jeju.nanaland.global.ApiResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,14 +12,18 @@ public class ControllerAdvice {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ApiResponse<String> methodValidException(MethodArgumentNotValidException e) {
     String errorMessage = makeErrorResponse(e.getBindingResult());
-    return ApiResponse.error(HttpStatus.BAD_REQUEST, errorMessage);
+    return ApiResponse.error(ErrorCode.REQUEST_VALIDATION_EXCEPTION, errorMessage);
 
   }
 
   @ExceptionHandler(BadRequestException.class)
-  public ResponseEntity<ApiResponse<String>> handleBadRequestException(BadRequestException e) {
-    ApiResponse<String> httpRes = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-    return new ResponseEntity<>(httpRes, HttpStatus.BAD_REQUEST);
+  public ApiResponse<String> handleBadRequestException(BadRequestException e) {
+    return ApiResponse.error(ErrorCode.REQUEST_VALIDATION_EXCEPTION, e.getMessage());
+  }
+
+  @ExceptionHandler(UnauthorizedException.class)
+  public ApiResponse<String> handleUnauthorizedException(UnauthorizedException e) {
+    return ApiResponse.error(ErrorCode.EXPIRED_TOKEN, e.getMessage());
   }
 
   private String makeErrorResponse(BindingResult bindingResult) {
