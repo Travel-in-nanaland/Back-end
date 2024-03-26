@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.entity.Common;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,5 +22,6 @@ public class Nature extends Common {
   @Builder
   public Nature(String imageUrl, String contact) {
     super(imageUrl, contact);
+    this.natureTrans = new ArrayList<>();
   }
 }

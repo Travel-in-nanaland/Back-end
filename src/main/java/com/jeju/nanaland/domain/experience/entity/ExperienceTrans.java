@@ -31,9 +31,12 @@ public class ExperienceTrans extends CommonTrans {
   private String amenity;
 
   @Builder
-  public ExperienceTrans(String title, String content, String address, String time, String intro,
+  public ExperienceTrans(Experience experience, Language language, String title, String content,
+      String address, String time, String intro,
       String details, String amenity) {
     super(title, content, address, time);
+    this.experience = experience;
+    this.language = language;
     this.intro = intro;
     this.details = details;
     this.amenity = amenity;

@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.entity.Common;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,14 +16,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Experience extends Common {
 
+  private String type;
+
   private Float rating;
 
   @OneToMany(mappedBy = "experience", cascade = CascadeType.REMOVE)
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
-  public Experience(String imageUrl, String contact, Float rating) {
+  public Experience(String imageUrl, String contact, String type, Float rating) {
     super(imageUrl, contact);
+    this.type = type;
     this.rating = rating;
+    this.experienceTrans = new ArrayList<>();
   }
 }

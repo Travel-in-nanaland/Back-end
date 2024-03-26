@@ -5,6 +5,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,5 +37,6 @@ public class Stay extends Common {
     this.homepage = homepage;
     this.parking = parking;
     this.rating = rating;
+    this.stayTrans = new ArrayList<>();
   }
 }

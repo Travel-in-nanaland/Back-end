@@ -27,8 +27,11 @@ public class FestivalTrans extends CommonTrans {
   private String fee;
 
   @Builder
-  public FestivalTrans(String title, String content, String address, String time, String fee) {
+  public FestivalTrans(Festival festival, Language language, String title, String content,
+      String address, String time, String fee) {
     super(title, content, address, time);
+    this.festival = festival;
+    this.language = language;
     this.fee = fee;
   }
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,5 +27,6 @@ public class Festival extends Common {
   public Festival(String imageUrl, String contact, String homepage) {
     super(imageUrl, contact);
     this.homepage = homepage;
+    this.festivalTrans = new ArrayList<>();
   }
 }
