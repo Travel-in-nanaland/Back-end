@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.stay.entity;
 
-import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Common;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -22,6 +21,6 @@ public class Stay extends Common {
 
   private Integer rating;
 
-  @OneToMany(mappedBy = "stay", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @OneToMany(mappedBy = "stay", cascade = CascadeType.REMOVE)
   private List<StayTrans> stayTrans;
 }
