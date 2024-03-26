@@ -5,17 +5,15 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Nana extends BaseEntity {
 
@@ -24,4 +22,10 @@ public class Nana extends BaseEntity {
 
   @OneToMany(mappedBy = "nana", cascade = CascadeType.REMOVE)
   private List<NanaTrans> nanaTrans;
+
+  @Builder
+  public Nana(String imageUrl) {
+    this.imageUrl = imageUrl;
+    this.nanaTrans = new ArrayList<>();
+  }
 }
