@@ -24,19 +24,19 @@ public class Stay extends Common {
 
   private String parking;
 
-  private Float rating;
+  private Float ratingAvg;
 
   @OneToMany(mappedBy = "stay", cascade = CascadeType.REMOVE)
   private List<StayTrans> stayTrans;
 
   @Builder
   public Stay(String imageUrl, String contact, Integer price, String homepage, String parking,
-      Float rating) {
+      Float ratingAvg) {
     super(imageUrl, contact);
     this.price = price;
     this.homepage = homepage;
     this.parking = parking;
-    this.rating = rating;
+    this.ratingAvg = ratingAvg;
     this.stayTrans = new ArrayList<>();
   }
 }

@@ -18,16 +18,16 @@ public class Experience extends Common {
 
   private String type;
 
-  private Float rating;
+  private Float ratingAvg;
 
   @OneToMany(mappedBy = "experience", cascade = CascadeType.REMOVE)
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
-  public Experience(String imageUrl, String contact, String type, Float rating) {
+  public Experience(String imageUrl, String contact, String type, Float ratingAvg) {
     super(imageUrl, contact);
     this.type = type;
-    this.rating = rating;
+    this.ratingAvg = ratingAvg;
     this.experienceTrans = new ArrayList<>();
   }
 }
