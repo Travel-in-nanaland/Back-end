@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Market extends Common {
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
 
   @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE)

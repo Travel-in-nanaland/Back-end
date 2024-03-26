@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Common extends BaseEntity {
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "VARCHAR(2048)")
   private String imageUrl;
 
   private String contact;

@@ -32,7 +32,7 @@ public class StayTrans extends BaseEntity {
 
   private String intro;
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "VARCHAR(2048)")
   private String address;
 
   private String time;

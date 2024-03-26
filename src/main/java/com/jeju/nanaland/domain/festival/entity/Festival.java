@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Festival extends Common {
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
 
   @OneToMany(mappedBy = "festival", cascade = CascadeType.REMOVE)

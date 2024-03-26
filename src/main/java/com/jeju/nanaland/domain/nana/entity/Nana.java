@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Nana extends BaseEntity {
 
-  @Column(columnDefinition = "TEXT")
-  String imageUrl;
+  @Column(columnDefinition = "VARCHAR(2048)")
+  private String imageUrl;
 
   @OneToMany(mappedBy = "nana", cascade = CascadeType.REMOVE)
   private List<NanaTrans> nanaTrans;

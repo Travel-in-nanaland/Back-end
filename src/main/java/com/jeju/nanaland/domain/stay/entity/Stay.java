@@ -19,7 +19,7 @@ public class Stay extends Common {
 
   private Integer price;
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
 
   private String parking;
