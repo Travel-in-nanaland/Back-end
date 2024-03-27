@@ -2,19 +2,31 @@ package com.jeju.nanaland.domain.market.entity;
 
 import com.jeju.nanaland.domain.common.entity.Common;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Market extends Common {
 
+  @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
 
-  @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE)
   private List<MarketTrans> marketTrans;
+
+  @Builder
+  public Market(String imageUrl, String contact, String homepage) {
+    super(imageUrl, contact);
+    this.homepage = homepage;
+    this.marketTrans = new ArrayList<>();
+  }
 }

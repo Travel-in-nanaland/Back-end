@@ -1,12 +1,13 @@
-package com.jeju.nanaland.domain.stay.entity;
+package com.jeju.nanaland.domain.hashtag.entity;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Category;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,22 +19,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StayTrans extends BaseEntity {
+public class Hashtag extends BaseEntity {
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "stay_id", nullable = false)
-  private Stay stay;
+  @JoinColumn(name = "keyword_id", nullable = false)
+  private Keyword keyword;
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "language_id", nullable = false)
-  private Language language;
+  @JoinColumn(name = "category_id", nullable = false)
+  private Category category;
 
-  private String title;
-
-  private String intro;
-
-  @Column(columnDefinition = "VARCHAR(2048)")
-  private String address;
-
-  private String time;
+  @NotNull
+  @Column(nullable = false)
+  private Long postId;
 }
