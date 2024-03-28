@@ -46,7 +46,7 @@ public class Member extends BaseEntity {
   private String password;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "image_file_id")
+  @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile profileImageFile;
 
   @NotBlank
@@ -75,7 +75,7 @@ public class Member extends BaseEntity {
     this.language = language;
     this.email = email;
     this.password = password;
-    this.profileImageFile = (profileImageFile != null) ? profileImageFile : null;
+    this.profileImageFile = profileImageFile;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
