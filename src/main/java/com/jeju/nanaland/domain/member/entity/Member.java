@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.entity;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import jakarta.persistence.CascadeType;
@@ -14,6 +15,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -43,7 +45,9 @@ public class Member extends BaseEntity {
   @Column(nullable = false)
   private String password;
 
-  private String profileUrl;
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @JoinColumn(name = "image_file_id")
+  private ImageFile profileImageFile;
 
   @NotBlank
   @Column(nullable = false, unique = true)
@@ -66,12 +70,12 @@ public class Member extends BaseEntity {
   private List<Favorite> favorites;
 
   @Builder
-  public Member(Language language, String email, String password, String profileUrl,
+  public Member(Language language, String email, String password, ImageFile profileImageFile,
       String nickname, String description) {
     this.language = language;
     this.email = email;
     this.password = password;
-    this.profileUrl = (profileUrl != null) ? profileUrl : "";
+    this.profileImageFile = (profileImageFile != null) ? profileImageFile : null;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
