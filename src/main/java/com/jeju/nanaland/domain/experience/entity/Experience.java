@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.experience.entity;
 
 import com.jeju.nanaland.domain.common.entity.Common;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -24,8 +25,8 @@ public class Experience extends Common {
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
-  public Experience(String imageUrl, String contact, String type, Float ratingAvg) {
-    super(imageUrl, contact);
+  public Experience(ImageFile imageFile, String contact, String type, Float ratingAvg) {
+    super(imageFile, contact);
     this.type = type;
     this.ratingAvg = ratingAvg;
     this.experienceTrans = new ArrayList<>();
