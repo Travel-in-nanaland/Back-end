@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class StoryImageFile {
 
   @Id
-  @OneToOne(cascade = CascadeType.REMOVE)
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile imageFile;
 
