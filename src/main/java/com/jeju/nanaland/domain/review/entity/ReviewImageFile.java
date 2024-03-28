@@ -26,7 +26,7 @@ public class ReviewImageFile {
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile imageFile;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "review_id", nullable = false)
   private Review review;
 }

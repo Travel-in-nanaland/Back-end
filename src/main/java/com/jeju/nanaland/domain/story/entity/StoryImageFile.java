@@ -26,7 +26,7 @@ public class StoryImageFile {
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile imageFile;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "story_id", nullable = false)
   private Story story;
 }
