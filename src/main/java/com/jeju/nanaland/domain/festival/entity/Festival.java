@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.festival.entity;
 
 import com.jeju.nanaland.domain.common.entity.Common;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,8 +25,8 @@ public class Festival extends Common {
   private List<FestivalTrans> festivalTrans;
 
   @Builder
-  public Festival(String imageUrl, String contact, String homepage) {
-    super(imageUrl, contact);
+  public Festival(ImageFile imageFile, String contact, String homepage) {
+    super(imageFile, contact);
     this.homepage = homepage;
     this.festivalTrans = new ArrayList<>();
   }

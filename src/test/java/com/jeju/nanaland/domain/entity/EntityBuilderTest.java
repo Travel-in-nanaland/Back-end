@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.entity;
 
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
@@ -29,14 +30,21 @@ public class EntityBuilderTest {
 
   Language language;
 
+  ImageFile imageFile;
+
   @BeforeEach
   void init() {
     language = Language.builder()
         .locale("kr")
         .dateFormat("yyyy-mm-dd")
         .build();
-
     em.persist(language);
+
+    imageFile = ImageFile.builder()
+        .originUrl("originUrl")
+        .thumbnailUrl("thumbnailUrl")
+        .build();
+    em.persist(imageFile);
   }
 
   @Test
@@ -57,7 +65,7 @@ public class EntityBuilderTest {
   @Test
   void stayBuilderTest() {
     Stay stay1 = Stay.builder()
-        .imageUrl("imageUrl")
+        .imageFile(imageFile)
         .price(12345)
         .contact("0101231242")
         .homepage("httpsL//egegwgeg")
@@ -80,7 +88,7 @@ public class EntityBuilderTest {
   @Test
   void marketBuilderTest() {
     Market market1 = Market.builder()
-        .imageUrl("imageUrl")
+        .imageFile(imageFile)
         .contact("01023244124")
         .homepage("homepageUrl")
         .build();
@@ -101,7 +109,7 @@ public class EntityBuilderTest {
   @Test
   void festivalBuilderTest() {
     Festival festival1 = Festival.builder()
-        .imageUrl("imageUrl")
+        .imageFile(imageFile)
         .contact("contact")
         .homepage("homepage")
         .build();
@@ -122,7 +130,7 @@ public class EntityBuilderTest {
   @Test
   void natureBuilderTest() {
     Nature nature1 = Nature.builder()
-        .imageUrl("imageUrl")
+        .imageFile(imageFile)
         .contact("contact")
         .build();
     em.persist(nature1);
@@ -144,7 +152,7 @@ public class EntityBuilderTest {
   @Test
   void experienceBuilderTest() {
     Experience experience1 = Experience.builder()
-        .imageUrl("imageUrl")
+        .imageFile(imageFile)
         .contact("contact")
         .type("type")
         .ratingAvg(4.24f)

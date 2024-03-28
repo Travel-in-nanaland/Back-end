@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.stay.entity;
 
 import com.jeju.nanaland.domain.common.entity.Common;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,9 +31,9 @@ public class Stay extends Common {
   private List<StayTrans> stayTrans;
 
   @Builder
-  public Stay(String imageUrl, String contact, Integer price, String homepage, String parking,
+  public Stay(ImageFile imageFile, String contact, Integer price, String homepage, String parking,
       Float ratingAvg) {
-    super(imageUrl, contact);
+    super(imageFile, contact);
     this.price = price;
     this.homepage = homepage;
     this.parking = parking;
