@@ -44,19 +44,19 @@ public class Story extends BaseEntity {
   private String content;
 
   @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE)
-  private List<StoryImageFile> imageFiles;
+  private List<StoryImageFile> storyImageFiles;
 
   @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE, orphanRemoval = true)
   private List<Comment> comments;
 
   @Builder
   public Story(Member member, StoryCategory storyCategory, String title, String content,
-      List<StoryImageFile> imageFiles) {
+      List<StoryImageFile> storyImageFiles) {
     this.member = member;
     this.storyCategory = storyCategory;
     this.title = title;
     this.content = content;
-    this.imageFiles = (imageFiles != null) ? imageFiles : new ArrayList<>();
+    this.storyImageFiles = (storyImageFiles != null) ? storyImageFiles : new ArrayList<>();
     this.comments = new ArrayList<>();
   }
 }
