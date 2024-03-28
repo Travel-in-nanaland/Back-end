@@ -3,12 +3,13 @@ package com.jeju.nanaland.domain.review.entity;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.member.entity.Member;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -37,8 +38,8 @@ public class Review extends BaseEntity {
   @Column(nullable = false)
   private Long postId;
 
-  @ElementCollection
-  private List<String> imageUrls;
+  @OneToMany(mappedBy = "review", cascade = CascadeType.REMOVE)
+  private List<ReviewImageFile> reviewImageFiles;
 
   @NotBlank
   @Column(nullable = false)
@@ -51,12 +52,13 @@ public class Review extends BaseEntity {
   private Float rating;
 
   @Builder
-  public Review(Member member, Category category, Long postId, List<String> imageUrls, String title,
+  public Review(Member member, Category category, Long postId,
+      List<ReviewImageFile> reviewImageFiles, String title,
       String content, Float rating) {
     this.member = member;
     this.category = category;
     this.postId = postId;
-    this.imageUrls = (imageUrls != null) ? imageUrls : new ArrayList<>();
+    this.reviewImageFiles = (reviewImageFiles != null) ? reviewImageFiles : new ArrayList<>();
     this.title = title;
     this.content = (content != null) ? content : "";
     this.rating = (rating != null) ? rating : 0F;
