@@ -2,7 +2,6 @@ package com.jeju.nanaland.domain.story.entity;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -23,8 +22,8 @@ import lombok.NoArgsConstructor;
 public class StoryImageFile {
 
   @Id
-  @OneToOne(mappedBy = "image_file_id", cascade = CascadeType.REMOVE)
-  @Column(nullable = false)
+  @OneToOne(cascade = CascadeType.REMOVE)
+  @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile imageFile;
 
   @ManyToOne(fetch = FetchType.LAZY)

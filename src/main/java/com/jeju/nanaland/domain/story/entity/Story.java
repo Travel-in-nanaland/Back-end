@@ -31,7 +31,6 @@ public class Story extends BaseEntity {
   @JoinColumn(name = "member_id", nullable = false)
   private Member member;
 
-  @NotBlank
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private StoryCategory storyCategory;
