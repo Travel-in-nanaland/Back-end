@@ -5,7 +5,6 @@ import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.member.entity.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,7 +31,6 @@ public class Story extends BaseEntity {
   @JoinColumn(name = "member_id", nullable = false)
   private Member member;
 
-  @NotBlank
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private StoryCategory storyCategory;
@@ -45,20 +43,15 @@ public class Story extends BaseEntity {
   @Column(nullable = false)
   private String content;
 
-  @ElementCollection
-  private List<String> imageUrls;
-
   @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE, orphanRemoval = true)
   private List<Comment> comments;
 
   @Builder
-  public Story(Member member, StoryCategory storyCategory, String title, String content,
-      List<String> imageUrls) {
+  public Story(Member member, StoryCategory storyCategory, String title, String content) {
     this.member = member;
     this.storyCategory = storyCategory;
     this.title = title;
     this.content = content;
-    this.imageUrls = (imageUrls != null) ? imageUrls : new ArrayList<>();
     this.comments = new ArrayList<>();
   }
 }

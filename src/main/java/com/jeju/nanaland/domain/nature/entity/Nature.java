@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.nature.entity;
 
 import com.jeju.nanaland.domain.common.entity.Common;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -20,8 +21,8 @@ public class Nature extends Common {
   private List<NatureTrans> natureTrans;
 
   @Builder
-  public Nature(String imageUrl, String contact) {
-    super(imageUrl, contact);
+  public Nature(ImageFile imageFile, String contact) {
+    super(imageFile, contact);
     this.natureTrans = new ArrayList<>();
   }
 }
