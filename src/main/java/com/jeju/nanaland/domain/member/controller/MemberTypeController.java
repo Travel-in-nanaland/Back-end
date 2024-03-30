@@ -4,7 +4,6 @@ import com.jeju.nanaland.domain.member.dto.MemberTypeRequest;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.ApiResponse;
 import com.jeju.nanaland.global.exception.SuccessCode;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,7 @@ public class MemberTypeController {
   private final MemberTypeService memberTypeService;
 
   @PatchMapping("/members/type")
-  public ApiResponse<Null> updateMemberType(@RequestBody @Valid MemberTypeRequest request) {
+  public ApiResponse<Null> updateMemberType(@RequestBody MemberTypeRequest request) {
     /**
      * memberId = 1 로 임시로 설정
      * 추후 AccessToken 형식 정해지면 update 필요
