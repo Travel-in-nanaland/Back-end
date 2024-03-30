@@ -4,11 +4,14 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageService {
@@ -35,39 +38,28 @@ public class ImageService {
 
   @Transactional
   public String saveImage(MultipartFile multipartFile) {
-    String originalName = multipartFile.getOriginalFilename();
+    //uuid_originalFilename 로 s3에 업로드할 파일 이름 설정
+    UUID uuid = UUID.randomUUID();
+    String uploadImageName = uuid + "_" + multipartFile.getOriginalFilename();
+
     try {
       ObjectMetadata objectMetadata = new ObjectMetadata();
       objectMetadata.setContentType(multipartFile.getContentType());
       objectMetadata.setContentLength(multipartFile.getInputStream().available());
 
-      amazonS3Client.putObject(bucketName + imageDirectory, originalName,
+      //S3에 사진 올리기
+      amazonS3Client.putObject(bucketName + imageDirectory, uploadImageName,
           multipartFile.getInputStream(),
           objectMetadata);
 
-      String accessUrl = amazonS3Client.getUrl(bucketName + imageDirectory, originalName)
-          .toString();
-      return accessUrl;
+      //사진 저장 경로 받기
+
     } catch (IOException e) {
 
     }
-    return null;
-//    Image image = new Image(originalName);
-//    String filename = image.getStoredName();
-
-//    try {
-//      ObjectMetadata objectMetadata = new ObjectMetadata();
-//      objectMetadata.setContentType(multipartFile.getContentType());
-//      objectMetadata.setContentLength(multipartFile.getInputStream().available());
-//
-//      amazonS3Client.putObject(bucketName, filename, multipartFile.getInputStream(), objectMetadata);
-//
-//      String accessUrl = amazonS3Client.getUrl(bucketName, filename).toString();
-//      image.setAccessUrl(accessUrl);
-//    } catch(IOException e) {
-//
-//    }
-//
+    String accessUrl = amazonS3Client.getUrl(bucketName + imageDirectory, uploadImageName)
+        .toString();
+    return accessUrl;
 //    imageRepository.save(image);
 //
 //    return image.getAccessUrl();
