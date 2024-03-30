@@ -35,6 +35,14 @@ public class ControllerAdvice {
     return ApiResponse.error(ErrorCode.EXPIRED_TOKEN, e.getMessage());
   }
 
+  //415에러 (파일 확장자 오류)
+  @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+  @ExceptionHandler(UnsupportedFileFormatException.class)
+  public ApiResponse<String> handleUnsupportedFileFormatException(
+      UnsupportedFileFormatException e) {
+    return ApiResponse.error(ErrorCode.UNSUPPORTED_FILE_FORMAT, e.getMessage());
+  }
+
   private String makeErrorResponse(BindingResult bindingResult) {
     String description = "";
 
