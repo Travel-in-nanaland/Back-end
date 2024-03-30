@@ -88,5 +88,7 @@ public class Member extends BaseEntity {
     this.favorites = new ArrayList<>();
   }
 
-
+  public void updateMemberType(MemberType type) {
+    this.type = type;
+  }
 }
