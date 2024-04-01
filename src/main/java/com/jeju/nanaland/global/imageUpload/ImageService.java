@@ -35,6 +35,9 @@ public class ImageService {
   @Value("/thumbnail_images")
   private String thumbnailDirectory;
 
+  @Value("thumbnail_")
+  private String thumbnailPrefix;
+
   public void verifyExtension(MultipartFile multipartFile) throws UnsupportedFileFormatException {
     String contentType = multipartFile.getContentType();
 
@@ -90,7 +93,7 @@ public class ImageService {
 
   public void uploadThumbnailImage(MultipartFile multipartFile, String originImageFileName)
       throws IOException {
-    String uploadThumbnailImageName = "thumbnail_" + originImageFileName;
+    String uploadThumbnailImageName = thumbnailPrefix + originImageFileName;
     BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
 
     //일단 width: 240px, height: 300px으로 섬네일 제작. 기획과 상의 후 크기 수정.
@@ -121,8 +124,15 @@ public class ImageService {
 
   @Transactional
   public void deleteImage(String filename) {
-    // imageDirectory는 원본 image파일만 삭제하는 것
-    // 실제로 사용할 때는 thumbnail image도 삭제하는 로직 작성해야함.
+    // 원본 이미지 삭제
     amazonS3Client.deleteObject(bucketName + imageDirectory, filename);
+
+    if (amazonS3Client.doesObjectExist(bucketName + thumbnailDirectory,
+        thumbnailPrefix + filename)) { // 썸네일 이미지가 있으면
+      log.info("섬네일 존재");
+
+      //썸네일 이미지 삭제
+      amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
+    }
   }
 }
