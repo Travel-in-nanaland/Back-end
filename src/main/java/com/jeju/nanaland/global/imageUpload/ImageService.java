@@ -2,6 +2,7 @@ package com.jeju.nanaland.global.imageUpload;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
 import jakarta.transaction.Transactional;
 import java.awt.image.BufferedImage;
@@ -9,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
@@ -47,17 +49,18 @@ public class ImageService {
       throw new UnsupportedFileFormatException();
     }
   }
-//  @Transactional
-//  public List<String> saveImages(ImageSaveDto saveDto) {
-//    List<String> resultList = new ArrayList<>();
-//
-//    for(MultipartFile multipartFile : saveDto.getImages()) {
-//      String value = saveImage(multipartFile);
-//      resultList.add(value);
-//    }
-//
-//    return resultList;
-//  }
+
+  /*
+  TODO
+  dto 생성하면 인풋 수정.
+   */
+  @Transactional
+  public void saveImages(List<MultipartFile> multipartFileList) throws IOException {
+
+    for (MultipartFile multipartFile : multipartFileList) {
+      saveImage(multipartFile);
+    }
+  }
 
   @Transactional
   public void saveImage(MultipartFile multipartFile) throws IOException {
@@ -82,11 +85,16 @@ public class ImageService {
     } catch (IOException e) {
 
     }
-    //사진 저장 경로 받기
+    /*
+      TODO
+      accessUrl imageFile 엔티티에 저장하기
+     */
     String accessUrl = amazonS3Client.getUrl(bucketName + imageDirectory, uploadImageName)
         .toString();
-
     //섬네일 생성 후 저장
+    /**
+     * 모든 이미지가 썸네일이 필요한가?? -> 아닌 것도 있다면 true, flase로 구분해서 썸네일 만들고 안만들고 동작.
+     */
     uploadThumbnailImage(multipartFile, uploadImageName);
 
   }
@@ -116,6 +124,11 @@ public class ImageService {
 
     thumbInput.close();
     thumbOutput.close();
+
+    /*
+      TODO
+      accessUrl imageFile 엔티티에 저장하기
+     */
     String accessUrl = amazonS3Client.getUrl(bucketName + thumbnailDirectory,
             uploadThumbnailImageName)
         .toString();
@@ -134,5 +147,17 @@ public class ImageService {
       //썸네일 이미지 삭제
       amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
     }
+  }
+
+  public String extractFileName(String accessUrl) {
+    String extractedString = "";
+    String[] parts = accessUrl.split("images/");
+    if (parts.length > 1) {
+      // "images/" 다음의 부분 추출
+      extractedString = parts[1];
+    } else {
+      throw new ServerErrorException("이미지 파일 이름 추출 에러");
+    }
+    return extractedString;
   }
 }
