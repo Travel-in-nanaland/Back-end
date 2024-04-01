@@ -2,6 +2,8 @@ package com.jeju.nanaland.global.imageUpload;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
 import jakarta.transaction.Transactional;
@@ -10,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.imageio.ImageIO;
@@ -25,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
+
+  private final ImageFileRepository imageFileRepository;
 
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.s3.bucket}")
@@ -55,51 +60,56 @@ public class ImageService {
   dto 생성하면 인풋 수정.
    */
   @Transactional
-  public void saveImages(List<MultipartFile> multipartFileList) throws IOException {
-
+  public List<ImageFile> saveImages(List<MultipartFile> multipartFileList) throws IOException {
+    List<ImageFile> imageFileList = new ArrayList<>();
     for (MultipartFile multipartFile : multipartFileList) {
-      saveImage(multipartFile);
+      imageFileList.add(saveImage(multipartFile));
     }
+    return imageFileList;
   }
 
   @Transactional
-  public void saveImage(MultipartFile multipartFile) throws IOException {
+  public ImageFile saveImage(MultipartFile multipartFile) throws IOException {
 
     //이미지 파일인지 검증
     verifyExtension(multipartFile);
+    String originalFileName = multipartFile.getOriginalFilename();
 
-    //uuid_originalFilename 로 s3에 업로드할 파일 이름 설정
+    //uuid_originalFilename 로 s3에 업로드할 파일 이름 설정 (파일명이 한글일 경우 동작 안해서 uuid 자체로 파일명 수정)
+    // 확장자 추출
+    String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
     UUID uuid = UUID.randomUUID();
-    String uploadImageName = uuid + "_" + multipartFile.getOriginalFilename();
+    String uploadImageName = uuid.toString().substring(0, 16) + extension;
 
-    try {
-      //메타데이터 설정
-      ObjectMetadata objectMetadata = new ObjectMetadata();
-      objectMetadata.setContentType(multipartFile.getContentType());
-      objectMetadata.setContentLength(multipartFile.getInputStream().available());
+    //메타데이터 설정
+    ObjectMetadata objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentType(multipartFile.getContentType());
+    objectMetadata.setContentLength(multipartFile.getInputStream().available());
 
-      //S3에 사진 올리기
-      amazonS3Client.putObject(bucketName + imageDirectory, uploadImageName,
-          multipartFile.getInputStream(),
-          objectMetadata);
-    } catch (IOException e) {
+    //S3에 사진 올리기
+    amazonS3Client.putObject(bucketName + imageDirectory, uploadImageName,
+        multipartFile.getInputStream(),
+        objectMetadata);
 
-    }
-    /*
-      TODO
-      accessUrl imageFile 엔티티에 저장하기
-     */
-    String accessUrl = amazonS3Client.getUrl(bucketName + imageDirectory, uploadImageName)
+    String originalImageUrl = amazonS3Client.getUrl(bucketName + imageDirectory, uploadImageName)
         .toString();
-    //섬네일 생성 후 저장
+
     /**
      * 모든 이미지가 썸네일이 필요한가?? -> 아닌 것도 있다면 true, flase로 구분해서 썸네일 만들고 안만들고 동작.
      */
-    uploadThumbnailImage(multipartFile, uploadImageName);
+    //섬네일 생성 후 저장
+    String thumbnailImageUrl = uploadThumbnailImage(multipartFile, uploadImageName);
+
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl(originalImageUrl)
+        .thumbnailUrl(thumbnailImageUrl)
+        .build();
+
+    return imageFileRepository.save(imageFile);
 
   }
 
-  public void uploadThumbnailImage(MultipartFile multipartFile, String originImageFileName)
+  public String uploadThumbnailImage(MultipartFile multipartFile, String originImageFileName)
       throws IOException {
     String uploadThumbnailImageName = thumbnailPrefix + originImageFileName;
     BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
@@ -125,18 +135,17 @@ public class ImageService {
     thumbInput.close();
     thumbOutput.close();
 
-    /*
-      TODO
-      accessUrl imageFile 엔티티에 저장하기
-     */
-    String accessUrl = amazonS3Client.getUrl(bucketName + thumbnailDirectory,
+    return amazonS3Client.getUrl(bucketName + thumbnailDirectory,
             uploadThumbnailImageName)
         .toString();
   }
 
-
+  // 이미지 여러 개 삭제 필요시 추후 별도 메서드 생성 예정.
   @Transactional
-  public void deleteImage(String filename) {
+  public void deleteImage(ImageFile imageFile) {
+    // 원본 파일 이름 찾기
+    String filename = extractFileName(imageFile.getOriginUrl());
+
     // 원본 이미지 삭제
     amazonS3Client.deleteObject(bucketName + imageDirectory, filename);
 
@@ -146,6 +155,7 @@ public class ImageService {
 
       //썸네일 이미지 삭제
       amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
+      imageFileRepository.delete(imageFile);
     }
   }
 
