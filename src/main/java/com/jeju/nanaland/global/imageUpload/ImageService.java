@@ -4,10 +4,16 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
 import jakarta.transaction.Transactional;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -25,6 +31,9 @@ public class ImageService {
   // 원본 사진 저장
   @Value("/images")
   private String imageDirectory;
+
+  @Value("/thumbnail_images")
+  private String thumbnailDirectory;
 
   public void verifyExtension(MultipartFile multipartFile) throws UnsupportedFileFormatException {
     String contentType = multipartFile.getContentType();
@@ -48,7 +57,7 @@ public class ImageService {
 //  }
 
   @Transactional
-  public String saveImage(MultipartFile multipartFile) {
+  public void saveImage(MultipartFile multipartFile) throws IOException {
 
     //이미지 파일인지 검증
     verifyExtension(multipartFile);
@@ -58,6 +67,7 @@ public class ImageService {
     String uploadImageName = uuid + "_" + multipartFile.getOriginalFilename();
 
     try {
+      //메타데이터 설정
       ObjectMetadata objectMetadata = new ObjectMetadata();
       objectMetadata.setContentType(multipartFile.getContentType());
       objectMetadata.setContentLength(multipartFile.getInputStream().available());
@@ -66,20 +76,48 @@ public class ImageService {
       amazonS3Client.putObject(bucketName + imageDirectory, uploadImageName,
           multipartFile.getInputStream(),
           objectMetadata);
-
-      //사진 저장 경로 받기
-
     } catch (IOException e) {
 
     }
+    //사진 저장 경로 받기
     String accessUrl = amazonS3Client.getUrl(bucketName + imageDirectory, uploadImageName)
         .toString();
-    return accessUrl;
-//    imageRepository.save(image);
-//
-//    return image.getAccessUrl();
-//  }
+
+    //섬네일 생성 후 저장
+    uploadThumbnailImage(multipartFile, uploadImageName);
+
   }
+
+  public void uploadThumbnailImage(MultipartFile multipartFile, String originImageFileName)
+      throws IOException {
+    String uploadThumbnailImageName = "thumbnail_" + originImageFileName;
+    BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
+
+    //일단 width: 240px, height: 300px으로 섬네일 제작. 기획과 상의 후 크기 수정.
+    BufferedImage thumbnailImage = Thumbnails.of(bufferImage).size(240, 300).asBufferedImage();
+
+    ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
+    String imageType = multipartFile.getContentType();
+    ImageIO.write(thumbnailImage, imageType.substring(imageType.indexOf("/") + 1), thumbOutput);
+
+    //메타데이터 설정
+    ObjectMetadata objectMetadata = new ObjectMetadata();
+    byte[] thumbBytes = thumbOutput.toByteArray();
+    objectMetadata.setContentLength(thumbBytes.length);
+    objectMetadata.setContentType(multipartFile.getContentType());
+
+    //S3에 사진 올리기
+    InputStream thumbInput = new ByteArrayInputStream(thumbBytes);
+    amazonS3Client.putObject(bucketName + thumbnailDirectory, uploadThumbnailImageName,
+        thumbInput, objectMetadata);
+
+    thumbInput.close();
+    thumbOutput.close();
+    String accessUrl = amazonS3Client.getUrl(bucketName + thumbnailDirectory,
+            uploadThumbnailImageName)
+        .toString();
+  }
+
 
   @Transactional
   public void deleteImage(String filename) {
