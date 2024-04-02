@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ImageService {
+public class S3ImageService {
 
   private final ImageFileRepository imageFileRepository;
 
