@@ -12,6 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -76,10 +78,17 @@ public class ImageService {
     String originalFileName = multipartFile.getOriginalFilename();
 
     //uuid_originalFilename 로 s3에 업로드할 파일 이름 설정 (파일명이 한글일 경우 동작 안해서 uuid 자체로 파일명 수정)
-    // 확장자 추출
+    //확장자 추출
     String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
     UUID uuid = UUID.randomUUID();
-    String uploadImageName = uuid.toString().substring(0, 16) + extension;
+
+    // 오늘 날짜 yyMMdd 포맷으로 string 타입 생성
+    LocalDate today = LocalDate.now();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
+    String formattedDate = today.format(formatter);
+
+    //최종 파일 이름 => uuid16자리 + _ + yyMMdd
+    String uploadImageName = uuid.toString().substring(0, 16) + "_" + formattedDate + extension;
 
     //메타데이터 설정
     ObjectMetadata objectMetadata = new ObjectMetadata();
