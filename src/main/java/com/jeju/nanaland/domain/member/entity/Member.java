@@ -55,32 +55,33 @@ public class Member extends BaseEntity {
 
   private String description;
 
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private Provider provider;
+
+  @Column(nullable = false)
+  private Long providerId;
+
   @ElementCollection(targetClass = Role.class)
   @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "member_id"))
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
-
-  @Column(columnDefinition = "TEXT")
-  private String accessToken;
-
-  @Column(columnDefinition = "TEXT")
-  private String refreshToken;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
 
   @Builder
   public Member(Language language, String email, String password, ImageFile profileImageFile,
-      String nickname, String description) {
+      String nickname, String description, Provider provider, Long providerId) {
     this.language = language;
     this.email = email;
     this.password = password;
     this.profileImageFile = profileImageFile;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
-    this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
-    this.accessToken = "";
-    this.refreshToken = "";
+    this.provider = provider;
+    this.providerId = providerId;
+    this.roleSet = new HashSet<>(List.of(Role.ROLE_GUEST));
     this.favorites = new ArrayList<>();
   }
 }
