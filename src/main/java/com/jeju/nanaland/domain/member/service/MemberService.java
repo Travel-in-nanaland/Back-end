@@ -32,8 +32,8 @@ public class MemberService {
 
     Member member = getOrCreateMember(loginRequest);
 
-    String accessToken = jwtProvider.getAccessToken(member.getEmail());
-    String refreshToken = jwtProvider.getRefreshToken(member.getEmail());
+    String accessToken = jwtProvider.getAccessToken(member.getId());
+    String refreshToken = jwtProvider.getRefreshToken(member.getId());
 
     // TODO: provider과 provider_id로 이미 가입된 회원이지만 이메일이 변경된 경우, 이메일 update
     // TODO: refreshToken 보관하기

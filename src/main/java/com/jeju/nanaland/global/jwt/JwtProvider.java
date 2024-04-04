@@ -26,8 +26,8 @@ public class JwtProvider {
   private Long refreshExpirationPeriod;
 
 
-  public String getAccessToken(String email) {
-    Claims claims = Jwts.claims().setSubject(email);
+  public String getAccessToken(Long memberId) {
+    Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
 
     Date now = new Date();
     Date expiration = new Date(now.getTime() + accessExpirationPeriod);
@@ -40,8 +40,8 @@ public class JwtProvider {
         .compact();
   }
 
-  public String getRefreshToken(String email) {
-    Claims claims = Jwts.claims().setSubject(email);
+  public String getRefreshToken(Long memberId) {
+    Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
 
     Date now = new Date();
     Date expiration = new Date(now.getTime() + refreshExpirationPeriod);
