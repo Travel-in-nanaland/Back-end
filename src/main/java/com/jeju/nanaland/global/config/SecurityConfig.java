@@ -1,7 +1,10 @@
 package com.jeju.nanaland.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jeju.nanaland.global.jwt.JWTAuthenticationFilter;
 import com.jeju.nanaland.global.jwt.JwtProvider;
+import com.jeju.nanaland.global.jwt.handler.CustomAccessDeniedHandler;
+import com.jeju.nanaland.global.jwt.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtProvider jwtProvider;
+  private final ObjectMapper objectMapper;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -48,7 +52,10 @@ public class SecurityConfig {
         .addFilterBefore(
             new JWTAuthenticationFilter(authenticationConfiguration.getAuthenticationManager(),
                 jwtProvider),
-            UsernamePasswordAuthenticationFilter.class);
+            UsernamePasswordAuthenticationFilter.class)
+        .exceptionHandling(exceptionHandling -> exceptionHandling
+            .accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper))
+            .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)));
 
     return http.build();
   }
