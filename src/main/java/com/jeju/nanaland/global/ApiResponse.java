@@ -40,4 +40,8 @@ public class ApiResponse<T> {
   public static <T> ApiResponse<T> error(ErrorCode errorCode, @Nullable String message) {
     return new ApiResponse<>(errorCode.getHttpStatusCode(), message);
   }
+
+  public static <T> ApiResponse<T> error(ErrorCode errorCode, T data) {
+    return new ApiResponse<>(errorCode.getHttpStatusCode(), errorCode.getMessage(), data);
+  }
 }

@@ -1,0 +1,26 @@
+package com.jeju.nanaland.domain.member.entity;
+
+import lombok.Getter;
+
+@Getter
+public enum MemberType {
+  GAMGYUL_ICECREAM,
+  GAMGYUL_RICECAKE,
+  GAMGYUL,
+  GAMGYUL_CIDER,
+
+  GAMGYUL_AFFOKATO,
+  GAMGYUL_HANGWA,
+  GAMGYUL_JUICE,
+  GAMGYUL_CHOCOLATE,
+
+  GAMGYUL_COCKTAIL,
+  TANGERINE_PEEL_TEA,
+  GAMGYUL_YOGURT,
+  GAMGYUL_FLATCCINO,
+
+  GAMGYUL_LATTE,
+  GAMGYUL_SIKHYE,
+  GAMGYUL_ADE,
+  GAMGYUL_BUBBLE_TEA;
+}

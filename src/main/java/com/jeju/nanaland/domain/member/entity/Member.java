@@ -60,6 +60,9 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
+  @Enumerated(EnumType.STRING)
+  private MemberType type;
+
   @Column(columnDefinition = "TEXT")
   private String accessToken;
 
@@ -70,8 +73,8 @@ public class Member extends BaseEntity {
   private List<Favorite> favorites;
 
   @Builder
-  public Member(Language language, String email, String password, ImageFile profileImageFile,
-      String nickname, String description) {
+  protected Member(Language language, String email, String password, ImageFile profileImageFile,
+      String nickname, String description, MemberType type) {
     this.language = language;
     this.email = email;
     this.password = password;
@@ -79,8 +82,13 @@ public class Member extends BaseEntity {
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
+    this.type = type;
     this.accessToken = "";
     this.refreshToken = "";
     this.favorites = new ArrayList<>();
+  }
+
+  public void updateMemberType(MemberType type) {
+    this.type = type;
   }
 }
