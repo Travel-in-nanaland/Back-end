@@ -17,9 +17,9 @@ public class MemberTypeService {
   private final MemberRepository memberRepository;
 
   @Transactional
-  public void updateMemberType(Long memberId, MemberType type) {
+  public void updateMemberType(Long memberId, String type) {
     Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
 
-    member.updateMemberType(type);
+    member.updateMemberType(MemberType.valueOf(type));
   }
 }

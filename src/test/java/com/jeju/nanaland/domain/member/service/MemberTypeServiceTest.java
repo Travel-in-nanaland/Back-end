@@ -7,6 +7,7 @@ import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,7 @@ class MemberTypeServiceTest {
   @Autowired
   MemberRepository memberRepository;
 
+  @DisplayName("사용자 타입 갱신")
   @Test
   void updateMemberType() {
     /**
@@ -54,7 +56,8 @@ class MemberTypeServiceTest {
     /**
      * when
      */
-    memberTypeService.updateMemberType(member.getId(), MemberType.GAMGYUL);
+    String type = "GAMGYUL";
+    memberTypeService.updateMemberType(member.getId(), type);
     Member result = memberRepository.findById(member.getId()).get();
 
     /**
