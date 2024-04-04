@@ -55,10 +55,12 @@ public class Member extends BaseEntity {
 
   private String description;
 
+  @NotNull
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private Provider provider;
 
+  @NotNull
   @Column(nullable = false)
   private Long providerId;
 
