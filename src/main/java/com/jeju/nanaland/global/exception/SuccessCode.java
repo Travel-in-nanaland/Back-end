@@ -12,8 +12,9 @@ import org.springframework.http.HttpStatus;
 public enum SuccessCode {
   // api 만들고 수정하기
   CUSTOM_SUCCESS(OK, "~~ 조회에 성공했습니다."),
-  CUSTOM_CREATED_SUCCESS(CREATED, "~ 생성에 성공했습니다.");
+  CUSTOM_CREATED_SUCCESS(CREATED, "~ 생성에 성공했습니다."),
 
+  LOGIN_SUCCESS(OK, "로그인에 성공했습니다.");
   private final HttpStatus httpStatus;
   private final String message;
 
