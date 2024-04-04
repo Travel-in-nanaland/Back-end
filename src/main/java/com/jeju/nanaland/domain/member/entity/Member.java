@@ -81,7 +81,7 @@ public class Member extends BaseEntity {
     this.description = (description != null) ? description : "";
     this.provider = provider;
     this.providerId = providerId;
-    this.roleSet = new HashSet<>(List.of(Role.ROLE_GUEST));
+    this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
     this.favorites = new ArrayList<>();
   }
 }
