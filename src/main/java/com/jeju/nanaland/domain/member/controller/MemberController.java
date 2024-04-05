@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.member.controller;
 
 import com.jeju.nanaland.domain.member.dto.request.LoginRequest;
 import com.jeju.nanaland.domain.member.dto.response.LoginResponse;
-import com.jeju.nanaland.domain.member.service.MemberService;
+import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.global.ApiResponse;
 import com.jeju.nanaland.global.exception.SuccessCode;
 import jakarta.validation.Valid;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MemberController {
 
-  private final MemberService memberService;
+  private final MemberLoginService memberLoginService;
 
   @PostMapping("/login")
   public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-    LoginResponse loginResponse = memberService.login(loginRequest);
+    LoginResponse loginResponse = memberLoginService.login(loginRequest);
     return ApiResponse.success(SuccessCode.LOGIN_SUCCESS, loginResponse);
   }
 }

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberLoginService {
 
   private final MemberRepository memberRepository;
   private final PasswordEncoder passwordEncoder;
