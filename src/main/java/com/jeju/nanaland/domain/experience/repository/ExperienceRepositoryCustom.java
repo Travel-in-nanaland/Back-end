@@ -4,5 +4,6 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceExperienceTransDto;
 
 public interface ExperienceRepositoryCustom {
 
-  ExperienceExperienceTransDto getExperienceExperienceTransDtoByIdAndLocale(Long id, String locale);
+  ExperienceExperienceTransDto findExperienceExperienceTransDtoByIdAndLocale(Long id,
+      String locale);
 }

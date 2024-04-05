@@ -16,7 +16,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public ExperienceExperienceTransDto getExperienceExperienceTransDtoByIdAndLocale(Long id,
+  public ExperienceExperienceTransDto findExperienceExperienceTransDtoByIdAndLocale(Long id,
       String locale) {
     return queryFactory
         .select(new QExperienceExperienceTransDto(
