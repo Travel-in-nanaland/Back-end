@@ -1,14 +1,17 @@
 package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.experience.dto.ExperienceExperienceTransDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.festival.dto.FestivalFestivalTransDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.market.dto.MarketMarketTransDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponseDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.domain.nature.dto.NatureNatureTransDto;
+import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -60,8 +63,7 @@ public class MemberTypeService {
 
     switch (category) {
       case "NATURE" -> {
-        NatureNatureTransDto dto = natureRepository.findNatureNatureTransDtoByIdAndLocale(id,
-            locale);
+        NatureCompositeDto dto = natureRepository.findNatureCompositeDto(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
@@ -74,14 +76,51 @@ public class MemberTypeService {
             .intro(dto.getIntro())
             .build();
       }
-//      case "FESTIVAL" -> {
-//      }
-//      case "EXPERIENCE" -> {
-//
-//      }
-//      case "MARKET" -> {
-//
-//      }
+      case "FESTIVAL" -> {
+        FestivalFestivalTransDto dto = festivalRepository.findFestivalFestivalTransDtoByIdAndLocale(
+            id, locale);
+        if (dto == null) {
+          throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
+        }
+
+        return MemberResponseDto.RecommendedPosts.builder()
+            .id(dto.getId())
+            .category(category)
+            .thumbnailUrl(dto.getThumbnailUrl())
+            .title(dto.getTitle())
+            // intro ??
+            .build();
+      }
+      case "EXPERIENCE" -> {
+        ExperienceExperienceTransDto dto = experienceRepository.findExperienceExperienceTransDtoByIdAndLocale(
+            id, locale);
+        if (dto == null) {
+          throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
+        }
+
+        return MemberResponseDto.RecommendedPosts.builder()
+            .id(dto.getId())
+            .category(category)
+            .thumbnailUrl(dto.getThumbnailUrl())
+            .title(dto.getTitle())
+            .intro(dto.getIntro())
+            .build();
+      }
+      case "MARKET" -> {
+        MarketMarketTransDto dto = marketRepository.findMarketMarketTransDtoByIdAndLocale(id,
+            locale);
+        if (dto == null) {
+          throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
+        }
+
+        return MemberResponseDto.RecommendedPosts.builder()
+            .id(dto.getId())
+            .category(category)
+            .thumbnailUrl(dto.getThumbnailUrl())
+            .title(dto.getTitle())
+            // intro ?
+            .build();
+      }
       default -> throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
     }
   }

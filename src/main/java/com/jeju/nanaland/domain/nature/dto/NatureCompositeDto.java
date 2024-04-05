@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NatureNatureTransDto {
+public class NatureCompositeDto {
 
   private Long id;
   private String originUrl;
@@ -23,7 +23,7 @@ public class NatureNatureTransDto {
   private String amenity;
 
   @QueryProjection
-  public NatureNatureTransDto(Long id, String originUrl, String thumbnailUrl, String contact,
+  public NatureCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String locale, String title, String content, String address, String intro, String details,
       String time, String amenity) {
     this.id = id;

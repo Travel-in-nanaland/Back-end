@@ -5,8 +5,8 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
-import com.jeju.nanaland.domain.nature.dto.NatureNatureTransDto;
-import com.jeju.nanaland.domain.nature.dto.QNatureNatureTransDto;
+import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -29,8 +29,8 @@ class NatureRepositoryImplTest {
     Long languageId = 2L;
     Long id = 2L;
 
-    NatureNatureTransDto result = queryFactory
-        .select(new QNatureNatureTransDto(
+    NatureCompositeDto result = queryFactory
+        .select(new QNatureCompositeDto(
             nature.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
