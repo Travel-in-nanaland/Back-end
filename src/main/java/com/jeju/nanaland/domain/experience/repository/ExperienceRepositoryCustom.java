@@ -1,9 +1,8 @@
 package com.jeju.nanaland.domain.experience.repository;
 
-import com.jeju.nanaland.domain.experience.dto.ExperienceExperienceTransDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 
 public interface ExperienceRepositoryCustom {
 
-  ExperienceExperienceTransDto findExperienceExperienceTransDtoByIdAndLocale(Long id,
-      String locale);
+  ExperienceCompositeDto findExperienceCompositeDto(Long id, String locale);
 }

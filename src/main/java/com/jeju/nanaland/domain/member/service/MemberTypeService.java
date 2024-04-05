@@ -1,11 +1,11 @@
 package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.experience.dto.ExperienceExperienceTransDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.festival.dto.FestivalFestivalTransDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
-import com.jeju.nanaland.domain.market.dto.MarketMarketTransDto;
+import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponseDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -92,8 +92,7 @@ public class MemberTypeService {
             .build();
       }
       case "EXPERIENCE" -> {
-        ExperienceExperienceTransDto dto = experienceRepository.findExperienceExperienceTransDtoByIdAndLocale(
-            id, locale);
+        ExperienceCompositeDto dto = experienceRepository.findExperienceCompositeDto(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
@@ -107,8 +106,7 @@ public class MemberTypeService {
             .build();
       }
       case "MARKET" -> {
-        MarketMarketTransDto dto = marketRepository.findMarketMarketTransDtoByIdAndLocale(id,
-            locale);
+        MarketCompositeDto dto = marketRepository.findMarketCompositeDto(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }

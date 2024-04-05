@@ -5,8 +5,8 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.market.entity.QMarket.market;
 import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
-import com.jeju.nanaland.domain.market.dto.MarketMarketTransDto;
-import com.jeju.nanaland.domain.market.dto.QMarketMarketTransDto;
+import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -16,9 +16,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public MarketMarketTransDto findMarketMarketTransDtoByIdAndLocale(Long id, String locale) {
+  public MarketCompositeDto findMarketCompositeDto(Long id, String locale) {
     return queryFactory
-        .select(new QMarketMarketTransDto(
+        .select(new QMarketCompositeDto(
             market.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ExperienceExperienceTransDto {
+public class ExperienceCompositeDto {
 
   private Long id;
   private String originUrl;
@@ -24,7 +24,7 @@ public class ExperienceExperienceTransDto {
   private String amenity;
 
   @QueryProjection
-  public ExperienceExperienceTransDto(Long id, String originUrl, String thumbnailUrl,
+  public ExperienceCompositeDto(Long id, String originUrl, String thumbnailUrl,
       String contact,
       Float ratingAvg, String locale, String title, String content, String address, String intro,
       String details, String time, String amenity) {

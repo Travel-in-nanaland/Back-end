@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MarketMarketTransDto {
+public class MarketCompositeDto {
 
   private Long id;
   private String originUrl;
@@ -22,7 +22,7 @@ public class MarketMarketTransDto {
   private String amenity;
 
   @QueryProjection
-  public MarketMarketTransDto(Long id, String originUrl, String thumbnailUrl, String contact,
+  public MarketCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, String locale, String title, String content, String address, String time,
       String amenity) {
     this.id = id;

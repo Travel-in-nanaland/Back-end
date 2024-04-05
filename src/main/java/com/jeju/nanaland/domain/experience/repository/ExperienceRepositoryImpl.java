@@ -5,8 +5,8 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 
-import com.jeju.nanaland.domain.experience.dto.ExperienceExperienceTransDto;
-import com.jeju.nanaland.domain.experience.dto.QExperienceExperienceTransDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
+import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -16,10 +16,10 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public ExperienceExperienceTransDto findExperienceExperienceTransDtoByIdAndLocale(Long id,
+  public ExperienceCompositeDto findExperienceCompositeDto(Long id,
       String locale) {
     return queryFactory
-        .select(new QExperienceExperienceTransDto(
+        .select(new QExperienceCompositeDto(
             experience.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
