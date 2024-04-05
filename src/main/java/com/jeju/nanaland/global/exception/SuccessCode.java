@@ -14,8 +14,9 @@ public enum SuccessCode {
   CUSTOM_SUCCESS(OK, "~~ 조회에 성공했습니다."),
   CUSTOM_CREATED_SUCCESS(CREATED, "~ 생성에 성공했습니다."),
 
-  // member hashtag service
-  UPDATE_MEMBER_TYPE_SUCCESS(OK, "사용자 타입 업데이트에 성공했습니다.");
+  // member type service
+  UPDATE_MEMBER_TYPE_SUCCESS(OK, "사용자 타입 업데이트에 성공했습니다."),
+  GET_RECOMMENDED_POSTS_SUCCESS(OK, "사용자 추천 게시물 조회에 성공했습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
