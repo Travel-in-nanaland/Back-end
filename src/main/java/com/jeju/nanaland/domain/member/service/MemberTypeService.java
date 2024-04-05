@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.mysema.commons.lang.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -45,23 +46,22 @@ public class MemberTypeService {
     Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
 
     MemberType type = member.getType();
-    String category1 = type.getPostCategory1();
-    Long postId1 = type.getPostId1();
-    String category2 = type.getPostCategory2();
-    Long postId2 = type.getPostId2();
     String locale = member.getLanguage().getLocale();
 
-    // memberType에 저장된 카테고리, Id를 통해 조회 결과를 DTO로 반환
+    // memberType에 저장된 Pair<카테고리, Id>를 순회하며 DTO 추가
     List<MemberResponseDto.RecommendedPosts> result = new ArrayList<>();
-    result.add(getRecommendedPostDto(category1, postId1, locale));
-    result.add(getRecommendedPostDto(category2, postId2, locale));
+    for (Pair<String, Long> recommendPost : type.getRecommendPosts()) {
+      result.add(getRecommendedPostDto(recommendPost, locale));
+    }
 
     return result;
   }
 
-  private MemberResponseDto.RecommendedPosts getRecommendedPostDto(String category, Long id,
+  private MemberResponseDto.RecommendedPosts getRecommendedPostDto(Pair<String, Long> recommendPost,
       String locale) {
 
+    String category = recommendPost.getFirst();
+    Long id = recommendPost.getSecond();
     switch (category) {
       case "NATURE" -> {
         NatureCompositeDto dto = natureRepository.findNatureCompositeDto(id, locale);
@@ -88,7 +88,7 @@ public class MemberTypeService {
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
             .title(dto.getTitle())
-            // intro ??
+            // intro 필드 없음
             .build();
       }
       case "EXPERIENCE" -> {
@@ -116,7 +116,7 @@ public class MemberTypeService {
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
             .title(dto.getTitle())
-            // intro ?
+            // intro 필드 없음
             .build();
       }
       default -> throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
