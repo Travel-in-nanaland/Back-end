@@ -1,9 +1,8 @@
 package com.jeju.nanaland.domain.member.service;
 
-import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.festival.dto.FestivalFestivalTransDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
@@ -46,14 +45,16 @@ public class MemberTypeService {
     Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
 
     MemberType type = member.getType();
-    Language language = member.getLanguage();
+    String category1 = type.getPostCategory1();
+    Long postId1 = type.getPostId1();
+    String category2 = type.getPostCategory2();
+    Long postId2 = type.getPostId2();
+    String locale = member.getLanguage().getLocale();
 
     // memberType에 저장된 카테고리, Id를 통해 조회 결과를 DTO로 반환
     List<MemberResponseDto.RecommendedPosts> result = new ArrayList<>();
-    result.add(
-        getRecommendedPostDto(type.getPostCategory1(), type.getPostId1(), language.getLocale()));
-    result.add(
-        getRecommendedPostDto(type.getPostCategory2(), type.getPostId2(), language.getLocale()));
+    result.add(getRecommendedPostDto(category1, postId1, locale));
+    result.add(getRecommendedPostDto(category2, postId2, locale));
 
     return result;
   }
@@ -77,8 +78,7 @@ public class MemberTypeService {
             .build();
       }
       case "FESTIVAL" -> {
-        FestivalFestivalTransDto dto = festivalRepository.findFestivalFestivalTransDtoByIdAndLocale(
-            id, locale);
+        FestivalCompositeDto dto = festivalRepository.findFestivalCompositeDto(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }

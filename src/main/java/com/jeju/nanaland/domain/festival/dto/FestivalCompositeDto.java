@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FestivalFestivalTransDto {
+public class FestivalCompositeDto {
 
   private Long id;
   private String originUrl;
@@ -22,7 +22,7 @@ public class FestivalFestivalTransDto {
   private String fee;
 
   @QueryProjection
-  public FestivalFestivalTransDto(Long id, String originUrl, String thumbnailUrl, String contact,
+  public FestivalCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, String locale, String title, String content, String address, String time,
       String fee) {
     this.id = id;

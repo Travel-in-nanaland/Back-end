@@ -5,8 +5,8 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.festival.entity.QFestival.festival;
 import static com.jeju.nanaland.domain.festival.entity.QFestivalTrans.festivalTrans;
 
-import com.jeju.nanaland.domain.festival.dto.FestivalFestivalTransDto;
-import com.jeju.nanaland.domain.festival.dto.QFestivalFestivalTransDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
+import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -16,10 +16,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public FestivalFestivalTransDto findFestivalFestivalTransDtoByIdAndLocale(Long id,
+  public FestivalCompositeDto findFestivalCompositeDto(Long id,
       String locale) {
     return queryFactory
-        .select(new QFestivalFestivalTransDto(
+        .select(new QFestivalCompositeDto(
             festival.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,

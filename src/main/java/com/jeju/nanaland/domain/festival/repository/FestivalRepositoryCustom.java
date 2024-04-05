@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.festival.repository;
 
-import com.jeju.nanaland.domain.festival.dto.FestivalFestivalTransDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 
 public interface FestivalRepositoryCustom {
 
-  FestivalFestivalTransDto findFestivalFestivalTransDtoByIdAndLocale(Long id, String locale);
+  FestivalCompositeDto findFestivalCompositeDto(Long id, String locale);
 }
