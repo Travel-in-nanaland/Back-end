@@ -88,7 +88,7 @@ public class MemberTypeService {
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
             .title(dto.getTitle())
-            // intro 필드 없음
+            .intro(dto.getIntro())
             .build();
       }
       case "EXPERIENCE" -> {
@@ -116,7 +116,7 @@ public class MemberTypeService {
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
             .title(dto.getTitle())
-            // intro 필드 없음
+            .intro(dto.getIntro())
             .build();
       }
       default -> throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");

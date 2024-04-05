@@ -19,12 +19,13 @@ public class MarketCompositeDto {
   private String content;
   private String address;
   private String time;
+  private String intro;
   private String amenity;
 
   @QueryProjection
   public MarketCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, String locale, String title, String content, String address, String time,
-      String amenity) {
+      String intro, String amenity) {
     this.id = id;
     this.originUrl = originUrl;
     this.thumbnailUrl = thumbnailUrl;
@@ -35,6 +36,7 @@ public class MarketCompositeDto {
     this.content = content;
     this.address = address;
     this.time = time;
+    this.intro = intro;
     this.amenity = amenity;
   }
 }

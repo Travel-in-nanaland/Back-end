@@ -29,6 +29,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.content,
             marketTrans.address,
             marketTrans.time,
+            marketTrans.intro,
             marketTrans.amenity
         ))
         .from(market)

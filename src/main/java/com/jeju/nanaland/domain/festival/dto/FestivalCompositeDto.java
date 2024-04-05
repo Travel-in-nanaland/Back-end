@@ -19,12 +19,13 @@ public class FestivalCompositeDto {
   private String content;
   private String address;
   private String time;
+  private String intro;
   private String fee;
 
   @QueryProjection
   public FestivalCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, String locale, String title, String content, String address, String time,
-      String fee) {
+      String intro, String fee) {
     this.id = id;
     this.originUrl = originUrl;
     this.thumbnailUrl = thumbnailUrl;
@@ -35,6 +36,7 @@ public class FestivalCompositeDto {
     this.content = content;
     this.address = address;
     this.time = time;
+    this.intro = intro;
     this.fee = fee;
   }
 }

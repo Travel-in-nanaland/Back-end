@@ -30,6 +30,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.content,
             festivalTrans.address,
             festivalTrans.time,
+            festivalTrans.intro,
             festivalTrans.fee
         ))
         .from(festival)

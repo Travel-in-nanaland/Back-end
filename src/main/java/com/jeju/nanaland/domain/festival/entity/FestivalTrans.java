@@ -24,14 +24,17 @@ public class FestivalTrans extends CommonTrans {
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
 
+  private String intro;
+
   private String fee;
 
   @Builder
   public FestivalTrans(Festival festival, Language language, String title, String content,
-      String address, String time, String fee) {
+      String address, String time, String intro, String fee) {
     super(title, content, address, time);
     this.festival = festival;
     this.language = language;
+    this.intro = intro;
     this.fee = fee;
   }
 }
