@@ -61,8 +61,6 @@ public class MemberLoginService {
         .email(member.getEmail())
         .nickname(member.getNickname())
         .description(member.getDescription())
-        .provider(member.getProvider())
-        .providerId(member.getProviderId())
         .build();
   }
 
@@ -83,12 +81,10 @@ public class MemberLoginService {
     ImageFile profileImageFile = getRandomProfileImageFile();
 
     String nickname = loginRequest.getProvider() + "_" + loginRequest.getProviderId();
-    String password = loginRequest.getEmail() + "_" + loginRequest.getProviderId();
 
     Member member = Member.builder()
         .language(language)
         .email(loginRequest.getEmail())
-        .password(passwordEncoder.encode(password))
         .profileImageFile(profileImageFile)
         .nickname(nickname)
         .provider(loginRequest.getProvider())

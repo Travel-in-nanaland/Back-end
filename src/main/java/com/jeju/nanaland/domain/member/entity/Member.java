@@ -41,10 +41,6 @@ public class Member extends BaseEntity {
   @Column(nullable = false, unique = true, updatable = false)
   private String email;
 
-  @NotBlank
-  @Column(nullable = false)
-  private String password;
-
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile profileImageFile;
@@ -73,11 +69,10 @@ public class Member extends BaseEntity {
   private List<Favorite> favorites;
 
   @Builder
-  public Member(Language language, String email, String password, ImageFile profileImageFile,
+  public Member(Language language, String email, ImageFile profileImageFile,
       String nickname, String description, Provider provider, Long providerId) {
     this.language = language;
     this.email = email;
-    this.password = password;
     this.profileImageFile = profileImageFile;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
