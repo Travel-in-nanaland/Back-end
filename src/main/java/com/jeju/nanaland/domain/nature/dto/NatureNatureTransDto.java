@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class NatureNatureTransDto {
 
   private Long id;
-  private String category = "NATURE";
   private String originUrl;
   private String thumbnailUrl;
   private String contact;
