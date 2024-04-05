@@ -1,6 +1,9 @@
 package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponseDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberType;
@@ -23,6 +26,9 @@ public class MemberTypeService {
 
   private final MemberRepository memberRepository;
   private final NatureRepository natureRepository;
+  private final FestivalRepository festivalRepository;
+  private final ExperienceRepository experienceRepository;
+  private final MarketRepository marketRepository;
 
   @Transactional
   public void updateMemberType(Long memberId, String type) {
@@ -68,6 +74,14 @@ public class MemberTypeService {
             .intro(dto.getIntro())
             .build();
       }
+//      case "FESTIVAL" -> {
+//      }
+//      case "EXPERIENCE" -> {
+//
+//      }
+//      case "MARKET" -> {
+//
+//      }
       default -> throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
     }
   }

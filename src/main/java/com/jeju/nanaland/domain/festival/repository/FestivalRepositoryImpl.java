@@ -16,7 +16,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public FestivalFestivalTransDto getFestivalFestivalTransDtoByIdAndLocale(Long id, String locale) {
+  public FestivalFestivalTransDto findFestivalFestivalTransDtoByIdAndLocale(Long id,
+      String locale) {
     return queryFactory
         .select(new QFestivalFestivalTransDto(
             festival.id,
