@@ -13,6 +13,7 @@ public class LoginResponse {
   private JwtResponse jwtResponse;
   private LanguageResponse languageResponse;
   private ImageFileResponse imageFileResponse;
+  private Long memberId;
   private String email;
   private String nickname;
   private String description;
