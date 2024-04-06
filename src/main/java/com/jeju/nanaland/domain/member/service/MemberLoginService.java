@@ -6,9 +6,8 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
-import com.jeju.nanaland.domain.member.dto.MemberRequestDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequestDto.LoginRequest;
-import com.jeju.nanaland.domain.member.dto.response.LoginResponse;
+import com.jeju.nanaland.domain.member.dto.MemberResponseDto.LoginResponse;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.jwt.JwtProvider;
@@ -29,7 +28,7 @@ public class MemberLoginService {
   private final ImageFileRepository imageFileRepository;
 
   @Transactional
-  public LoginResponse login(MemberRequestDto.LoginRequest loginRequest) {
+  public LoginResponse login(LoginRequest loginRequest) {
 
     Member member = getOrCreateMember(loginRequest);
 
