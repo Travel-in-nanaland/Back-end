@@ -60,7 +60,6 @@ class EntityImageFileMappingTest {
         .language(language)
         .profileImageFile(imageFile1)
         .email("email")
-        .password("password")
         .nickname("nickname")
         .provider(Provider.KAKAO)
         .providerId(1L)
