@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.member.dto;
 
-import com.jeju.nanaland.domain.common.dto.response.ImageFileResponse;
-import com.jeju.nanaland.domain.common.dto.response.LanguageResponse;
+import com.jeju.nanaland.domain.common.dto.response.ImageFileResponseDto;
+import com.jeju.nanaland.domain.common.dto.response.LanguageResponseDto;
 import com.jeju.nanaland.global.jwt.dto.JwtResponse;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,8 +16,8 @@ public class MemberResponseDto {
   public static class LoginResponse {
 
     private JwtResponse jwtResponse;
-    private LanguageResponse languageResponse;
-    private ImageFileResponse imageFileResponse;
+    private LanguageResponseDto languageResponseDto;
+    private ImageFileResponseDto imageFileResponseDto;
     private Long memberId;
     private String email;
     private String nickname;

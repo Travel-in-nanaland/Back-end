@@ -6,8 +6,9 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class LanguageResponse {
+public class LanguageResponseDto {
 
+  private Long id;
   private Locale locale;
   private String dateFormat;
 }

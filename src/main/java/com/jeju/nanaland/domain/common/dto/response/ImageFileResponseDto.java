@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class ImageFileResponse {
+public class ImageFileResponseDto {
 
   private Long id;
   private String thumbnailUrl;

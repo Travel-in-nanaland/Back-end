@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
-import com.jeju.nanaland.domain.common.dto.response.ImageFileResponse;
-import com.jeju.nanaland.domain.common.dto.response.LanguageResponse;
+import com.jeju.nanaland.domain.common.dto.response.ImageFileResponseDto;
+import com.jeju.nanaland.domain.common.dto.response.LanguageResponseDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
@@ -35,20 +35,18 @@ public class MemberLoginService {
     String accessToken = jwtProvider.getAccessToken(member.getId());
     String refreshToken = jwtProvider.getRefreshToken(member.getId());
 
-    // TODO: provider과 provider_id로 이미 가입된 회원이지만 이메일이 변경된 경우, 이메일 update
-    // TODO: refreshToken 보관하기
-
     JwtResponse jwtResponse = JwtResponse.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
 
-    LanguageResponse languageResponse = LanguageResponse.builder()
+    LanguageResponseDto languageResponseDto = LanguageResponseDto.builder()
+        .id(member.getLanguage().getId())
         .locale(member.getLanguage().getLocale())
         .dateFormat(member.getLanguage().getDateFormat())
         .build();
 
-    ImageFileResponse imageFileResponse = ImageFileResponse.builder()
+    ImageFileResponseDto imageFileResponseDto = ImageFileResponseDto.builder()
         .id(member.getProfileImageFile().getId())
         .thumbnailUrl(member.getProfileImageFile().getThumbnailUrl())
         .originUrl(member.getProfileImageFile().getOriginUrl())
@@ -56,8 +54,8 @@ public class MemberLoginService {
 
     return LoginResponse.builder()
         .jwtResponse(jwtResponse)
-        .languageResponse(languageResponse)
-        .imageFileResponse(imageFileResponse)
+        .languageResponseDto(languageResponseDto)
+        .imageFileResponseDto(imageFileResponseDto)
         .memberId(member.getId())
         .email(member.getEmail())
         .nickname(member.getNickname())
