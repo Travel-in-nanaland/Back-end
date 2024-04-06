@@ -38,7 +38,7 @@ public class Member extends BaseEntity {
   private Language language;
 
   @NotBlank
-  @Column(nullable = false, unique = true, updatable = false)
+  @Column(nullable = false, unique = true)
   private String email;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
