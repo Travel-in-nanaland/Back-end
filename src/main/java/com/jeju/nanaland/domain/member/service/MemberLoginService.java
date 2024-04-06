@@ -15,19 +15,19 @@ import com.jeju.nanaland.global.jwt.dto.JwtResponse;
 import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
-  private final PasswordEncoder passwordEncoder;
   private final JwtProvider jwtProvider;
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
 
+  @Transactional
   public LoginResponse login(LoginRequest loginRequest) {
 
     Member member = getOrCreateMember(loginRequest);
@@ -58,13 +58,15 @@ public class MemberLoginService {
         .jwtResponse(jwtResponse)
         .languageResponse(languageResponse)
         .imageFileResponse(imageFileResponse)
+        .memberId(member.getId())
         .email(member.getEmail())
         .nickname(member.getNickname())
         .description(member.getDescription())
         .build();
   }
 
-  private Member getOrCreateMember(LoginRequest loginRequest) {
+  @Transactional
+  public Member getOrCreateMember(LoginRequest loginRequest) {
     Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
         loginRequest.getProvider(),
         loginRequest.getProviderId());
@@ -72,7 +74,9 @@ public class MemberLoginService {
     if (memberOptional.isEmpty()) {
       return createMember(loginRequest);
     }
-    return memberOptional.get();
+    Member member = memberOptional.get();
+    updateEmailDiffrent(loginRequest, member);
+    return member;
   }
 
   private Member createMember(LoginRequest loginRequest) {
@@ -98,5 +102,12 @@ public class MemberLoginService {
     Random random = new Random();
     long randomId = random.nextInt(3) + 1;
     return imageFileRepository.findById(randomId).get();
+  }
+
+  @Transactional
+  public void updateEmailDiffrent(LoginRequest loginRequest, Member member) {
+    if (!member.getEmail().equals(loginRequest.getEmail())) {
+      member.updateEmail(loginRequest.getEmail());
+    }
   }
 }

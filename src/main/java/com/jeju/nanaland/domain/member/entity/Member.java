@@ -81,4 +81,8 @@ public class Member extends BaseEntity {
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
     this.favorites = new ArrayList<>();
   }
+
+  public void updateEmail(String email) {
+    this.email = email;
+  }
 }
