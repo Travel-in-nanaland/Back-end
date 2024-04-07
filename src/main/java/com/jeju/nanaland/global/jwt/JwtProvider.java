@@ -23,6 +23,7 @@ public class JwtProvider {
 
   private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
   private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
+  private static final String REDIS_KEY = "REFRESH:";
   private final SecretKey secretKey;
   private final SecretKey secretKey2;
   private final MemberDetailsService memberDetailsService;
@@ -68,7 +69,7 @@ public class JwtProvider {
         .compact();
 
     redisTemplate.opsForValue().set(
-        memberId,
+        REDIS_KEY + memberId,
         refreshToken,
         refreshExpirationPeriod,
         TimeUnit.MILLISECONDS
@@ -123,7 +124,7 @@ public class JwtProvider {
   }
 
   public String findRefreshTokenById(String memberId) {
-    return redisTemplate.opsForValue().get(memberId);
+    return redisTemplate.opsForValue().get(REDIS_KEY + memberId);
   }
 
   public String getMemberIdFromRefresh(String refreshToken) {
