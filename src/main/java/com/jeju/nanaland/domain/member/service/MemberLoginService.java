@@ -10,6 +10,8 @@ import com.jeju.nanaland.domain.member.dto.MemberRequestDto.LoginRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponseDto.LoginResponse;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.jwt.JwtProvider;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.util.Optional;
@@ -107,5 +109,22 @@ public class MemberLoginService {
     if (!member.getEmail().equals(loginRequest.getEmail())) {
       member.updateEmail(loginRequest.getEmail());
     }
+  }
+
+  public String reissue(String bearerRefreshToken) {
+    String refreshToken = jwtProvider.resolveToken(bearerRefreshToken);
+
+    if (!jwtProvider.verifyRefreshToken(refreshToken)) {
+      throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
+    }
+
+    String memberId = jwtProvider.getMemberIdFromRefresh(refreshToken);
+    String savedRefreshToken = jwtProvider.findRefreshTokenById(memberId);
+
+    if (!refreshToken.equals(savedRefreshToken)) {
+      throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
+    }
+
+    return jwtProvider.getAccessToken(memberId);
   }
 }

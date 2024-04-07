@@ -8,8 +8,11 @@ import com.jeju.nanaland.global.exception.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -23,6 +26,13 @@ public class MemberController {
   public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
     LoginResponse loginResponse = memberLoginService.login(loginRequest);
     return ApiResponse.success(SuccessCode.LOGIN_SUCCESS, loginResponse);
+  }
+
+  @GetMapping("/reissue")
+  public ApiResponse<String> reissue(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
+    String newAccessToken = memberLoginService.reissue(refreshToken);
+    return ApiResponse.success(SuccessCode.CUSTOM_CREATED_SUCCESS, newAccessToken);
   }
 }
 

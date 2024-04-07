@@ -1,7 +1,6 @@
 package com.jeju.nanaland.global.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
@@ -35,6 +34,10 @@ public class JwtProvider {
 
   private SecretKey getSecretKey() {
     return secretKey;
+  }
+
+  private SecretKey getSecretKey2() {
+    return secretKey2;
   }
 
   public String getAccessToken(String memberId) {
@@ -75,18 +78,18 @@ public class JwtProvider {
 
   public boolean verifyAccessToken(String accessToken) {
     try {
-      Jws<Claims> claimsJws = Jwts.parserBuilder()
+      Jwts.parserBuilder()
           .setSigningKey(getSecretKey())
           .build()
           .parseClaimsJws(accessToken);
 
-      return !claimsJws.getBody().getExpiration().before(new Date());
+      return true;
     } catch (Exception e) {
       return false;
     }
   }
 
-  public String getMemberId(String token) {
+  public String getMemberIdFromAccess(String token) {
     return Jwts.parserBuilder()
         .setSigningKey(getSecretKey())
         .build()
@@ -96,7 +99,7 @@ public class JwtProvider {
   }
 
   public Authentication getAuthentication(String token) {
-    UserDetails userDetails = memberDetailsService.loadUserByUsername(getMemberId(token));
+    UserDetails userDetails = memberDetailsService.loadUserByUsername(getMemberIdFromAccess(token));
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
@@ -105,5 +108,30 @@ public class JwtProvider {
       return bearerToken.substring("Bearer ".length());
     }
     return null;
+  }
+
+  public boolean verifyRefreshToken(String refreshToken) {
+    try {
+      Jwts.parserBuilder()
+          .setSigningKey(getSecretKey2())
+          .build()
+          .parseClaimsJws(refreshToken);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public String findRefreshTokenById(String memberId) {
+    return redisTemplate.opsForValue().get(memberId);
+  }
+
+  public String getMemberIdFromRefresh(String refreshToken) {
+    return Jwts.parserBuilder()
+        .setSigningKey(getSecretKey2())
+        .build()
+        .parseClaimsJws(refreshToken)
+        .getBody()
+        .getSubject();
   }
 }
