@@ -31,19 +31,12 @@ public class JWTAuthenticationFilter extends BasicAuthenticationFilter {
       FilterChain chain) throws IOException, ServletException {
 
     String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-    String token = resolveToken(bearerToken);
+    String token = jwtProvider.resolveToken(bearerToken);
 
     if (StringUtils.hasLength(token) && jwtProvider.verifyAccessToken(token)) {
       Authentication authentication = jwtProvider.getAuthentication(token);
       SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     chain.doFilter(request, response);
-  }
-
-  public String resolveToken(String bearerToken) {
-    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-      return bearerToken.substring("Bearer ".length());
-    }
-    return null;
   }
 }

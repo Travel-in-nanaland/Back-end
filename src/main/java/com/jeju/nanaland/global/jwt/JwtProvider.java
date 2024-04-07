@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
@@ -86,5 +87,12 @@ public class JwtProvider {
   public Authentication getAuthentication(String token) {
     UserDetails userDetails = memberDetailsService.loadUserByUsername(getMemberId(token));
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+  }
+
+  public String resolveToken(String bearerToken) {
+    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+      return bearerToken.substring("Bearer ".length());
+    }
+    return null;
   }
 }
