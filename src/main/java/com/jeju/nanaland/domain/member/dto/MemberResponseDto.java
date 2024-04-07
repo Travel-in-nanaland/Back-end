@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.member.dto;
 import com.jeju.nanaland.domain.common.dto.response.ImageFileResponseDto;
 import com.jeju.nanaland.domain.common.dto.response.LanguageResponseDto;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,6 +21,8 @@ public class MemberResponseDto {
     private ImageFileResponseDto imageFileResponseDto;
     private Long memberId;
     private String email;
+    private String gender;
+    private LocalDate birthDate;
     private String nickname;
     private String description;
   }

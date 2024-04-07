@@ -60,6 +60,8 @@ public class MemberLoginService {
         .imageFileResponseDto(imageFileResponseDto)
         .memberId(member.getId())
         .email(member.getEmail())
+        .gender(member.getGender())
+        .birthDate(member.getBirthDate())
         .nickname(member.getNickname())
         .description(member.getDescription())
         .build();
@@ -91,6 +93,8 @@ public class MemberLoginService {
         .email(loginRequest.getEmail())
         .profileImageFile(profileImageFile)
         .nickname(nickname)
+        .gender(loginRequest.getGender())
+        .birthDate(loginRequest.getBirthDate())
         .provider(loginRequest.getProvider())
         .providerId(loginRequest.getProviderId())
         .build();

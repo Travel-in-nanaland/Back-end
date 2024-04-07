@@ -18,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,9 @@ public class Member extends BaseEntity {
 
   private String description;
 
+  private String gender;
+  private LocalDate birthDate;
+
   @NotNull
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -70,12 +74,15 @@ public class Member extends BaseEntity {
 
   @Builder
   public Member(Language language, String email, ImageFile profileImageFile,
-      String nickname, String description, Provider provider, Long providerId) {
+      String nickname, String description, String gender, LocalDate birthDate,
+      Provider provider, Long providerId) {
     this.language = language;
     this.email = email;
     this.profileImageFile = profileImageFile;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
+    this.gender = (gender != null) ? gender : "";
+    this.birthDate = birthDate;
     this.provider = provider;
     this.providerId = providerId;
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
