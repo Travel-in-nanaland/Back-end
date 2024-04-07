@@ -5,10 +5,12 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +27,7 @@ public class JwtProvider {
   private final SecretKey secretKey;
   private final SecretKey secretKey2;
   private final MemberDetailsService memberDetailsService;
+  private final RedisTemplate<String, String> redisTemplate;
   @Value("${jwt.access.expiration}")
   private Long accessExpirationPeriod;
   @Value("${jwt.refresh.expiration}")
@@ -34,7 +37,7 @@ public class JwtProvider {
     return secretKey;
   }
 
-  public String getAccessToken(Long memberId) {
+  public String getAccessToken(String memberId) {
     Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
 
     Date now = new Date();
@@ -48,18 +51,26 @@ public class JwtProvider {
         .compact();
   }
 
-  public String getRefreshToken(Long memberId) {
-    Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
+  public String getRefreshToken(String memberId) {
+    Claims claims = Jwts.claims().setSubject(memberId);
 
     Date now = new Date();
     Date expiration = new Date(now.getTime() + refreshExpirationPeriod);
 
-    return Jwts.builder()
+    String refreshToken = Jwts.builder()
         .setSubject(REFRESH_TOKEN_SUBJECT)
         .setClaims(claims)
         .setExpiration(expiration)
         .signWith(secretKey2, SignatureAlgorithm.HS512)
         .compact();
+
+    redisTemplate.opsForValue().set(
+        memberId,
+        refreshToken,
+        refreshExpirationPeriod,
+        TimeUnit.MILLISECONDS
+    );
+    return refreshToken;
   }
 
   public boolean verifyAccessToken(String accessToken) {

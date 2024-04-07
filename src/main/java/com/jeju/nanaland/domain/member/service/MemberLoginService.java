@@ -32,8 +32,8 @@ public class MemberLoginService {
 
     Member member = getOrCreateMember(loginRequest);
 
-    String accessToken = jwtProvider.getAccessToken(member.getId());
-    String refreshToken = jwtProvider.getRefreshToken(member.getId());
+    String accessToken = jwtProvider.getAccessToken(String.valueOf(member.getId()));
+    String refreshToken = jwtProvider.getRefreshToken(String.valueOf(member.getId()));
 
     JwtDto jwtDto = JwtDto.builder()
         .accessToken(accessToken)
