@@ -32,7 +32,7 @@ public class MemberController {
   public ApiResponse<String> reissue(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
     String newAccessToken = memberLoginService.reissue(refreshToken);
-    return ApiResponse.success(SuccessCode.CUSTOM_CREATED_SUCCESS, newAccessToken);
+    return ApiResponse.success(SuccessCode.ACCESS_TOKEN_SUCCESS, newAccessToken);
   }
 }
 
