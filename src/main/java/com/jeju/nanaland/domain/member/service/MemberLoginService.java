@@ -11,7 +11,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponseDto.LoginResponse;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.jwt.JwtProvider;
-import com.jeju.nanaland.global.jwt.dto.JwtResponse;
+import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class MemberLoginService {
     String accessToken = jwtProvider.getAccessToken(member.getId());
     String refreshToken = jwtProvider.getRefreshToken(member.getId());
 
-    JwtResponse jwtResponse = JwtResponse.builder()
+    JwtDto jwtDto = JwtDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
@@ -53,7 +53,7 @@ public class MemberLoginService {
         .build();
 
     return LoginResponse.builder()
-        .jwtResponse(jwtResponse)
+        .jwtDto(jwtDto)
         .languageResponseDto(languageResponseDto)
         .imageFileResponseDto(imageFileResponseDto)
         .memberId(member.getId())
@@ -73,7 +73,7 @@ public class MemberLoginService {
       return createMember(loginRequest);
     }
     Member member = memberOptional.get();
-    updateEmailDiffrent(loginRequest, member);
+    updateEmailDifferent(loginRequest, member);
     return member;
   }
 
@@ -103,7 +103,7 @@ public class MemberLoginService {
   }
 
   @Transactional
-  public void updateEmailDiffrent(LoginRequest loginRequest, Member member) {
+  public void updateEmailDifferent(LoginRequest loginRequest, Member member) {
     if (!member.getEmail().equals(loginRequest.getEmail())) {
       member.updateEmail(loginRequest.getEmail());
     }
