@@ -8,13 +8,13 @@ import java.time.LocalDate;
 import lombok.Getter;
 
 
-public class MemberRequestDto {
+public class MemberRequest {
 
-  private MemberRequestDto() {
+  private MemberRequest() {
   }
 
   @Getter
-  public static class LoginRequest {
+  public static class LoginDto {
 
     @NotNull
     private Locale locale;

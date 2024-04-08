@@ -4,7 +4,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
-import com.jeju.nanaland.domain.member.dto.MemberRequestDto.LoginRequest;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -27,9 +27,9 @@ public class MemberLoginService {
   private final ImageFileRepository imageFileRepository;
 
   @Transactional
-  public JwtDto login(LoginRequest loginRequest) {
+  public JwtDto login(LoginDto loginDto) {
 
-    Member member = getOrCreateMember(loginRequest);
+    Member member = getOrCreateMember(loginDto);
 
     String accessToken = jwtProvider.getAccessToken(String.valueOf(member.getId()));
     String refreshToken = jwtProvider.getRefreshToken(String.valueOf(member.getId()));
@@ -41,35 +41,35 @@ public class MemberLoginService {
   }
 
   @Transactional
-  public Member getOrCreateMember(LoginRequest loginRequest) {
+  public Member getOrCreateMember(LoginDto loginDto) {
     Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
-        loginRequest.getProvider(),
-        loginRequest.getProviderId());
+        loginDto.getProvider(),
+        loginDto.getProviderId());
 
     if (memberOptional.isEmpty()) {
-      return createMember(loginRequest);
+      return createMember(loginDto);
     }
     Member member = memberOptional.get();
-    updateEmailDifferent(loginRequest, member);
+    updateEmailDifferent(loginDto, member);
     return member;
   }
 
-  private Member createMember(LoginRequest loginRequest) {
-    Language language = languageRepository.findByLocale(loginRequest.getLocale());
+  private Member createMember(LoginDto loginDto) {
+    Language language = languageRepository.findByLocale(loginDto.getLocale());
 
     ImageFile profileImageFile = getRandomProfileImageFile();
 
-    String nickname = loginRequest.getProvider() + "_" + loginRequest.getProviderId();
+    String nickname = loginDto.getProvider() + "_" + loginDto.getProviderId();
 
     Member member = Member.builder()
         .language(language)
-        .email(loginRequest.getEmail())
+        .email(loginDto.getEmail())
         .profileImageFile(profileImageFile)
         .nickname(nickname)
-        .gender(loginRequest.getGender())
-        .birthDate(loginRequest.getBirthDate())
-        .provider(loginRequest.getProvider())
-        .providerId(loginRequest.getProviderId())
+        .gender(loginDto.getGender())
+        .birthDate(loginDto.getBirthDate())
+        .provider(loginDto.getProvider())
+        .providerId(loginDto.getProviderId())
         .build();
     return memberRepository.save(member);
   }
@@ -82,9 +82,9 @@ public class MemberLoginService {
   }
 
   @Transactional
-  public void updateEmailDifferent(LoginRequest loginRequest, Member member) {
-    if (!member.getEmail().equals(loginRequest.getEmail())) {
-      member.updateEmail(loginRequest.getEmail());
+  public void updateEmailDifferent(LoginDto loginDto, Member member) {
+    if (!member.getEmail().equals(loginDto.getEmail())) {
+      member.updateEmail(loginDto.getEmail());
     }
   }
 

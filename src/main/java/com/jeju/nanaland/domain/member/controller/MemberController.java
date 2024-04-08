@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.member.controller;
 
-import com.jeju.nanaland.domain.member.dto.MemberRequestDto.LoginRequest;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.global.ApiResponse;
 import com.jeju.nanaland.global.exception.SuccessCode;
@@ -23,8 +23,8 @@ public class MemberController {
   private final MemberLoginService memberLoginService;
 
   @PostMapping("/login")
-  public ApiResponse<JwtDto> login(@RequestBody @Valid LoginRequest loginRequest) {
-    JwtDto jwtDto = memberLoginService.login(loginRequest);
+  public ApiResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
+    JwtDto jwtDto = memberLoginService.login(loginDto);
     return ApiResponse.success(SuccessCode.LOGIN_SUCCESS, jwtDto);
   }
 
