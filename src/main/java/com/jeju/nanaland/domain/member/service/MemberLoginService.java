@@ -1,13 +1,10 @@
 package com.jeju.nanaland.domain.member.service;
 
-import com.jeju.nanaland.domain.common.dto.response.ImageFileResponseDto;
-import com.jeju.nanaland.domain.common.dto.response.LanguageResponseDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequestDto.LoginRequest;
-import com.jeju.nanaland.domain.member.dto.MemberResponseDto.LoginResponse;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -30,40 +27,16 @@ public class MemberLoginService {
   private final ImageFileRepository imageFileRepository;
 
   @Transactional
-  public LoginResponse login(LoginRequest loginRequest) {
+  public JwtDto login(LoginRequest loginRequest) {
 
     Member member = getOrCreateMember(loginRequest);
 
     String accessToken = jwtProvider.getAccessToken(String.valueOf(member.getId()));
     String refreshToken = jwtProvider.getRefreshToken(String.valueOf(member.getId()));
 
-    JwtDto jwtDto = JwtDto.builder()
+    return JwtDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
-        .build();
-
-    LanguageResponseDto languageResponseDto = LanguageResponseDto.builder()
-        .id(member.getLanguage().getId())
-        .locale(member.getLanguage().getLocale())
-        .dateFormat(member.getLanguage().getDateFormat())
-        .build();
-
-    ImageFileResponseDto imageFileResponseDto = ImageFileResponseDto.builder()
-        .id(member.getProfileImageFile().getId())
-        .thumbnailUrl(member.getProfileImageFile().getThumbnailUrl())
-        .originUrl(member.getProfileImageFile().getOriginUrl())
-        .build();
-
-    return LoginResponse.builder()
-        .jwtDto(jwtDto)
-        .languageResponseDto(languageResponseDto)
-        .imageFileResponseDto(imageFileResponseDto)
-        .memberId(member.getId())
-        .email(member.getEmail())
-        .gender(member.getGender())
-        .birthDate(member.getBirthDate())
-        .nickname(member.getNickname())
-        .description(member.getDescription())
         .build();
   }
 

@@ -1,10 +1,10 @@
 package com.jeju.nanaland.domain.member.controller;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequestDto.LoginRequest;
-import com.jeju.nanaland.domain.member.dto.MemberResponseDto.LoginResponse;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.global.ApiResponse;
 import com.jeju.nanaland.global.exception.SuccessCode;
+import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +23,9 @@ public class MemberController {
   private final MemberLoginService memberLoginService;
 
   @PostMapping("/login")
-  public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-    LoginResponse loginResponse = memberLoginService.login(loginRequest);
-    return ApiResponse.success(SuccessCode.LOGIN_SUCCESS, loginResponse);
+  public ApiResponse<JwtDto> login(@RequestBody @Valid LoginRequest loginRequest) {
+    JwtDto jwtDto = memberLoginService.login(loginRequest);
+    return ApiResponse.success(SuccessCode.LOGIN_SUCCESS, jwtDto);
   }
 
   @GetMapping("/reissue")
