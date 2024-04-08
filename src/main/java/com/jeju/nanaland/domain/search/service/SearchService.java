@@ -46,7 +46,7 @@ public class SearchService {
         .build();
   }
 
-  private SearchResponse.ResultDto getStaySearchResultDto(String title, String locale,
+  public SearchResponse.ResultDto getStaySearchResultDto(String title, String locale,
       Pageable pageable) {
 
     Page<StayCompositeDto> ResultDto = stayRepository.searchCompositeDtoByTitle(title, locale,
@@ -68,7 +68,7 @@ public class SearchService {
         .build();
   }
 
-  private SearchResponse.ResultDto getNatureSearchResultDto(String title, String locale,
+  public SearchResponse.ResultDto getNatureSearchResultDto(String title, String locale,
       Pageable pageable) {
 
     Page<NatureCompositeDto> ResultDto = natureRepository.searchCompositeDtoByTitle(title, locale,
@@ -90,7 +90,7 @@ public class SearchService {
         .build();
   }
 
-  private SearchResponse.ResultDto getFestivalSearchResultDto(String title, String locale,
+  public SearchResponse.ResultDto getFestivalSearchResultDto(String title, String locale,
       Pageable pageable) {
 
     Page<FestivalCompositeDto> ResultDto = festivalRepository.searchCompositeDtoByTitle(title,
@@ -113,7 +113,7 @@ public class SearchService {
         .build();
   }
 
-  private SearchResponse.ResultDto getExperienceSearchResultDto(String title, String locale,
+  public SearchResponse.ResultDto getExperienceSearchResultDto(String title, String locale,
       Pageable pageable) {
 
     Page<ExperienceCompositeDto> ResultDto = experienceRepository.searchCompositeDtoByTitle(title,
@@ -135,7 +135,7 @@ public class SearchService {
         .build();
   }
 
-  private SearchResponse.ResultDto getMarketSearchResultDto(String title, String locale,
+  public SearchResponse.ResultDto getMarketSearchResultDto(String title, String locale,
       Pageable pageable) {
 
     Page<MarketCompositeDto> ResultDto = marketRepository.searchCompositeDtoByTitle(title, locale,
