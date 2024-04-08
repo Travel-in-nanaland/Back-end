@@ -67,7 +67,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.imageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .where(natureTrans.title.like(title)
+        .where(natureTrans.title.contains(title)
             .and(natureTrans.language.locale.eq(locale))
         )
         .offset(pageable.getOffset())
@@ -79,7 +79,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.imageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .where(natureTrans.title.like(title)
+        .where(natureTrans.title.contains(title)
             .and(natureTrans.language.locale.eq(locale))
         );
 

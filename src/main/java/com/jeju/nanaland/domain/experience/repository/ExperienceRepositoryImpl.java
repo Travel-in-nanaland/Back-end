@@ -67,7 +67,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.imageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .where(experienceTrans.title.like(title)
+        .where(experienceTrans.title.contains(title)
             .and(experienceTrans.language.locale.eq(locale)))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -78,7 +78,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.imageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .where(experienceTrans.title.like(title)
+        .where(experienceTrans.title.contains(title)
             .and(experienceTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);

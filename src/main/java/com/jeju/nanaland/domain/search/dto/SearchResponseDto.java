@@ -26,7 +26,7 @@ public class SearchResponseDto {
   @Builder
   public static class Result {
 
-    private Integer count;
+    private Long count;
     private List<Thumbnail> data;
   }
 
@@ -35,7 +35,6 @@ public class SearchResponseDto {
   public static class Thumbnail {
 
     private Long id;
-    private String category;
     private String thumbnailUrl;
     private String title;
   }

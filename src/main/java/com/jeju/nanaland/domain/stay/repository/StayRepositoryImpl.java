@@ -67,7 +67,7 @@ public class StayRepositoryImpl implements StayRepositoryCustom {
         .from(stay)
         .leftJoin(stay.imageFile, imageFile)
         .leftJoin(stay.stayTrans, stayTrans)
-        .where(stayTrans.title.like(title)
+        .where(stayTrans.title.contains(title)
             .and(stayTrans.language.locale.eq(locale)))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -78,7 +78,7 @@ public class StayRepositoryImpl implements StayRepositoryCustom {
         .from(stay)
         .leftJoin(stay.imageFile, imageFile)
         .leftJoin(stay.stayTrans, stayTrans)
-        .where(stayTrans.title.like(title)
+        .where(stayTrans.title.contains(title)
             .and(stayTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);

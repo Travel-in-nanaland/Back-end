@@ -66,7 +66,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .where(festivalTrans.title.like(title)
+        .where(festivalTrans.title.contains(title)
             .and(festivalTrans.language.locale.eq(locale)))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -77,7 +77,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .where(festivalTrans.title.like(title)
+        .where(festivalTrans.title.contains(title)
             .and(festivalTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);

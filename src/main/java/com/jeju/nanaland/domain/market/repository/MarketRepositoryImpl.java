@@ -65,7 +65,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .from(market)
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.title.like(title)
+        .where(marketTrans.title.contains(title)
             .and(marketTrans.language.locale.eq(locale)))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -75,7 +75,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .select(market.count())
         .from(market)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.title.like(title)
+        .where(marketTrans.title.contains(title)
             .and(marketTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);

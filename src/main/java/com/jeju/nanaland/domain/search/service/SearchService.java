@@ -55,13 +55,12 @@ public class SearchService {
           Thumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
-              .category("STAY")
               .title(dto.getTitle())
               .build());
     }
 
     return SearchResponseDto.Result.builder()
-        .count(thumbnails.size())
+        .count(result.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -78,13 +77,12 @@ public class SearchService {
           Thumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
-              .category("NATURE")
               .title(dto.getTitle())
               .build());
     }
 
     return SearchResponseDto.Result.builder()
-        .count(thumbnails.size())
+        .count(result.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -101,13 +99,12 @@ public class SearchService {
           Thumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
-              .category("FESTIVAL")
               .title(dto.getTitle())
               .build());
     }
 
     return SearchResponseDto.Result.builder()
-        .count(thumbnails.size())
+        .count(result.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -124,13 +121,12 @@ public class SearchService {
           Thumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
-              .category("EXPERIENCE")
               .title(dto.getTitle())
               .build());
     }
 
     return SearchResponseDto.Result.builder()
-        .count(thumbnails.size())
+        .count(result.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -147,13 +143,12 @@ public class SearchService {
           Thumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
-              .category("MARKET")
               .title(dto.getTitle())
               .build());
     }
 
     return SearchResponseDto.Result.builder()
-        .count(thumbnails.size())
+        .count(result.getTotalElements())
         .data(thumbnails)
         .build();
   }
