@@ -44,7 +44,7 @@ public class SecurityConfig {
 
     http
         .authorizeHttpRequests(authHttpRequests -> authHttpRequests
-            .requestMatchers("/login", "/reissue")
+            .requestMatchers("/member/login", "/member/reissue")
             .permitAll()
             .anyRequest().authenticated());
 
