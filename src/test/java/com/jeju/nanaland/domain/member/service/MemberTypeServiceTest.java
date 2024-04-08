@@ -58,11 +58,11 @@ class MemberTypeServiceTest {
      */
     String type = "GAMGYUL";
     memberTypeService.updateMemberType(member.getId(), type);
-    Member result = memberRepository.findById(member.getId()).get();
+    Member ResultDto = memberRepository.findById(member.getId()).get();
 
     /**
      * then
      */
-    Assertions.assertThat(result.getType()).isEqualTo(MemberType.GAMGYUL);
+    Assertions.assertThat(ResultDto.getType()).isEqualTo(MemberType.GAMGYUL);
   }
 }

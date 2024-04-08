@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-public class MemberRequestDto {
+public class MemberRequest {
 
   @Data
-  public static class UpdateType {
+  public static class UpdateTypeDto {
 
     @NotBlank
     @EnumValid(

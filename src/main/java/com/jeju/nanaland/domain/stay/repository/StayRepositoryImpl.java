@@ -49,7 +49,7 @@ public class StayRepositoryImpl implements StayRepositoryCustom {
   public Page<StayCompositeDto> searchCompositeDtoByTitle(String title, String locale,
       Pageable pageable) {
 
-    List<StayCompositeDto> result = queryFactory
+    List<StayCompositeDto> ResultDto = queryFactory
         .select(new QStayCompositeDto(
             stay.id,
             imageFile.originUrl,
@@ -81,6 +81,6 @@ public class StayRepositoryImpl implements StayRepositoryCustom {
         .where(stayTrans.title.contains(title)
             .and(stayTrans.language.locale.eq(locale)));
 
-    return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
   }
 }

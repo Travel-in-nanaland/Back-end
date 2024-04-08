@@ -3,8 +3,8 @@ package com.jeju.nanaland.domain.member.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
-import com.jeju.nanaland.domain.member.dto.MemberRequestDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponseDto.RecommendedPosts;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendedPostsDto;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.ApiResponse;
 import jakarta.validation.Valid;
@@ -28,7 +28,7 @@ public class MemberController {
 
   @PatchMapping("/type")
   public ApiResponse<Null> updateMemberType(
-      @RequestBody @Valid MemberRequestDto.UpdateType request) {
+      @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
     /**
      * memberId = 1 로 임시로 설정
      * TODO: AccessToken 연동
@@ -39,13 +39,13 @@ public class MemberController {
   }
 
   @GetMapping("/recommended")
-  public ApiResponse<List<RecommendedPosts>> getRecommendedPosts() {
+  public ApiResponse<List<RecommendedPostsDto>> getRecommendedPosts() {
     /**
      * memberId = 1 로 임시로 설정
      * TODO: AccessToken 연동
      */
     Long memberId = 1L;
-    List<RecommendedPosts> result = memberTypeService.getRecommendedPostsByType(memberId);
-    return ApiResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+    List<RecommendedPostsDto> ResultDto = memberTypeService.getRecommendedPostsByType(memberId);
+    return ApiResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, ResultDto);
   }
 }

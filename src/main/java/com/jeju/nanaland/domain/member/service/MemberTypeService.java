@@ -6,7 +6,7 @@ import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
-import com.jeju.nanaland.domain.member.dto.MemberResponseDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
@@ -41,7 +41,7 @@ public class MemberTypeService {
     member.updateMemberType(MemberType.valueOf(type));
   }
 
-  public List<MemberResponseDto.RecommendedPosts> getRecommendedPostsByType(Long memberId) {
+  public List<MemberResponse.RecommendedPostsDto> getRecommendedPostsByType(Long memberId) {
 
     Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
 
@@ -49,15 +49,15 @@ public class MemberTypeService {
     String locale = member.getLanguage().getLocale();
 
     // memberType에 저장된 Pair<카테고리, Id>를 순회하며 DTO 추가
-    List<MemberResponseDto.RecommendedPosts> result = new ArrayList<>();
+    List<MemberResponse.RecommendedPostsDto> ResultDto = new ArrayList<>();
     for (Pair<String, Long> recommendPost : type.getRecommendPosts()) {
-      result.add(getRecommendedPostDto(recommendPost, locale));
+      ResultDto.add(getRecommendedPostDto(recommendPost, locale));
     }
 
-    return result;
+    return ResultDto;
   }
 
-  private MemberResponseDto.RecommendedPosts getRecommendedPostDto(Pair<String, Long> recommendPost,
+  private MemberResponse.RecommendedPostsDto getRecommendedPostDto(Pair<String, Long> recommendPost,
       String locale) {
 
     String category = recommendPost.getFirst();
@@ -69,7 +69,7 @@ public class MemberTypeService {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
 
-        return MemberResponseDto.RecommendedPosts.builder()
+        return MemberResponse.RecommendedPostsDto.builder()
             .id(dto.getId())
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
@@ -83,7 +83,7 @@ public class MemberTypeService {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
 
-        return MemberResponseDto.RecommendedPosts.builder()
+        return MemberResponse.RecommendedPostsDto.builder()
             .id(dto.getId())
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
@@ -97,7 +97,7 @@ public class MemberTypeService {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
 
-        return MemberResponseDto.RecommendedPosts.builder()
+        return MemberResponse.RecommendedPostsDto.builder()
             .id(dto.getId())
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())
@@ -111,7 +111,7 @@ public class MemberTypeService {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
 
-        return MemberResponseDto.RecommendedPosts.builder()
+        return MemberResponse.RecommendedPostsDto.builder()
             .id(dto.getId())
             .category(category)
             .thumbnailUrl(dto.getThumbnailUrl())

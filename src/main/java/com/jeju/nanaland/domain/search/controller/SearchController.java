@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.search.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 
-import com.jeju.nanaland.domain.search.dto.SearchResponseDto;
+import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +21,10 @@ public class SearchController {
   private final SearchService searchService;
 
   @GetMapping("/category")
-  public ApiResponse<SearchResponseDto.Category> searchCategory(String title, Pageable pageable) {
+  public ApiResponse<SearchResponse.CategoryDto> searchCategory(String title, Pageable pageable) {
 
     String locale = "KOREAN";
     return ApiResponse.success(SEARCH_SUCCESS,
-        searchService.getCategorySearchResult(title, locale, pageable));
+        searchService.getCategorySearchResultDto(title, locale, pageable));
   }
 }

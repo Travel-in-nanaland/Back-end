@@ -3,11 +3,11 @@ package com.jeju.nanaland.domain.member.dto;
 import lombok.Builder;
 import lombok.Data;
 
-public class MemberResponseDto {
+public class MemberResponse {
 
   @Data
   @Builder
-  public static class RecommendedPosts {
+  public static class RecommendedPostsDto {
 
     private Long id;
     private String category;

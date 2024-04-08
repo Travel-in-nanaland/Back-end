@@ -17,7 +17,7 @@ public class EnumValidator implements ConstraintValidator<EnumValid, String> {
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
 
-    boolean result = false;
+    boolean ResultDto = false;
     // 해당 Enum 클래스의 모든 상수를 반환
     Enum<?>[] enumValues = this.enumValid.enumClass().getEnumConstants();
 
@@ -27,12 +27,12 @@ public class EnumValidator implements ConstraintValidator<EnumValid, String> {
         if (value.equals(enumValue.toString()) ||
             this.enumValid.ignoreCase() && value.equalsIgnoreCase(enumValue.toString())) {
 
-          result = true;
+          ResultDto = true;
           break;
         }
       }
     }
 
-    return result;
+    return ResultDto;
   }
 }

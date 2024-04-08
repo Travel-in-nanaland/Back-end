@@ -67,8 +67,8 @@ public class ControllerAdvice {
 
     //에러가 있다면
     if (bindingResult.hasErrors()) {
-      String bindResultCode = bindingResult.getFieldError().getCode();
-      switch (bindResultCode) {
+      String bindResultDtoCode = bindingResult.getFieldError().getCode();
+      switch (bindResultDtoCode) {
         case "NotNull":
           description = "필수 값을 채워주세요.";
           break;
