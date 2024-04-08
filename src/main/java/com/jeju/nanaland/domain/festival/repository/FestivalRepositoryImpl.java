@@ -68,6 +68,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festivalTrans.title.contains(title)
             .and(festivalTrans.language.locale.eq(locale)))
+        .orderBy(festivalTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

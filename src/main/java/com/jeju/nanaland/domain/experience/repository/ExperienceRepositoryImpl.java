@@ -69,6 +69,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.experienceTrans, experienceTrans)
         .where(experienceTrans.title.contains(title)
             .and(experienceTrans.language.locale.eq(locale)))
+        .orderBy(experienceTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

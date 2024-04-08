@@ -67,6 +67,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.marketTrans, marketTrans)
         .where(marketTrans.title.contains(title)
             .and(marketTrans.language.locale.eq(locale)))
+        .orderBy(marketTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

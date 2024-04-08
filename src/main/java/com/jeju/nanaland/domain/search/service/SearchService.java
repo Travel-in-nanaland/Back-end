@@ -17,6 +17,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +32,10 @@ public class SearchService {
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
 
-  public SearchResponse.CategoryDto getCategorySearchResultDto(String title, String locale,
-      Pageable pageable) {
+  public SearchResponse.CategoryDto getCategorySearchResultDto(String title, String locale) {
+
+    // offset: 0, pageSize: 2
+    Pageable pageable = PageRequest.of(0, 2);
 
     return SearchResponse.CategoryDto.builder()
         .stay(getStaySearchResultDto(title, locale, pageable))

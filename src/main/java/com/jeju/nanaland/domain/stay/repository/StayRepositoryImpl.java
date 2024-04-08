@@ -69,6 +69,7 @@ public class StayRepositoryImpl implements StayRepositoryCustom {
         .leftJoin(stay.stayTrans, stayTrans)
         .where(stayTrans.title.contains(title)
             .and(stayTrans.language.locale.eq(locale)))
+        .orderBy(stayTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

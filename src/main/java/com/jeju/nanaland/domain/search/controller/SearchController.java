@@ -7,7 +7,6 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,10 +20,10 @@ public class SearchController {
   private final SearchService searchService;
 
   @GetMapping("/category")
-  public ApiResponse<SearchResponse.CategoryDto> searchCategory(String title, Pageable pageable) {
+  public ApiResponse<SearchResponse.CategoryDto> searchCategory(String title) {
 
     String locale = "KOREAN";
     return ApiResponse.success(SEARCH_SUCCESS,
-        searchService.getCategorySearchResultDto(title, locale, pageable));
+        searchService.getCategorySearchResultDto(title, locale));
   }
 }
