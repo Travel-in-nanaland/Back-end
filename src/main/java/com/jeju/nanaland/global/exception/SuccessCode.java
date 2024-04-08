@@ -16,7 +16,10 @@ public enum SuccessCode {
 
   // member type service
   UPDATE_MEMBER_TYPE_SUCCESS(OK, "사용자 타입 업데이트에 성공했습니다."),
-  GET_RECOMMENDED_POSTS_SUCCESS(OK, "사용자 추천 게시물 조회에 성공했습니다.");
+  GET_RECOMMENDED_POSTS_SUCCESS(OK, "사용자 추천 게시물 조회에 성공했습니다."),
+
+  // search
+  SEARCH_SUCCESS(OK, "검색에 성공했습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;

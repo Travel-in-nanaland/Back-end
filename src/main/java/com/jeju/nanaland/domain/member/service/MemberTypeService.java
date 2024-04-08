@@ -64,7 +64,7 @@ public class MemberTypeService {
     Long id = recommendPost.getSecond();
     switch (category) {
       case "NATURE" -> {
-        NatureCompositeDto dto = natureRepository.findNatureCompositeDto(id, locale);
+        NatureCompositeDto dto = natureRepository.findCompositeDtoById(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
@@ -78,7 +78,7 @@ public class MemberTypeService {
             .build();
       }
       case "FESTIVAL" -> {
-        FestivalCompositeDto dto = festivalRepository.findFestivalCompositeDto(id, locale);
+        FestivalCompositeDto dto = festivalRepository.findCompositeDtoById(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
@@ -92,7 +92,7 @@ public class MemberTypeService {
             .build();
       }
       case "EXPERIENCE" -> {
-        ExperienceCompositeDto dto = experienceRepository.findExperienceCompositeDto(id, locale);
+        ExperienceCompositeDto dto = experienceRepository.findCompositeDtoById(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
@@ -106,7 +106,7 @@ public class MemberTypeService {
             .build();
       }
       case "MARKET" -> {
-        MarketCompositeDto dto = marketRepository.findMarketCompositeDto(id, locale);
+        MarketCompositeDto dto = marketRepository.findCompositeDtoById(id, locale);
         if (dto == null) {
           throw new ServerErrorException("해당 관광지 정보가 존재하지 않습니다.");
         }
