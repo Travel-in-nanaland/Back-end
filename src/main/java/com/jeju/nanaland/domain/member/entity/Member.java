@@ -73,7 +73,7 @@ public class Member extends BaseEntity {
   private List<Favorite> favorites;
 
   @Builder
-  protected Member(Language language, String email, String password, ImageFile profileImageFile,
+  public Member(Language language, String email, String password, ImageFile profileImageFile,
       String nickname, String description, MemberType type) {
     this.language = language;
     this.email = email;
