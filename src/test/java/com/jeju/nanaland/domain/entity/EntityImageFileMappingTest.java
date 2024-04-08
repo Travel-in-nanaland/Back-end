@@ -4,9 +4,11 @@ package com.jeju.nanaland.domain.entity;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
 import com.jeju.nanaland.domain.stay.entity.Stay;
@@ -14,18 +16,17 @@ import com.jeju.nanaland.domain.story.entity.Story;
 import com.jeju.nanaland.domain.story.entity.StoryCategory;
 import com.jeju.nanaland.domain.story.entity.StoryImageFile;
 import jakarta.persistence.EntityManager;
-import java.util.UUID;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-public class EntityImageFileMappingTest {
+class EntityImageFileMappingTest {
 
-  @Autowired
+  @PersistenceContext
   EntityManager em;
 
   Language language;
@@ -39,7 +40,7 @@ public class EntityImageFileMappingTest {
   @BeforeEach
   void init() {
     language = Language.builder()
-        .locale(UUID.randomUUID().toString())
+        .locale(Locale.KOREAN)
         .dateFormat("yyyy-mm-dd")
         .build();
     em.persist(language);
@@ -59,8 +60,9 @@ public class EntityImageFileMappingTest {
         .language(language)
         .profileImageFile(imageFile1)
         .email("email")
-        .password("password")
         .nickname("nickname")
+        .provider(Provider.KAKAO)
+        .providerId(1L)
         .build();
     em.persist(member);
   }

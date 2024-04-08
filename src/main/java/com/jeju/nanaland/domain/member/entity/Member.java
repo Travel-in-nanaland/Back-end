@@ -18,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,12 +39,8 @@ public class Member extends BaseEntity {
   private Language language;
 
   @NotBlank
-  @Column(nullable = false, unique = true, updatable = false)
+  @Column(nullable = false, unique = true)
   private String email;
-
-  @NotBlank
-  @Column(nullable = false)
-  private String password;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "image_file_id", nullable = false)
@@ -55,32 +52,44 @@ public class Member extends BaseEntity {
 
   private String description;
 
+  private String gender;
+  private LocalDate birthDate;
+
+  @NotNull
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private Provider provider;
+
+  @NotNull
+  @Column(nullable = false)
+  private Long providerId;
+
   @ElementCollection(targetClass = Role.class)
   @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "member_id"))
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
-  @Column(columnDefinition = "TEXT")
-  private String accessToken;
-
-  @Column(columnDefinition = "TEXT")
-  private String refreshToken;
-
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
 
   @Builder
-  public Member(Language language, String email, String password, ImageFile profileImageFile,
-      String nickname, String description) {
+  public Member(Language language, String email, ImageFile profileImageFile,
+      String nickname, String description, String gender, LocalDate birthDate,
+      Provider provider, Long providerId) {
     this.language = language;
     this.email = email;
-    this.password = password;
     this.profileImageFile = profileImageFile;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
+    this.gender = (gender != null) ? gender : "";
+    this.birthDate = birthDate;
+    this.provider = provider;
+    this.providerId = providerId;
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
-    this.accessToken = "";
-    this.refreshToken = "";
     this.favorites = new ArrayList<>();
+  }
+
+  public void updateEmail(String email) {
+    this.email = email;
   }
 }
