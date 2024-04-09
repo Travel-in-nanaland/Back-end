@@ -18,6 +18,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,21 +54,19 @@ public class MemberController {
 
   @PatchMapping("/type")
   public ApiResponse<Null> updateMemberType(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken,
+      @AuthenticationPrincipal User user,
       @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
 
-    String token = jwtProvider.resolveToken(accessToken);
-    Long memberId = Long.valueOf(jwtProvider.getMemberIdFromAccess(token));
+    Long memberId = Long.parseLong(user.getUsername());
     memberTypeService.updateMemberType(memberId, request.getType());
     return ApiResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
   @GetMapping("/recommended")
   public ApiResponse<List<RecommendPostDto>> getRecommendedPosts(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
+      @AuthenticationPrincipal User user) {
 
-    String token = jwtProvider.resolveToken(accessToken);
-    Long memberId = Long.valueOf(jwtProvider.getMemberIdFromAccess(token));
+    Long memberId = Long.parseLong(user.getUsername());
     java.util.List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberId);
     return ApiResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
