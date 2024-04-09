@@ -31,8 +31,10 @@ public class MemberLoginService {
 
     Member member = getOrCreateMember(loginDto);
 
-    String accessToken = jwtProvider.getAccessToken(String.valueOf(member.getId()));
-    String refreshToken = jwtProvider.getRefreshToken(String.valueOf(member.getId()));
+    String accessToken = jwtProvider.getAccessToken(String.valueOf(member.getId()),
+        member.getRoleSet());
+    String refreshToken = jwtProvider.getRefreshToken(String.valueOf(member.getId()),
+        member.getRoleSet());
 
     return JwtDto.builder()
         .accessToken(accessToken)
@@ -102,6 +104,9 @@ public class MemberLoginService {
       throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
     }
 
-    return jwtProvider.getAccessToken(memberId);
+    Member member = memberRepository.findById(Long.valueOf(memberId))
+        .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+
+    return jwtProvider.getAccessToken(memberId, member.getRoleSet());
   }
 }
