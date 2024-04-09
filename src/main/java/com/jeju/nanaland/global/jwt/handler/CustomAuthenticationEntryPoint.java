@@ -1,7 +1,7 @@
 package com.jeju.nanaland.global.jwt.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jeju.nanaland.global.ApiResponse;
+import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,11 +25,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException authException) throws IOException, ServletException {
-    ApiResponse<Void> apiResponse = ApiResponse.error(ErrorCode.INVALID_TOKEN);
+    BaseResponse<Void> baseResponse = BaseResponse.error(ErrorCode.INVALID_TOKEN);
 
-    response.setStatus(apiResponse.getStatus());
+    response.setStatus(baseResponse.getStatus());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+    response.getWriter().write(objectMapper.writeValueAsString(baseResponse));
   }
 }

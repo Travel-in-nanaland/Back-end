@@ -1,6 +1,6 @@
 package com.jeju.nanaland.global.exception;
 
-import com.jeju.nanaland.global.ApiResponse;
+import com.jeju.nanaland.global.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,33 +14,33 @@ public class ControllerAdvice {
   // 400에러 (valid exception)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ApiResponse<String> methodValidException(MethodArgumentNotValidException e) {
+  public BaseResponse<String> methodValidException(MethodArgumentNotValidException e) {
     String errorMessage = makeErrorResponse(e.getBindingResult());
-    return ApiResponse.error(ErrorCode.REQUEST_VALIDATION_EXCEPTION, errorMessage);
+    return BaseResponse.error(ErrorCode.REQUEST_VALIDATION_EXCEPTION, errorMessage);
 
   }
 
   //400에러 (bad request)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(BadRequestException.class)
-  public ApiResponse<String> handleBadRequestException(BadRequestException e) {
-    return ApiResponse.error(ErrorCode.BAD_REQUEST_EXCEPTION, e.getMessage());
+  public BaseResponse<String> handleBadRequestException(BadRequestException e) {
+    return BaseResponse.error(ErrorCode.BAD_REQUEST_EXCEPTION, e.getMessage());
   }
 
 
   //401에러
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   @ExceptionHandler(UnauthorizedException.class)
-  public ApiResponse<String> handleUnauthorizedException(UnauthorizedException e) {
-    return ApiResponse.error(ErrorCode.EXPIRED_TOKEN, e.getMessage());
+  public BaseResponse<String> handleUnauthorizedException(UnauthorizedException e) {
+    return BaseResponse.error(ErrorCode.EXPIRED_TOKEN, e.getMessage());
   }
 
   //415에러 (파일 확장자 오류)
   @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
   @ExceptionHandler(UnsupportedFileFormatException.class)
-  public ApiResponse<String> handleUnsupportedFileFormatException(
+  public BaseResponse<String> handleUnsupportedFileFormatException(
       UnsupportedFileFormatException e) {
-    return ApiResponse.error(ErrorCode.UNSUPPORTED_FILE_FORMAT, e.getMessage());
+    return BaseResponse.error(ErrorCode.UNSUPPORTED_FILE_FORMAT, e.getMessage());
   }
 
   private String makeErrorResponse(BindingResult bindingResult) {

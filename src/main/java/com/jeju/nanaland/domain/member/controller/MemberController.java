@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.member.controller;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
-import com.jeju.nanaland.global.ApiResponse;
+import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.exception.SuccessCode;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,17 +29,17 @@ public class MemberController {
 
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")
   @PostMapping("/login")
-  public ApiResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
+  public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
     JwtDto jwtDto = memberLoginService.login(loginDto);
-    return ApiResponse.success(SuccessCode.LOGIN_SUCCESS, jwtDto);
+    return BaseResponse.success(SuccessCode.LOGIN_SUCCESS, jwtDto);
   }
 
   @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다.")
   @GetMapping("/reissue")
-  public ApiResponse<String> reissue(
+  public BaseResponse<String> reissue(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
     String newAccessToken = memberLoginService.reissue(refreshToken);
-    return ApiResponse.success(SuccessCode.ACCESS_TOKEN_SUCCESS, newAccessToken);
+    return BaseResponse.success(SuccessCode.ACCESS_TOKEN_SUCCESS, newAccessToken);
   }
 }
 
