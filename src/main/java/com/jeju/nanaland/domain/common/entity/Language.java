@@ -2,7 +2,10 @@ package com.jeju.nanaland.domain.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +19,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Language extends BaseEntity {
 
-  @NotBlank
+  @NotNull
   @Column(nullable = false, unique = true)
-  private String locale;
+  @Enumerated(EnumType.STRING)
+  private Locale locale;
 
   @NotBlank
   @Column(nullable = false)

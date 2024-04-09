@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.entity;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.festival.entity.Festival;
@@ -15,17 +16,17 @@ import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import com.jeju.nanaland.domain.stay.entity.Stay;
 import com.jeju.nanaland.domain.stay.entity.StayTrans;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-public class EntityBuilderTest {
+class EntityBuilderTest {
 
-  @Autowired
+  @PersistenceContext
   EntityManager em;
 
   Language language;
@@ -35,7 +36,7 @@ public class EntityBuilderTest {
   @BeforeEach
   void init() {
     language = Language.builder()
-        .locale("kr")
+        .locale(Locale.KOREAN)
         .dateFormat("yyyy-mm-dd")
         .build();
     em.persist(language);

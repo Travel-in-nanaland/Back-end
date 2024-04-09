@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,8 +17,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public ExperienceCompositeDto findExperienceCompositeDto(Long id,
-      String locale) {
+  public ExperienceCompositeDto findExperienceCompositeDto(Long id, Locale locale) {
     return queryFactory
         .select(new QExperienceCompositeDto(
             experience.id,
