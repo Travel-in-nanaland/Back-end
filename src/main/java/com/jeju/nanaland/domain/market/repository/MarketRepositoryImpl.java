@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.market.entity.QMarket.market;
 import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -21,7 +22,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public MarketCompositeDto findCompositeDtoById(Long id, String locale) {
+  public MarketCompositeDto findCompositeDtoById(Long id, Locale locale) {
     return queryFactory
         .select(new QMarketCompositeDto(
             market.id,
@@ -45,7 +46,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, String locale,
+  public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
     List<MarketCompositeDto> ResultDto = queryFactory
         .select(new QMarketCompositeDto(

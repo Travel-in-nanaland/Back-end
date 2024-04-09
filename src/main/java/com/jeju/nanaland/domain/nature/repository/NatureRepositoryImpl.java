@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -21,7 +22,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public NatureCompositeDto findCompositeDtoById(Long id, String locale) {
+  public NatureCompositeDto findCompositeDtoById(Long id, Locale locale) {
     return queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
@@ -47,7 +48,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureCompositeDto> searchCompositeDtoByTitle(String title, String locale,
+  public Page<NatureCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
     List<NatureCompositeDto> ResultDto = queryFactory
         .select(new QNatureCompositeDto(

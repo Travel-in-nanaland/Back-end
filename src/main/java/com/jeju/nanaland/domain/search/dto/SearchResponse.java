@@ -10,7 +10,6 @@ public class SearchResponse {
   @Builder
   public static class CategoryDto {
 
-    private ResultDto stay;
     private ResultDto festival;
     private ResultDto nature;
     private ResultDto experience;

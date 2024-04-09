@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.festival.entity.QFestival.festival;
 import static com.jeju.nanaland.domain.festival.entity.QFestivalTrans.festivalTrans;
 
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -21,7 +22,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public FestivalCompositeDto findCompositeDtoById(Long id, String locale) {
+  public FestivalCompositeDto findCompositeDtoById(Long id, Locale locale) {
     return queryFactory
         .select(new QFestivalCompositeDto(
             festival.id,
@@ -45,7 +46,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByTitle(String title, String locale,
+  public Page<FestivalCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
 
     List<FestivalCompositeDto> ResultDto = queryFactory

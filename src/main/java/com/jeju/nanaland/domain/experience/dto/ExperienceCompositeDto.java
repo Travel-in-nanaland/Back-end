@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.experience.dto;
 
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -24,16 +25,15 @@ public class ExperienceCompositeDto {
   private String amenity;
 
   @QueryProjection
-  public ExperienceCompositeDto(Long id, String originUrl, String thumbnailUrl,
-      String contact,
-      Float ratingAvg, String locale, String title, String content, String address, String intro,
+  public ExperienceCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
+      Float ratingAvg, Locale locale, String title, String content, String address, String intro,
       String details, String time, String amenity) {
     this.id = id;
     this.originUrl = originUrl;
     this.thumbnailUrl = thumbnailUrl;
     this.contact = contact;
     this.ratingAvg = ratingAvg;
-    this.locale = locale;
+    this.locale = locale.toString();
     this.title = title;
     this.content = content;
     this.address = address;

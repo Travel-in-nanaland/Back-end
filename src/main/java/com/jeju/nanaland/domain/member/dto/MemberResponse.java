@@ -7,7 +7,7 @@ public class MemberResponse {
 
   @Data
   @Builder
-  public static class RecommendedPostsDto {
+  public static class RecommendPostDto {
 
     private Long id;
     private String category;
