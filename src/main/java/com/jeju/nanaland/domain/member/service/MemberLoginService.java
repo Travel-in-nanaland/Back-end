@@ -9,7 +9,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
-import com.jeju.nanaland.global.jwt.JwtProvider;
+import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.util.Optional;
 import java.util.Random;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
-  private final JwtProvider jwtProvider;
+  private final JwtUtil jwtUtil;
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
 
@@ -31,9 +31,9 @@ public class MemberLoginService {
 
     Member member = getOrCreateMember(loginDto);
 
-    String accessToken = jwtProvider.getAccessToken(String.valueOf(member.getId()),
+    String accessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
         member.getRoleSet());
-    String refreshToken = jwtProvider.getRefreshToken(String.valueOf(member.getId()),
+    String refreshToken = jwtUtil.getRefreshToken(String.valueOf(member.getId()),
         member.getRoleSet());
 
     return JwtDto.builder()
@@ -91,14 +91,14 @@ public class MemberLoginService {
   }
 
   public String reissue(String bearerRefreshToken) {
-    String refreshToken = jwtProvider.resolveToken(bearerRefreshToken);
+    String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
-    if (!jwtProvider.verifyRefreshToken(refreshToken)) {
+    if (!jwtUtil.verifyRefreshToken(refreshToken)) {
       throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
     }
 
-    String memberId = jwtProvider.getMemberIdFromRefresh(refreshToken);
-    String savedRefreshToken = jwtProvider.findRefreshTokenById(memberId);
+    String memberId = jwtUtil.getMemberIdFromRefresh(refreshToken);
+    String savedRefreshToken = jwtUtil.findRefreshTokenById(memberId);
 
     if (!refreshToken.equals(savedRefreshToken)) {
       throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
@@ -107,6 +107,6 @@ public class MemberLoginService {
     Member member = memberRepository.findById(Long.valueOf(memberId))
         .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
-    return jwtProvider.getAccessToken(memberId, member.getRoleSet());
+    return jwtUtil.getAccessToken(memberId, member.getRoleSet());
   }
 }

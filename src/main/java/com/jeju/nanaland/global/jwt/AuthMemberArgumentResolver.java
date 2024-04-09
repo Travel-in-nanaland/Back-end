@@ -17,7 +17,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
-  private final JwtProvider jwtProvider;
+  private final JwtUtil jwtUtil;
   private final MemberRepository memberRepository;
 
   @Override
@@ -31,8 +31,8 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
   public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
     String bearerAccessToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
-    String accessToken = jwtProvider.resolveToken(bearerAccessToken);
-    String memberId = jwtProvider.getMemberIdFromAccess(accessToken);
+    String accessToken = jwtUtil.resolveToken(bearerAccessToken);
+    String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
     return memberRepository.findById(Long.valueOf(memberId))
         .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
   }
