@@ -8,9 +8,11 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
+import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.ApiResponse;
+import com.jeju.nanaland.global.jwt.AuthMember;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
@@ -18,8 +20,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,20 +53,18 @@ public class MemberController {
 
   @PatchMapping("/type")
   public ApiResponse<Null> updateMemberType(
-      @AuthenticationPrincipal User user,
+      @AuthMember Member member,
       @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
 
-    Long memberId = Long.parseLong(user.getUsername());
-    memberTypeService.updateMemberType(memberId, request.getType());
+    memberTypeService.updateMemberType(member.getId(), request.getType());
     return ApiResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
   @GetMapping("/recommended")
   public ApiResponse<List<RecommendPostDto>> getRecommendedPosts(
-      @AuthenticationPrincipal User user) {
+      @AuthMember Member member) {
 
-    Long memberId = Long.parseLong(user.getUsername());
-    java.util.List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberId);
+    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(member.getId());
     return ApiResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 }
