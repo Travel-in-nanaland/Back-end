@@ -11,13 +11,18 @@ import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +34,7 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
+  private final RedisTemplate<String, String> redisTemplate;
 
   public SearchResponse.CategoryDto getCategorySearchResultDto(String title, Locale locale) {
 
@@ -67,6 +73,8 @@ public class SearchService {
 
   public SearchResponse.ResultDto getFestivalSearchResultDto(String title, Locale locale,
       Pageable pageable) {
+    // Redis에 해당 검색어 count + 1
+    updateSearchCount(title, locale);
 
     Page<FestivalCompositeDto> ResultDto = festivalRepository.searchCompositeDtoByTitle(title,
         locale,
@@ -130,5 +138,36 @@ public class SearchService {
         .count(ResultDto.getTotalElements())
         .data(thumbnails)
         .build();
+  }
+
+  public List<String> getPopularSearch(Locale locale) {
+    String language = locale.name();
+    String key = "ranking_" + language;
+
+    // 가장 검색어가 많은 8개
+    ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+    Set<TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores(key, 0, 7);
+    if (typedTuples != null) {
+      List<String> rankList = new ArrayList<>();
+      for (TypedTuple<String> typedTuple : typedTuples) {
+        rankList.add(typedTuple.getValue());
+      }
+
+      return rankList;
+    }
+
+    return null;
+  }
+
+  private void updateSearchCount(String title, Locale locale) {
+    String language = locale.name();
+    String key = "ranking_" + language;
+
+    try {
+      redisTemplate.opsForZSet().incrementScore(key, title, 1);
+    } catch (Exception e) {
+      log.error("redis error {}", e.getMessage());
+      throw new ServerErrorException();
+    }
   }
 }
