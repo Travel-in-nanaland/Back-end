@@ -17,13 +17,13 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class JWTAuthenticationFilter extends BasicAuthenticationFilter {
 
-  private final JwtProvider jwtProvider;
+  private final JwtUtil jwtUtil;
 
   public JWTAuthenticationFilter(AuthenticationManager authenticationManager,
-      JwtProvider jwtProvider) {
+      JwtUtil jwtUtil) {
 
     super(authenticationManager);
-    this.jwtProvider = jwtProvider;
+    this.jwtUtil = jwtUtil;
   }
 
   @Override
@@ -31,10 +31,10 @@ public class JWTAuthenticationFilter extends BasicAuthenticationFilter {
       FilterChain chain) throws IOException, ServletException {
 
     String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-    String token = jwtProvider.resolveToken(bearerToken);
+    String token = jwtUtil.resolveToken(bearerToken);
 
-    if (StringUtils.hasLength(token) && jwtProvider.verifyAccessToken(token)) {
-      Authentication authentication = jwtProvider.getAuthentication(token);
+    if (StringUtils.hasLength(token) && jwtUtil.verifyAccessToken(token)) {
+      Authentication authentication = jwtUtil.getAuthentication(token);
       SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     chain.doFilter(request, response);
