@@ -11,6 +11,7 @@ import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -141,7 +142,11 @@ public class SearchService {
 
   public List<String> getPopularSearch(Locale locale) {
     String language = locale.name();
-    String key = "ranking_" + language;
+
+    LocalDateTime current = LocalDateTime.now();
+    String keyIdx = String.valueOf(current.getHour() % 3);
+    String key = "ranking_" + language + "_" + keyIdx;
+    log.info("keyIdx : {}", keyIdx);
 
     // 가장 검색어가 많은 8개
     ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
@@ -159,12 +164,38 @@ public class SearchService {
   }
 
   private void updateSearchCount(String title, Locale locale) {
-    /**
-     * TODO: 시간별로 key를 구성하고 업데이트
-     */
     String language = locale.name();
-    String key = "ranking_" + language;
+    String key0 = "ranking_" + language + "_0";
+    String key1 = "ranking_" + language + "_1";
+    String key2 = "ranking_" + language + "_2";
 
-    redisTemplate.opsForZSet().incrementScore(key, title, 1);
+    LocalDateTime current = LocalDateTime.now();
+    int currentHour = current.getHour();
+    switch (currentHour % 3) {
+      case 0 -> {
+        // 0번, 1번 key에 갱신
+        redisTemplate.opsForZSet().incrementScore(key0, title, 1);
+        redisTemplate.opsForZSet().incrementScore(key1, title, 1);
+
+        // 3번 key 삭제
+        redisTemplate.delete(key2);
+      }
+      case 1 -> {
+        // 1번, 2번 key에 갱신
+        redisTemplate.opsForZSet().incrementScore(key1, title, 1);
+        redisTemplate.opsForZSet().incrementScore(key2, title, 1);
+
+        // 3번 key 삭제
+        redisTemplate.delete(key0);
+      }
+      case 2 -> {
+        // 2번, 0번 key에 갱신
+        redisTemplate.opsForZSet().incrementScore(key2, title, 1);
+        redisTemplate.opsForZSet().incrementScore(key0, title, 1);
+
+        // 1번 key 삭제
+        redisTemplate.delete(key1);
+      }
+    }
   }
 }
