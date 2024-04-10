@@ -69,13 +69,16 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
+  @Enumerated(EnumType.STRING)
+  private MemberType type;
+
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
 
   @Builder
   public Member(Language language, String email, ImageFile profileImageFile,
       String nickname, String description, String gender, LocalDate birthDate,
-      Provider provider, Long providerId) {
+      Provider provider, Long providerId, MemberType type) {
     this.language = language;
     this.email = email;
     this.profileImageFile = profileImageFile;
@@ -86,7 +89,12 @@ public class Member extends BaseEntity {
     this.provider = provider;
     this.providerId = providerId;
     this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
+    this.type = type;
     this.favorites = new ArrayList<>();
+  }
+
+  public void updateMemberType(MemberType type) {
+    this.type = type;
   }
 
   public void updateEmail(String email) {

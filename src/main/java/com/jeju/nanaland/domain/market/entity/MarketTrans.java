@@ -24,14 +24,17 @@ public class MarketTrans extends CommonTrans {
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
 
+  private String intro;
+
   private String amenity;
 
   @Builder
   public MarketTrans(Market market, Language language, String title, String content, String address,
-      String time, String amenity) {
+      String time, String intro, String amenity) {
     super(title, content, address, time);
     this.market = market;
     this.language = language;
+    this.intro = intro;
     this.amenity = amenity;
   }
 }

@@ -1,18 +1,17 @@
 package com.jeju.nanaland.domain.member.dto;
 
+import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import lombok.Data;
 import lombok.Getter;
 
-
 public class MemberRequest {
-
-  private MemberRequest() {
-  }
 
   @Getter
   @Schema(description = "로그인 요청 DTO")
@@ -42,5 +41,24 @@ public class MemberRequest {
         allowableValues = {"KAKAO", "GOOGLE"})
     @NotNull
     private Long providerId;
+  }
+
+  @Data
+  @Schema(description = "타입 갱신 요청 DTO")
+  public static class UpdateTypeDto {
+
+    @NotBlank
+    @EnumValid(
+        enumClass = MemberType.class,
+        message = "테스트 결과 타입이 유효하지 않습니다."
+    )
+    @Schema(
+        description = "유저 타입",
+        example = "GAMGYUL_ICECREAM",
+        allowableValues = {"GAMGYUL_ICECREAM", "GAMGYUL_RICECAKE", "GAMGYUL", "GAMGYUL_CIDER",
+            "GAMGYUL_AFFOKATO", "GAMGYUL_HANGWA", "GAMGYUL_JUICE", "GAMGYUL_CHOCOLATE",
+            "GAMGYUL_COCKTAIL", "TANGERINE_PEEL_TEA", "GAMGYUL_YOGURT", "GAMGYUL_FLATCCINO",
+            "GAMGYUL_LATTE", "GAMGYUL_SIKHYE", "GAMGYUL_ADE", "GAMGYUL_BUBBLE_TEA"})
+    private String type;
   }
 }
