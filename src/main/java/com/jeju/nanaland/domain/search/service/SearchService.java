@@ -37,6 +37,8 @@ public class SearchService {
   private final RedisTemplate<String, String> redisTemplate;
 
   public SearchResponse.CategoryDto getCategorySearchResultDto(String title, Locale locale) {
+    // Redis에 해당 검색어 count + 1
+    updateSearchCount(title, locale);
 
     // offset: 0, pageSize: 2
     Pageable pageable = PageRequest.of(0, 2);
@@ -73,8 +75,6 @@ public class SearchService {
 
   public SearchResponse.ResultDto getFestivalSearchResultDto(String title, Locale locale,
       Pageable pageable) {
-    // Redis에 해당 검색어 count + 1
-    updateSearchCount(title, locale);
 
     Page<FestivalCompositeDto> ResultDto = festivalRepository.searchCompositeDtoByTitle(title,
         locale,
@@ -160,6 +160,9 @@ public class SearchService {
   }
 
   private void updateSearchCount(String title, Locale locale) {
+    /**
+     * TODO: 시간별로 key를 구성하고 업데이트
+     */
     String language = locale.name();
     String key = "ranking_" + language;
 
