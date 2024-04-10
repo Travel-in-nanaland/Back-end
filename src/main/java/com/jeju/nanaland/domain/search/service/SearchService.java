@@ -11,7 +11,6 @@ import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -166,11 +165,6 @@ public class SearchService {
     String language = locale.name();
     String key = "ranking_" + language;
 
-    try {
-      redisTemplate.opsForZSet().incrementScore(key, title, 1);
-    } catch (Exception e) {
-      log.error("redis error {}", e.getMessage());
-      throw new ServerErrorException();
-    }
+    redisTemplate.opsForZSet().incrementScore(key, title, 1);
   }
 }
