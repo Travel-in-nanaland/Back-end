@@ -18,13 +18,9 @@ public class Nana extends BaseEntity {
   @Column(nullable = false)
   private String version;
 
-  // 사용자한테 보여줄 게시물인가 판별
-  private boolean active;
-
   @Builder
-  public Nana(String version, boolean active) {
+  public Nana(String version) {
     this.version = version;
-    this.active = active;
   }
 }
 
