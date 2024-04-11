@@ -7,4 +7,7 @@ import java.util.List;
 public interface NanaRepositoryCustom {
 
   List<NanaResponse.ThumbnailDto> findThumbnailDto(Locale locale);
+
+  //이거 좀 어렵군요...
+//  NanaResponse.nanaDetailDto findNanaDetailById(Long id, Locale locale);
 }

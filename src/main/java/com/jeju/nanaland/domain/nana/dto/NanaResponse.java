@@ -62,5 +62,13 @@ public class NanaResponse {
     @NotBlank
     public String content;
 
+    @QueryProjection
+    public nanaDetail(int number, String subTitle, String title, String imageUrl, String content) {
+      this.number = number;
+      this.subTitle = subTitle;
+      this.title = title;
+      this.imageUrl = imageUrl;
+      this.content = content;
+    }
   }
 }
