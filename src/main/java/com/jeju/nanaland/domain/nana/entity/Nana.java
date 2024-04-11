@@ -18,9 +18,12 @@ public class Nana extends BaseEntity {
   @Column(nullable = false)
   private String version;
 
+  private boolean active;
+
   @Builder
-  public Nana(String version) {
+  public Nana(String version, boolean active) {
     this.version = version;
+    this.active = active;
   }
 }
 

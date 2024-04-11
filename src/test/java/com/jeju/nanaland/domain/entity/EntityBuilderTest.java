@@ -50,6 +50,7 @@ class EntityBuilderTest {
   void NanaBuilderTest() {
     Nana nana1 = Nana.builder()
         .version("ver.1")
+        .active(true)
         .build();
 
     em.persist(nana1);
