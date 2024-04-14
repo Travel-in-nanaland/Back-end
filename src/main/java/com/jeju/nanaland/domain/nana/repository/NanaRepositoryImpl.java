@@ -6,6 +6,7 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_ThumbnailDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -29,6 +30,21 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .where((nanaTitle.language.locale.eq(locale)))
         .orderBy(nanaTitle.createdAt.desc())
         .limit(4L)
+        .fetch();
+  }
+
+  // 모든 Nana 썸네일 가져오기
+  @Override
+  public List<ThumbnailDto> findAllNanaThumbnailDto(Locale locale) {
+    return queryFactory.select(new QNanaResponse_ThumbnailDto(
+            nana.id,
+            imageFile.thumbnailUrl
+        ))
+        .from(nanaTitle)
+        .leftJoin(nanaTitle.nana, nana)
+        .leftJoin(nanaTitle.imageFile, imageFile)
+        .where((nanaTitle.language.locale.eq(locale)))
+        .orderBy(nanaTitle.createdAt.desc())
         .fetch();
   }
 }

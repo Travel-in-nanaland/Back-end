@@ -9,6 +9,8 @@ public interface NanaRepositoryCustom {
   //메인 페이지에서 슬라이드되는 Nana's pick 찾기
   List<NanaResponse.ThumbnailDto> findRecentNanaThumbnailDto(Locale locale);
 
+  //나나 pick 눌렀을 때 나올 모든 썸네일
+  List<NanaResponse.ThumbnailDto> findAllNanaThumbnailDto(Locale locale);
   //이거 좀 어렵군요...
 //  NanaResponse.nanaDetailDto findNanaDetailById(Long id, Locale locale);
 }
