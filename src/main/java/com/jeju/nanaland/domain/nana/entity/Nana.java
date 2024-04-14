@@ -16,12 +16,10 @@ public class Nana extends BaseEntity {
   @NotBlank
   private String version;
 
-  private boolean active;
 
   @Builder
-  public Nana(String version, boolean active) {
+  public Nana(String version) {
     this.version = version;
-    this.active = active;
   }
 }
 

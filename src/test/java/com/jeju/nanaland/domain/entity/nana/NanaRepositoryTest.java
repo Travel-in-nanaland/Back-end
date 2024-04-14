@@ -67,19 +67,17 @@ public class NanaRepositoryTest {
   @DisplayName("Nana init")
   void nanaQueryDslTest() {
     Nana nana1 = Nana.builder()
-        .active(true)
         .version("ver1")
         .build();
     em.persist(nana1);
 
     Nana nana2 = Nana.builder()
-        .active(false)
+
         .version("ver1")
         .build();
     em.persist(nana2);
 
     Nana nana3 = Nana.builder()
-        .active(true)
         .version("ver1")
         .build();
     em.persist(nana3);
@@ -123,7 +121,7 @@ public class NanaRepositoryTest {
     em.persist(nanaContent2);
 
     //Locale = chinese / active = true인 Nana 찾기
-    List<ThumbnailDto> thumbnailDto = nanaRepository.findThumbnailDto(Locale.CHINESE);
+    List<ThumbnailDto> thumbnailDto = nanaRepository.findRecentNanaThumbnailDto(Locale.CHINESE);
     Assertions.assertThat(thumbnailDto.size()).isEqualTo(2);
 
   }

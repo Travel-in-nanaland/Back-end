@@ -16,8 +16,9 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
+  //최신순으로 4
   @Override
-  public List<NanaResponse.ThumbnailDto> findThumbnailDto(Locale locale) {
+  public List<NanaResponse.ThumbnailDto> findRecentNanaThumbnailDto(Locale locale) {
     return queryFactory.select(new QNanaResponse_ThumbnailDto(
             nana.id,
             imageFile.thumbnailUrl
@@ -25,7 +26,9 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
         .leftJoin(nanaTitle.imageFile, imageFile)
-        .where(nana.active.eq(true).and(nanaTitle.language.locale.eq(locale)))
+        .where((nanaTitle.language.locale.eq(locale)))
+        .orderBy(nanaTitle.createdAt.desc())
+        .limit(4L)
         .fetch();
   }
 }
