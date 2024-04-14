@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,8 @@ public class NanaService {
   }
 
   //나나 들어갔을 때 보여줄 모든 nana
-  public ThumbnailDto getNanaThumbnails(Locale locale, Pageable pageable) {
+  public ThumbnailDto getNanaThumbnails(Locale locale, int offset, int pageSize) {
+    Pageable pageable = PageRequest.of(offset, pageSize);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
 

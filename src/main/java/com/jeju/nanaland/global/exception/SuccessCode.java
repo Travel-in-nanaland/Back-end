@@ -23,7 +23,12 @@ public enum SuccessCode {
 
   // login
   LOGIN_SUCCESS(OK, "로그인에 성공했습니다."),
-  ACCESS_TOKEN_SUCCESS(OK, "AccessToken이 재발급되었습니다.");
+  ACCESS_TOKEN_SUCCESS(OK, "AccessToken이 재발급되었습니다."),
+
+  // nana
+  NANA_MAIN_SUCCESS(OK, "나나 메인 페이지 썸네일 조회 성공"),
+  NANA_LIST_SUCCESS(OK, "나나 썸네일 리스트 조회 성공"),
+  NANA_DETAIL_SUCCESS(OK, "나나 상세 페이지 조회 성공");
 
   private final HttpStatus httpStatus;
   private final String message;
