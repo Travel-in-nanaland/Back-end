@@ -3,7 +3,7 @@ package com.jeju.nanaland.domain.entity.nana;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.ThumbnailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
@@ -121,7 +121,8 @@ public class NanaRepositoryTest {
     em.persist(nanaContent2);
 
     //Locale = chinese / active = true인 Nana 찾기
-    List<ThumbnailDto> thumbnailDto = nanaRepository.findRecentNanaThumbnailDto(Locale.CHINESE);
+    List<NanaResponse.NanaThumbnail> thumbnailDto = nanaRepository.findRecentNanaThumbnailDto(
+        Locale.CHINESE);
     Assertions.assertThat(thumbnailDto.size()).isEqualTo(2);
 
   }

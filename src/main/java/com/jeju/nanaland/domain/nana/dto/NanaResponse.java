@@ -9,23 +9,35 @@ import lombok.Data;
 public class NanaResponse {
 
   @Data
+  @Builder
   public static class ThumbnailDto {
+
+    private Long count;
+
+    private List<NanaThumbnail> data;
+
+
+  }
+
+  @Data
+  @Builder
+  public static class NanaThumbnail {
 
     private Long id;
 
-    //이때 imageFile id까지 주는 것이 좋은가?
-    //private Long imageFileId;
     @NotBlank
     private String thumbnailUrl;
 
+
     @QueryProjection
-    public ThumbnailDto(Long id, String thumbnailUrl) {
+    public NanaThumbnail(Long id, String thumbnailUrl) {
       this.id = id;
       this.thumbnailUrl = thumbnailUrl;
     }
   }
 
   @Data
+  @Builder
   public static class nanaDetailDto {
 
     @NotBlank
