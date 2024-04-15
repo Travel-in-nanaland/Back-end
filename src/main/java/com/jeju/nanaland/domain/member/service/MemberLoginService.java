@@ -2,10 +2,12 @@ package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepositoryCustom;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -49,7 +51,7 @@ public class MemberLoginService {
   public Member getOrCreateMember(LoginDto loginDto) {
     Optional<Member> memberOptional = memberRepository.findByEmailAndProviderAndProviderId(
         loginDto.getEmail(),
-        loginDto.getProvider(),
+        Provider.valueOf(loginDto.getProvider()),
         loginDto.getProviderId());
 
     if (memberOptional.isEmpty()) {
@@ -64,14 +66,14 @@ public class MemberLoginService {
 
     Optional<Member> memberOptional = memberRepositoryCustom.findDuplicateMember(
         loginDto.getEmail(),
-        loginDto.getProvider(),
+        Provider.valueOf(loginDto.getProvider()),
         loginDto.getProviderId());
 
     if (memberOptional.isPresent()) {
       throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
     }
 
-    Language language = languageRepository.findByLocale(loginDto.getLocale());
+    Language language = languageRepository.findByLocale(Locale.valueOf(loginDto.getLocale()));
 
     ImageFile profileImageFile = getRandomProfileImageFile();
 
@@ -84,7 +86,7 @@ public class MemberLoginService {
         .nickname(nickname)
         .gender(loginDto.getGender())
         .birthDate(loginDto.getBirthDate())
-        .provider(loginDto.getProvider())
+        .provider(Provider.valueOf(loginDto.getProvider()))
         .providerId(loginDto.getProviderId())
         .build();
     return memberRepository.save(member);
