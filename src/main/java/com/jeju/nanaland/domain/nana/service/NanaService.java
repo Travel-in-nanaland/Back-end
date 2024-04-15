@@ -32,8 +32,8 @@ public class NanaService {
   }
 
   //나나 들어갔을 때 보여줄 모든 nana
-  public ThumbnailDto getNanaThumbnails(Locale locale, int offset, int pageSize) {
-    Pageable pageable = PageRequest.of(offset, pageSize);
+  public ThumbnailDto getNanaThumbnails(Locale locale, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
 

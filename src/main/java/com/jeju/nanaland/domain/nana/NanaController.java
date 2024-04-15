@@ -48,11 +48,11 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<NanaResponse.ThumbnailDto> nanaAll(@AuthMember Member member, int offset,
-      int pageNumber) {
+  public BaseResponse<NanaResponse.ThumbnailDto> nanaAll(@AuthMember Member member, int page,
+      int size) {
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SuccessCode.NANA_LIST_SUCCESS,
-        nanaService.getNanaThumbnails(locale, offset, pageNumber));
+        nanaService.getNanaThumbnails(locale, page, size));
   }
 
   @Operation(
