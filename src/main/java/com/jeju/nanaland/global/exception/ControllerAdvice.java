@@ -1,6 +1,7 @@
 package com.jeju.nanaland.global.exception;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.BAD_REQUEST_EXCEPTION;
+import static com.jeju.nanaland.global.exception.ErrorCode.CONFLICT_DATA;
 import static com.jeju.nanaland.global.exception.ErrorCode.EXPIRED_TOKEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.UNSUPPORTED_FILE_FORMAT;
@@ -56,6 +57,13 @@ public class ControllerAdvice {
   @ExceptionHandler(UnauthorizedException.class)
   public BaseResponse<String> handleUnauthorizedException(UnauthorizedException e) {
     return BaseResponse.error(EXPIRED_TOKEN, e.getMessage());
+  }
+
+  // 409에러
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ExceptionHandler(ConflictException.class)
+  public BaseResponse<String> handleConflictException(ConflictException e) {
+    return BaseResponse.error(CONFLICT_DATA, e.getMessage());
   }
 
   //415에러 (파일 확장자 오류)
