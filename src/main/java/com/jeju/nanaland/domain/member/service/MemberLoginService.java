@@ -16,7 +16,6 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.util.Optional;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,9 +93,11 @@ public class MemberLoginService {
 
   // 임시로 만든 랜덤 프로필 사진
   private ImageFile getRandomProfileImageFile() {
-    Random random = new Random();
-    long randomId = random.nextInt(3) + 1;
-    return imageFileRepository.findById(randomId).get();
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("originUrl")
+        .thumbnailUrl("thumbnailUrl")
+        .build();
+    return imageFileRepository.save(imageFile);
   }
 
   @Transactional
