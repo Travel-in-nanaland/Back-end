@@ -10,15 +10,17 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,11 +41,12 @@ public class SearchController {
   })
   @GetMapping("/category")
   public BaseResponse<CategoryDto> searchCategory(
-      @AuthMember Member member, String title) {
+      @AuthMember Member member,
+      @Parameter(name = "검색 키워드") @NotNull String keyword) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getCategorySearchResultDto(title, locale));
+        searchService.getCategorySearchResultDto(keyword, locale));
   }
 
   @Operation(
@@ -55,11 +58,14 @@ public class SearchController {
   })
   @GetMapping("/nature")
   public BaseResponse<SearchResponse.ResultDto> searchNature(
-      @AuthMember Member member, String title, Pageable pageable) {
+      @AuthMember Member member,
+      @Parameter(name = "검색 키워드") @NotNull String keyword,
+      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
+      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getNatureSearchResultDto(title, locale, pageable));
+        searchService.getNatureSearchResultDto(keyword, locale, page, size));
   }
 
   @Operation(
@@ -71,11 +77,14 @@ public class SearchController {
   })
   @GetMapping("/festival")
   public BaseResponse<SearchResponse.ResultDto> searchFestival(
-      @AuthMember Member member, String title, Pageable pageable) {
+      @AuthMember Member member,
+      @Parameter(name = "검색 키워드") @NotNull String keyword,
+      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
+      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getFestivalSearchResultDto(title, locale, pageable));
+        searchService.getFestivalSearchResultDto(keyword, locale, page, size));
   }
 
   @Operation(
@@ -87,11 +96,14 @@ public class SearchController {
   })
   @GetMapping("/experience")
   public BaseResponse<SearchResponse.ResultDto> searchExperience(
-      @AuthMember Member member, String title, Pageable pageable) {
+      @AuthMember Member member,
+      @Parameter(name = "검색 키워드") @NotNull String keyword,
+      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
+      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getExperienceSearchResultDto(title, locale, pageable));
+        searchService.getExperienceSearchResultDto(keyword, locale, page, size));
   }
 
   @Operation(
@@ -103,10 +115,13 @@ public class SearchController {
   })
   @GetMapping("/market")
   public BaseResponse<SearchResponse.ResultDto> searchMarket(
-      @AuthMember Member member, String title, Pageable pageable) {
+      @AuthMember Member member,
+      @Parameter(name = "검색 키워드") @NotNull String keyword,
+      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
+      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getMarketSearchResultDto(title, locale, pageable));
+        searchService.getMarketSearchResultDto(keyword, locale, page, size));
   }
 }

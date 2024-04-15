@@ -30,23 +30,24 @@ public class SearchService {
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
 
-  public SearchResponse.CategoryDto getCategorySearchResultDto(String title, Locale locale) {
+  public SearchResponse.CategoryDto getCategorySearchResultDto(String keyword, Locale locale) {
 
     // offset: 0, pageSize: 2
-    Pageable pageable = PageRequest.of(0, 2);
-
+    int page = 0;
+    int size = 2;
     return SearchResponse.CategoryDto.builder()
-        .nature(getNatureSearchResultDto(title, locale, pageable))
-        .festival(getFestivalSearchResultDto(title, locale, pageable))
-        .market(getMarketSearchResultDto(title, locale, pageable))
-        .experience(getExperienceSearchResultDto(title, locale, pageable))
+        .nature(getNatureSearchResultDto(keyword, locale, page, size))
+        .festival(getFestivalSearchResultDto(keyword, locale, page, size))
+        .market(getMarketSearchResultDto(keyword, locale, page, size))
+        .experience(getExperienceSearchResultDto(keyword, locale, page, size))
         .build();
   }
 
-  public SearchResponse.ResultDto getNatureSearchResultDto(String title, Locale locale,
-      Pageable pageable) {
+  public SearchResponse.ResultDto getNatureSearchResultDto(String keyword, Locale locale,
+      int page, int size) {
 
-    Page<NatureCompositeDto> ResultDto = natureRepository.searchCompositeDtoByTitle(title, locale,
+    Pageable pageable = PageRequest.of(page, size);
+    Page<NatureCompositeDto> ResultDto = natureRepository.searchCompositeDtoByTitle(keyword, locale,
         pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
@@ -65,12 +66,12 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto getFestivalSearchResultDto(String title, Locale locale,
-      Pageable pageable) {
+  public SearchResponse.ResultDto getFestivalSearchResultDto(String keyword, Locale locale,
+      int page, int size) {
 
-    Page<FestivalCompositeDto> ResultDto = festivalRepository.searchCompositeDtoByTitle(title,
-        locale,
-        pageable);
+    Pageable pageable = PageRequest.of(page, size);
+    Page<FestivalCompositeDto> ResultDto = festivalRepository.searchCompositeDtoByTitle(keyword,
+        locale, pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : ResultDto) {
@@ -88,10 +89,11 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto getExperienceSearchResultDto(String title, Locale locale,
-      Pageable pageable) {
+  public SearchResponse.ResultDto getExperienceSearchResultDto(String keyword, Locale locale,
+      int page, int size) {
 
-    Page<ExperienceCompositeDto> ResultDto = experienceRepository.searchCompositeDtoByTitle(title,
+    Pageable pageable = PageRequest.of(page, size);
+    Page<ExperienceCompositeDto> ResultDto = experienceRepository.searchCompositeDtoByTitle(keyword,
         locale, pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
@@ -110,10 +112,11 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto getMarketSearchResultDto(String title, Locale locale,
-      Pageable pageable) {
+  public SearchResponse.ResultDto getMarketSearchResultDto(String keyword, Locale locale,
+      int page, int size) {
 
-    Page<MarketCompositeDto> ResultDto = marketRepository.searchCompositeDtoByTitle(title, locale,
+    Pageable pageable = PageRequest.of(page, size);
+    Page<MarketCompositeDto> ResultDto = marketRepository.searchCompositeDtoByTitle(keyword, locale,
         pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
