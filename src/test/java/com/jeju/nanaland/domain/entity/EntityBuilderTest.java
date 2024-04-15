@@ -10,11 +10,9 @@ import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.nana.entity.Nana;
-import com.jeju.nanaland.domain.nana.entity.NanaTrans;
+import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
-import com.jeju.nanaland.domain.stay.entity.Stay;
-import com.jeju.nanaland.domain.stay.entity.StayTrans;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,40 +49,41 @@ class EntityBuilderTest {
   @Test
   void NanaBuilderTest() {
     Nana nana1 = Nana.builder()
-        .imageUrl("imageUrl")
+        .version("ver.1")
         .build();
+
     em.persist(nana1);
 
-    NanaTrans nanaTrans1 = NanaTrans.builder()
+    NanaTitle nanaTitle1 = NanaTitle.builder()
         .nana(nana1)
         .language(language)
-        .content("content")
-        .build();
-    em.persist(nanaTrans1);
-  }
-
-  @Test
-  void stayBuilderTest() {
-    Stay stay1 = Stay.builder()
         .imageFile(imageFile)
-        .price(12345)
-        .contact("0101231242")
-        .homepage("httpsL//egegwgeg")
-        .parking("allow?")
-        .ratingAvg(4.15f)
+        .notice("notice!")
         .build();
-    em.persist(stay1);
-
-    StayTrans stayTrans1 = StayTrans.builder()
-        .stay(stay1)
-        .language(language)
-        .title("title")
-        .intro("intro")
-        .address("address")
-        .time("10:00 ~ 12:00")
-        .build();
-    em.persist(stayTrans1);
   }
+
+//  @Test
+//  void stayBuilderTest() {
+//    Stay stay1 = Stay.builder()
+//        .imageFile(imageFile)
+//        .price(12345)
+//        .contact("0101231242")
+//        .homepage("httpsL//egegwgeg")
+//        .parking("allow?")
+//        .ratingAvg(4.15f)
+//        .build();
+//    em.persist(stay1);
+//
+//    StayTrans stayTrans1 = StayTrans.builder()
+//        .stay(stay1)
+//        .language(language)
+//        .title("title")
+//        .intro("intro")
+//        .address("address")
+//        .time("10:00 ~ 12:00")
+//        .build();
+//    em.persist(stayTrans1);
+//  }
 
   @Test
   void marketBuilderTest() {

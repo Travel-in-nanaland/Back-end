@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -123,5 +124,19 @@ public class SearchController {
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
         searchService.getMarketSearchResultDto(keyword, locale, page, size));
+  }
+
+  @Operation(
+      summary = "인기 검색어 조회",
+      description = "언어 별로 가장 검색이 많이 된 8개 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/popular")
+  public BaseResponse<List<String>> getPopularSearch(@AuthMember Member member) {
+
+    Locale locale = member.getLanguage().getLocale();
+    return BaseResponse.success(SEARCH_SUCCESS, searchService.getPopularSearch(locale));
   }
 }

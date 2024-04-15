@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
@@ -33,7 +34,7 @@ class MemberTypeServiceTest {
      * given
      */
     Language language = Language.builder()
-        .locale("kr")
+        .locale(Locale.KOREAN)
         .dateFormat("yyyy-mm-dd")
         .build();
     em.persist(language);
@@ -48,7 +49,6 @@ class MemberTypeServiceTest {
         .profileImageFile(imageFile)
         .language(language)
         .email("test@naver.com")
-        .password("1234")
         .nickname("nickname")
         .build();
     em.persist(member);

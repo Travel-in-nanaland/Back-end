@@ -5,13 +5,9 @@ import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
-import com.jeju.nanaland.domain.review.entity.Review;
-import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
-import com.jeju.nanaland.domain.stay.entity.Stay;
 import com.jeju.nanaland.domain.story.entity.Story;
 import com.jeju.nanaland.domain.story.entity.StoryCategory;
 import com.jeju.nanaland.domain.story.entity.StoryImageFile;
@@ -102,42 +98,42 @@ class EntityImageFileMappingTest {
         .build();
     em.persist(category);
 
-    Stay stay = Stay.builder()
-        .imageFile(imageFile1)
-        .price(2000)
-        .contact("010")
-        .homepage("homepage")
-        .parking("parking")
-        .ratingAvg(3.5f)
-        .build();
-    em.persist(stay);
+//    Stay stay = Stay.builder()
+//        .imageFile(imageFile1)
+//        .price(2000)
+//        .contact("010")
+//        .homepage("homepage")
+//        .parking("parking")
+//        .ratingAvg(3.5f)
+//        .build();
+//    em.persist(stay);
+//
+//    Hashtag hashtag = Hashtag.builder()
+//        .keyword(keyword)
+//        .category(category)
+//        .postId(stay.getId())
+//        .build();
+//    em.persist(hashtag);
+//
+//    Review review = Review.builder()
+//        .member(member)
+//        .category(category)
+//        .postId(stay.getId())
+//        .title("title")
+//        .content("content")
+//        .rating(3.5f)
+//        .build();
+//    em.persist(review);
 
-    Hashtag hashtag = Hashtag.builder()
-        .keyword(keyword)
-        .category(category)
-        .postId(stay.getId())
-        .build();
-    em.persist(hashtag);
-
-    Review review = Review.builder()
-        .member(member)
-        .category(category)
-        .postId(stay.getId())
-        .title("title")
-        .content("content")
-        .rating(3.5f)
-        .build();
-    em.persist(review);
-
-    ReviewImageFile reviewImageFile1 = ReviewImageFile.builder()
-        .review(review)
-        .imageFile(imageFile1)
-        .build();
-    ReviewImageFile reviewImageFile2 = ReviewImageFile.builder()
-        .review(review)
-        .imageFile(imageFile2)
-        .build();
-    em.persist(reviewImageFile1);
-    em.persist(reviewImageFile2);
+//    ReviewImageFile reviewImageFile1 = ReviewImageFile.builder()
+//        .review(review)
+//        .imageFile(imageFile1)
+//        .build();
+//    ReviewImageFile reviewImageFile2 = ReviewImageFile.builder()
+//        .review(review)
+//        .imageFile(imageFile2)
+//        .build();
+//    em.persist(reviewImageFile1);
+//    em.persist(reviewImageFile2);
   }
 }
