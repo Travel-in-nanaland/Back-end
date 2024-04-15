@@ -47,7 +47,8 @@ public class MemberController {
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content)
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "데이터가 중복되는 경우", content = @Content)
   })
   @PostMapping("/login")
   public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
