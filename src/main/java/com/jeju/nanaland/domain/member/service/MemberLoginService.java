@@ -7,7 +7,9 @@ import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.member.repository.MemberRepositoryCustom;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
@@ -22,9 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
-  private final JwtUtil jwtUtil;
+  private final MemberRepositoryCustom memberRepositoryCustom;
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
+  private final JwtUtil jwtUtil;
 
   @Transactional
   public JwtDto login(LoginDto loginDto) {
@@ -44,7 +47,8 @@ public class MemberLoginService {
 
   @Transactional
   public Member getOrCreateMember(LoginDto loginDto) {
-    Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
+    Optional<Member> memberOptional = memberRepository.findByEmailAndProviderAndProviderId(
+        loginDto.getEmail(),
         loginDto.getProvider(),
         loginDto.getProviderId());
 
@@ -57,6 +61,16 @@ public class MemberLoginService {
   }
 
   private Member createMember(LoginDto loginDto) {
+
+    Optional<Member> memberOptional = memberRepositoryCustom.findDuplicateMember(
+        loginDto.getEmail(),
+        loginDto.getProvider(),
+        loginDto.getProviderId());
+
+    if (memberOptional.isPresent()) {
+      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+    }
+
     Language language = languageRepository.findByLocale(loginDto.getLocale());
 
     ImageFile profileImageFile = getRandomProfileImageFile();
