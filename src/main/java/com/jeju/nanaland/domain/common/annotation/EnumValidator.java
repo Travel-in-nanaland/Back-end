@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.common.annotation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 
 @Slf4j
 public class EnumValidator implements ConstraintValidator<EnumValid, String> {
@@ -24,7 +25,7 @@ public class EnumValidator implements ConstraintValidator<EnumValid, String> {
     // value로 들어온 값이 Enum에 존재하는지 확인
     if (enumValues != null) {
       for (Object enumValue : enumValues) {
-        if (value.equals(enumValue.toString()) ||
+        if (ObjectUtils.isNotEmpty(value) && value.equals(enumValue.toString()) ||
             this.enumValid.ignoreCase() && value.equalsIgnoreCase(enumValue.toString())) {
 
           ResultDto = true;

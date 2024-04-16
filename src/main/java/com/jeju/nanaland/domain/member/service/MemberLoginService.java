@@ -2,17 +2,20 @@ package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.member.repository.MemberRepositoryCustom;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.util.Optional;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
-  private final JwtUtil jwtUtil;
+  private final MemberRepositoryCustom memberRepositoryCustom;
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
+  private final JwtUtil jwtUtil;
 
   @Transactional
   public JwtDto login(LoginDto loginDto) {
@@ -44,8 +48,9 @@ public class MemberLoginService {
 
   @Transactional
   public Member getOrCreateMember(LoginDto loginDto) {
-    Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
-        loginDto.getProvider(),
+    Optional<Member> memberOptional = memberRepository.findByEmailAndProviderAndProviderId(
+        loginDto.getEmail(),
+        Provider.valueOf(loginDto.getProvider()),
         loginDto.getProviderId());
 
     if (memberOptional.isEmpty()) {
@@ -57,7 +62,17 @@ public class MemberLoginService {
   }
 
   private Member createMember(LoginDto loginDto) {
-    Language language = languageRepository.findByLocale(loginDto.getLocale());
+
+    Optional<Member> memberOptional = memberRepositoryCustom.findDuplicateMember(
+        loginDto.getEmail(),
+        Provider.valueOf(loginDto.getProvider()),
+        loginDto.getProviderId());
+
+    if (memberOptional.isPresent()) {
+      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+    }
+
+    Language language = languageRepository.findByLocale(Locale.valueOf(loginDto.getLocale()));
 
     ImageFile profileImageFile = getRandomProfileImageFile();
 
@@ -70,7 +85,7 @@ public class MemberLoginService {
         .nickname(nickname)
         .gender(loginDto.getGender())
         .birthDate(loginDto.getBirthDate())
-        .provider(loginDto.getProvider())
+        .provider(Provider.valueOf(loginDto.getProvider()))
         .providerId(loginDto.getProviderId())
         .build();
     return memberRepository.save(member);
@@ -78,9 +93,11 @@ public class MemberLoginService {
 
   // 임시로 만든 랜덤 프로필 사진
   private ImageFile getRandomProfileImageFile() {
-    Random random = new Random();
-    long randomId = random.nextInt(3) + 1;
-    return imageFileRepository.findById(randomId).get();
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("originUrl")
+        .thumbnailUrl("thumbnailUrl")
+        .build();
+    return imageFileRepository.save(imageFile);
   }
 
   @Transactional
