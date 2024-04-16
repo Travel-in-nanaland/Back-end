@@ -38,7 +38,7 @@ public class SearchService {
 
   public SearchResponse.CategoryDto getCategorySearchResultDto(String keyword, Locale locale) {
     // Redis에 해당 검색어 count + 1
-    updateSearchCount(title, locale);
+    updateSearchCount(keyword, locale);
 
     // offset: 0, pageSize: 2
     int page = 0;
