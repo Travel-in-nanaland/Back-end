@@ -47,6 +47,9 @@ public class MemberTypeService {
     Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
 
     MemberType type = member.getType();
+    if (type == null) {
+      throw new ServerErrorException("사용자 타입이 설정돼있지 않습니다.");
+    }
     com.jeju.nanaland.domain.common.entity.Locale locale = member.getLanguage().getLocale();
 
     // memberType에 저장된 Pair<카테고리, Id>를 순회하며 DTO 추가
