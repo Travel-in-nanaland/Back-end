@@ -3,6 +3,7 @@ package com.jeju.nanaland.global.exception;
 import static com.jeju.nanaland.global.exception.ErrorCode.BAD_REQUEST_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.CONFLICT_DATA;
 import static com.jeju.nanaland.global.exception.ErrorCode.EXPIRED_TOKEN;
+import static com.jeju.nanaland.global.exception.ErrorCode.INTERNAL_SERVER_ERROR;
 import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.UNSUPPORTED_FILE_FORMAT;
 
@@ -72,6 +73,14 @@ public class ControllerAdvice {
   public BaseResponse<String> handleUnsupportedFileFormatException(
       UnsupportedFileFormatException e) {
     return BaseResponse.error(UNSUPPORTED_FILE_FORMAT, e.getMessage());
+  }
+
+  // 500 에러
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ExceptionHandler(ServerErrorException.class)
+  public BaseResponse<String> handleServerErrorException(
+      ServerErrorException e) {
+    return BaseResponse.error(INTERNAL_SERVER_ERROR, e.getMessage());
   }
 
   private String makeErrorResponse(BindingResult bindingResult) {
