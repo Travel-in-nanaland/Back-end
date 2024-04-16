@@ -10,7 +10,6 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,8 +42,9 @@ public class SearchController {
   @GetMapping("/category")
   public BaseResponse<CategoryDto> searchCategory(
       @AuthMember Member member,
-      @Parameter(name = "검색 키워드") @NotNull String keyword) {
+      @NotNull String keyword) {
 
+    log.info("test");
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
         searchService.getCategorySearchResultDto(keyword, locale));
@@ -60,9 +60,9 @@ public class SearchController {
   @GetMapping("/nature")
   public BaseResponse<SearchResponse.ResultDto> searchNature(
       @AuthMember Member member,
-      @Parameter(name = "검색 키워드") @NotNull String keyword,
-      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
-      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
+      @NotNull String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
@@ -79,9 +79,9 @@ public class SearchController {
   @GetMapping("/festival")
   public BaseResponse<SearchResponse.ResultDto> searchFestival(
       @AuthMember Member member,
-      @Parameter(name = "검색 키워드") @NotNull String keyword,
-      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
-      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
+      @NotNull String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
@@ -98,9 +98,9 @@ public class SearchController {
   @GetMapping("/experience")
   public BaseResponse<SearchResponse.ResultDto> searchExperience(
       @AuthMember Member member,
-      @Parameter(name = "검색 키워드") @NotNull String keyword,
-      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
-      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
+      @NotNull String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
@@ -117,9 +117,9 @@ public class SearchController {
   @GetMapping("/market")
   public BaseResponse<SearchResponse.ResultDto> searchMarket(
       @AuthMember Member member,
-      @Parameter(name = "검색 키워드") @NotNull String keyword,
-      @Parameter(name = "page offset") @RequestParam(defaultValue = "0") int page,
-      @Parameter(name = "page size") @RequestParam(defaultValue = "12") int size) {
+      @NotNull String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
