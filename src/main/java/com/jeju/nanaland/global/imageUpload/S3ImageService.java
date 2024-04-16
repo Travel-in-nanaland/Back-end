@@ -62,16 +62,19 @@ public class S3ImageService {
   dto 생성하면 인풋 수정.
    */
   @Transactional
-  public List<ImageFile> saveImages(List<MultipartFile> multipartFileList) throws IOException {
+  public List<ImageFile> uploadAndSaveImages(List<MultipartFile> multipartFileList,
+      boolean autoThumbnail)
+      throws IOException {
     List<ImageFile> imageFileList = new ArrayList<>();
     for (MultipartFile multipartFile : multipartFileList) {
-      imageFileList.add(saveImage(multipartFile));
+      imageFileList.add(uploadAndSaveImage(multipartFile, autoThumbnail));
     }
     return imageFileList;
   }
 
   @Transactional
-  public ImageFile saveImage(MultipartFile multipartFile) throws IOException {
+  public ImageFile uploadAndSaveImage(MultipartFile multipartFile, boolean autoThumbnail)
+      throws IOException {
 
     //이미지 파일인지 검증
     verifyExtension(multipartFile);
@@ -96,19 +99,14 @@ public class S3ImageService {
     objectMetadata.setContentLength(multipartFile.getInputStream().available());
 
     //S3에 사진 올리기
-    amazonS3Client.putObject(bucketName + imageDirectory, uploadImageName,
-        multipartFile.getInputStream(),
-        objectMetadata);
+    String originalImageUrl = uploadOriginImage(multipartFile, objectMetadata, uploadImageName);
 
-    String originalImageUrl = amazonS3Client.getUrl(bucketName + imageDirectory, uploadImageName)
-        .toString();
-
-    /**
-     * 모든 이미지가 썸네일이 필요한가?? -> 아닌 것도 있다면 true, flase로 구분해서 썸네일 만들고 안만들고 동작.
-     */
-    //섬네일 생성 후 저장
-    String thumbnailImageUrl = uploadThumbnailImage(multipartFile, uploadImageName);
-
+    //true, false로 구분해서 썸네일 만들고 안만들고 동작.
+    String thumbnailImageUrl = "";
+    if (autoThumbnail) {
+      //섬네일 생성 후 저장
+      thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
+    }
     ImageFile imageFile = ImageFile.builder()
         .originUrl(originalImageUrl)
         .thumbnailUrl(thumbnailImageUrl)
@@ -118,7 +116,24 @@ public class S3ImageService {
 
   }
 
-  public String uploadThumbnailImage(MultipartFile multipartFile, String originImageFileName)
+  public String uploadOriginImage(MultipartFile multipartFile, ObjectMetadata objectMetadata,
+      String imageName)
+      throws IOException {
+    amazonS3Client.putObject(bucketName + imageDirectory, imageName, multipartFile.getInputStream(),
+        objectMetadata);
+    return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
+  }
+
+  // 자동 생성 아닌 직접 썸네일 올릴 때만 사용
+  public String uploadThumbnailImage(MultipartFile multipartFile, ObjectMetadata objectMetadata,
+      String imageName)
+      throws IOException {
+    amazonS3Client.putObject(bucketName + imageDirectory, imageName, multipartFile.getInputStream(),
+        objectMetadata);
+    return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
+  }
+
+  public String makeThumbnailImageAndUpload(MultipartFile multipartFile, String originImageFileName)
       throws IOException {
     String uploadThumbnailImageName = thumbnailPrefix + originImageFileName;
     BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
