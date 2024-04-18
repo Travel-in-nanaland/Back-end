@@ -68,7 +68,7 @@ public class NanaService {
               .subTitle(nanaContent.getSubTitle())
               .title(nanaContent.getTitle())
               .imageUrl(nanaContent.getImageFile().getOriginUrl())
-              .content(nanaContent.getImageFile().getOriginUrl())
+              .content(nanaContent.getContent())
               .build());
 
     }

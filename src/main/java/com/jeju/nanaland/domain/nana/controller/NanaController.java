@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.nana;
+package com.jeju.nanaland.domain.nana.controller;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.entity.Member;
