@@ -12,7 +12,7 @@ public class NanaResponse {
   @Data
   @Builder
   @Schema(description = "나나's pick 전체 썸네일 조회 DTO")
-  public static class ThumbnailDto {
+  public static class NanaThumbnailDto {
 
     @Schema(description = "총 조회 개수")
     private Long count;
@@ -46,7 +46,7 @@ public class NanaResponse {
   @Data
   @Builder
   @Schema(description = "나나's pick 개별 상세 조회 DTO")
-  public static class nanaDetailDto {
+  public static class NanaDetailDto {
 
     @NotBlank
     @Schema(description = "게시물 url")
@@ -57,10 +57,10 @@ public class NanaResponse {
     private String notice;
 
     @Schema(description = "게시물 데이터")
-    private List<nanaDetail> nanaDetails;
+    private List<NanaDetail> nanaDetails;
 
     @QueryProjection
-    public nanaDetailDto(String originUrl, String notice, List<nanaDetail> nanaDetails) {
+    public NanaDetailDto(String originUrl, String notice, List<NanaDetail> nanaDetails) {
       this.originUrl = originUrl;
       this.notice = notice;
       this.nanaDetails = nanaDetails;
@@ -70,7 +70,7 @@ public class NanaResponse {
   @Data
   @Builder
   @Schema(description = "나나's pick 게시글 세부 내용")
-  public static class nanaDetail {
+  public static class NanaDetail {
 
     @Schema(description = "순위")
     public int number;
@@ -92,7 +92,7 @@ public class NanaResponse {
     public String content;
 
     @QueryProjection
-    public nanaDetail(int number, String subTitle, String title, String imageUrl, String content) {
+    public NanaDetail(int number, String subTitle, String title, String imageUrl, String content) {
       this.number = number;
       this.subTitle = subTitle;
       this.title = title;
