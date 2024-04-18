@@ -64,9 +64,9 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<NanaDetailDto> nanaDetail(@PathVariable(name = "id") String id) {
+  public BaseResponse<NanaDetailDto> nanaDetail(@PathVariable(name = "id") Long id) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
-        nanaService.getNanaDetail(Long.parseLong(id)));
+        nanaService.getNanaDetail(id));
   }
 
 
