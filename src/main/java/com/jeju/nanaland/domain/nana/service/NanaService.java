@@ -59,11 +59,11 @@ public class NanaService {
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
         nanaTitle);
 
-    List<NanaResponse.nanaDetail> nanaDetails = new ArrayList<>();
+    List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
 
     for (NanaContent nanaContent : nanaContentList) {
       nanaDetails.add(
-          NanaResponse.nanaDetail.builder()
+          NanaResponse.NanaDetail.builder()
               .number(nanaContent.getNumber())
               .subTitle(nanaContent.getSubTitle())
               .title(nanaContent.getTitle())
