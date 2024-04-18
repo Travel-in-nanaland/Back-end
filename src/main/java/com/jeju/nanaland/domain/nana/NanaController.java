@@ -3,7 +3,8 @@ package com.jeju.nanaland.domain.nana;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.nanaDetailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
 import com.jeju.nanaland.domain.nana.service.NanaService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.exception.SuccessCode;
@@ -48,7 +49,7 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<NanaResponse.ThumbnailDto> nanaAll(@AuthMember Member member, int page,
+  public BaseResponse<NanaThumbnailDto> nanaAll(@AuthMember Member member, int page,
       int size) {
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SuccessCode.NANA_LIST_SUCCESS,
@@ -63,7 +64,7 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<nanaDetailDto> nanaDetail(@PathVariable(name = "id") String id) {
+  public BaseResponse<NanaDetailDto> nanaDetail(@PathVariable(name = "id") String id) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
         nanaService.getNanaDetail(Long.parseLong(id)));
   }

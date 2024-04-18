@@ -3,7 +3,7 @@ package com.jeju.nanaland.domain.nana.service;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.ThumbnailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
@@ -32,7 +32,7 @@ public class NanaService {
   }
 
   //나나 들어갔을 때 보여줄 모든 nana
-  public ThumbnailDto getNanaThumbnails(Locale locale, int page, int size) {
+  public NanaThumbnailDto getNanaThumbnails(Locale locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
@@ -46,14 +46,14 @@ public class NanaService {
               .build());
 
     }
-    return NanaResponse.ThumbnailDto.builder()
+    return NanaThumbnailDto.builder()
         .count(resultDto.getTotalElements())
         .data(thumbnails)
         .build();
   }
 
   //나나 상세 게시물
-  public NanaResponse.nanaDetailDto getNanaDetail(Long id) {
+  public NanaResponse.NanaDetailDto getNanaDetail(Long id) {
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(id)
         .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 컨텐츠 입니다."));
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
@@ -73,7 +73,7 @@ public class NanaService {
 
     }
 
-    return NanaResponse.nanaDetailDto.builder()
+    return NanaResponse.NanaDetailDto.builder()
         .originUrl(nanaTitle.getImageFile().getOriginUrl())
         .notice(nanaTitle.getNotice())
         .nanaDetails(nanaDetails)
