@@ -1,17 +1,22 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class FestivalService {
 
-  private final CategoryRepository categoryRepository;
-  private final FavoriteRepository favoriteRepository;
+  private final FavoriteService favoriteService;
 
+  @Transactional
+  public String toggleLikeStatus(Member member, Long postId) {
+    return favoriteService.toggleLikeStatus(member, CategoryContent.FESTIVAL, postId);
+  }
 }
