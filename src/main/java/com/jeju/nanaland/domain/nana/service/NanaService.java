@@ -1,6 +1,9 @@
 package com.jeju.nanaland.domain.nana.service;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class NanaService {
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
+  private final FavoriteService favoriteService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -79,5 +84,10 @@ public class NanaService {
         .nanaDetails(nanaDetails)
         .build();
 
+  }
+
+  @Transactional
+  public String toggleLikeStatus(Member member, Long postId) {
+    return favoriteService.toggleLikeStatus(member, CategoryContent.NANA, postId);
   }
 }
