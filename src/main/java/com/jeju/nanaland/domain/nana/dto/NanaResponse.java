@@ -87,6 +87,8 @@ public class NanaResponse {
 
     public List<NanaAdditionalInfo> additionalInfoList;
 
+    public List<String> hashtags;
+
   }
 
   @Data

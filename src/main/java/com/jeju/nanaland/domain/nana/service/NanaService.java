@@ -67,6 +67,11 @@ public class NanaService {
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
 
     for (NanaContent nanaContent : nanaContentList) {
+
+      // TODO hashtag 기능 구현 시 꼭 수정하기!!!!
+      List<String> tmp = new ArrayList<>();
+      tmp.add("ex1");
+      tmp.add("ex2");
       nanaDetails.add(
           NanaResponse.NanaDetail.builder()
               .number(nanaContent.getNumber())
@@ -75,6 +80,7 @@ public class NanaService {
               .imageUrl(nanaContent.getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
               .additionalInfoList(getAdditionalInfoFromNanaContentEntity(nanaContent))
+              .hashtags(tmp)
               .build());
 
     }
