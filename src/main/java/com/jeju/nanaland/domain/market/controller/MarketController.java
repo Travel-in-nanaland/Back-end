@@ -30,7 +30,7 @@ public class MarketController {
   @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
