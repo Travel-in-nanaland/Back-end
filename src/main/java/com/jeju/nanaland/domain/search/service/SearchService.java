@@ -1,13 +1,19 @@
 package com.jeju.nanaland.domain.search.service;
 
+import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
+import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
@@ -35,10 +41,13 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
-  private final FavoriteRepository favoriteRepository;
+
+  private final FavoriteService favoriteService;
+
   private final RedisTemplate<String, String> redisTemplate;
 
-  public SearchResponse.CategoryDto getCategorySearchResultDto(String keyword, Locale locale) {
+  public SearchResponse.CategoryDto getCategorySearchResultDto(Member member, String keyword,
+      Locale locale) {
     // Redis에 해당 검색어 count + 1
     updateSearchCount(keyword, locale);
 
@@ -46,19 +55,22 @@ public class SearchService {
     int page = 0;
     int size = 2;
     return SearchResponse.CategoryDto.builder()
-        .nature(getNatureSearchResultDto(keyword, locale, page, size))
-        .festival(getFestivalSearchResultDto(keyword, locale, page, size))
-        .market(getMarketSearchResultDto(keyword, locale, page, size))
-        .experience(getExperienceSearchResultDto(keyword, locale, page, size))
+        .nature(getNatureSearchResultDto(member, keyword, locale, page, size))
+        .festival(getFestivalSearchResultDto(member, keyword, locale, page, size))
+        .market(getMarketSearchResultDto(member, keyword, locale, page, size))
+        .experience(getExperienceSearchResultDto(member, keyword, locale, page, size))
         .build();
   }
 
-  public SearchResponse.ResultDto getNatureSearchResultDto(String keyword, Locale locale,
+  public SearchResponse.ResultDto getNatureSearchResultDto(Member member, String keyword,
+      Locale locale,
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByTitle(
         keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, NATURE);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
@@ -67,6 +79,7 @@ public class SearchService {
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
     }
 
@@ -76,12 +89,15 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto getFestivalSearchResultDto(String keyword, Locale locale,
+  public SearchResponse.ResultDto getFestivalSearchResultDto(Member member, String keyword,
+      Locale locale,
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByTitle(
         keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, FESTIVAL);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
@@ -90,6 +106,7 @@ public class SearchService {
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
     }
 
@@ -99,12 +116,15 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto getExperienceSearchResultDto(String keyword, Locale locale,
+  public SearchResponse.ResultDto getExperienceSearchResultDto(Member member, String keyword,
+      Locale locale,
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByTitle(
         keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, EXPERIENCE);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
@@ -113,6 +133,7 @@ public class SearchService {
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
     }
 
@@ -122,12 +143,15 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto getMarketSearchResultDto(String keyword, Locale locale,
+  public SearchResponse.ResultDto getMarketSearchResultDto(Member member, String keyword,
+      Locale locale,
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByTitle(
         keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, MARKET);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (MarketCompositeDto dto : resultPage) {
@@ -136,6 +160,7 @@ public class SearchService {
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
     }
 
