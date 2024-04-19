@@ -59,12 +59,6 @@ public class NanaResponse {
     @Schema(description = "게시물 데이터")
     private List<NanaDetail> nanaDetails;
 
-    @QueryProjection
-    public NanaDetailDto(String originUrl, String notice, List<NanaDetail> nanaDetails) {
-      this.originUrl = originUrl;
-      this.notice = notice;
-      this.nanaDetails = nanaDetails;
-    }
   }
 
   @Data
@@ -91,13 +85,20 @@ public class NanaResponse {
     @Schema(description = "게시물 설명")
     public String content;
 
-    @QueryProjection
-    public NanaDetail(int number, String subTitle, String title, String imageUrl, String content) {
-      this.number = number;
-      this.subTitle = subTitle;
-      this.title = title;
-      this.imageUrl = imageUrl;
-      this.content = content;
-    }
+    public List<NanaAdditionalInfo> additionalInfoList;
+
+  }
+
+  @Data
+  @Builder
+  @Schema(description = "나나's pick 각 게시글 부가 정보")
+  public static class NanaAdditionalInfo {
+
+    @Schema(description = "부가 정보 key 값 ex: 주차정보, 스페셜, 예약링크,,")
+    public String infoKey;
+
+    @Schema(description = "부가 정보 value 값")
+    public String infoValue;
+
   }
 }

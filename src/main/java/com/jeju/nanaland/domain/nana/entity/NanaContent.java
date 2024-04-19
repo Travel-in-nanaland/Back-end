@@ -6,8 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,6 +44,13 @@ public class NanaContent extends BaseEntity {
   @Column(columnDefinition = "TEXT")
   private String content;
 
+  @ManyToMany
+  @JoinTable(name = "NANA_INFO_TYPE",
+      joinColumns = @JoinColumn(name = "nana_contet_id"),
+      inverseJoinColumns = @JoinColumn(name = "nana_additional_info_id")
+  )
+  private Set<NanaAdditionalInfo> infoList;
+
   @Builder
   public NanaContent(NanaTitle nanaTitle, ImageFile imageFile, int number, String subTitle,
       String title, String content) {
@@ -49,5 +60,6 @@ public class NanaContent extends BaseEntity {
     this.subTitle = subTitle;
     this.title = title;
     this.content = content;
+    this.infoList = new HashSet<>();
   }
 }
