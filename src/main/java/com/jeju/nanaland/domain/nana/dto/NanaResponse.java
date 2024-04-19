@@ -15,7 +15,7 @@ public class NanaResponse {
   public static class NanaThumbnailDto {
 
     @Schema(description = "총 조회 개수")
-    private Long count;
+    private Long totalElements;
 
     @Schema(description = "결과 데이터")
     private List<NanaThumbnail> data;

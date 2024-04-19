@@ -47,7 +47,7 @@ public class NanaService {
 
     }
     return NanaThumbnailDto.builder()
-        .count(resultDto.getTotalElements())
+        .totalElements(resultDto.getTotalElements())
         .data(thumbnails)
         .build();
   }
