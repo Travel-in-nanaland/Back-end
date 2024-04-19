@@ -88,6 +88,9 @@ public class NanaService {
 
   @Transactional
   public String toggleLikeStatus(Member member, Long postId) {
+    nanaRepository.findById(postId)
+        .orElseThrow(() -> new BadRequestException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
+
     return favoriteService.toggleLikeStatus(member, CategoryContent.NANA, postId);
   }
 }
