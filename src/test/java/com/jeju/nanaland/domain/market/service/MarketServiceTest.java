@@ -12,8 +12,10 @@ import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,5 +114,24 @@ class MarketServiceTest {
      */
     assertThat(favoriteOptional1.isPresent()).isFalse();
     assertThat(favoriteOptional2.isPresent()).isTrue();
+  }
+
+  @Test
+  void toggleLikeStatusFailedWithNoSuchPostIdTest() {
+    /**
+     * GIVEN
+     *
+     * 존재하지 않는 postId
+     */
+    Long postId = -1L;
+
+    /**
+     * WHEN
+     * THEN
+     *
+     * toggleLikeStatus 요청 시 BadRequestException 발생
+     */
+    Assertions.assertThatThrownBy(() -> marketService.toggleLikeStatus(member1, postId))
+        .isInstanceOf(BadRequestException.class);
   }
 }
