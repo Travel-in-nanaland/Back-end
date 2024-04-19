@@ -34,8 +34,8 @@ public class SearchResponse {
   @Builder
   public static class ResultDto {
 
-    @Schema(description = "총 조회 개수")
-    private Long count;
+    @Schema(description = "총 항목 개수")
+    private Long totalElements;
 
     @Schema(description = "결과 데이터")
     private List<ThumbnailDto> data;
@@ -53,5 +53,8 @@ public class SearchResponse {
 
     @Schema(description = "제목")
     private String title;
+
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
   }
 }

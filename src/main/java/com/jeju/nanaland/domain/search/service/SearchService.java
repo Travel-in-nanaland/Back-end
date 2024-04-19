@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.search.service;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
@@ -34,6 +35,7 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
+  private final FavoriteRepository favoriteRepository;
   private final RedisTemplate<String, String> redisTemplate;
 
   public SearchResponse.CategoryDto getCategorySearchResultDto(String keyword, Locale locale) {
@@ -55,11 +57,11 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureCompositeDto> ResultDto = natureRepository.searchCompositeDtoByTitle(keyword, locale,
-        pageable);
+    Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByTitle(
+        keyword, locale, pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (NatureCompositeDto dto : ResultDto) {
+    for (NatureCompositeDto dto : resultPage) {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -69,7 +71,7 @@ public class SearchService {
     }
 
     return SearchResponse.ResultDto.builder()
-        .count(ResultDto.getTotalElements())
+        .totalElements(resultPage.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -78,11 +80,11 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<FestivalCompositeDto> ResultDto = festivalRepository.searchCompositeDtoByTitle(keyword,
-        locale, pageable);
+    Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByTitle(
+        keyword, locale, pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (FestivalCompositeDto dto : ResultDto) {
+    for (FestivalCompositeDto dto : resultPage) {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -92,7 +94,7 @@ public class SearchService {
     }
 
     return SearchResponse.ResultDto.builder()
-        .count(ResultDto.getTotalElements())
+        .totalElements(resultPage.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -101,11 +103,11 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<ExperienceCompositeDto> ResultDto = experienceRepository.searchCompositeDtoByTitle(keyword,
-        locale, pageable);
+    Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByTitle(
+        keyword, locale, pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (ExperienceCompositeDto dto : ResultDto) {
+    for (ExperienceCompositeDto dto : resultPage) {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -115,7 +117,7 @@ public class SearchService {
     }
 
     return SearchResponse.ResultDto.builder()
-        .count(ResultDto.getTotalElements())
+        .totalElements(resultPage.getTotalElements())
         .data(thumbnails)
         .build();
   }
@@ -124,11 +126,11 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<MarketCompositeDto> ResultDto = marketRepository.searchCompositeDtoByTitle(keyword, locale,
-        pageable);
+    Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByTitle(
+        keyword, locale, pageable);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (MarketCompositeDto dto : ResultDto) {
+    for (MarketCompositeDto dto : resultPage) {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -138,7 +140,7 @@ public class SearchService {
     }
 
     return SearchResponse.ResultDto.builder()
-        .count(ResultDto.getTotalElements())
+        .totalElements(resultPage.getTotalElements())
         .data(thumbnails)
         .build();
   }
