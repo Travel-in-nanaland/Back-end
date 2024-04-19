@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.experience.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
@@ -81,7 +82,7 @@ class ExperienceServiceTest {
     em.persist(experience);
 
     category = Category.builder()
-        .content("EXPERIENCE")
+        .content(CategoryContent.EXPERIENCE)
         .build();
     em.persist(category);
   }

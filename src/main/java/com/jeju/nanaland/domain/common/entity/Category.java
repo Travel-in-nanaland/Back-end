@@ -1,8 +1,11 @@
 package com.jeju.nanaland.domain.common.entity;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +19,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseEntity {
 
-  @NotBlank
+  @NotNull
   @Column(nullable = false, unique = true)
-  private String content;
+  @Enumerated(EnumType.STRING)
+  private CategoryContent content;
 }
