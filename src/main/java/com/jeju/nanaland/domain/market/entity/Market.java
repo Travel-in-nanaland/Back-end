@@ -25,8 +25,8 @@ public class Market extends Common {
   private List<MarketTrans> marketTrans;
 
   @Builder
-  public Market(ImageFile imageFile, String contact, String homepage) {
-    super(imageFile, contact);
+  public Market(String contentId, ImageFile imageFile, String contact, String homepage) {
+    super(contentId, imageFile, contact);
     this.homepage = homepage;
     this.marketTrans = new ArrayList<>();
   }
