@@ -48,7 +48,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public Page<MarketThumbnail> findMarketThumbnails(Locale locale, Pageable pageable) {
+  public Page<MarketThumbnail> findMarketThumbnails(Locale locale, String addressFilter,
+      Pageable pageable) {
     List<MarketThumbnail> resultDto = queryFactory
         .select(new QMarketResponse_MarketThumbnail(
             market.id,
@@ -59,7 +60,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .from(market)
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.language.locale.eq(locale))
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.address.contains(addressFilter)))
         .orderBy(market.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -69,7 +71,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .select(market.count())
         .from(market)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.language.locale.eq(locale));
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.address.contains(addressFilter)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }

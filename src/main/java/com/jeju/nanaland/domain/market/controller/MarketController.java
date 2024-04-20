@@ -42,12 +42,13 @@ public class MarketController {
   @GetMapping("/list")
   public BaseResponse<MarketResponse.MarketThumbnailDto> getMarketList(
       @AuthMember Member member,
+      @RequestParam(defaultValue = "") String addressFilter,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(MARKET_LIST_SUCCESS,
-        marketService.getMarketList(locale, page, size));
+        marketService.getMarketList(locale, addressFilter, page, size));
   }
 
   @Operation(summary = "전통시장 상세 정보 조회", description = "전통시장 상세 정보 조회")

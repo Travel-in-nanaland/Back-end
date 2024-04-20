@@ -28,12 +28,13 @@ public class MarketService {
   private final MarketRepository marketRepository;
   private final FavoriteService favoriteService;
 
-  public MarketResponse.MarketThumbnailDto getMarketList(Locale locale, int page, int size) {
+  public MarketResponse.MarketThumbnailDto getMarketList(Locale locale, String addressFilter,
+      int page, int size) {
 
     // default : page = 0, size = 12
     Pageable pageable = PageRequest.of(page, size);
     Page<MarketThumbnail> marketThumbnails = marketRepository.findMarketThumbnails(locale,
-        pageable);
+        addressFilter, pageable);
 
     List<MarketThumbnail> data = new ArrayList<>();
     for (MarketThumbnail marketThumbnail : marketThumbnails) {

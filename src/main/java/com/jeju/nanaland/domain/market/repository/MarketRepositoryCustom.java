@@ -10,7 +10,8 @@ public interface MarketRepositoryCustom {
 
   MarketCompositeDto findCompositeDtoById(Long id, Locale locale);
 
-  Page<MarketResponse.MarketThumbnail> findMarketThumbnails(Locale locale, Pageable pageable);
+  Page<MarketResponse.MarketThumbnail> findMarketThumbnails(Locale locale, String addressFilter,
+      Pageable pageable);
 
   Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable);
