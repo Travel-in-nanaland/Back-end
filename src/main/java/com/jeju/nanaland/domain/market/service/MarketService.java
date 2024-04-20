@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
@@ -47,6 +48,26 @@ public class MarketService {
     return MarketResponse.MarketThumbnailDto.builder()
         .totalElements(marketThumbnails.getTotalElements())
         .data(data)
+        .build();
+  }
+
+  public MarketResponse.MarketDetailDto getMarketDetail(Locale locale, Long id) {
+    marketRepository.findById(id)
+        .orElseThrow(() -> new BadRequestException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
+
+    MarketCompositeDto resultDto = marketRepository.findCompositeDtoById(id, locale);
+
+    return MarketResponse.MarketDetailDto.builder()
+        .id(resultDto.getId())
+        .title(resultDto.getTitle())
+        .originUrl(resultDto.getOriginUrl())
+        .content(resultDto.getContent())
+        .address(resultDto.getAddress())
+        .addressTag(PostService.extractAddressTag(locale, resultDto.getAddress()))
+        .contact(resultDto.getContact())
+        .homepage(resultDto.getHomepage())
+        .time(resultDto.getTime())
+        .amenity(resultDto.getAmenity())
         .build();
   }
 
