@@ -25,8 +25,9 @@ public class Experience extends Common {
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
-  public Experience(ImageFile imageFile, String contact, String type, Float ratingAvg) {
-    super(imageFile, contact);
+  public Experience(String contentId, ImageFile imageFile, String contact, String type,
+      Float ratingAvg) {
+    super(contentId, imageFile, contact);
     this.type = type;
     this.ratingAvg = ratingAvg;
     this.experienceTrans = new ArrayList<>();

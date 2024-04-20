@@ -21,8 +21,8 @@ public class Nature extends Common {
   private List<NatureTrans> natureTrans;
 
   @Builder
-  public Nature(ImageFile imageFile, String contact) {
-    super(imageFile, contact);
+  public Nature(String contentId, ImageFile imageFile, String contact) {
+    super(contentId, imageFile, contact);
     this.natureTrans = new ArrayList<>();
   }
 }

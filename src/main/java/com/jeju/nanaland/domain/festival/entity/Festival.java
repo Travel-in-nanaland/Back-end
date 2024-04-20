@@ -6,6 +6,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -18,6 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Festival extends Common {
 
+  private LocalDate startDate;
+  private LocalDate endDate;
+
   @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
 
@@ -25,8 +29,11 @@ public class Festival extends Common {
   private List<FestivalTrans> festivalTrans;
 
   @Builder
-  public Festival(ImageFile imageFile, String contact, String homepage) {
-    super(imageFile, contact);
+  public Festival(String contentId, ImageFile imageFile, String contact, LocalDate startDate,
+      LocalDate endDate, String homepage) {
+    super(contentId, imageFile, contact);
+    this.startDate = startDate;
+    this.endDate = endDate;
     this.homepage = homepage;
     this.festivalTrans = new ArrayList<>();
   }
