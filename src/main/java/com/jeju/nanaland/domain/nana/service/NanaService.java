@@ -105,9 +105,8 @@ public class NanaService {
 
     return favoriteService.toggleLikeStatus(member, CategoryContent.NANA, postId);
   }
-}
 
-// nanaContent의 AdditionalInfo dto로 바꾸기
+  // nanaContent의 AdditionalInfo dto로 바꾸기
   public List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
       NanaContent nanaContent) {
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
