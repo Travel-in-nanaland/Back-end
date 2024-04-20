@@ -47,7 +47,7 @@ public class SearchController {
     log.info("test");
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getCategorySearchResultDto(keyword, locale));
+        searchService.getCategorySearchResultDto(member, keyword, locale));
   }
 
   @Operation(
@@ -66,7 +66,7 @@ public class SearchController {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getNatureSearchResultDto(keyword, locale, page, size));
+        searchService.getNatureSearchResultDto(member, keyword, locale, page, size));
   }
 
   @Operation(
@@ -85,7 +85,7 @@ public class SearchController {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getFestivalSearchResultDto(keyword, locale, page, size));
+        searchService.getFestivalSearchResultDto(member, keyword, locale, page, size));
   }
 
   @Operation(
@@ -104,7 +104,7 @@ public class SearchController {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getExperienceSearchResultDto(keyword, locale, page, size));
+        searchService.getExperienceSearchResultDto(member, keyword, locale, page, size));
   }
 
   @Operation(
@@ -123,7 +123,7 @@ public class SearchController {
 
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getMarketSearchResultDto(keyword, locale, page, size));
+        searchService.getMarketSearchResultDto(member, keyword, locale, page, size));
   }
 
   @Operation(
