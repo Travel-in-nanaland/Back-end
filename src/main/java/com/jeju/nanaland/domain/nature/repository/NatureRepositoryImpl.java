@@ -7,7 +7,9 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.QNatureResponse_NatureThumbnail;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -51,7 +53,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   @Override
   public Page<NatureCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
-    List<NatureCompositeDto> ResultDto = queryFactory
+    List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
             imageFile.originUrl,
@@ -86,6 +88,36 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             .and(natureTrans.language.locale.eq(locale))
         );
 
-    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public Page<NatureThumbnail> findNatureThumbnails(Locale locale, String addressFilter,
+      Pageable pageable) {
+    List<NatureThumbnail> resultDto = queryFactory
+        .select(new QNatureResponse_NatureThumbnail(
+            nature.id,
+            natureTrans.title,
+            imageFile.thumbnailUrl,
+            natureTrans.address
+        ))
+        .from(nature)
+        .leftJoin(nature.natureTrans, natureTrans)
+        .leftJoin(nature.imageFile, imageFile)
+        .where(natureTrans.language.locale.eq(locale)
+            .and(natureTrans.address.contains(addressFilter)))
+        .orderBy(nature.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(nature.count())
+        .from(nature)
+        .leftJoin(nature.natureTrans, natureTrans)
+        .where(natureTrans.language.locale.eq(locale)
+            .and(natureTrans.address.contains(addressFilter)));
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 }
