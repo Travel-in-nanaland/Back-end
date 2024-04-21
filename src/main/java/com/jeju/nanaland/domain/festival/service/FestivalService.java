@@ -45,6 +45,47 @@ public class FestivalService {
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
         locale, pageable, false);
 
+    return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
+  }
+
+  public FestivalThumbnailDto getSeasonFestivalList(Locale locale, int page, int size,
+      String season) {
+    Pageable pageable = PageRequest.of(page, size);
+    LocalDate startDate = null;
+    LocalDate endDate = null;
+
+    switch (season) {
+      case "spring":
+        startDate = LocalDate.of(1, 3, 1);
+        endDate = LocalDate.of(1, 4, 1);
+        break;
+      case "summer":
+        startDate = LocalDate.of(1, 5, 1);
+        endDate = LocalDate.of(1, 8, 1);
+        break;
+      case "autumn":
+        startDate = LocalDate.of(1, 9, 1);
+        endDate = LocalDate.of(1, 10, 1);
+        break;
+      case "winter":
+        startDate = LocalDate.of(1, 11, 1);
+        endDate = LocalDate.of(1, 2, 1);
+        break;
+    }
+    if (startDate == null) {
+      throw new BadRequestException("계절 정보 오류");
+    }
+
+    // compositeDto로 계절별 festival 가져오기
+    Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
+        locale, pageable, startDate, endDate);
+    getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
+
+    return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
+  }
+
+  public FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
+      Page<FestivalCompositeDto> festivalCompositeDtoList) {
     List<FestivalThumbnail> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : festivalCompositeDtoList) {
 
@@ -68,7 +109,7 @@ public class FestivalService {
   public String formatLocalDateToStringWithDay(LocalDate startDate, LocalDate endDate) {
     String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("M. dd"));
     String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("M. dd"));
-
+// LocalDate 타입의 startDate, endDate를 04.1(월) ~ 05.13(수)형태로 formatting
     String startDay = startDate.getDayOfWeek()
         .getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
     String endDay = endDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);

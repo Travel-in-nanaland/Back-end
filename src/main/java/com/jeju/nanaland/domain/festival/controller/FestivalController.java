@@ -60,7 +60,6 @@ public class FestivalController {
   @Operation(summary = "종료된 축제 리스트 조회", description = "종료된 축제 리스트 조회 (페이징)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/past")
@@ -72,5 +71,23 @@ public class FestivalController {
     Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
         festivalService.getPastFestivalList(locale, page, size));
+  }
+
+  @Operation(summary = "계절별 축제 리스트 조회", description = "계절별 축제 리스트 조회 (페이징)")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "계절 선택시 Query Parameter가 spring, summer, autumn, winter 가 아닌 경우", content = @Content),
+
+  })
+  @GetMapping("/past")
+  public BaseResponse<FestivalThumbnailDto> getSeasonFestival(@AuthMember Member member,
+      @RequestParam(defaultValue = "") String addressFilter,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size,
+      @RequestParam(defaultValue = "spring") String season) {
+
+    Locale locale = member.getLanguage().getLocale();
+    return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
+        festivalService.getSeasonFestivalList(locale, page, size, season));
   }
 }
