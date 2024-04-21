@@ -3,7 +3,6 @@ package com.jeju.nanaland.domain.festival.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.FESTIVAL_LIST_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
 import com.jeju.nanaland.domain.festival.service.FestivalService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -64,13 +63,12 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/past")
-  public BaseResponse<FestivalThumbnailDto> getPastFestival(@AuthMember Member member,
+  public BaseResponse<FestivalThumbnailDto> getPastFestival(@AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getPastFestivalList(locale, page, size));
+        festivalService.getPastFestivalList(memberInfoDto.getLanguage().getLocale(), page, size));
   }
 
   @Operation(summary = "계절별 축제 리스트 조회", description = "계절별 축제 리스트 조회 (페이징)")
@@ -80,13 +78,14 @@ public class FestivalController {
 
   })
   @GetMapping("/season")
-  public BaseResponse<FestivalThumbnailDto> getSeasonFestival(@AuthMember Member member,
+  public BaseResponse<FestivalThumbnailDto> getSeasonFestival(
+      @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
       @RequestParam(defaultValue = "spring") String season) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getSeasonFestivalList(locale, page, size, season));
+        festivalService.getSeasonFestivalList(memberInfoDto.getLanguage().getLocale(), page, size,
+            season));
   }
 }
