@@ -64,7 +64,6 @@ public class FestivalController {
   })
   @GetMapping("/past")
   public BaseResponse<FestivalThumbnailDto> getPastFestival(@AuthMember Member member,
-      @RequestParam(defaultValue = "") String addressFilter,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
@@ -79,9 +78,8 @@ public class FestivalController {
       @ApiResponse(responseCode = "400", description = "계절 선택시 Query Parameter가 spring, summer, autumn, winter 가 아닌 경우", content = @Content),
 
   })
-  @GetMapping("/past")
+  @GetMapping("/season")
   public BaseResponse<FestivalThumbnailDto> getSeasonFestival(@AuthMember Member member,
-      @RequestParam(defaultValue = "") String addressFilter,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
       @RequestParam(defaultValue = "spring") String season) {
