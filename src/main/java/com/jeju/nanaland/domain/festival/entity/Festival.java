@@ -28,13 +28,17 @@ public class Festival extends Common {
   @OneToMany(mappedBy = "festival", cascade = CascadeType.REMOVE)
   private List<FestivalTrans> festivalTrans;
 
+  @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
+  private boolean onGoing;
+
   @Builder
   public Festival(String contentId, ImageFile imageFile, String contact, LocalDate startDate,
-      LocalDate endDate, String homepage) {
+      LocalDate endDate, String homepage, boolean onGoing) {
     super(contentId, imageFile, contact);
     this.startDate = startDate;
     this.endDate = endDate;
     this.homepage = homepage;
     this.festivalTrans = new ArrayList<>();
+    this.onGoing = onGoing;
   }
 }

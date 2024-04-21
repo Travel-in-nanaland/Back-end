@@ -11,4 +11,7 @@ public interface FestivalRepositoryCustom {
 
   Page<FestivalCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable);
+
+  Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Locale locale, Pageable pageable,
+      boolean onGoing);
 }

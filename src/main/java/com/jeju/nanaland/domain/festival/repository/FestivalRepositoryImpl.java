@@ -36,7 +36,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.address,
             festivalTrans.time,
             festivalTrans.intro,
-            festivalTrans.fee
+            festivalTrans.fee,
+            festival.startDate,
+            festival.endDate
         ))
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
@@ -62,7 +64,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.address,
             festivalTrans.time,
             festivalTrans.intro,
-            festivalTrans.fee
+            festivalTrans.fee,
+            festival.startDate,
+            festival.endDate
         ))
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
@@ -80,6 +84,47 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festivalTrans.title.contains(title)
+            .and(festivalTrans.language.locale.eq(locale)));
+
+    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Locale locale, Pageable pageable,
+      boolean onGoing) {
+    List<FestivalCompositeDto> ResultDto = queryFactory
+        .select(new QFestivalCompositeDto(
+            festival.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            festival.contact,
+            festival.homepage,
+            language.locale,
+            festivalTrans.title,
+            festivalTrans.content,
+            festivalTrans.address,
+            festivalTrans.time,
+            festivalTrans.intro,
+            festivalTrans.fee,
+            festival.startDate,
+            festival.endDate
+        ))
+        .from(festival)
+        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.festivalTrans, festivalTrans)
+        .where(festival.onGoing.eq(onGoing)
+            .and(festivalTrans.language.locale.eq(locale)))
+        .orderBy(festivalTrans.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(festival.count())
+        .from(festival)
+        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.festivalTrans, festivalTrans)
+        .where(festival.onGoing.eq(onGoing)
             .and(festivalTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);

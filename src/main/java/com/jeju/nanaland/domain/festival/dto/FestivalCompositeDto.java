@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.festival.dto;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.querydsl.core.annotations.QueryProjection;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,11 +23,13 @@ public class FestivalCompositeDto {
   private String time;
   private String intro;
   private String fee;
+  private LocalDate startDate;
+  private LocalDate endDate;
 
   @QueryProjection
   public FestivalCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, Locale locale, String title, String content, String address, String time,
-      String intro, String fee) {
+      String intro, String fee, LocalDate startDate, LocalDate endDate) {
     this.id = id;
     this.originUrl = originUrl;
     this.thumbnailUrl = thumbnailUrl;
@@ -39,5 +42,7 @@ public class FestivalCompositeDto {
     this.time = time;
     this.intro = intro;
     this.fee = fee;
+    this.startDate = startDate;
+    this.endDate = endDate;
   }
 }
