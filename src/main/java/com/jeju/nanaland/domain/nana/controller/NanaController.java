@@ -2,8 +2,7 @@ package com.jeju.nanaland.domain.nana.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -38,10 +37,10 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping
-  public BaseResponse<List<NanaResponse.NanaThumbnail>> nanaMainPage(@AuthMember Member member) {
-    Locale locale = member.getLanguage().getLocale();
+  public BaseResponse<List<NanaResponse.NanaThumbnail>> nanaMainPage(
+      @AuthMember MemberInfoDto memberInfoDto) {
     return BaseResponse.success(SuccessCode.NANA_MAIN_SUCCESS,
-        nanaService.getMainNanaThumbnails(locale));
+        nanaService.getMainNanaThumbnails(memberInfoDto.getLanguage().getLocale()));
   }
 
   @Operation(
@@ -52,11 +51,10 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<NanaThumbnailDto> nanaAll(@AuthMember Member member, int page,
+  public BaseResponse<NanaThumbnailDto> nanaAll(@AuthMember MemberInfoDto memberInfoDto, int page,
       int size) {
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SuccessCode.NANA_LIST_SUCCESS,
-        nanaService.getNanaThumbnails(locale, page, size));
+        nanaService.getNanaThumbnails(memberInfoDto.getLanguage().getLocale(), page, size));
   }
 
   @Operation(
@@ -79,8 +77,9 @@ public class NanaController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
-  public BaseResponse<String> toggleLikeStatus(@AuthMember Member member, @PathVariable Long id) {
-    String result = nanaService.toggleLikeStatus(member, id);
+  public BaseResponse<String> toggleLikeStatus(@AuthMember MemberInfoDto memberInfoDto,
+      @PathVariable Long id) {
+    String result = nanaService.toggleLikeStatus(memberInfoDto.getMember(), id);
     return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
   }
 }
