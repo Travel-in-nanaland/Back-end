@@ -36,7 +36,8 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.intro,
             natureTrans.details,
             natureTrans.time,
-            natureTrans.amenity
+            natureTrans.amenity,
+            natureTrans.fee
         ))
         .from(nature)
         .leftJoin(nature.imageFile, imageFile)
@@ -63,7 +64,8 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.intro,
             natureTrans.details,
             natureTrans.time,
-            natureTrans.amenity
+            natureTrans.amenity,
+            natureTrans.fee
         ))
         .from(nature)
         .leftJoin(nature.imageFile, imageFile)
