@@ -10,6 +10,8 @@ application.yml
 ## test를 위한 controller
 TestController.java
 
+data.sql
+
 ### STS ###
 .apt_generated
 .classpath
