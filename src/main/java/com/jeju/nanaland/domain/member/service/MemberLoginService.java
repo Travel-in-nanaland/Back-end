@@ -9,7 +9,6 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.domain.member.repository.MemberRepositoryCustom;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
-  private final MemberRepositoryCustom memberRepositoryCustom;
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
   private final JwtUtil jwtUtil;
@@ -63,7 +61,7 @@ public class MemberLoginService {
 
   private Member createMember(LoginDto loginDto) {
 
-    Optional<Member> memberOptional = memberRepositoryCustom.findDuplicateMember(
+    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
         loginDto.getEmail(),
         Provider.valueOf(loginDto.getProvider()),
         loginDto.getProviderId());
