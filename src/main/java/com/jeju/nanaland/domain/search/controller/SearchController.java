@@ -2,8 +2,7 @@ package com.jeju.nanaland.domain.search.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.CategoryDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
@@ -41,13 +40,12 @@ public class SearchController {
   })
   @GetMapping("/category")
   public BaseResponse<CategoryDto> searchCategory(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword) {
 
-    log.info("test");
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getCategorySearchResultDto(member, keyword, locale));
+        searchService.getCategorySearchResultDto(memberInfoDto.getMember(), keyword,
+            memberInfoDto.getLanguage().getLocale()));
   }
 
   @Operation(
@@ -59,14 +57,14 @@ public class SearchController {
   })
   @GetMapping("/nature")
   public BaseResponse<SearchResponse.ResultDto> searchNature(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getNatureSearchResultDto(member, keyword, locale, page, size));
+        searchService.getNatureSearchResultDto(memberInfoDto.getMember(), keyword,
+            memberInfoDto.getLanguage().getLocale(), page, size));
   }
 
   @Operation(
@@ -78,14 +76,14 @@ public class SearchController {
   })
   @GetMapping("/festival")
   public BaseResponse<SearchResponse.ResultDto> searchFestival(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getFestivalSearchResultDto(member, keyword, locale, page, size));
+        searchService.getFestivalSearchResultDto(memberInfoDto.getMember(), keyword,
+            memberInfoDto.getLanguage().getLocale(), page, size));
   }
 
   @Operation(
@@ -97,14 +95,14 @@ public class SearchController {
   })
   @GetMapping("/experience")
   public BaseResponse<SearchResponse.ResultDto> searchExperience(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getExperienceSearchResultDto(member, keyword, locale, page, size));
+        searchService.getExperienceSearchResultDto(memberInfoDto.getMember(), keyword,
+            memberInfoDto.getLanguage().getLocale(), page, size));
   }
 
   @Operation(
@@ -116,14 +114,14 @@ public class SearchController {
   })
   @GetMapping("/market")
   public BaseResponse<SearchResponse.ResultDto> searchMarket(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getMarketSearchResultDto(member, keyword, locale, page, size));
+        searchService.getMarketSearchResultDto(memberInfoDto.getMember(), keyword,
+            memberInfoDto.getLanguage().getLocale(), page, size));
   }
 
   @Operation(
@@ -134,9 +132,9 @@ public class SearchController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/popular")
-  public BaseResponse<List<String>> getPopularSearch(@AuthMember Member member) {
+  public BaseResponse<List<String>> getPopularSearch(@AuthMember MemberInfoDto memberInfoDto) {
 
-    Locale locale = member.getLanguage().getLocale();
-    return BaseResponse.success(SEARCH_SUCCESS, searchService.getPopularSearch(locale));
+    return BaseResponse.success(SEARCH_SUCCESS,
+        searchService.getPopularSearch(memberInfoDto.getLanguage().getLocale()));
   }
 }
