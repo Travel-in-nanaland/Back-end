@@ -7,9 +7,7 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.QNatureResponse_NatureThumbnail;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -92,14 +90,23 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureThumbnail> findNatureThumbnails(Locale locale, String addressFilter,
+  public Page<NatureCompositeDto> findNatureThumbnails(Locale locale, String addressFilter,
       Pageable pageable) {
-    List<NatureThumbnail> resultDto = queryFactory
-        .select(new QNatureResponse_NatureThumbnail(
+    List<NatureCompositeDto> resultDto = queryFactory
+        .select(new QNatureCompositeDto(
             nature.id,
-            natureTrans.title,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
-            natureTrans.address
+            nature.contact,
+            language.locale,
+            natureTrans.title,
+            natureTrans.content,
+            natureTrans.address,
+            natureTrans.intro,
+            natureTrans.details,
+            natureTrans.time,
+            natureTrans.amenity,
+            natureTrans.fee
         ))
         .from(nature)
         .leftJoin(nature.natureTrans, natureTrans)

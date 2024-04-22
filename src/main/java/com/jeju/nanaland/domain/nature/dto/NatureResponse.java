@@ -24,13 +24,16 @@ public class NatureResponse {
     private String title;
     private String thumbnailUrl;
     private String address;
+    private boolean isFavorite;
 
     @QueryProjection
-    public NatureThumbnail(Long id, String title, String thumbnailUrl, String address) {
+    public NatureThumbnail(Long id, String title, String thumbnailUrl, String address,
+        boolean isFavorite) {
       this.id = id;
       this.title = title;
       this.thumbnailUrl = thumbnailUrl;
       this.address = address;
+      this.isFavorite = isFavorite;
     }
   }
 

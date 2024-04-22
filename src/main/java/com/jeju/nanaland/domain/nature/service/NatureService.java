@@ -1,9 +1,12 @@
 package com.jeju.nanaland.domain.nature.service;
 
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
@@ -37,20 +40,24 @@ public class NatureService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureThumbnail> natureThumbnails = natureRepository.findNatureThumbnails(
+    Page<NatureCompositeDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
         memberInfoDto.getLanguage().getLocale(), addressFilter, pageable);
 
-    List<NatureThumbnail> data = natureThumbnails.getContent()
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(
+        memberInfoDto.getMember(), NATURE);
+
+    List<NatureThumbnail> data = natureCompositeDtoPage.getContent()
         .stream().map(natureThumbnail ->
             NatureThumbnail.builder()
                 .id(natureThumbnail.getId())
                 .title(natureThumbnail.getTitle())
                 .thumbnailUrl(natureThumbnail.getThumbnailUrl())
                 .address(natureThumbnail.getAddress())
+                .isFavorite(favoriteIds.contains(natureThumbnail.getId()))
                 .build()).toList();
 
     return NatureThumbnailDto.builder()
-        .totalElements(natureThumbnails.getTotalElements())
+        .totalElements(natureCompositeDtoPage.getTotalElements())
         .data(data)
         .build();
   }
