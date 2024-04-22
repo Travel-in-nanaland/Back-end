@@ -56,7 +56,7 @@ public class NatureService {
                 .id(natureCompositeDto.getId())
                 .title(natureCompositeDto.getTitle())
                 .thumbnailUrl(natureCompositeDto.getThumbnailUrl())
-                .address(PostService.extractAddressTag(memberInfoDto.getLanguage().getLocale(),
+                .addressTag(PostService.extractAddressTag(memberInfoDto.getLanguage().getLocale(),
                     natureCompositeDto.getAddress()))
                 .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
                 .build()).toList();

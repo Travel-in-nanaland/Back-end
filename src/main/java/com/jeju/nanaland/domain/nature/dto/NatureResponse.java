@@ -35,19 +35,19 @@ public class NatureResponse {
     @Schema(description = "썸네일 이미지 url")
     private String thumbnailUrl;
 
-    @Schema(description = "주소")
-    private String address;
+    @Schema(description = "주소 태그")
+    private String addressTag;
 
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
 
     @QueryProjection
-    public NatureThumbnail(Long id, String title, String thumbnailUrl, String address,
+    public NatureThumbnail(Long id, String title, String thumbnailUrl, String addressTag,
         boolean isFavorite) {
       this.id = id;
       this.title = title;
       this.thumbnailUrl = thumbnailUrl;
-      this.address = address;
+      this.addressTag = addressTag;
       this.isFavorite = isFavorite;
     }
   }
