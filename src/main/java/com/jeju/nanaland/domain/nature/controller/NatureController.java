@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.nature.controller;
 
 
+import static com.jeju.nanaland.global.exception.SuccessCode.NATURE_LIST_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,13 +46,13 @@ public class NatureController {
   }
 
   @GetMapping("/list")
-  public ResponseEntity getNatureList(
+  public BaseResponse<NatureThumbnailDto> getNatureList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "") String addressFilter,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
     NatureThumbnailDto data = natureService.getNatureList(memberInfoDto, addressFilter,
         page, size);
-    return ResponseEntity.ok(data);
+    return BaseResponse.success(NATURE_LIST_SUCCESS, data);
   }
 }

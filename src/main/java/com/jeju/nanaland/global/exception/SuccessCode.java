@@ -30,6 +30,10 @@ public enum SuccessCode {
   NANA_LIST_SUCCESS(OK, "나나 썸네일 리스트 조회 성공"),
   NANA_DETAIL_SUCCESS(OK, "나나 상세 페이지 조회 성공"),
 
+  // nature
+  NATURE_LIST_SUCCESS(OK, "7대 자연 썸네일 리스트 조회 성공"),
+
+
   // favorite
   POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공");
 
