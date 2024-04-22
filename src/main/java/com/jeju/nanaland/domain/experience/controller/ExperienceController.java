@@ -4,7 +4,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SU
 
 import com.jeju.nanaland.domain.experience.service.ExperienceService;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,9 +35,12 @@ public class ExperienceController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
-  public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(@AuthMember Member member,
+  public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(
+      @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS,
-        experienceService.toggleLikeStatus(member, id));
+
+    return BaseResponse.success(
+        POST_LIKE_TOGGLE_SUCCESS,
+        experienceService.toggleLikeStatus(memberInfoDto.getMember(), id));
   }
 }

@@ -1,6 +1,8 @@
 package com.jeju.nanaland.domain.market.service;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -19,10 +21,13 @@ public class MarketService {
   private final FavoriteService favoriteService;
 
   @Transactional
-  public String toggleLikeStatus(Member member, Long postId) {
+  public StatusDto toggleLikeStatus(Member member, Long postId) {
     marketRepository.findById(postId)
         .orElseThrow(() -> new BadRequestException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
 
-    return favoriteService.toggleLikeStatus(member, CategoryContent.MARKET, postId);
+    Boolean status = favoriteService.toggleLikeStatus(member, CategoryContent.MARKET, postId);
+    return FavoriteResponse.StatusDto.builder()
+        .isFavorite(status)
+        .build();
   }
 }

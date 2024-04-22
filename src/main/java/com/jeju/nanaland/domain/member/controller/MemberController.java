@@ -7,8 +7,8 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
-import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
@@ -82,10 +82,10 @@ public class MemberController {
   })
   @PatchMapping("/type")
   public BaseResponse<Null> updateMemberType(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
 
-    memberTypeService.updateMemberType(member.getId(), request.getType());
+    memberTypeService.updateMemberType(memberInfoDto.getMember().getId(), request.getType());
     return BaseResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
@@ -101,9 +101,10 @@ public class MemberController {
   })
   @GetMapping("/recommended")
   public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
-      @AuthMember Member member) {
+      @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(member.getId());
+    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
+        memberInfoDto.getMember().getId());
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 }
