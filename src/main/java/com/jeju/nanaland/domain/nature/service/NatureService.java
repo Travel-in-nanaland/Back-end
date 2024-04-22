@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.nature.service;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -48,13 +49,14 @@ public class NatureService {
         memberInfoDto.getMember(), NATURE);
 
     List<NatureThumbnail> data = natureCompositeDtoPage.getContent()
-        .stream().map(natureThumbnail ->
+        .stream().map(natureCompositeDto ->
             NatureThumbnail.builder()
-                .id(natureThumbnail.getId())
-                .title(natureThumbnail.getTitle())
-                .thumbnailUrl(natureThumbnail.getThumbnailUrl())
-                .address(natureThumbnail.getAddress())
-                .isFavorite(favoriteIds.contains(natureThumbnail.getId()))
+                .id(natureCompositeDto.getId())
+                .title(natureCompositeDto.getTitle())
+                .thumbnailUrl(natureCompositeDto.getThumbnailUrl())
+                .address(PostService.extractAddressTag(memberInfoDto.getLanguage().getLocale(),
+                    natureCompositeDto.getAddress()))
+                .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
                 .build()).toList();
 
     return NatureThumbnailDto.builder()
@@ -67,13 +69,14 @@ public class NatureService {
     NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage().getLocale());
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(memberInfoDto.getMember(),
-        NATURE);
+    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
+        id);
 
     return NatureDetailDto.builder()
         .id(natureCompositeDto.getId())
         .originUrl(natureCompositeDto.getOriginUrl())
-        .addressTag("")
+        .addressTag(PostService.extractAddressTag(memberInfoDto.getLanguage().getLocale(),
+            natureCompositeDto.getAddress()))
         .title(natureCompositeDto.getTitle())
         .content(natureCompositeDto.getContent())
         .intro(natureCompositeDto.getIntro())
@@ -83,7 +86,7 @@ public class NatureService {
         .fee(natureCompositeDto.getFee())
         .details(natureCompositeDto.getDetails())
         .amenity(natureCompositeDto.getAmenity())
-        .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
+        .isFavorite(isPostInFavorite)
         .build();
   }
 }
