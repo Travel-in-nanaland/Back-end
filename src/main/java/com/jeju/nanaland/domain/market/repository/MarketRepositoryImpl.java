@@ -7,7 +7,9 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.QMarketResponse_MarketThumbnail;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -46,9 +48,39 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
+  public Page<MarketThumbnail> findMarketThumbnails(Locale locale, String addressFilter,
+      Pageable pageable) {
+    List<MarketThumbnail> resultDto = queryFactory
+        .select(new QMarketResponse_MarketThumbnail(
+            market.id,
+            marketTrans.title,
+            imageFile.thumbnailUrl,
+            marketTrans.address
+        ))
+        .from(market)
+        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.address.contains(addressFilter)))
+        .orderBy(market.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(market.count())
+        .from(market)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.address.contains(addressFilter)));
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
   public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
-    List<MarketCompositeDto> ResultDto = queryFactory
+    List<MarketCompositeDto> resultDto = queryFactory
         .select(new QMarketCompositeDto(
             market.id,
             imageFile.originUrl,
@@ -80,6 +112,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .where(marketTrans.title.contains(title)
             .and(marketTrans.language.locale.eq(locale)));
 
-    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 }

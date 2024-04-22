@@ -35,7 +35,12 @@ public enum SuccessCode {
   NATURE_DETAIL_SUCCESS(OK, "7대 자연 상세 정보 조회 성공"),
 
   // favorite
-  POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공");
+  POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공"),
+
+  // market
+  MARKET_LIST_SUCCESS(OK, "전통시장 썸네일 리스트 조회 성공"),
+  MARKET_DETAIL_SUCCESS(OK, "전통시장 상세정보 조회 성공");
+
 
   private final HttpStatus httpStatus;
   private final String message;
