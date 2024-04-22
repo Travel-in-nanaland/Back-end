@@ -4,8 +4,8 @@ import static com.jeju.nanaland.global.exception.SuccessCode.MARKET_DETAIL_SUCCE
 import static com.jeju.nanaland.global.exception.SuccessCode.MARKET_LIST_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.service.MarketService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
@@ -41,14 +41,14 @@ public class MarketController {
   })
   @GetMapping("/list")
   public BaseResponse<MarketResponse.MarketThumbnailDto> getMarketList(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "") String addressFilter,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    Locale locale = member.getLanguage().getLocale();
     return BaseResponse.success(MARKET_LIST_SUCCESS,
-        marketService.getMarketList(locale, addressFilter, page, size));
+        marketService.getMarketList(memberInfoDto.getLanguage().getLocale(), addressFilter, page,
+            size));
   }
 
   @Operation(summary = "전통시장 상세 정보 조회", description = "전통시장 상세 정보 조회")
@@ -60,11 +60,12 @@ public class MarketController {
   })
   @GetMapping("/{id}")
   public BaseResponse<MarketResponse.MarketDetailDto> getMarketDetail(
-      @AuthMember Member member,
+      @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
 
-    Locale locale = member.getLanguage().getLocale();
-    return BaseResponse.success(MARKET_DETAIL_SUCCESS, marketService.getMarketDetail(locale, id));
+    MarketDetailDto marketDetail = marketService.getMarketDetail(
+        memberInfoDto.getLanguage().getLocale(), id);
+    return BaseResponse.success(MARKET_DETAIL_SUCCESS, marketDetail);
   }
 
   @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")
