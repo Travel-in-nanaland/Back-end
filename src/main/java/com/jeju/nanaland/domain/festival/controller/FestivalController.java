@@ -34,7 +34,8 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
-  public BaseResponse<String> toggleLikeStatus(@AuthMember Member member, @PathVariable Long id) {
+  public BaseResponse<String> toggleLikeStatus(
+      @AuthMember Member member, @PathVariable Long id) {
     String result = festivalService.toggleLikeStatus(member, id);
     return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
   }
