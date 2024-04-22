@@ -7,6 +7,7 @@ import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
@@ -59,6 +60,30 @@ public class NatureService {
     return NatureThumbnailDto.builder()
         .totalElements(natureCompositeDtoPage.getTotalElements())
         .data(data)
+        .build();
+  }
+
+  public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id) {
+    NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
+        memberInfoDto.getLanguage().getLocale());
+
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(memberInfoDto.getMember(),
+        NATURE);
+
+    return NatureDetailDto.builder()
+        .id(natureCompositeDto.getId())
+        .originUrl(natureCompositeDto.getOriginUrl())
+        .addressTag("")
+        .title(natureCompositeDto.getTitle())
+        .content(natureCompositeDto.getContent())
+        .intro(natureCompositeDto.getIntro())
+        .address(natureCompositeDto.getAddress())
+        .contact(natureCompositeDto.getContact())
+        .time(natureCompositeDto.getTime())
+        .fee(natureCompositeDto.getFee())
+        .details(natureCompositeDto.getDetails())
+        .amenity(natureCompositeDto.getAmenity())
+        .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
         .build();
   }
 }

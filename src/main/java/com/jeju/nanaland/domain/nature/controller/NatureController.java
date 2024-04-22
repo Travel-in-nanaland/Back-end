@@ -5,6 +5,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.NATURE_LIST_SUCCESS
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
 import com.jeju.nanaland.domain.nature.service.NatureService;
 import com.jeju.nanaland.global.BaseResponse;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,5 +56,13 @@ public class NatureController {
     NatureThumbnailDto data = natureService.getNatureList(memberInfoDto, addressFilter,
         page, size);
     return BaseResponse.success(NATURE_LIST_SUCCESS, data);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity getNatureDetail(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @PathVariable Long id) {
+    NatureDetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, id);
+    return ResponseEntity.ok(natureDetail);
   }
 }

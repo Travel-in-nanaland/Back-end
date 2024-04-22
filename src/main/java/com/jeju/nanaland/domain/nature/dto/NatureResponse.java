@@ -37,4 +37,22 @@ public class NatureResponse {
     }
   }
 
+  @Getter
+  @Builder
+  public static class NatureDetailDto {
+
+    private Long id;
+    private String originUrl;
+    private String addressTag;
+    private String title;
+    private String content;
+    private String intro;
+    private String address;
+    private String contact;
+    private String time;
+    private String fee;
+    private String details;
+    private String amenity;
+    private boolean isFavorite;
+  }
 }
