@@ -13,6 +13,8 @@ import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +70,10 @@ public class NatureService {
   public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id) {
     NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage().getLocale());
+
+    if (natureCompositeDto == null) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
 
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
         id);

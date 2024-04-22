@@ -6,8 +6,6 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
-import com.jeju.nanaland.global.exception.BadRequestException;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +29,13 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   @Override
   public MemberInfoDto findMemberWithLanguage(Long memberId) {
 
-    return Optional.ofNullable(queryFactory
-            .select(new QMemberResponse_MemberInfoDto(
-                member, member.language
-            ))
-            .from(member)
-            .leftJoin(member.language)
-            .where(member.id.eq(memberId))
-            .fetchOne())
-        .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+    return queryFactory
+        .select(new QMemberResponse_MemberInfoDto(
+            member, member.language
+        ))
+        .from(member)
+        .leftJoin(member.language)
+        .where(member.id.eq(memberId))
+        .fetchOne();
   }
 }

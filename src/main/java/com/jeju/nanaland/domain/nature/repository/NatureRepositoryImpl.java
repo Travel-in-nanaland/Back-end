@@ -8,12 +8,9 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
-import com.jeju.nanaland.global.exception.ErrorCode;
-import com.jeju.nanaland.global.exception.NotFoundException;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,30 +23,29 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
 
   @Override
   public NatureCompositeDto findCompositeDtoById(Long id, Locale locale) {
-    return Optional.ofNullable(queryFactory
-            .select(new QNatureCompositeDto(
-                nature.id,
-                imageFile.originUrl,
-                imageFile.thumbnailUrl,
-                nature.contact,
-                language.locale,
-                natureTrans.title,
-                natureTrans.content,
-                natureTrans.address,
-                natureTrans.intro,
-                natureTrans.details,
-                natureTrans.time,
-                natureTrans.amenity,
-                natureTrans.fee
-            ))
-            .from(nature)
-            .leftJoin(nature.imageFile, imageFile)
-            .leftJoin(nature.natureTrans, natureTrans)
-            .where(nature.id.eq(id)
-                .and(natureTrans.language.locale.eq(locale))
-            )
-            .fetchOne())
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage()));
+    return queryFactory
+        .select(new QNatureCompositeDto(
+            nature.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            nature.contact,
+            language.locale,
+            natureTrans.title,
+            natureTrans.content,
+            natureTrans.address,
+            natureTrans.intro,
+            natureTrans.details,
+            natureTrans.time,
+            natureTrans.amenity,
+            natureTrans.fee
+        ))
+        .from(nature)
+        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.natureTrans, natureTrans)
+        .where(nature.id.eq(id)
+            .and(natureTrans.language.locale.eq(locale))
+        )
+        .fetchOne();
   }
 
   @Override
