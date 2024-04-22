@@ -47,6 +47,12 @@ public class NatureController {
     return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
   }
 
+  @Operation(summary = "7대 자연 리스트 조회", description = "7대 자연 리스트 조회 (페이징)")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
   @GetMapping("/list")
   public BaseResponse<NatureThumbnailDto> getNatureList(
       @AuthMember MemberInfoDto memberInfoDto,
@@ -58,6 +64,13 @@ public class NatureController {
     return BaseResponse.success(NATURE_LIST_SUCCESS, data);
   }
 
+  @Operation(summary = "7대 자연 상세 정보 조회", description = "7대 자연 상세 정보 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "해당 id의 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
   @GetMapping("/{id}")
   public BaseResponse<NatureDetailDto> getNatureDetail(
       @AuthMember MemberInfoDto memberInfoDto,
