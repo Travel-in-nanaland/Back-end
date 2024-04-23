@@ -30,8 +30,8 @@ public class FestivalTrans extends CommonTrans {
 
   @Builder
   public FestivalTrans(Festival festival, Language language, String title, String content,
-      String address, String time, String intro, String fee) {
-    super(title, content, address, time);
+      String address, String addressTag, String time, String intro, String fee) {
+    super(title, content, address, addressTag, time);
     this.festival = festival;
     this.language = language;
     this.intro = intro;
