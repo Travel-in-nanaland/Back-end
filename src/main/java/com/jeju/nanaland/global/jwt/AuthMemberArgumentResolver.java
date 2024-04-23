@@ -33,6 +33,7 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
     String bearerAccessToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
+
     MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
         Long.valueOf(memberId));
 

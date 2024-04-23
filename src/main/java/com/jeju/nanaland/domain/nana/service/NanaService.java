@@ -2,6 +2,8 @@ package com.jeju.nanaland.domain.nana.service;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
@@ -99,11 +101,14 @@ public class NanaService {
   }
 
   @Transactional
-  public String toggleLikeStatus(Member member, Long postId) {
+  public StatusDto toggleLikeStatus(Member member, Long postId) {
     nanaRepository.findById(postId)
         .orElseThrow(() -> new BadRequestException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
 
-    return favoriteService.toggleLikeStatus(member, CategoryContent.NANA, postId);
+    Boolean status = favoriteService.toggleLikeStatus(member, CategoryContent.NANA, postId);
+    return FavoriteResponse.StatusDto.builder()
+        .isFavorite(status)
+        .build();
   }
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
