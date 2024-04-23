@@ -10,17 +10,12 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.CategoryRepository;
-import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
-import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
-import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.nana.repository.NanaRepository;
-import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +36,52 @@ public class FavoriteService {
   private final CategoryRepository categoryRepository;
   private final FavoriteRepository favoriteRepository;
 
-  private final NanaRepository nanaRepository;
-  private final NatureRepository natureRepository;
-  private final FestivalRepository festivalRepository;
-  private final MarketRepository marketRepository;
-  private final ExperienceRepository experienceRepository;
+  public FavoriteResponse.AllCategoryDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page,
+      int size) {
+
+    Member member = memberInfoDto.getMember();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Pageable pageable = PageRequest.of(page, size);
+
+    Page<Favorite> favorites = favoriteRepository.findAllCategoryFavorite(member, pageable);
+    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    for (Favorite favorite : favorites) {
+      CategoryContent category = favorite.getCategory().getContent();
+      Long postId = favorite.getPostId();
+
+      switch (category) {
+        case NATURE -> {
+          ThumbnailDto thumbnailDto = favoriteRepository.findNatureThumbnailByPostId(postId,
+              locale);
+          thumbnailDto.setCategory(NATURE.name());
+          thumbnailDtoList.add(thumbnailDto);
+        }
+        case MARKET -> {
+          ThumbnailDto thumbnailDto = favoriteRepository.findMarketThumbnailByPostId(postId,
+              locale);
+          thumbnailDto.setCategory(MARKET.name());
+          thumbnailDtoList.add(thumbnailDto);
+        }
+        case EXPERIENCE -> {
+          ThumbnailDto thumbnailDto = favoriteRepository.findExperienceThumbnailByPostId(postId,
+              locale);
+          thumbnailDto.setCategory(EXPERIENCE.name());
+          thumbnailDtoList.add(thumbnailDto);
+        }
+        case FESTIVAL -> {
+          ThumbnailDto thumbnailDto = favoriteRepository.findFestivalThumbnailByPostId(postId,
+              locale);
+          thumbnailDto.setCategory(FESTIVAL.name());
+          thumbnailDtoList.add(thumbnailDto);
+        }
+      }
+    }
+
+    return FavoriteResponse.AllCategoryDto.builder()
+        .totalElements(favorites.getTotalElements())
+        .data(thumbnailDtoList)
+        .build();
+  }
 
   public FavoriteResponse.NatureDto getNatureFavoriteList(MemberInfoDto memberInfoDto, int page,
       int size) {
@@ -54,29 +90,82 @@ public class FavoriteService {
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> resultDtoList = favoriteRepository.findNatureThumbnails(memberId, locale,
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findNatureThumbnails(memberId, locale,
         pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
-    for (ThumbnailDto thumbnailDto : resultDtoList) {
+    for (ThumbnailDto thumbnailDto : thumbnails) {
+      thumbnailDto.setCategory(NATURE.name());
       thumbnailDtoList.add(thumbnailDto);
     }
 
     return FavoriteResponse.NatureDto.builder()
-        .totalElements(resultDtoList.getTotalElements())
+        .totalElements(thumbnails.getTotalElements())
         .data(thumbnailDtoList)
         .build();
   }
 
-  public List<Long> getMemberFavoritePostIds(Member member, CategoryContent categoryContent) {
+  public FavoriteResponse.FestivalDto getFestivalFavoriteList(MemberInfoDto memberInfoDto, int page,
+      int size) {
 
-    Category category = getCategoryFromCategoryContent(categoryContent);
-    List<Favorite> favorites = favoriteRepository.findAllByMemberAndCategory(member, category);
+    Long memberId = memberInfoDto.getMember().getId();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Pageable pageable = PageRequest.of(page, size);
 
-    List<Long> postIds = new ArrayList<>();
-    for (Favorite favorite : favorites) {
-      postIds.add(favorite.getPostId());
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findFestivalThumbnails(memberId, locale,
+        pageable);
+    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    for (ThumbnailDto thumbnailDto : thumbnails) {
+      thumbnailDto.setCategory(FESTIVAL.name());
+      thumbnailDtoList.add(thumbnailDto);
     }
-    return postIds;
+
+    return FavoriteResponse.FestivalDto.builder()
+        .totalElements(thumbnails.getTotalElements())
+        .data(thumbnailDtoList)
+        .build();
+  }
+
+  public FavoriteResponse.ExperienceDto getExperienceFavoriteList(MemberInfoDto memberInfoDto,
+      int page,
+      int size) {
+
+    Long memberId = memberInfoDto.getMember().getId();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Pageable pageable = PageRequest.of(page, size);
+
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findExperienceThumbnails(memberId, locale,
+        pageable);
+    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    for (ThumbnailDto thumbnailDto : thumbnails) {
+      thumbnailDto.setCategory(EXPERIENCE.name());
+      thumbnailDtoList.add(thumbnailDto);
+    }
+
+    return FavoriteResponse.ExperienceDto.builder()
+        .totalElements(thumbnails.getTotalElements())
+        .data(thumbnailDtoList)
+        .build();
+  }
+
+  public FavoriteResponse.MarketDto getMarketFavoriteList(MemberInfoDto memberInfoDto, int page,
+      int size) {
+
+    Long memberId = memberInfoDto.getMember().getId();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Pageable pageable = PageRequest.of(page, size);
+
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findMarketThumbnails(memberId, locale,
+        pageable);
+    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    for (ThumbnailDto thumbnailDto : thumbnails) {
+      thumbnailDto.setCategory(MARKET.name());
+      thumbnailDtoList.add(thumbnailDto);
+    }
+
+    return FavoriteResponse.MarketDto.builder()
+        .totalElements(thumbnails.getTotalElements())
+        .data(thumbnailDtoList)
+        .build();
   }
 
   @Transactional
@@ -107,6 +196,18 @@ public class FavoriteService {
       favoriteRepository.save(favorite);
       return true;
     }
+  }
+
+  public List<Long> getMemberFavoritePostIds(Member member, CategoryContent categoryContent) {
+
+    Category category = getCategoryFromCategoryContent(categoryContent);
+    List<Favorite> favorites = favoriteRepository.findAllByMemberAndCategory(member, category);
+
+    List<Long> postIds = new ArrayList<>();
+    for (Favorite favorite : favorites) {
+      postIds.add(favorite.getPostId());
+    }
+    return postIds;
   }
 
   private Category getCategoryFromCategoryContent(CategoryContent categoryContent) {
