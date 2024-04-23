@@ -40,12 +40,12 @@ public class NatureService {
     return favoriteService.toggleLikeStatus(member, CategoryContent.NATURE, postId);
   }
 
-  public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto, String addressFilter,
-      int page, int size) {
+  public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
+      List<String> addressFilterList, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureCompositeDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
-        memberInfoDto.getLanguage().getLocale(), addressFilter, pageable);
+        memberInfoDto.getLanguage().getLocale(), addressFilterList, pageable);
 
     List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(
         memberInfoDto.getMember(), NATURE);
@@ -56,8 +56,7 @@ public class NatureService {
                 .id(natureCompositeDto.getId())
                 .title(natureCompositeDto.getTitle())
                 .thumbnailUrl(natureCompositeDto.getThumbnailUrl())
-                .addressTag(PostService.extractAddressTag(memberInfoDto.getLanguage().getLocale(),
-                    natureCompositeDto.getAddress()))
+                .addressTag(natureCompositeDto.getAddressTag())
                 .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
                 .build()).toList();
 

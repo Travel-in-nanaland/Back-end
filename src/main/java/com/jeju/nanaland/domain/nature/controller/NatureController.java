@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,10 +57,10 @@ public class NatureController {
   @GetMapping("/list")
   public BaseResponse<NatureThumbnailDto> getNatureList(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam(defaultValue = "") String addressFilter,
+      @RequestParam(defaultValue = "") List<String> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
-    NatureThumbnailDto data = natureService.getNatureList(memberInfoDto, addressFilter,
+    NatureThumbnailDto data = natureService.getNatureList(memberInfoDto, addressFilterList,
         page, size);
     return BaseResponse.success(NATURE_LIST_SUCCESS, data);
   }

@@ -8,6 +8,7 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -92,8 +93,8 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureCompositeDto> findNatureThumbnails(Locale locale, String addressFilter,
-      Pageable pageable) {
+  public Page<NatureCompositeDto> findNatureThumbnails(Locale locale,
+      List<String> addressFilterList, Pageable pageable) {
     List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
@@ -104,6 +105,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
+            natureTrans.addressTag,
             natureTrans.intro,
             natureTrans.details,
             natureTrans.time,
@@ -114,7 +116,10 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.natureTrans, natureTrans)
         .leftJoin(nature.imageFile, imageFile)
         .where(natureTrans.language.locale.eq(locale)
-            .and(natureTrans.address.contains(addressFilter)))
+            .and(addressFilterList
+                .stream().map(natureTrans.addressTag::eq)
+                .reduce(BooleanExpression::or).orElse(null))
+        )
         .orderBy(nature.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -125,7 +130,10 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.natureTrans, natureTrans)
         .where(natureTrans.language.locale.eq(locale)
-            .and(natureTrans.address.contains(addressFilter)));
+            .and(addressFilterList
+                .stream().map(natureTrans.addressTag::eq)
+                .reduce(BooleanExpression::or).orElse(null))
+        );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
