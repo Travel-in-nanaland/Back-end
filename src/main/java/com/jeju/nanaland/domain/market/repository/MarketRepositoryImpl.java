@@ -36,6 +36,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.title,
             marketTrans.content,
             marketTrans.address,
+            marketTrans.addressTag,
             marketTrans.time,
             marketTrans.intro,
             marketTrans.amenity
@@ -91,6 +92,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.title,
             marketTrans.content,
             marketTrans.address,
+            marketTrans.addressTag,
             marketTrans.time,
             marketTrans.intro,
             marketTrans.amenity

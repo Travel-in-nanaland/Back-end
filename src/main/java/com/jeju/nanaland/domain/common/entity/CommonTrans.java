@@ -20,6 +20,8 @@ public abstract class CommonTrans extends BaseEntity {
 
   @Column(columnDefinition = "VARCHAR(2048)")
   private String address;
+  
+  private String addressTag;
 
   @Column(columnDefinition = "VARCHAR(1024)")
   private String time;

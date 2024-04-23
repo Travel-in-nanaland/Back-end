@@ -18,6 +18,7 @@ public class NatureCompositeDto {
   private String title;
   private String content;
   private String address;
+  private String addressTag;
   private String intro;
   private String details;
   private String time;
@@ -26,7 +27,7 @@ public class NatureCompositeDto {
 
   @QueryProjection
   public NatureCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
-      Locale locale, String title, String content, String address, String intro, String details,
+      Locale locale, String title, String content, String address, String addressTag, String intro, String details,
       String time, String amenity, String fee) {
     this.id = id;
     this.originUrl = originUrl;
@@ -36,6 +37,7 @@ public class NatureCompositeDto {
     this.title = title;
     this.content = content;
     this.address = address;
+    this.addressTag = addressTag;
     this.intro = intro;
     this.details = details;
     this.time = time;
