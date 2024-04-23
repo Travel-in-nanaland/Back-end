@@ -3,7 +3,6 @@ package com.jeju.nanaland.domain.nature.service;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -80,8 +79,7 @@ public class NatureService {
     return NatureDetailDto.builder()
         .id(natureCompositeDto.getId())
         .originUrl(natureCompositeDto.getOriginUrl())
-        .addressTag(PostService.extractAddressTag(memberInfoDto.getLanguage().getLocale(),
-            natureCompositeDto.getAddress()))
+        .addressTag(natureCompositeDto.getAddressTag())
         .title(natureCompositeDto.getTitle())
         .content(natureCompositeDto.getContent())
         .intro(natureCompositeDto.getIntro())
