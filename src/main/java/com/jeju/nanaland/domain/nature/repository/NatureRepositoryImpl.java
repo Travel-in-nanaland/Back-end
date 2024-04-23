@@ -33,6 +33,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
+            natureTrans.addressTag,
             natureTrans.intro,
             natureTrans.details,
             natureTrans.time,
@@ -50,7 +51,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   @Override
   public Page<NatureCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
-    List<NatureCompositeDto> ResultDto = queryFactory
+    List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
             imageFile.originUrl,
@@ -60,6 +61,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
+            natureTrans.addressTag,
             natureTrans.intro,
             natureTrans.details,
             natureTrans.time,
@@ -84,6 +86,6 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             .and(natureTrans.language.locale.eq(locale))
         );
 
-    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 }

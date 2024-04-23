@@ -34,6 +34,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.title,
             experienceTrans.content,
             experienceTrans.address,
+            experienceTrans.addressTag,
             experienceTrans.intro,
             experienceTrans.details,
             experienceTrans.time,
@@ -49,7 +50,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   @Override
   public Page<ExperienceCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
-    List<ExperienceCompositeDto> ResultDto = queryFactory
+    List<ExperienceCompositeDto> resultDto = queryFactory
         .select(new QExperienceCompositeDto(
             experience.id,
             imageFile.originUrl,
@@ -60,6 +61,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.title,
             experienceTrans.content,
             experienceTrans.address,
+            experienceTrans.addressTag,
             experienceTrans.intro,
             experienceTrans.details,
             experienceTrans.time,
@@ -83,6 +85,6 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .where(experienceTrans.title.contains(title)
             .and(experienceTrans.language.locale.eq(locale)));
 
-    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 }

@@ -34,6 +34,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
+            festivalTrans.addressTag,
             festivalTrans.time,
             festivalTrans.intro,
             festivalTrans.fee
@@ -49,7 +50,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   public Page<FestivalCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
 
-    List<FestivalCompositeDto> ResultDto = queryFactory
+    List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
             festival.id,
             imageFile.originUrl,
@@ -60,6 +61,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
+            festivalTrans.addressTag,
             festivalTrans.time,
             festivalTrans.intro,
             festivalTrans.fee
@@ -82,6 +84,6 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(festivalTrans.title.contains(title)
             .and(festivalTrans.language.locale.eq(locale)));
 
-    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 }
