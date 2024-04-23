@@ -34,9 +34,8 @@ public class NatureTrans extends CommonTrans {
 
   @Builder
   public NatureTrans(Nature nature, Language language, String title, String content, String address,
-      String time, String intro,
-      String details, String amenity, String fee) {
-    super(title, content, address, time);
+      String addressTag, String time, String intro, String details, String amenity, String fee) {
+    super(title, content, address, addressTag, time);
     this.nature = nature;
     this.language = language;
     this.intro = intro;

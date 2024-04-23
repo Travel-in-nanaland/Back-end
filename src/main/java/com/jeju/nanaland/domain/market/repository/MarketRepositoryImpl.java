@@ -34,6 +34,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.title,
             marketTrans.content,
             marketTrans.address,
+            marketTrans.addressTag,
             marketTrans.time,
             marketTrans.intro,
             marketTrans.amenity
@@ -48,7 +49,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   @Override
   public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
-    List<MarketCompositeDto> ResultDto = queryFactory
+    List<MarketCompositeDto> resultDto = queryFactory
         .select(new QMarketCompositeDto(
             market.id,
             imageFile.originUrl,
@@ -59,6 +60,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.title,
             marketTrans.content,
             marketTrans.address,
+            marketTrans.addressTag,
             marketTrans.time,
             marketTrans.intro,
             marketTrans.amenity
@@ -80,6 +82,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .where(marketTrans.title.contains(title)
             .and(marketTrans.language.locale.eq(locale)));
 
-    return PageableExecutionUtils.getPage(ResultDto, pageable, countQuery::fetchOne);
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 }
