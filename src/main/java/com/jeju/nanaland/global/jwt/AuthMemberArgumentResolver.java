@@ -1,9 +1,7 @@
 package com.jeju.nanaland.global.jwt;
 
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -23,7 +21,7 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
   @Override
   public boolean supportsParameter(MethodParameter parameter) {
     boolean hasAnnotation = parameter.getParameterAnnotation(AuthMember.class) != null;
-    boolean hasMemberType = Member.class.isAssignableFrom(parameter.getParameterType());
+    boolean hasMemberType = MemberInfoDto.class.isAssignableFrom(parameter.getParameterType());
     return hasAnnotation && hasMemberType;
   }
 
@@ -33,7 +31,6 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
     String bearerAccessToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
-    return memberRepository.findById(Long.valueOf(memberId))
-        .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+    return memberRepository.findMemberWithLanguage(Long.valueOf(memberId));
   }
 }

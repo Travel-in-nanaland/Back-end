@@ -3,7 +3,7 @@ package com.jeju.nanaland.domain.festival.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.festival.service.FestivalService;
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,8 +34,9 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
-  public BaseResponse<String> toggleLikeStatus(@AuthMember Member member, @PathVariable Long id) {
-    String result = festivalService.toggleLikeStatus(member, id);
+  public BaseResponse<String> toggleLikeStatus(@AuthMember MemberInfoDto memberInfoDto,
+      @PathVariable Long id) {
+    String result = festivalService.toggleLikeStatus(memberInfoDto.getMember(), id);
     return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
   }
 }
