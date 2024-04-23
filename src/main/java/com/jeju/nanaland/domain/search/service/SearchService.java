@@ -49,7 +49,7 @@ public class SearchService {
   public SearchResponse.CategoryDto getCategorySearchResultDto(Member member, String keyword,
       Locale locale) {
     // Redis에 해당 검색어 count + 1
-    updateSearchCount(keyword, locale);
+    updateSearchCountV1(keyword, locale);
 
     // offset: 0, pageSize: 2
     int page = 0;
@@ -173,10 +173,16 @@ public class SearchService {
   public List<String> getPopularSearch(Locale locale) {
     String language = locale.name();
 
+    // version 1
+    String key = "ranking_" + language;
+
+    /*
+    // version 2
     LocalDateTime current = LocalDateTime.now();
     String keyIdx = String.valueOf(current.getHour() % 3);
     String key = "ranking_" + language + "_" + keyIdx;
     log.info("keyIdx : {}", keyIdx);
+    */
 
     // 가장 검색어가 많은 8개
     ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
@@ -193,7 +199,16 @@ public class SearchService {
     return null;
   }
 
-  private void updateSearchCount(String title, Locale locale) {
+  // version1 : 인기검색어 정보 삭제하지 않고 계속 누적됨
+  private void updateSearchCountV1(String title, Locale locale) {
+    String language = locale.name();
+    String key = "ranking_" + language;
+
+    redisTemplate.opsForZSet().incrementScore(key, title, 1);
+  }
+
+  // version2 : 인기검색어 정보 1시간마다 갱신됨
+  private void updateSearchCountV2(String title, Locale locale) {
     String language = locale.name();
     String key0 = "ranking_" + language + "_0";
     String key1 = "ranking_" + language + "_1";
