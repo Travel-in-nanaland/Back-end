@@ -31,7 +31,8 @@ public enum SuccessCode {
   NANA_DETAIL_SUCCESS(OK, "나나 상세 페이지 조회 성공"),
 
   // favorite
-  POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공");
+  POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공"),
+  GET_FAVORITE_LIST_SUCCESS(OK, "찜리스트 조회 성공");
 
   private final HttpStatus httpStatus;
   private final String message;
