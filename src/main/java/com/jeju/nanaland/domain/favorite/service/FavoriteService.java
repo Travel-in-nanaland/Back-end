@@ -42,7 +42,7 @@ public class FavoriteService {
   }
 
   @Transactional
-  public String toggleLikeStatus(Member member, CategoryContent categoryContent, Long postId) {
+  public Boolean toggleLikeStatus(Member member, CategoryContent categoryContent, Long postId) {
 
     Category category = getCategoryFromCategoryContent(categoryContent);
 
@@ -55,7 +55,7 @@ public class FavoriteService {
 
       // 좋아요 삭제
       favoriteRepository.delete(favorite);
-      return "좋아요 삭제";
+      return false;
     }
     // 좋아요 상태가 아닐 때
     else {
@@ -67,7 +67,7 @@ public class FavoriteService {
 
       // 좋아요 추가
       favoriteRepository.save(favorite);
-      return "좋아요 추가";
+      return true;
     }
   }
 

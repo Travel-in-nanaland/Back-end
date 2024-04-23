@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.festival.service;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -19,10 +20,13 @@ public class FestivalService {
   private final FavoriteService favoriteService;
 
   @Transactional
-  public String toggleLikeStatus(Member member, Long postId) {
+  public FavoriteResponse.StatusDto toggleLikeStatus(Member member, Long postId) {
     festivalRepository.findById(postId)
         .orElseThrow(() -> new BadRequestException("해당 id의 축제 게시물이 존재하지 않습니다."));
 
-    return favoriteService.toggleLikeStatus(member, CategoryContent.FESTIVAL, postId);
+    Boolean status = favoriteService.toggleLikeStatus(member, CategoryContent.FESTIVAL, postId);
+    return FavoriteResponse.StatusDto.builder()
+        .isFavorite(status)
+        .build();
   }
 }

@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.experience.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.experience.service.ExperienceService;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
@@ -34,9 +35,12 @@ public class ExperienceController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
-  public BaseResponse<String> toggleLikeStatus(@AuthMember MemberInfoDto memberInfoDto,
+  public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(
+      @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    String result = experienceService.toggleLikeStatus(memberInfoDto.getMember(), id);
-    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
+
+    return BaseResponse.success(
+        POST_LIKE_TOGGLE_SUCCESS,
+        experienceService.toggleLikeStatus(memberInfoDto.getMember(), id));
   }
 }

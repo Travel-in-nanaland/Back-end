@@ -7,14 +7,13 @@ import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.entity.Favorite;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import jakarta.persistence.EntityManager;
-import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,22 +97,19 @@ class FestivalServiceTest {
      * member2 : toggleLikeStatus 1번 적용
      */
     festivalService.toggleLikeStatus(member1, festival.getId());
-    festivalService.toggleLikeStatus(member1, festival.getId());
+    FavoriteResponse.StatusDto result1 = festivalService.toggleLikeStatus(member1,
+        festival.getId());
 
-    festivalService.toggleLikeStatus(member2, festival.getId());
-
-    Optional<Favorite> favoriteOptional1 =
-        favoriteRepository.findByMemberAndCategoryAndPostId(member1, category, festival.getId());
-    Optional<Favorite> favoriteOptional2 =
-        favoriteRepository.findByMemberAndCategoryAndPostId(member2, category, festival.getId());
+    FavoriteResponse.StatusDto result2 = festivalService.toggleLikeStatus(member2,
+        festival.getId());
 
     /**
      * THEN
      *
      * member1 = 좋아요 X, member2 = 좋아요
      */
-    assertThat(favoriteOptional1.isPresent()).isFalse();
-    assertThat(favoriteOptional2.isPresent()).isTrue();
+    assertThat(result1.isFavorite()).isFalse();
+    assertThat(result2.isFavorite()).isTrue();
   }
 
   @Test
