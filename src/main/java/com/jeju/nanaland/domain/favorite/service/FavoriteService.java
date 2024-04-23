@@ -8,16 +8,28 @@ import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.CategoryRepository;
+import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.market.repository.MarketRepository;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.nana.repository.NanaRepository;
+import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +40,32 @@ public class FavoriteService {
 
   private final CategoryRepository categoryRepository;
   private final FavoriteRepository favoriteRepository;
+
+  private final NanaRepository nanaRepository;
+  private final NatureRepository natureRepository;
+  private final FestivalRepository festivalRepository;
+  private final MarketRepository marketRepository;
+  private final ExperienceRepository experienceRepository;
+
+  public FavoriteResponse.NatureDto getNatureFavoriteList(MemberInfoDto memberInfoDto, int page,
+      int size) {
+
+    Long memberId = memberInfoDto.getMember().getId();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Pageable pageable = PageRequest.of(page, size);
+
+    Page<ThumbnailDto> resultDtoList = favoriteRepository.findNatureThumbnails(memberId, locale,
+        pageable);
+    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    for (ThumbnailDto thumbnailDto : resultDtoList) {
+      thumbnailDtoList.add(thumbnailDto);
+    }
+
+    return FavoriteResponse.NatureDto.builder()
+        .totalElements(resultDtoList.getTotalElements())
+        .data(thumbnailDtoList)
+        .build();
+  }
 
   public List<Long> getMemberFavoritePostIds(Member member, CategoryContent categoryContent) {
 
