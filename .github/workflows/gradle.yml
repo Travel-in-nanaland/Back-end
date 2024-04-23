@@ -71,7 +71,7 @@ jobs:
       uses: getong/mariadb-action@v1.1
       with:
         host port: 3306
-        container port: 3306
+        container port: 330
         mysql database: 'nanaland_test' 
         mysql user: 'root'
         mysql password: ${{ secrets.DATABASE_KEY }}
