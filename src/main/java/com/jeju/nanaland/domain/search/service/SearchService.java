@@ -190,7 +190,8 @@ public class SearchService {
     if (typedTuples != null) {
       List<String> rankList = new ArrayList<>();
       for (TypedTuple<String> typedTuple : typedTuples) {
-        if (rankList.size() >= 8) {
+        // 최대 8개
+        if (rankList.size() == 8) {
           break;
         }
         rankList.add(typedTuple.getValue());
