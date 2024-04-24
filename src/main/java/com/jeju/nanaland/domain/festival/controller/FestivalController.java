@@ -39,8 +39,7 @@ public class FestivalController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
 
-    return BaseResponse.success(
-        POST_LIKE_TOGGLE_SUCCESS,
-        festivalService.toggleLikeStatus(memberInfoDto.getMember(), id));
+    FavoriteResponse.StatusDto statusDto = festivalService.toggleLikeStatus(memberInfoDto, id);
+    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, statusDto);
   }
 }

@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.nature.entity;
 
 import com.jeju.nanaland.domain.common.entity.CommonTrans;
 import com.jeju.nanaland.domain.common.entity.Language;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -24,12 +25,16 @@ public class NatureTrans extends CommonTrans {
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String intro;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String details;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String amenity;
-
+  
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String fee;
 
   @Builder

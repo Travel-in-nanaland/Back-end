@@ -47,6 +47,45 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
+  public Page<MarketCompositeDto> findMarketThumbnails(Locale locale,
+      List<String> addressFilterList,
+      Pageable pageable) {
+    List<MarketCompositeDto> resultDto = queryFactory
+        .select(new QMarketCompositeDto(
+            market.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            market.contact,
+            market.homepage,
+            language.locale,
+            marketTrans.title,
+            marketTrans.content,
+            marketTrans.address,
+            marketTrans.addressTag,
+            marketTrans.time,
+            marketTrans.intro,
+            marketTrans.amenity
+        ))
+        .from(market)
+        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.addressTag.in(addressFilterList)))
+        .orderBy(market.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(market.count())
+        .from(market)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(marketTrans.language.locale.eq(locale));
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
   public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
     List<MarketCompositeDto> resultDto = queryFactory
