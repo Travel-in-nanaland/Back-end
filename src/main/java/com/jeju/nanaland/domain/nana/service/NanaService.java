@@ -107,6 +107,7 @@ public class NanaService {
 
     Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
         CategoryContent.NANA, postId);
+
     return FavoriteResponse.StatusDto.builder()
         .isFavorite(status)
         .build();

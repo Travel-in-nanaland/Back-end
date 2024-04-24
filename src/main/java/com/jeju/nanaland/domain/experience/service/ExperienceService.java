@@ -26,6 +26,7 @@ public class ExperienceService {
 
     Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
         CategoryContent.EXPERIENCE, postId);
+
     return FavoriteResponse.StatusDto.builder()
         .isFavorite(status)
         .build();

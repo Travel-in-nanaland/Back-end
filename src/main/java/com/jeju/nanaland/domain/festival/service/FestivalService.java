@@ -26,6 +26,7 @@ public class FestivalService {
 
     Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
         CategoryContent.FESTIVAL, postId);
+
     return FavoriteResponse.StatusDto.builder()
         .isFavorite(status)
         .build();

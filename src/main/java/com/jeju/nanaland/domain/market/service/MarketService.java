@@ -83,6 +83,7 @@ public class MarketService {
 
     Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
         CategoryContent.MARKET, postId);
+
     return FavoriteResponse.StatusDto.builder()
         .isFavorite(status)
         .build();
