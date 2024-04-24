@@ -3,9 +3,9 @@ package com.jeju.nanaland.domain.nature.service;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
@@ -32,11 +32,15 @@ public class NatureService {
   private final FavoriteService favoriteService;
 
   @Transactional
-  public String toggleLikeStatus(Member member, Long postId) {
+  public FavoriteResponse.StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto, Long postId) {
     natureRepository.findById(postId)
         .orElseThrow(() -> new BadRequestException("해당 id의 7대자연 게시물이 존재하지 않습니다."));
 
-    return favoriteService.toggleLikeStatus(member, CategoryContent.NATURE, postId);
+    Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
+        CategoryContent.NATURE, postId);
+    return FavoriteResponse.StatusDto.builder()
+        .isFavorite(status)
+        .build();
   }
 
   public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,

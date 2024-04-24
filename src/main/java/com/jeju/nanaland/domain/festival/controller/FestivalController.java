@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.festival.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.festival.service.FestivalService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
@@ -34,9 +35,11 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/like/{id}")
-  public BaseResponse<String> toggleLikeStatus(@AuthMember MemberInfoDto memberInfoDto,
+  public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(
+      @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    String result = festivalService.toggleLikeStatus(memberInfoDto.getMember(), id);
-    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
+
+    FavoriteResponse.StatusDto statusDto = festivalService.toggleLikeStatus(memberInfoDto, id);
+    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, statusDto);
   }
 }

@@ -2,13 +2,14 @@ package com.jeju.nanaland.domain.market.service;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,34 +29,37 @@ public class MarketService {
   private final MarketRepository marketRepository;
   private final FavoriteService favoriteService;
 
-  public MarketResponse.MarketThumbnailDto getMarketList(Locale locale, String addressFilter,
+  public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
+      List<String> addressFilterList,
       int page, int size) {
 
     // default : page = 0, size = 12
     Pageable pageable = PageRequest.of(page, size);
-    Page<MarketThumbnail> marketThumbnails = marketRepository.findMarketThumbnails(locale,
-        addressFilter, pageable);
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Page<MarketCompositeDto> marketCompositeDtoPage = marketRepository.findMarketThumbnails(locale,
+        addressFilterList, pageable);
 
     List<MarketThumbnail> data = new ArrayList<>();
-    for (MarketThumbnail marketThumbnail : marketThumbnails) {
+    for (MarketCompositeDto marketCompositeDto : marketCompositeDtoPage) {
       data.add(MarketThumbnail.builder()
-          .id(marketThumbnail.getId())
-          .title(marketThumbnail.getTitle())
-          .thumbnailUrl(marketThumbnail.getThumbnailUrl())
-          .addressTag(PostService.extractAddressTag(locale, marketThumbnail.getAddressTag()))
+          .id(marketCompositeDto.getId())
+          .title(marketCompositeDto.getTitle())
+          .thumbnailUrl(marketCompositeDto.getThumbnailUrl())
+          .addressTag(marketCompositeDto.getAddressTag())
           .build());
     }
 
     return MarketResponse.MarketThumbnailDto.builder()
-        .totalElements(marketThumbnails.getTotalElements())
+        .totalElements(marketCompositeDtoPage.getTotalElements())
         .data(data)
         .build();
   }
 
-  public MarketResponse.MarketDetailDto getMarketDetail(Locale locale, Long id) {
+  public MarketResponse.MarketDetailDto getMarketDetail(MemberInfoDto memberInfoDto, Long id) {
     marketRepository.findById(id)
         .orElseThrow(() -> new BadRequestException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
 
+    Locale locale = memberInfoDto.getLanguage().getLocale();
     MarketCompositeDto resultDto = marketRepository.findCompositeDtoById(id, locale);
 
     return MarketResponse.MarketDetailDto.builder()
@@ -64,7 +68,7 @@ public class MarketService {
         .originUrl(resultDto.getOriginUrl())
         .content(resultDto.getContent())
         .address(resultDto.getAddress())
-        .addressTag(PostService.extractAddressTag(locale, resultDto.getAddress()))
+        .addressTag(resultDto.getAddressTag())
         .contact(resultDto.getContact())
         .homepage(resultDto.getHomepage())
         .time(resultDto.getTime())
@@ -73,10 +77,15 @@ public class MarketService {
   }
 
   @Transactional
-  public String toggleLikeStatus(Member member, Long postId) {
+  public StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto, Long postId) {
     marketRepository.findById(postId)
         .orElseThrow(() -> new BadRequestException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
 
-    return favoriteService.toggleLikeStatus(member, CategoryContent.MARKET, postId);
+    Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
+        CategoryContent.MARKET, postId);
+
+    return FavoriteResponse.StatusDto.builder()
+        .isFavorite(status)
+        .build();
   }
 }
