@@ -47,7 +47,7 @@ jobs:
         with:
           host port: 3306
           container port: 3306
-          mysql database: 'nanaland'
+          mysql database: 'nanaland_test'
           mysql user: 'root'
           mysql password: ${{ secrets.DATABASE_KEY }}
           # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
