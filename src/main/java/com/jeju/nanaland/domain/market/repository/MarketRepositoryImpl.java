@@ -8,6 +8,7 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -70,7 +71,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.locale.eq(locale)
-            .and(marketTrans.addressTag.in(addressFilterList)))
+            .and(addressTagCondition(addressFilterList)))
         .orderBy(market.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -80,7 +81,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .select(market.count())
         .from(market)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.language.locale.eq(locale));
+        .where(marketTrans.language.locale.eq(locale)
+            .and(addressTagCondition(addressFilterList)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -122,5 +124,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .and(marketTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
+    if (addressFilterList.isEmpty()) {
+      return null;
+    } else {
+      return marketTrans.addressTag.in(addressFilterList);
+    }
   }
 }
