@@ -58,9 +58,15 @@ jobs:
         run: chmod +x gradlew
           # working-directory: ${{ env.working-directory }}
 
+      # 4) gradle 테스트 빌드
+      - name: Build Test with Gradle
+        run: ./gradlew test
+        # run: ./gradlew clean build -i
+        # working-directory: ${{ env.working-directory }}
+
       # 4) gradle 빌드
       - name: Build with Gradle
-        run: ./gradlew clean build -i
+        run: ./gradlew clean build -x test -i
         # run: ./gradlew clean build -i
         # working-directory: ${{ env.working-directory }}
       
