@@ -30,8 +30,8 @@ public class MarketTrans extends CommonTrans {
 
   @Builder
   public MarketTrans(Market market, Language language, String title, String content, String address,
-      String time, String intro, String amenity) {
-    super(title, content, address, time);
+      String addressTag, String time, String intro, String amenity) {
+    super(title, content, address, addressTag, time);
     this.market = market;
     this.language = language;
     this.intro = intro;

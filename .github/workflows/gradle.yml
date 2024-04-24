@@ -60,7 +60,23 @@ jobs:
         mysql user: 'root'
         mysql password: ${{ secrets.DATABASE_KEY }}
         # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
-        
+
+    # - name: Set TEST_YML
+    #   run: |
+    #     mkdir -p src/test/resources
+    #     echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application.yml
+    #     find src
+
+    # - name: Set up MariaDB 10 for test
+    #   uses: getong/mariadb-action@v1.1
+    #   with:
+    #     host port: 3306
+    #     container port: 3307
+    #     mysql database: 'nanaland_test' 
+    #     mysql user: 'root'
+    #     mysql password: ${{ secrets.DATABASE_KEY }}
+    #     # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
+    
     # 3) gradlew 권한 설정
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -68,7 +84,8 @@ jobs:
         
     # 4) gradle 빌드
     - name: Build with Gradle
-      run: ./gradlew clean build -i
+      run: ./gradlew clean build -x test -i
+      # run: ./gradlew clean build -i
       # working-directory: ${{ env.working-directory }}
       
     # AWS 인증

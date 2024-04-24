@@ -7,9 +7,7 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
-import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
-import com.jeju.nanaland.domain.market.dto.QMarketResponse_MarketThumbnail;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -36,6 +34,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.title,
             marketTrans.content,
             marketTrans.address,
+            marketTrans.addressTag,
             marketTrans.time,
             marketTrans.intro,
             marketTrans.amenity
@@ -48,20 +47,30 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public Page<MarketThumbnail> findMarketThumbnails(Locale locale, String addressFilter,
+  public Page<MarketCompositeDto> findMarketThumbnails(Locale locale,
+      List<String> addressFilterList,
       Pageable pageable) {
-    List<MarketThumbnail> resultDto = queryFactory
-        .select(new QMarketResponse_MarketThumbnail(
+    List<MarketCompositeDto> resultDto = queryFactory
+        .select(new QMarketCompositeDto(
             market.id,
-            marketTrans.title,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
-            marketTrans.address
+            market.contact,
+            market.homepage,
+            language.locale,
+            marketTrans.title,
+            marketTrans.content,
+            marketTrans.address,
+            marketTrans.addressTag,
+            marketTrans.time,
+            marketTrans.intro,
+            marketTrans.amenity
         ))
         .from(market)
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.locale.eq(locale)
-            .and(marketTrans.address.contains(addressFilter)))
+            .and(marketTrans.addressTag.in(addressFilterList)))
         .orderBy(market.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -71,8 +80,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .select(market.count())
         .from(market)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.language.locale.eq(locale)
-            .and(marketTrans.address.contains(addressFilter)));
+        .where(marketTrans.language.locale.eq(locale));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -91,6 +99,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.title,
             marketTrans.content,
             marketTrans.address,
+            marketTrans.addressTag,
             marketTrans.time,
             marketTrans.intro,
             marketTrans.amenity
