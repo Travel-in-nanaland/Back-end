@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -34,6 +35,7 @@ class ExperienceServiceTest {
 
   Language language;
   Member member1, member2;
+  MemberInfoDto memberInfoDto1, memberInfoDto2;
   Experience experience;
   Category category;
 
@@ -67,6 +69,11 @@ class ExperienceServiceTest {
         .build();
     em.persist(member1);
 
+    memberInfoDto1 = MemberInfoDto.builder()
+        .language(language)
+        .member(member1)
+        .build();
+
     member2 = Member.builder()
         .email("test2@naver.com")
         .provider(Provider.KAKAO)
@@ -76,6 +83,11 @@ class ExperienceServiceTest {
         .profileImageFile(imageFile2)
         .build();
     em.persist(member2);
+
+    memberInfoDto2 = MemberInfoDto.builder()
+        .language(language)
+        .member(member2)
+        .build();
 
     experience = Experience.builder()
         .imageFile(imageFile1)
@@ -96,11 +108,11 @@ class ExperienceServiceTest {
      * member1 : toggleLikeStatus 2번 적용
      * member2 : toggleLikeStatus 1번 적용
      */
-    experienceService.toggleLikeStatus(member1, experience.getId());
-    FavoriteResponse.StatusDto result1 = experienceService.toggleLikeStatus(member1,
+    experienceService.toggleLikeStatus(memberInfoDto1, experience.getId());
+    FavoriteResponse.StatusDto result1 = experienceService.toggleLikeStatus(memberInfoDto1,
         experience.getId());
 
-    FavoriteResponse.StatusDto result2 = experienceService.toggleLikeStatus(member2,
+    FavoriteResponse.StatusDto result2 = experienceService.toggleLikeStatus(memberInfoDto2,
         experience.getId());
 
     /**
@@ -127,7 +139,7 @@ class ExperienceServiceTest {
      *
      * toggleLikeStatus 요청 시 BadRequestException 발생
      */
-    Assertions.assertThatThrownBy(() -> experienceService.toggleLikeStatus(member1, postId))
+    Assertions.assertThatThrownBy(() -> experienceService.toggleLikeStatus(memberInfoDto1, postId))
         .isInstanceOf(BadRequestException.class);
   }
 }
