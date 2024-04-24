@@ -5,7 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@SpringBootTest(properties = "classpath:application-test.yml")
+@SpringBootTest
 class NanalandApplicationTests {
 
   @Test
