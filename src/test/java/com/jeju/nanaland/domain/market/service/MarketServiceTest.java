@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.market.entity.Market;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -34,6 +35,8 @@ class MarketServiceTest {
 
   Language language;
   Member member1, member2;
+  MemberInfoDto memberInfoDto1, memberInfoDto2;
+
   Market market;
   Category category;
 
@@ -77,6 +80,16 @@ class MarketServiceTest {
         .build();
     em.persist(member2);
 
+    memberInfoDto1 = MemberInfoDto.builder()
+        .language(language)
+        .member(member1)
+        .build();
+
+    memberInfoDto2 = MemberInfoDto.builder()
+        .language(language)
+        .member(member2)
+        .build();
+
     market = Market.builder()
         .imageFile(imageFile1)
         .build();
@@ -96,11 +109,11 @@ class MarketServiceTest {
      * member1 : toggleLikeStatus 2번 적용
      * member2 : toggleLikeStatus 1번 적용
      */
-    marketService.toggleLikeStatus(member1, market.getId());
-    FavoriteResponse.StatusDto result1 = marketService.toggleLikeStatus(member1,
+    marketService.toggleLikeStatus(memberInfoDto1, market.getId());
+    FavoriteResponse.StatusDto result1 = marketService.toggleLikeStatus(memberInfoDto1,
         market.getId());
 
-    FavoriteResponse.StatusDto result2 = marketService.toggleLikeStatus(member2,
+    FavoriteResponse.StatusDto result2 = marketService.toggleLikeStatus(memberInfoDto2,
         market.getId());
 
     /**
@@ -127,7 +140,7 @@ class MarketServiceTest {
      *
      * toggleLikeStatus 요청 시 BadRequestException 발생
      */
-    Assertions.assertThatThrownBy(() -> marketService.toggleLikeStatus(member1, postId))
+    Assertions.assertThatThrownBy(() -> marketService.toggleLikeStatus(memberInfoDto1, postId))
         .isInstanceOf(BadRequestException.class);
   }
 }

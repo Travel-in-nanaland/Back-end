@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.festival.entity.Festival;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -34,6 +35,7 @@ class FestivalServiceTest {
 
   Language language;
   Member member1, member2;
+  MemberInfoDto memberInfoDto1, memberInfoDto2;
   Festival festival;
   Category category;
 
@@ -77,6 +79,16 @@ class FestivalServiceTest {
         .build();
     em.persist(member2);
 
+    memberInfoDto1 = MemberInfoDto.builder()
+        .language(language)
+        .member(member1)
+        .build();
+
+    memberInfoDto2 = MemberInfoDto.builder()
+        .language(language)
+        .member(member2)
+        .build();
+
     festival = Festival.builder()
         .imageFile(imageFile1)
         .build();
@@ -96,11 +108,11 @@ class FestivalServiceTest {
      * member1 : toggleLikeStatus 2번 적용
      * member2 : toggleLikeStatus 1번 적용
      */
-    festivalService.toggleLikeStatus(member1, festival.getId());
-    FavoriteResponse.StatusDto result1 = festivalService.toggleLikeStatus(member1,
+    festivalService.toggleLikeStatus(memberInfoDto1, festival.getId());
+    FavoriteResponse.StatusDto result1 = festivalService.toggleLikeStatus(memberInfoDto1,
         festival.getId());
 
-    FavoriteResponse.StatusDto result2 = festivalService.toggleLikeStatus(member2,
+    FavoriteResponse.StatusDto result2 = festivalService.toggleLikeStatus(memberInfoDto2,
         festival.getId());
 
     /**
@@ -127,7 +139,7 @@ class FestivalServiceTest {
      *
      * toggleLikeStatus 요청 시 BadRequestException 발생
      */
-    Assertions.assertThatThrownBy(() -> festivalService.toggleLikeStatus(member1, postId))
+    Assertions.assertThatThrownBy(() -> festivalService.toggleLikeStatus(memberInfoDto1, postId))
         .isInstanceOf(BadRequestException.class);
   }
 }

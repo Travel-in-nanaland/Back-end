@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.nana.entity.Nana;
@@ -34,6 +35,7 @@ class NanaServiceTest {
 
   Language language;
   Member member1, member2;
+  MemberInfoDto memberInfoDto1, memberInfoDto2;
   Nana nana;
   Category category;
 
@@ -67,6 +69,11 @@ class NanaServiceTest {
         .build();
     em.persist(member1);
 
+    memberInfoDto1 = MemberInfoDto.builder()
+        .language(language)
+        .member(member1)
+        .build();
+
     member2 = Member.builder()
         .email("test2@naver.com")
         .provider(Provider.KAKAO)
@@ -76,6 +83,11 @@ class NanaServiceTest {
         .profileImageFile(imageFile2)
         .build();
     em.persist(member2);
+
+    memberInfoDto2 = MemberInfoDto.builder()
+        .language(language)
+        .member(member2)
+        .build();
 
     nana = Nana.builder()
         .version("version1")
@@ -96,11 +108,11 @@ class NanaServiceTest {
      * member1 : toggleLikeStatus 2번 적용
      * member2 : toggleLikeStatus 1번 적용
      */
-    nanaService.toggleLikeStatus(member1, nana.getId());
-    FavoriteResponse.StatusDto result1 = nanaService.toggleLikeStatus(member1,
+    nanaService.toggleLikeStatus(memberInfoDto1, nana.getId());
+    FavoriteResponse.StatusDto result1 = nanaService.toggleLikeStatus(memberInfoDto1,
         nana.getId());
 
-    FavoriteResponse.StatusDto result2 = nanaService.toggleLikeStatus(member2,
+    FavoriteResponse.StatusDto result2 = nanaService.toggleLikeStatus(memberInfoDto2,
         nana.getId());
 
     /**
@@ -127,7 +139,7 @@ class NanaServiceTest {
      *
      * toggleLikeStatus 요청 시 BadRequestException 발생
      */
-    Assertions.assertThatThrownBy(() -> nanaService.toggleLikeStatus(member1, postId))
+    Assertions.assertThatThrownBy(() -> nanaService.toggleLikeStatus(memberInfoDto1, postId))
         .isInstanceOf(BadRequestException.class);
   }
 }
