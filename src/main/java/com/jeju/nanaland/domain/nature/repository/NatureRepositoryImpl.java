@@ -8,7 +8,6 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -116,9 +115,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.natureTrans, natureTrans)
         .leftJoin(nature.imageFile, imageFile)
         .where(natureTrans.language.locale.eq(locale)
-            .and(addressFilterList
-                .stream().map(natureTrans.addressTag::eq)
-                .reduce(BooleanExpression::or).orElse(null))
+            .and(natureTrans.addressTag.in(addressFilterList))
         )
         .orderBy(nature.createdAt.desc())
         .offset(pageable.getOffset())
@@ -130,9 +127,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.natureTrans, natureTrans)
         .where(natureTrans.language.locale.eq(locale)
-            .and(addressFilterList
-                .stream().map(natureTrans.addressTag::eq)
-                .reduce(BooleanExpression::or).orElse(null))
+            .and(natureTrans.addressTag.in(addressFilterList))
         );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
