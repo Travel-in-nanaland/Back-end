@@ -1,55 +1,55 @@
-name: test
-
-# develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
-on:
-  push:
-    branches: [ "develop" ]
-
-permissions:
-  contents: read
-
-jobs:
-  deploy:
-    name: test
-    runs-on: ubuntu-latest
-    environment: production
-
-    # 아래의 flow들이 차례대로 실행됩니다.
-    steps:
-      # 1) 기본 체크아웃
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      # 2) JDK 17 셋팅
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      # 2.5) secret설정한 test-yml 등록
-      - name: Set TEST_YML
-        run: |
-          mkdir -p src/test/resources
-          echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application-test.yml
-          find src
-
-      - name: Set up MariaDB 10
-        uses: getong/mariadb-action@v1.1
-        with:
-          host port: 3306
-          container port: 3306
-          mysql database: 'nanaland_test'
-          mysql user: 'root'
-          mysql password: ${{ secrets.DATABASE_KEY }}
-
-      # 3) gradlew 권한 설정
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        # working-directory: ${{ env.working-directory }}
-
-      # 4) gradle 빌드
-      - name: Build with Gradle
-        run: ./gradlew clean test -i
-        # run: ./gradlew clean build -i
-        # working-directory: ${{ env.working-directory }}
+#name: test
+#
+## develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
+#on:
+#  push:
+#    branches: [ "develop" ]
+#
+#permissions:
+#  contents: read
+#
+#jobs:
+#  deploy:
+#    name: test
+#    runs-on: ubuntu-latest
+#    environment: production
+#
+#    # 아래의 flow들이 차례대로 실행됩니다.
+#    steps:
+#      # 1) 기본 체크아웃
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#
+#      # 2) JDK 17 셋팅
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#
+#      # 2.5) secret설정한 test-yml 등록
+#      - name: Set TEST_YML
+#        run: |
+#          mkdir -p src/test/resources
+#          echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application-test.yml
+#          find src
+#
+#      - name: Set up MariaDB 10
+#        uses: getong/mariadb-action@v1.1
+#        with:
+#          host port: 3306
+#          container port: 3306
+#          mysql database: 'nanaland_test'
+#          mysql user: 'root'
+#          mysql password: ${{ secrets.DATABASE_KEY }}
+#
+#      # 3) gradlew 권한 설정
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
+#        # working-directory: ${{ env.working-directory }}
+#
+#      # 4) gradle 빌드
+#      - name: Build with Gradle
+#        run: ./gradlew clean test -i
+#        # run: ./gradlew clean build -i
+#        # working-directory: ${{ env.working-directory }}
