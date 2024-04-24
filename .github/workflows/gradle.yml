@@ -17,38 +17,11 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set YML for Test
-        run: echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application.yml
-
-      - name: Set up MariaDB 10 for Test
-        uses: getong/mariadb-action@v1.1
-        with:
-          host port: 3306
-          container port: 3306
-          mysql database: 'nanaland_test'
-          mysql user: 'root'
-          mysql password: ${{ secrets.DATABASE_KEY }}
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build and Run Tests
-        run: ./gradlew clean test
-
   deploy:
-    name: Deploy
+    name: deploy
     runs-on: ubuntu-latest
-    environment: production
 
-    # 아래의 flow들이 차례대로 실행됩니다.
+
     steps:
       # 1) 기본 체크아웃
       - name: Checkout
@@ -68,6 +41,14 @@ jobs:
           echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
           find src  
 
+      # 2.5) secret설정한 test yml 등록
+      - name: Set Test YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets
+          .TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
+          find src    
+
       - name: Set up MariaDB 10
         uses: getong/mariadb-action@v1.1
         with:
@@ -78,11 +59,19 @@ jobs:
           mysql password: ${{ secrets.DATABASE_KEY }}
           # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build and Run Tests
+        run: ./gradlew clean test
 
       # 3) gradlew 권한 설정
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         # working-directory: ${{ env.working-directory }}
+      # 4) test 빌드
+      - name: Build and Run Tests
+        run: ./gradlew clean test
 
       # 4) gradle 테스트 빌드
       - name: Build Test with Gradle
