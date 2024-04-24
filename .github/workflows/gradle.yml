@@ -17,6 +17,32 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set YML for Test
+        run: echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application.yml
+
+      - name: Set up MariaDB 10 for Test
+        uses: getong/mariadb-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          mysql database: 'nanaland_test'
+          mysql user: 'root'
+          mysql password: ${{ secrets.DATABASE_KEY }}
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build and Run Tests
+        run: ./gradlew clean test
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -40,14 +66,7 @@ jobs:
         run: |
           mkdir -p src/main/resources
           echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
-          find src
-
-      # 2.5) secret설정한 test-yml 등록
-      - name: Set TEST_YML
-        run: |
-          mkdir -p src/test/resources
-          echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application-test.yml
-          find src     
+          find src  
 
       - name: Set up MariaDB 10
         uses: getong/mariadb-action@v1.1
@@ -63,11 +82,11 @@ jobs:
       # 3) gradlew 권한 설정
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-          # working-directory: ${{ env.working-directory }}
+        # working-directory: ${{ env.working-directory }}
 
       # 4) gradle 빌드
       - name: Build with Gradle
-        run: ./gradlew clean build -i
+        run: ./gradlew clean build -x test -i
         # run: ./gradlew clean build -i
         # working-directory: ${{ env.working-directory }}
       
