@@ -10,12 +10,19 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.CategoryRepository;
+import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.nana.repository.NanaRepository;
+import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +42,12 @@ public class FavoriteService {
 
   private final CategoryRepository categoryRepository;
   private final FavoriteRepository favoriteRepository;
+
+  private final NanaRepository nanaRepository;
+  private final NatureRepository natureRepository;
+  private final ExperienceRepository experienceRepository;
+  private final FestivalRepository festivalRepository;
+  private final MarketRepository marketRepository;
 
   public FavoriteResponse.AllCategoryDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page,
       int size) {
@@ -169,12 +182,19 @@ public class FavoriteService {
   }
 
   @Transactional
-  public Boolean toggleLikeStatus(Member member, CategoryContent categoryContent, Long postId) {
+  public FavoriteResponse.StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto,
+      FavoriteRequest.LikeToggleDto likeToggleDto) {
+
+    Long postId = likeToggleDto.getId();
+    CategoryContent categoryContent = CategoryContent.valueOf(likeToggleDto.getCategory());
+
+    // 해당 카테고리에 해당하는 id의 게시물이 없다면 NotFoundException
+    checkPostIdIsExist(postId, categoryContent);
 
     Category category = getCategoryFromCategoryContent(categoryContent);
 
     Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
-        member, category, postId);
+        memberInfoDto.getMember(), category, postId);
 
     // 좋아요 상태일 때
     if (favoriteOptional.isPresent()) {
@@ -182,19 +202,25 @@ public class FavoriteService {
 
       // 좋아요 삭제
       favoriteRepository.delete(favorite);
-      return false;
+
+      return FavoriteResponse.StatusDto.builder()
+          .isFavorite(false)
+          .build();
     }
     // 좋아요 상태가 아닐 때
     else {
       Favorite favorite = Favorite.builder()
-          .member(member)
+          .member(memberInfoDto.getMember())
           .category(category)
           .postId(postId)
           .build();
 
       // 좋아요 추가
       favoriteRepository.save(favorite);
-      return true;
+
+      return FavoriteResponse.StatusDto.builder()
+          .isFavorite(true)
+          .build();
     }
   }
 
@@ -235,5 +261,30 @@ public class FavoriteService {
         member, category, id);
 
     return favoriteOptional.isPresent();
+  }
+
+  private void checkPostIdIsExist(Long postId, CategoryContent categoryContent) {
+    switch (categoryContent) {
+      case NANA -> {
+        nanaRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
+      }
+      case NATURE -> {
+        natureRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("해당 id의 7대자연 게시물이 존재하지 않습니다."));
+      }
+      case EXPERIENCE -> {
+        experienceRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("해당 id의 이색체험 게시물이 존재하지 않습니다."));
+      }
+      case MARKET -> {
+        marketRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
+      }
+      case FESTIVAL -> {
+        festivalRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
+      }
+    }
   }
 }

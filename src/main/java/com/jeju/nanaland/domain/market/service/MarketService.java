@@ -1,10 +1,6 @@
 package com.jeju.nanaland.domain.market.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -19,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MarketService {
 
   private final MarketRepository marketRepository;
-  private final FavoriteService favoriteService;
 
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList,
@@ -73,19 +67,6 @@ public class MarketService {
         .homepage(resultDto.getHomepage())
         .time(resultDto.getTime())
         .amenity(resultDto.getAmenity())
-        .build();
-  }
-
-  @Transactional
-  public StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto, Long postId) {
-    marketRepository.findById(postId)
-        .orElseThrow(() -> new BadRequestException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
-
-    Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
-        CategoryContent.MARKET, postId);
-
-    return FavoriteResponse.StatusDto.builder()
-        .isFavorite(status)
         .build();
   }
 }
