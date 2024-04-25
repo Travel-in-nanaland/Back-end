@@ -52,8 +52,10 @@ public class NanaService {
           NanaThumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
+              .version(dto.getVersion())
+              .subHeading(dto.getSubHeading())
+              .heading(dto.getHeading())
               .build());
-
     }
     return NanaThumbnailDto.builder()
         .totalElements(resultDto.getTotalElements())
@@ -94,6 +96,8 @@ public class NanaService {
 
     return NanaResponse.NanaDetailDto.builder()
         .originUrl(nanaTitle.getImageFile().getOriginUrl())
+        .subHeading(nanaTitle.getSubHeading())
+        .heading(nanaTitle.getHeading())
         .notice(nanaTitle.getNotice())
         .nanaDetails(nanaDetails)
         .build();

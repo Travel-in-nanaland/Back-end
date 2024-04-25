@@ -10,7 +10,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
-import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -53,13 +52,13 @@ public class NanaContent extends BaseEntity {
 
   @Builder
   public NanaContent(NanaTitle nanaTitle, ImageFile imageFile, int number, String subTitle,
-      String title, String content) {
+      String title, String content, Set<NanaAdditionalInfo> infoList) {
     this.nanaTitle = nanaTitle;
     this.imageFile = imageFile;
     this.number = number;
     this.subTitle = subTitle;
     this.title = title;
     this.content = content;
-    this.infoList = new HashSet<>();
+    this.infoList = infoList;
   }
 }
