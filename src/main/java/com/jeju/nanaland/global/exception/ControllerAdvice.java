@@ -4,6 +4,7 @@ import static com.jeju.nanaland.global.exception.ErrorCode.BAD_REQUEST_EXCEPTION
 import static com.jeju.nanaland.global.exception.ErrorCode.CONFLICT_DATA;
 import static com.jeju.nanaland.global.exception.ErrorCode.EXPIRED_TOKEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.INTERNAL_SERVER_ERROR;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.UNSUPPORTED_FILE_FORMAT;
 
@@ -58,6 +59,12 @@ public class ControllerAdvice {
   @ExceptionHandler(UnauthorizedException.class)
   public BaseResponse<String> handleUnauthorizedException(UnauthorizedException e) {
     return BaseResponse.error(EXPIRED_TOKEN, e.getMessage());
+  }
+
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ExceptionHandler(NotFoundException.class)
+  public BaseResponse<String> handleNotFoundException(NotFoundException e) {
+    return BaseResponse.error(NOT_FOUND_EXCEPTION, e.getMessage());
   }
 
   // 409에러

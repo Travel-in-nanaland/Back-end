@@ -35,11 +35,24 @@ public class NanaResponse {
     @Schema(description = "게시물 썸네일 url")
     private String thumbnailUrl;
 
+    @Schema(description = "오른 쪽 위 버전 ex) nana's Pick vol.1")
+    private String version;
+
+    @Schema(description = "사진에 들어갈 부제목 ex) 제주 야경 봤슴무언?")
+    private String subHeading;
+
+    @Schema(description = "사진에 들어갈 제목 ex) TOP 10 야경 맛집")
+    private String heading;
+
 
     @QueryProjection
-    public NanaThumbnail(Long id, String thumbnailUrl) {
+    public NanaThumbnail(Long id, String thumbnailUrl, String version, String subHeading,
+        String heading) {
       this.id = id;
       this.thumbnailUrl = thumbnailUrl;
+      this.version = version;
+      this.subHeading = subHeading;
+      this.heading = heading;
     }
   }
 
@@ -47,6 +60,12 @@ public class NanaResponse {
   @Builder
   @Schema(description = "나나's pick 개별 상세 조회 DTO")
   public static class NanaDetailDto {
+
+    @Schema(description = "사진에 들어갈 부제목 ex) 제주 야경 봤슴무언?")
+    private String subHeading;
+
+    @Schema(description = "사진에 들어갈 제목 ex) TOP 10 야경 맛집")
+    private String heading;
 
     @NotBlank
     @Schema(description = "게시물 url")

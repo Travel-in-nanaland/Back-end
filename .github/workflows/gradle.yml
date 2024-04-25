@@ -4,112 +4,98 @@ name: Java CI with Gradle & Deploy to EC2
 on:
   push:
     branches: [ "develop" ]
-   
+
 # flow에서 사용할 변수
 env:
   AWS_REGION: ap-northeast-2
   S3_BUCKET_NAME: nanaland-github-actions-s3-bucket
   CODE_DEPLOY_APPLICATION_NAME: nanaland-codedeploy-app
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: nanaland-codedeploy-deployment-group
-  
+
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-    name: Deploy
+    name: deploy
     runs-on: ubuntu-latest
     environment: production
 
-# 아래의 flow들이 차례대로 실행됩니다.
     steps:
-    # 1) 기본 체크아웃
-    - name: Checkout
-      uses: actions/checkout@v3
-    
-    # 2) JDK 17 셋팅
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        
-    # 2.5) secret설정한 yml 등록    
-    - name: Set YML
-      run: |
-        mkdir -p src/main/resources
-        echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
-        find src
-        
-    # - name: Set Database
-    #   uses: mirromutth/mariadb-action@v1.1
-    #   with:
-    #     host port: 3306
-    #     container port: 3306
-    #     mariadb database: 'nanaland'
-    #     maraidb user: 'root'
-    #     mariadb password: ${{ secrets.DATABASE_KEY }}
+      # 1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Set up MariaDB 10
-      uses: getong/mariadb-action@v1.1
-      with:
-        host port: 3306
-        container port: 3306
-        mysql database: 'nanaland' 
-        mysql user: 'root'
-        mysql password: ${{ secrets.DATABASE_KEY }}
-        # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
+      # 2) JDK 17 셋팅
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    # - name: Set TEST_YML
-    #   run: |
-    #     mkdir -p src/test/resources
-    #     echo "${{ secrets.TEST_YML }}" | base64 --decode > src/test/resources/application.yml
-    #     find src
+      # 2.5) secret설정한 yml 등록
+      - name: Set YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
+          find src  
 
-    # - name: Set up MariaDB 10 for test
-    #   uses: getong/mariadb-action@v1.1
-    #   with:
-    #     host port: 3306
-    #     container port: 3307
-    #     mysql database: 'nanaland_test' 
-    #     mysql user: 'root'
-    #     mysql password: ${{ secrets.DATABASE_KEY }}
-    #     # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
-    
-    # 3) gradlew 권한 설정
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-     # working-directory: ${{ env.working-directory }}
-        
-    # 4) gradle 빌드
-    - name: Build with Gradle
-      run: ./gradlew clean build -x test -i
-      # run: ./gradlew clean build -i
-      # working-directory: ${{ env.working-directory }}
-      
-    # AWS 인증
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-        
-    # AWS S3에 업로드
-    - name: Upload to AWS S3
-      run: |
-        aws deploy push \
-          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-          --ignore-hidden-files \
-          --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-          --source .
+      # 2.5) secret설정한 test yml 등록
+      - name: Set Test YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
+          find src    
           
-    # AWS EC2에 Deploy
-    - name: Deploy to AWS EC2 from S3
-      run: |
-        aws deploy create-deployment \
-          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-          --deployment-config-name CodeDeployDefault.AllAtOnce \
-          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
+          # - name: Set up MariaDB 10
+          #   uses: getong/mariadb-action@v1.1
+          #   with:
+          #     host port: 3306
+          #     container port: 3306
+          #     mysql database: 'nanaland_test'
+          #     mysql user: 'root'
+          #     mysql password: ${{ secrets.DATABASE_KEY }}
+          #     # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
+
+      # 3) gradlew 권한 설정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # # 4) gradle 테스트 빌드
+      # - name: Build Test with Gradle
+      #   run: ./gradlew test -i
+      #   # run: ./gradlew clean build -i
+      #   # working-directory: ${{ env.working-directory }}
+
+      # 4) gradle 빌드
+      - name: Build with Gradle
+        # run: ./gradlew clean build -x test -i
+        run: ./gradlew clean build -i
+        # working-directory: ${{ env.working-directory }}
+      
+      # AWS 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # AWS S3에 업로드
+      - name: Upload to AWS S3
+        run: |
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+
+      # AWS EC2에 Deploy
+      - name: Deploy to AWS EC2 from S3
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip

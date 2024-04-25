@@ -31,14 +31,13 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   @Override
   public MemberInfoDto findMemberWithLanguage(Long memberId) {
 
-    return Optional.ofNullable(queryFactory
-            .select(new QMemberResponse_MemberInfoDto(
-                member, member.language
-            ))
-            .from(member)
-            .leftJoin(member.language)
-            .where(member.id.eq(memberId))
-            .fetchOne())
-        .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+    return queryFactory
+        .select(new QMemberResponse_MemberInfoDto(
+            member, member.language
+        ))
+        .from(member)
+        .leftJoin(member.language)
+        .where(member.id.eq(memberId))
+        .fetchOne();
   }
 }

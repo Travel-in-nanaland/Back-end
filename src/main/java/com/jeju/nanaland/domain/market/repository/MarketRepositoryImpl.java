@@ -8,6 +8,7 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -47,6 +48,46 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
+  public Page<MarketCompositeDto> findMarketThumbnails(Locale locale,
+      List<String> addressFilterList,
+      Pageable pageable) {
+    List<MarketCompositeDto> resultDto = queryFactory
+        .select(new QMarketCompositeDto(
+            market.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            market.contact,
+            market.homepage,
+            language.locale,
+            marketTrans.title,
+            marketTrans.content,
+            marketTrans.address,
+            marketTrans.addressTag,
+            marketTrans.time,
+            marketTrans.intro,
+            marketTrans.amenity
+        ))
+        .from(market)
+        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(marketTrans.language.locale.eq(locale)
+            .and(addressTagCondition(addressFilterList)))
+        .orderBy(market.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(market.count())
+        .from(market)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(marketTrans.language.locale.eq(locale)
+            .and(addressTagCondition(addressFilterList)));
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
   public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
       Pageable pageable) {
     List<MarketCompositeDto> resultDto = queryFactory
@@ -83,5 +124,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .and(marketTrans.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
+    if (addressFilterList.isEmpty()) {
+      return null;
+    } else {
+      return marketTrans.addressTag.in(addressFilterList);
+    }
   }
 }

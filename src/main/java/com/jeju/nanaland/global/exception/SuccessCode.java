@@ -30,12 +30,20 @@ public enum SuccessCode {
   NANA_LIST_SUCCESS(OK, "나나 썸네일 리스트 조회 성공"),
   NANA_DETAIL_SUCCESS(OK, "나나 상세 페이지 조회 성공"),
 
+  // nature
+  NATURE_LIST_SUCCESS(OK, "7대 자연 썸네일 리스트 조회 성공"),
+  NATURE_DETAIL_SUCCESS(OK, "7대 자연 상세 정보 조회 성공"),
+
   // favorite
   POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공"),
   GET_FAVORITE_LIST_SUCCESS(OK, "찜리스트 조회 성공"),
 
   // report
-  POST_INFO_FIX_REPORT_SUCCESS(OK, "정보 수정 제안 요청 성공");
+  POST_INFO_FIX_REPORT_SUCCESS(OK, "정보 수정 제안 요청 성공"),
+
+  // market
+  MARKET_LIST_SUCCESS(OK, "전통시장 썸네일 리스트 조회 성공"),
+  MARKET_DETAIL_SUCCESS(OK, "전통시장 상세정보 조회 성공");
 
   private final HttpStatus httpStatus;
   private final String message;

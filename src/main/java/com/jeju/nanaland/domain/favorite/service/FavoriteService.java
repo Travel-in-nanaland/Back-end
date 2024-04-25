@@ -228,4 +228,12 @@ public class FavoriteService {
           .orElseThrow(() -> new ServerErrorException("FESTIVAL에 해당하는 카테고리가 없습니다."));
     };
   }
+
+  public boolean isPostInFavorite(Member member, CategoryContent categoryContent, Long id) {
+    Category category = getCategoryFromCategoryContent(categoryContent);
+    Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
+        member, category, id);
+
+    return favoriteOptional.isPresent();
+  }
 }

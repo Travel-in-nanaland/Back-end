@@ -4,6 +4,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SU
 
 import com.jeju.nanaland.domain.experience.service.ExperienceService;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
@@ -39,8 +40,7 @@ public class ExperienceController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
 
-    return BaseResponse.success(
-        POST_LIKE_TOGGLE_SUCCESS,
-        experienceService.toggleLikeStatus(memberInfoDto.getMember(), id));
+    StatusDto statusDto = experienceService.toggleLikeStatus(memberInfoDto, id);
+    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, statusDto);
   }
 }
