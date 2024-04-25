@@ -32,7 +32,10 @@ public enum SuccessCode {
 
   // favorite
   POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공"),
-  GET_FAVORITE_LIST_SUCCESS(OK, "찜리스트 조회 성공");
+  GET_FAVORITE_LIST_SUCCESS(OK, "찜리스트 조회 성공"),
+
+  // report
+  POST_INFO_FIX_REPORT_SUCCESS(OK, "정보 수정 제안 요청 성공");
 
   private final HttpStatus httpStatus;
   private final String message;
