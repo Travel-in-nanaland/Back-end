@@ -31,14 +31,23 @@ public class NanaTitle extends BaseEntity {
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile imageFile;
 
+  //이미지 위에 올릴 부제목
+  private String subHeading;
+
+  //이미지 위에 올릴 제목
+  private String heading;
+
   private String notice; // 알아두면 좋아요 밑에 들어가는 글, 회의 후 고정이라면 삭제
 
   @Builder
-  public NanaTitle(Nana nana, Language language, ImageFile imageFile, String notice) {
+  public NanaTitle(Nana nana, Language language, ImageFile imageFile, String notice,
+      String subHeading, String heading) {
     this.nana = nana;
     this.language = language;
     this.imageFile = imageFile;
     this.notice = notice;
+    this.subHeading = subHeading;
+    this.heading = heading;
   }
 }
 
