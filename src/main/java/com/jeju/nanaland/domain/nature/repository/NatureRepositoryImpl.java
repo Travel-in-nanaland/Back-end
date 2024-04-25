@@ -116,10 +116,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.natureTrans, natureTrans)
         .leftJoin(nature.imageFile, imageFile)
         .where(natureTrans.language.locale.eq(locale)
-            .and(addressFilterList
-                .stream().map(natureTrans.addressTag::eq)
-                .reduce(BooleanExpression::or).orElse(null))
-        )
+            .and(addressTagCondition(addressFilterList)))
         .orderBy(nature.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -130,11 +127,16 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.natureTrans, natureTrans)
         .where(natureTrans.language.locale.eq(locale)
-            .and(addressFilterList
-                .stream().map(natureTrans.addressTag::eq)
-                .reduce(BooleanExpression::or).orElse(null))
-        );
+            .and(addressTagCondition(addressFilterList)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
+    if (addressFilterList.isEmpty()) {
+      return null;
+    } else {
+      return natureTrans.addressTag.in(addressFilterList);
+    }
   }
 }
