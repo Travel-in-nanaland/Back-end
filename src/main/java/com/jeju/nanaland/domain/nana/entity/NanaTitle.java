@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -32,6 +33,7 @@ public class NanaTitle extends BaseEntity {
   private ImageFile imageFile;
 
   //이미지 위에 올릴 부제목
+  @Column(name = "sub_heading")
   private String subHeading;
 
   //이미지 위에 올릴 제목

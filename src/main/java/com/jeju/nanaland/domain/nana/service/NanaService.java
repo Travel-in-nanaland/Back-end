@@ -52,6 +52,7 @@ public class NanaService {
           NanaThumbnail.builder()
               .id(dto.getId())
               .thumbnailUrl(dto.getThumbnailUrl())
+              .version(dto.getVersion())
               .subHeading(dto.getSubHeading())
               .heading(dto.getHeading())
               .build());
