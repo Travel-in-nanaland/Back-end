@@ -6,6 +6,7 @@ import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -274,55 +275,22 @@ public class SearchService {
           FestivalCompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage().getLocale());
 
-          if (festivalCompositeDto == null) {
-            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
-          }
-
-          searchVolumeDtoList.add(SearchVolumeDto.builder()
-              .id(festivalCompositeDto.getId())
-              .title(festivalCompositeDto.getTitle())
-              .thumbnailUrl(festivalCompositeDto.getThumbnailUrl())
-              .category(categoryContent.name())
-              .isFavorite(
-                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
-                      festivalCompositeDto.getId()))
-              .build());
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, festivalCompositeDto));
         }
         case NATURE -> {
-          NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
+          CompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
               memberInfoDto.getLanguage().getLocale());
 
-          if (natureCompositeDto == null) {
-            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
-          }
-
-          searchVolumeDtoList.add(SearchVolumeDto.builder()
-              .id(natureCompositeDto.getId())
-              .title(natureCompositeDto.getTitle())
-              .thumbnailUrl(natureCompositeDto.getThumbnailUrl())
-              .category(categoryContent.name())
-              .isFavorite(
-                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
-                      natureCompositeDto.getId()))
-              .build());
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, natureCompositeDto));
         }
         case MARKET -> {
           MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
               memberInfoDto.getLanguage().getLocale());
 
-          if (marketCompositeDto == null) {
-            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
-          }
-
-          searchVolumeDtoList.add(SearchVolumeDto.builder()
-              .id(marketCompositeDto.getId())
-              .title(marketCompositeDto.getTitle())
-              .thumbnailUrl(marketCompositeDto.getThumbnailUrl())
-              .category(categoryContent.name())
-              .isFavorite(
-                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
-                      marketCompositeDto.getId()))
-              .build());
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
         }
         case EXPERIENCE -> {
           ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
@@ -346,6 +314,22 @@ public class SearchService {
       }
     }
     return searchVolumeDtoList;
+  }
+
+  private SearchVolumeDto getSearchVolumeDto(MemberInfoDto memberInfoDto,
+      CategoryContent categoryContent, CompositeDto compositeDto) {
+    if (compositeDto == null) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
+    return SearchVolumeDto.builder()
+        .id(compositeDto.getId())
+        .title(compositeDto.getTitle())
+        .thumbnailUrl(compositeDto.getThumbnailUrl())
+        .category(categoryContent.name())
+        .isFavorite(
+            favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                compositeDto.getId()))
+        .build();
   }
 
   private List<String> getTopSearchVolumeList() {
