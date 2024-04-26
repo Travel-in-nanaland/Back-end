@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailD
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
@@ -33,6 +34,28 @@ public class FestivalService {
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
         locale, pageable, false);
+
+    return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
+  }
+
+  public FestivalThumbnailDto getThisMonthFestivalList(Locale locale, int page, int size,
+      List<String> addressFilterList, int startDate, int endDate) {
+    Pageable pageable = PageRequest.of(page, size);
+
+    // 현재 연도와 월을 가져오기
+    YearMonth currentYearMonth = YearMonth.now();
+    int currentYear = currentYearMonth.getYear();
+    int currentMonth = currentYearMonth.getMonthValue();
+    if (startDate == 0 && endDate == 0) { // 날짜 필터가 없다면 이번 달 전체 검색
+      startDate = 1;
+
+      // 이번 년도 이번 달의 마지막 일 구하는 함수
+      endDate = currentYearMonth.lengthOfMonth();
+    }
+    // compositeDto로 기간에 맞는 festival 가져오기
+    Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByMonth(
+        locale, pageable, LocalDate.of(currentYear, currentMonth, startDate),
+        LocalDate.of(currentYear, currentMonth, endDate), addressFilterList);
 
     return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
   }
@@ -86,6 +109,7 @@ public class FestivalService {
               .title(dto.getTitle())
               .thumbnailUrl(dto.getThumbnailUrl())
               .period(period)
+              .addressTag(dto.getAddressTag())
               .build()
       );
     }

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,18 +29,23 @@ public class FestivalController {
 
   private final FestivalService festivalService;
 
-//  @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")
-//  @ApiResponses(value = {
-//      @ApiResponse(responseCode = "200", description = "성공"),
-//      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
-//      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
-//  })
-//  @GetMapping("/this-month")
-//  public BaseResponse<String> getFestival(@AuthMember Member member,@RequestParam(name = "date")) {
-//    Locale locale = member.getLanguage().getLocale();
-//    festivalService
-//    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, result);
-//  }
+  @Operation(summary = "이번 달 축제 리스트 조회", description = "이번 달 축제 리스트 조회 (페이징)")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
+  @GetMapping("/this-month")
+  public BaseResponse<FestivalThumbnailDto> getFestival(@AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size,
+      @RequestParam(defaultValue = "") List<String> addressFilterList,
+      @RequestParam(name = "startDate", defaultValue = "0") int startDate,
+      @RequestParam(name = "endDate", defaultValue = "0") int endDate) {
+    return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
+        festivalService.getThisMonthFestivalList(memberInfoDto.getLanguage().getLocale(),
+            page, size, addressFilterList, startDate, endDate));
+  }
 
   @Operation(summary = "종료된 축제 리스트 조회", description = "종료된 축제 리스트 조회 (페이징)")
   @ApiResponses(value = {

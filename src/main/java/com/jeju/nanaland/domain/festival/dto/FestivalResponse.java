@@ -37,11 +37,14 @@ public class FestivalResponse {
     @Schema(description = "축제 썸네일 url")
     private String thumbnailUrl;
 
+    @Schema(description = "주소 태그")
+    private String addressTag;
+
     @NotBlank
     private String period;
 //    @NotBlank
 //    private String addressTag;
-    
+
   }
 
 }
