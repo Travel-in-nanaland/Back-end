@@ -1,13 +1,11 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnail;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
-import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -28,14 +26,6 @@ public class FestivalService {
 
   private final FestivalRepository festivalRepository;
   private final FavoriteService favoriteService;
-
-  @Transactional
-  public String toggleLikeStatus(Member member, Long postId) {
-    festivalRepository.findById(postId)
-        .orElseThrow(() -> new BadRequestException("해당 id의 축제 게시물이 존재하지 않습니다."));
-
-    return favoriteService.toggleLikeStatus(member, CategoryContent.FESTIVAL, postId);
-  }
 
   public FestivalThumbnailDto getPastFestivalList(Locale locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);

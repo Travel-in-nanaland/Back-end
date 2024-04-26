@@ -30,7 +30,7 @@ public class FestivalCompositeDto {
   @QueryProjection
   public FestivalCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, Locale locale, String title, String content, String address, String time,
-      ,String addressTag,String intro, String fee, LocalDate startDate, LocalDate endDate) {
+      String addressTag, String intro, String fee, LocalDate startDate, LocalDate endDate) {
     this.id = id;
     this.originUrl = originUrl;
     this.thumbnailUrl = thumbnailUrl;
