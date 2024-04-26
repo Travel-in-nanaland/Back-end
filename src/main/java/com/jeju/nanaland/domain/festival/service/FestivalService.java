@@ -42,7 +42,9 @@ public class FestivalService {
   public FestivalThumbnailDto getThisMonthFestivalList(Locale locale, int page, int size,
       List<String> addressFilterList, int startDate, int endDate) {
     Pageable pageable = PageRequest.of(page, size);
-
+    if (startDate > endDate) {
+      throw new BadRequestException("endDate보다 startDate가 더 큽니다.");
+    }
     // 현재 연도와 월을 가져오기
     YearMonth currentYearMonth = YearMonth.now();
     int currentYear = currentYearMonth.getYear();
