@@ -17,6 +17,7 @@ import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
@@ -45,6 +46,7 @@ public class SearchService {
 
   private static final String SEARCH_VOLUME_KEY = "searchVolume";
   private static final String SEARCH_VOLUME_REGEX = ":";
+  private final NanaRepository nanaRepository;
   private final NatureRepository natureRepository;
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
@@ -269,7 +271,6 @@ public class SearchService {
       Long postId = Long.valueOf(parts[1]);
 
       switch (categoryContent) {
-        //TODO: NANA 추가 필요함
         case FESTIVAL -> {
           CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage().getLocale());
