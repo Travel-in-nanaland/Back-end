@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -35,6 +36,7 @@ public class FestivalController {
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
+  @Parameter(name = "startDate", description = "날짜는 일만 작성. ex) 1,2,3,4,,,")
   @GetMapping("/this-month")
   public BaseResponse<FestivalThumbnailDto> getFestival(@AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
