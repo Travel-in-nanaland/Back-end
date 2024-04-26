@@ -43,13 +43,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SearchService {
 
+  private static final String SEARCH_VOLUME_KEY = "searchVolume";
+  private static final String SEARCH_VOLUME_REGEX = ":";
   private final NatureRepository natureRepository;
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
-
   private final FavoriteService favoriteService;
-
   private final RedisTemplate<String, String> redisTemplate;
 
   public SearchResponse.CategoryDto getCategorySearchResultDto(Member member, String keyword,
@@ -255,9 +255,8 @@ public class SearchService {
   }
 
   public void updateSearchVolumeV1(CategoryContent categoryContent, Long id) {
-    String key = "searchVolume";
-    String value = categoryContent + ":" + id;
-    redisTemplate.opsForZSet().incrementScore(key, value, 1);
+    String value = categoryContent + SEARCH_VOLUME_REGEX + id;
+    redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
   }
 
   public List<SearchVolumeDto> getTopSearchVolumePosts(MemberInfoDto memberInfoDto) {
@@ -265,14 +264,14 @@ public class SearchService {
 
     List<SearchVolumeDto> searchVolumeDtoList = new ArrayList<>();
     for (String element : topSearchVolumeList) {
-      String[] parts = element.split(":");
+      String[] parts = element.split(SEARCH_VOLUME_REGEX);
       CategoryContent categoryContent = CategoryContent.valueOf(parts[0]);
       Long postId = Long.valueOf(parts[1]);
 
       switch (categoryContent) {
         //TODO: NANA 추가 필요함
         case FESTIVAL -> {
-          FestivalCompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
+          CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage().getLocale());
 
           searchVolumeDtoList.add(
@@ -286,29 +285,18 @@ public class SearchService {
               getSearchVolumeDto(memberInfoDto, categoryContent, natureCompositeDto));
         }
         case MARKET -> {
-          MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
+          CompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
               memberInfoDto.getLanguage().getLocale());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
         }
         case EXPERIENCE -> {
-          ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+          CompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage().getLocale());
 
-          if (experienceCompositeDto == null) {
-            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
-          }
-
-          searchVolumeDtoList.add(SearchVolumeDto.builder()
-              .id(experienceCompositeDto.getId())
-              .title(experienceCompositeDto.getTitle())
-              .thumbnailUrl(experienceCompositeDto.getThumbnailUrl())
-              .category(categoryContent.name())
-              .isFavorite(
-                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
-                      experienceCompositeDto.getId()))
-              .build());
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, experienceCompositeDto));
         }
         default -> throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
       }
@@ -333,10 +321,8 @@ public class SearchService {
   }
 
   private List<String> getTopSearchVolumeList() {
-    String key = "searchVolume";
-
     ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-    Set<String> topSearchVolumes = zSetOperations.reverseRange(key, 0, 3);
+    Set<String> topSearchVolumes = zSetOperations.reverseRange(SEARCH_VOLUME_KEY, 0, 3);
     return topSearchVolumes != null ? new ArrayList<>(topSearchVolumes) : new ArrayList<>();
   }
 }
