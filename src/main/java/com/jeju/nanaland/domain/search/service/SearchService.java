@@ -14,11 +14,15 @@ import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
+import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -253,5 +257,102 @@ public class SearchService {
     String key = "searchVolume";
     String value = categoryContent + ":" + id;
     redisTemplate.opsForZSet().incrementScore(key, value, 1);
+  }
+
+  public List<SearchVolumeDto> getTopSearchVolumePosts(MemberInfoDto memberInfoDto) {
+    List<String> topSearchVolumeList = getTopSearchVolumeList();
+
+    List<SearchVolumeDto> searchVolumeDtoList = new ArrayList<>();
+    for (String element : topSearchVolumeList) {
+      String[] parts = element.split(":");
+      CategoryContent categoryContent = CategoryContent.valueOf(parts[0]);
+      Long postId = Long.valueOf(parts[1]);
+
+      switch (categoryContent) {
+        //TODO: NANA 추가 필요함
+        case FESTIVAL -> {
+          FestivalCompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
+              postId, memberInfoDto.getLanguage().getLocale());
+
+          if (festivalCompositeDto == null) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+          }
+
+          searchVolumeDtoList.add(SearchVolumeDto.builder()
+              .id(festivalCompositeDto.getId())
+              .title(festivalCompositeDto.getTitle())
+              .thumbnailUrl(festivalCompositeDto.getThumbnailUrl())
+              .category(categoryContent.name())
+              .isFavorite(
+                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                      festivalCompositeDto.getId()))
+              .build());
+        }
+        case NATURE -> {
+          NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
+              memberInfoDto.getLanguage().getLocale());
+
+          if (natureCompositeDto == null) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+          }
+
+          searchVolumeDtoList.add(SearchVolumeDto.builder()
+              .id(natureCompositeDto.getId())
+              .title(natureCompositeDto.getTitle())
+              .thumbnailUrl(natureCompositeDto.getThumbnailUrl())
+              .category(categoryContent.name())
+              .isFavorite(
+                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                      natureCompositeDto.getId()))
+              .build());
+        }
+        case MARKET -> {
+          MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
+              memberInfoDto.getLanguage().getLocale());
+
+          if (marketCompositeDto == null) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+          }
+
+          searchVolumeDtoList.add(SearchVolumeDto.builder()
+              .id(marketCompositeDto.getId())
+              .title(marketCompositeDto.getTitle())
+              .thumbnailUrl(marketCompositeDto.getThumbnailUrl())
+              .category(categoryContent.name())
+              .isFavorite(
+                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                      marketCompositeDto.getId()))
+              .build());
+        }
+        case EXPERIENCE -> {
+          ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+              postId, memberInfoDto.getLanguage().getLocale());
+
+          if (experienceCompositeDto == null) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+          }
+
+          searchVolumeDtoList.add(SearchVolumeDto.builder()
+              .id(experienceCompositeDto.getId())
+              .title(experienceCompositeDto.getTitle())
+              .thumbnailUrl(experienceCompositeDto.getThumbnailUrl())
+              .category(categoryContent.name())
+              .isFavorite(
+                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                      experienceCompositeDto.getId()))
+              .build());
+        }
+        default -> throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+      }
+    }
+    return searchVolumeDtoList;
+  }
+
+  private List<String> getTopSearchVolumeList() {
+    String key = "searchVolume";
+
+    ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+    Set<String> topSearchVolumes = zSetOperations.reverseRange(key, 0, 3);
+    return topSearchVolumes != null ? new ArrayList<>(topSearchVolumes) : new ArrayList<>();
   }
 }

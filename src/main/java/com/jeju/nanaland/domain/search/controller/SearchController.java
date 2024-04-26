@@ -5,6 +5,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.CategoryDto;
+import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
@@ -17,6 +18,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -136,5 +138,12 @@ public class SearchController {
 
     return BaseResponse.success(SEARCH_SUCCESS,
         searchService.getPopularSearch(memberInfoDto.getLanguage().getLocale()));
+  }
+
+  @GetMapping("/volume")
+  public ResponseEntity getTopSearchVolumePosts(@AuthMember MemberInfoDto memberInfoDto) {
+    List<SearchVolumeDto> topSearchVolumePosts = searchService.getTopSearchVolumePosts(
+        memberInfoDto);
+    return ResponseEntity.ok(topSearchVolumePosts);
   }
 }
