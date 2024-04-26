@@ -20,6 +20,7 @@ public class FestivalCompositeDto {
   private String title;
   private String content;
   private String address;
+  private String addressTag;
   private String time;
   private String intro;
   private String fee;
@@ -29,7 +30,7 @@ public class FestivalCompositeDto {
   @QueryProjection
   public FestivalCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
       String homepage, Locale locale, String title, String content, String address, String time,
-      String intro, String fee, LocalDate startDate, LocalDate endDate) {
+      ,String addressTag,String intro, String fee, LocalDate startDate, LocalDate endDate) {
     this.id = id;
     this.originUrl = originUrl;
     this.thumbnailUrl = thumbnailUrl;
@@ -39,6 +40,7 @@ public class FestivalCompositeDto {
     this.title = title;
     this.content = content;
     this.address = address;
+    this.addressTag = addressTag;
     this.time = time;
     this.intro = intro;
     this.fee = fee;

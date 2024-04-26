@@ -2,6 +2,8 @@ package com.jeju.nanaland.global.jwt;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +33,13 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
     String bearerAccessToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
-    return memberRepository.findMemberWithLanguage(Long.valueOf(memberId));
+
+    MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
+        Long.valueOf(memberId));
+
+    if (memberInfoDto == null) {
+      throw new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+    }
+    return memberInfoDto;
   }
 }

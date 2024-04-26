@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 
 application.yml
+application-test.yml
 
 ## test를 위한 controller
 TestController.java

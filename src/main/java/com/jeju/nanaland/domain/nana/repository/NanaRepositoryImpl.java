@@ -26,7 +26,10 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   public List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Locale locale) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
             nanaTitle.id,
-            imageFile.thumbnailUrl
+            imageFile.thumbnailUrl,
+            nana.version,
+            nanaTitle.heading,
+            nanaTitle.subHeading
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
@@ -43,7 +46,10 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
       Pageable pageable) {
     List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
             nanaTitle.id,
-            imageFile.thumbnailUrl
+            imageFile.thumbnailUrl,
+            nana.version,
+            nanaTitle.heading,
+            nanaTitle.subHeading
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
