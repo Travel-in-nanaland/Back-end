@@ -1,11 +1,6 @@
 package com.jeju.nanaland.domain.nana.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -24,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +27,6 @@ public class NanaService {
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
-  private final FavoriteService favoriteService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -102,19 +95,6 @@ public class NanaService {
         .nanaDetails(nanaDetails)
         .build();
 
-  }
-
-  @Transactional
-  public StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto, Long postId) {
-    nanaRepository.findById(postId)
-        .orElseThrow(() -> new BadRequestException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
-
-    Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
-        CategoryContent.NANA, postId);
-
-    return FavoriteResponse.StatusDto.builder()
-        .isFavorite(status)
-        .build();
   }
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
