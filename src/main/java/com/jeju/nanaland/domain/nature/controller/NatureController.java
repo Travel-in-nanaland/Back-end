@@ -60,8 +60,9 @@ public class NatureController {
   @GetMapping("/{id}")
   public BaseResponse<NatureDetailDto> getNatureDetail(
       @AuthMember MemberInfoDto memberInfoDto,
-      @PathVariable Long id) {
-    NatureDetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, id);
+      @PathVariable Long id,
+      @RequestParam(defaultValue = "false") boolean isSearch) {
+    NatureDetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, id, isSearch);
     return BaseResponse.success(SuccessCode.NATURE_DETAIL_SUCCESS, natureDetail);
   }
 }

@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -246,5 +247,11 @@ public class SearchService {
         redisTemplate.delete(key1);
       }
     }
+  }
+
+  public void updateSearchVolumeV1(CategoryContent categoryContent, Long id) {
+    String key = "searchVolume";
+    String value = categoryContent + ":" + id;
+    redisTemplate.opsForZSet().incrementScore(key, value, 1);
   }
 }
