@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailD
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -65,23 +66,24 @@ public class FestivalService {
     Pageable pageable = PageRequest.of(page, size);
     LocalDate startDate = null;
     LocalDate endDate = null;
+    int currentYear = Year.now().getValue();
 
     switch (season) {
       case "spring":
-        startDate = LocalDate.of(1, 3, 1);
-        endDate = LocalDate.of(1, 4, 1);
+        startDate = LocalDate.of(currentYear, 3, 1);
+        endDate = LocalDate.of(currentYear, 4, 30);
         break;
       case "summer":
-        startDate = LocalDate.of(1, 5, 1);
-        endDate = LocalDate.of(1, 8, 1);
+        startDate = LocalDate.of(currentYear, 5, 1);
+        endDate = LocalDate.of(currentYear, 8, 31);
         break;
       case "autumn":
-        startDate = LocalDate.of(1, 9, 1);
-        endDate = LocalDate.of(1, 10, 1);
+        startDate = LocalDate.of(currentYear, 9, 1);
+        endDate = LocalDate.of(currentYear, 10, 31);
         break;
       case "winter":
-        startDate = LocalDate.of(1, 11, 1);
-        endDate = LocalDate.of(1, 2, 1);
+        startDate = LocalDate.of(currentYear, 11, 1);
+        endDate = LocalDate.of(currentYear, 2, 1);
         break;
     }
     if (startDate == null) {
@@ -90,7 +92,7 @@ public class FestivalService {
 
     // compositeDto로 계절별 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
-        locale, pageable, startDate, endDate);
+        locale, pageable, startDate, endDate, currentYear);
     getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
 
     return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
