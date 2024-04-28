@@ -23,11 +23,9 @@ public class SearchResponse {
 
     @Schema(description = "전통시장 조회 결과")
     private ResultDto market;
-  }
 
-  @Data
-  public static class StoryDto {
-
+    @Schema(description = "나나스픽 조회 결과")
+    private ResultDto nana;
   }
 
   @Data

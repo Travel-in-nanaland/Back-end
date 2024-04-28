@@ -14,6 +14,8 @@ import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
@@ -41,6 +43,7 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
+  private final NanaRepository nanaRepository;
 
   private final FavoriteService favoriteService;
 
@@ -59,6 +62,7 @@ public class SearchService {
         .festival(getFestivalSearchResultDto(member, keyword, locale, page, size))
         .market(getMarketSearchResultDto(member, keyword, locale, page, size))
         .experience(getExperienceSearchResultDto(member, keyword, locale, page, size))
+        .nana(getNanaSearchResultDto(member, keyword, locale, page, size))
         .build();
   }
 
@@ -161,6 +165,33 @@ public class SearchService {
               .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
+              .build());
+    }
+
+    return SearchResponse.ResultDto.builder()
+        .totalElements(resultPage.getTotalElements())
+        .data(thumbnails)
+        .build();
+  }
+
+  public SearchResponse.ResultDto getNanaSearchResultDto(Member member, String keyword,
+      Locale locale,
+      int page, int size) {
+
+    Pageable pageable = PageRequest.of(page, size);
+    Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
+        keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, MARKET);
+
+    List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
+    for (NanaThumbnail thumbnail : resultPage) {
+      thumbnails.add(
+          ThumbnailDto.builder()
+              .id(thumbnail.getId())
+              .thumbnailUrl(thumbnail.getThumbnailUrl())
+              .title(thumbnail.getHeading())
+              .isFavorite(favoriteIds.contains(thumbnail.getId()))
               .build());
     }
 
