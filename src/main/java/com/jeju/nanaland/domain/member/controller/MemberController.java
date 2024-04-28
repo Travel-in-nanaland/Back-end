@@ -15,6 +15,7 @@ import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -56,7 +57,8 @@ public class MemberController {
     return BaseResponse.success(LOGIN_SUCCESS, jwtDto);
   }
 
-  @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다.")
+  @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
+      + "header에 AccessToken이 아닌 RefreshToken을 담아 요청해주세요.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "존재하지 않는 회원인 경우", content = @Content),
@@ -64,6 +66,7 @@ public class MemberController {
   })
   @GetMapping("/reissue")
   public BaseResponse<String> reissue(
+      @Parameter(name = "refreshToken", hidden = true)
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
     String newAccessToken = memberLoginService.reissue(refreshToken);
     return BaseResponse.success(ACCESS_TOKEN_SUCCESS, newAccessToken);
