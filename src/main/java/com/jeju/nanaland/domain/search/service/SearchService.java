@@ -17,6 +17,7 @@ import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
@@ -271,6 +272,23 @@ public class SearchService {
       Long postId = Long.valueOf(parts[1]);
 
       switch (categoryContent) {
+        case NANA -> {
+          NanaThumbnailPost nanaThumbnailPostDto = nanaRepository.findNanaThumbnailPostDto(
+              postId, memberInfoDto.getLanguage().getLocale()
+          );
+          if (nanaThumbnailPostDto == null) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+          }
+          searchVolumeDtoList.add(SearchVolumeDto.builder()
+              .id(nanaThumbnailPostDto.getId())
+              .title(nanaThumbnailPostDto.getHeading())
+              .thumbnailUrl(nanaThumbnailPostDto.getThumbnailUrl())
+              .category(categoryContent.name())
+              .isFavorite(
+                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                      nanaThumbnailPostDto.getId()))
+              .build());
+        }
         case FESTIVAL -> {
           CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage().getLocale());
