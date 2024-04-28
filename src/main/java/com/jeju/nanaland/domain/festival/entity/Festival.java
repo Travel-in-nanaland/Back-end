@@ -5,6 +5,8 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,6 +24,9 @@ public class Festival extends Common {
   private LocalDate startDate;
   private LocalDate endDate;
 
+  @Enumerated(EnumType.STRING)
+  private Season season;
+
   @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
 
@@ -30,10 +35,11 @@ public class Festival extends Common {
 
   @Builder
   public Festival(String contentId, ImageFile imageFile, String contact, LocalDate startDate,
-      LocalDate endDate, String homepage) {
+      LocalDate endDate, Season season, String homepage) {
     super(contentId, imageFile, contact);
     this.startDate = startDate;
     this.endDate = endDate;
+    this.season = season;
     this.homepage = homepage;
     this.festivalTrans = new ArrayList<>();
   }
