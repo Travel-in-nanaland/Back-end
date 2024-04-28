@@ -47,7 +47,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  public Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable) {
 
     List<FestivalCompositeDto> resultDto = queryFactory
@@ -69,8 +69,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .where(festivalTrans.title.contains(title)
-            .and(festivalTrans.language.locale.eq(locale)))
+        .where(festivalTrans.language.locale.eq(locale)
+            .and(festivalTrans.title.contains(keyword)
+                .or(festivalTrans.addressTag.contains(keyword))
+                .or(festivalTrans.content.contains(keyword))))
         .orderBy(festivalTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -81,8 +83,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .where(festivalTrans.title.contains(title)
-            .and(festivalTrans.language.locale.eq(locale)));
+        .where(festivalTrans.language.locale.eq(locale)
+            .and(festivalTrans.title.contains(keyword)
+                .or(festivalTrans.addressTag.contains(keyword))
+                .or(festivalTrans.content.contains(keyword))));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }

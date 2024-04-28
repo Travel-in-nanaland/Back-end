@@ -48,7 +48,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   @Override
-  public Page<ExperienceCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  public Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable) {
     List<ExperienceCompositeDto> resultDto = queryFactory
         .select(new QExperienceCompositeDto(
@@ -70,8 +70,10 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.imageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .where(experienceTrans.title.contains(title)
-            .and(experienceTrans.language.locale.eq(locale)))
+        .where(experienceTrans.language.locale.eq(locale)
+            .and(experienceTrans.title.contains(keyword)
+                .or(experienceTrans.addressTag.contains(keyword))
+                .or(experienceTrans.content.contains(keyword))))
         .orderBy(experienceTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -82,8 +84,10 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.imageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .where(experienceTrans.title.contains(title)
-            .and(experienceTrans.language.locale.eq(locale)));
+        .where(experienceTrans.language.locale.eq(locale)
+            .and(experienceTrans.title.contains(keyword)
+                .or(experienceTrans.addressTag.contains(keyword))
+                .or(experienceTrans.content.contains(keyword))));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }

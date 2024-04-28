@@ -51,7 +51,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  public Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable) {
     List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
@@ -73,8 +73,10 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.imageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .where(natureTrans.title.contains(title)
-            .and(natureTrans.language.locale.eq(locale)))
+        .where(natureTrans.language.locale.eq(locale)
+            .and(natureTrans.title.contains(keyword)
+                .or(natureTrans.addressTag.contains(keyword))
+                .or(natureTrans.content.contains(keyword))))
         .orderBy(natureTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -85,9 +87,10 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.imageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .where(natureTrans.title.contains(title)
-            .and(natureTrans.language.locale.eq(locale))
-        );
+        .where(natureTrans.language.locale.eq(locale)
+            .and(natureTrans.title.contains(keyword)
+                .or(natureTrans.addressTag.contains(keyword))
+                .or(natureTrans.content.contains(keyword))));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }

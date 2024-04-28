@@ -67,7 +67,7 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByTitle(
+    Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, NATURE);
@@ -94,7 +94,7 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByTitle(
+    Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, FESTIVAL);
@@ -121,7 +121,7 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByTitle(
+    Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, EXPERIENCE);
@@ -148,7 +148,7 @@ public class SearchService {
       int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByTitle(
+    Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, MARKET);

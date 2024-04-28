@@ -9,6 +9,6 @@ public interface FestivalRepositoryCustom {
 
   FestivalCompositeDto findCompositeDtoById(Long id, Locale locale);
 
-  Page<FestivalCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable);
 }

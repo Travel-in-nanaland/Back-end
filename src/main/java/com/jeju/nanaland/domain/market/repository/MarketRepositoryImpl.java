@@ -88,7 +88,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  public Page<MarketCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable) {
     List<MarketCompositeDto> resultDto = queryFactory
         .select(new QMarketCompositeDto(
@@ -109,8 +109,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .from(market)
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.title.contains(title)
-            .and(marketTrans.language.locale.eq(locale)))
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.title.contains(keyword)
+                .or(marketTrans.addressTag.contains(keyword))
+                .or(marketTrans.content.contains(keyword))))
         .orderBy(marketTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -120,8 +122,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .select(market.count())
         .from(market)
         .leftJoin(market.marketTrans, marketTrans)
-        .where(marketTrans.title.contains(title)
-            .and(marketTrans.language.locale.eq(locale)));
+        .where(marketTrans.language.locale.eq(locale)
+            .and(marketTrans.title.contains(keyword)
+                .or(marketTrans.addressTag.contains(keyword))
+                .or(marketTrans.content.contains(keyword))));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
