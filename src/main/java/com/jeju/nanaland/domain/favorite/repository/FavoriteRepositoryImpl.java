@@ -205,7 +205,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(favorite.count())
         .from(favorite)
-        .join(market).on(favorite.postId.eq(marketTrans.id))
+        .join(market).on(favorite.postId.eq(market.id))
         .leftJoin(market.marketTrans, marketTrans)
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(marketTrans.language, language)
