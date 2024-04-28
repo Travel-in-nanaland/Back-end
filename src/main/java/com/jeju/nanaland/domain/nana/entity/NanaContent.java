@@ -45,7 +45,7 @@ public class NanaContent extends BaseEntity {
 
   @ManyToMany
   @JoinTable(name = "NANA_INFO_TYPE",
-      joinColumns = @JoinColumn(name = "nana_contet_id"),
+      joinColumns = @JoinColumn(name = "nana_content_id"),
       inverseJoinColumns = @JoinColumn(name = "nana_additional_info_id")
   )
   private Set<NanaAdditionalInfo> infoList;
