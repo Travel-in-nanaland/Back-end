@@ -16,7 +16,6 @@ import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
@@ -67,14 +66,16 @@ public class NanaService {
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,  boolean isSearch) {
+  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,
+      boolean isSearch) {
 
     // nana 찾아서
     Nana nana = nanaRepository.findNanaById(nanaId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
 
     // nanaTitle 찾아서
-    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(nana.getId())
+    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByIdAndLanguage(nana.getId(),
+            memberInfoDto.getLanguage())
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
 
     if (isSearch) {
