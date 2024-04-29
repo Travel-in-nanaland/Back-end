@@ -37,7 +37,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.addressTag,
             festivalTrans.time,
             festivalTrans.intro,
-            festivalTrans.fee
+            festivalTrans.fee,
+            festival.startDate,
+            festival.endDate,
+            festival.season
         ))
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
@@ -64,7 +67,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festivalTrans.addressTag,
             festivalTrans.time,
             festivalTrans.intro,
-            festivalTrans.fee
+            festivalTrans.fee,
+            festival.startDate,
+            festival.endDate,
+            festival.season
         ))
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
