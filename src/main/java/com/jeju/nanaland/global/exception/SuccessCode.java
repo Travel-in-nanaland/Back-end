@@ -38,6 +38,9 @@ public enum SuccessCode {
   // favorite
   POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공"),
 
+  // festival
+  FESTIVAL_LIST_SUCCESS(OK, "축제 썸네일 리스트 조회 성공"),
+
   // market
   MARKET_LIST_SUCCESS(OK, "전통시장 썸네일 리스트 조회 성공"),
   MARKET_DETAIL_SUCCESS(OK, "전통시장 상세정보 조회 성공"),
