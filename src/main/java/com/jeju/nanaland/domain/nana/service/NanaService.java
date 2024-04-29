@@ -1,6 +1,10 @@
 package com.jeju.nanaland.domain.nana.service;
 
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
+
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -27,6 +31,7 @@ public class NanaService {
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
+  private final FavoriteService favoriteService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -57,7 +62,7 @@ public class NanaService {
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(Long id) {
+  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long id) {
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(id)
         .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 컨텐츠 입니다."));
@@ -68,6 +73,8 @@ public class NanaService {
 
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
 
+    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
+        nanaTitle.getNana().getId());
     for (NanaContent nanaContent : nanaContentList) {
 
       // TODO hashtag 기능 구현 시 꼭 수정하기!!!!
@@ -93,6 +100,7 @@ public class NanaService {
         .heading(nanaTitle.getHeading())
         .notice(nanaTitle.getNotice())
         .nanaDetails(nanaDetails)
+        .isFavorite(isPostInFavorite)
         .build();
 
   }
