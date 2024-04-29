@@ -64,6 +64,7 @@ public class FavoriteService {
     for (Favorite favorite : favorites) {
       CategoryContent category = favorite.getCategory().getContent();
       Long postId = favorite.getPostId();
+      log.info("postId: {}", postId);
 
       switch (category) {
         case NANA -> {

@@ -21,6 +21,7 @@ public class Festival extends Common {
 
   private LocalDate startDate;
   private LocalDate endDate;
+  private String season;
 
   @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
@@ -30,10 +31,11 @@ public class Festival extends Common {
 
   @Builder
   public Festival(String contentId, ImageFile imageFile, String contact, LocalDate startDate,
-      LocalDate endDate, String homepage) {
+      LocalDate endDate, String season, String homepage) {
     super(contentId, imageFile, contact);
     this.startDate = startDate;
     this.endDate = endDate;
+    this.season = season;
     this.homepage = homepage;
     this.festivalTrans = new ArrayList<>();
   }
