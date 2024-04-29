@@ -257,7 +257,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
     List<ThumbnailDto> resultDto = queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
             favorite.postId,
-            marketTrans.title,
+            nanaTitle.heading,
             imageFile.thumbnailUrl
         ))
         .from(favorite)
@@ -290,8 +290,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
   public ThumbnailDto findNanaThumbnailByPostId(Long postId, Locale locale) {
     return queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
-            market.id,
-            marketTrans.title,
+            nanaTitle.id,
+            nanaTitle.heading,
             imageFile.thumbnailUrl
         ))
         .from(favorite)
