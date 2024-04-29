@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnailDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.List;
@@ -27,6 +28,7 @@ public class MarketService {
 
   private final MarketRepository marketRepository;
   private final FavoriteService favoriteService;
+  private final SearchService searchService;
 
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList,
@@ -57,13 +59,18 @@ public class MarketService {
         .build();
   }
 
-  public MarketResponse.MarketDetailDto getMarketDetail(MemberInfoDto memberInfoDto, Long id) {
+  public MarketResponse.MarketDetailDto getMarketDetail(MemberInfoDto memberInfoDto, Long id,
+      boolean isSearch) {
 
     MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage().getLocale());
 
     if (marketCompositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
+
+    if (isSearch) {
+      searchService.updateSearchVolumeV1(MARKET, id);
     }
 
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET,
