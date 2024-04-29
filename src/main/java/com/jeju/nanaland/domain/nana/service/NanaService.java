@@ -15,7 +15,8 @@ import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -67,11 +68,11 @@ public class NanaService {
 
     // nana 찾아서
     Nana nana = nanaRepository.findNanaById(nanaId)
-        .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 입니다."));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(nana.getId())
-        .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 컨텐츠 입니다."));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
 
     // nanaTitle에 맞는 게시물 조회
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
