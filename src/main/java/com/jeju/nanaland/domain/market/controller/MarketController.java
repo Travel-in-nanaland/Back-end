@@ -56,14 +56,16 @@ public class MarketController {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/{id}")
   public BaseResponse<MarketResponse.MarketDetailDto> getMarketDetail(
       @AuthMember MemberInfoDto memberInfoDto,
-      @PathVariable Long id) {
+      @PathVariable Long id,
+      @RequestParam(defaultValue = "false") boolean isSearch) {
 
-    MarketDetailDto marketDetail = marketService.getMarketDetail(memberInfoDto, id);
+    MarketDetailDto marketDetail = marketService.getMarketDetail(memberInfoDto, id, isSearch);
     return BaseResponse.success(MARKET_DETAIL_SUCCESS, marketDetail);
   }
 }

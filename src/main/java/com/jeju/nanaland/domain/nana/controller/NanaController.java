@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -63,8 +64,8 @@ public class NanaController {
   })
   @GetMapping("/{id}")
   public BaseResponse<NanaDetailDto> nanaDetail(@AuthMember MemberInfoDto memberInfoDto,
-      @PathVariable(name = "id") Long id) {
+      @PathVariable(name = "id") Long id, @RequestParam(defaultValue = "false") boolean isSearch) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
-        nanaService.getNanaDetail(memberInfoDto, id));
+        nanaService.getNanaDetail(memberInfoDto, id,isSearch));
   }
 }

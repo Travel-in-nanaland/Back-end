@@ -5,8 +5,10 @@ import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.CategoryDto;
+import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.BaseResponse;
+import com.jeju.nanaland.global.exception.SuccessCode;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -136,5 +138,21 @@ public class SearchController {
 
     return BaseResponse.success(SEARCH_SUCCESS,
         searchService.getPopularSearch(memberInfoDto.getLanguage().getLocale()));
+  }
+
+  @Operation(
+      summary = "검색량 UP 게시물 조회",
+      description = "검색량이 높은 4개 게시물 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "해당 id의 게시물이 없는 경우", content = @Content)
+  })
+  @GetMapping("/volume")
+  public BaseResponse<List<SearchVolumeDto>> getTopSearchVolumePosts(
+      @AuthMember MemberInfoDto memberInfoDto) {
+    List<SearchVolumeDto> topSearchVolumePosts = searchService.getTopSearchVolumePosts(
+        memberInfoDto);
+    return BaseResponse.success(SuccessCode.SEARCH_VOLUME_SUCCESS, topSearchVolumePosts);
   }
 }

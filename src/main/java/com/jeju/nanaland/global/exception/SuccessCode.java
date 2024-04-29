@@ -20,6 +20,7 @@ public enum SuccessCode {
 
   // search
   SEARCH_SUCCESS(OK, "검색에 성공했습니다."),
+  SEARCH_VOLUME_SUCCESS(OK, "검색량 UP 게시물 조회 성공"),
 
   // login
   LOGIN_SUCCESS(OK, "로그인에 성공했습니다."),

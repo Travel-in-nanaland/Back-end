@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.List;
@@ -26,6 +27,7 @@ public class NatureService {
 
   private final NatureRepository natureRepository;
   private final FavoriteService favoriteService;
+  private final SearchService searchService;
 
 
   public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
@@ -54,12 +56,16 @@ public class NatureService {
         .build();
   }
 
-  public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id) {
+  public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
     NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage().getLocale());
 
     if (natureCompositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
+
+    if (isSearch) {
+      searchService.updateSearchVolumeV1(NATURE, id);
     }
 
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,

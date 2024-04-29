@@ -15,6 +15,8 @@ import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
+import com.jeju.nanaland.domain.search.service.SearchService;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ public class NanaService {
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
   private final FavoriteService favoriteService;
+  private final SearchService searchService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -64,7 +67,7 @@ public class NanaService {
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId) {
+  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,  boolean isSearch) {
 
     // nana 찾아서
     Nana nana = nanaRepository.findNanaById(nanaId)
@@ -73,6 +76,10 @@ public class NanaService {
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(nana.getId())
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+
+    if (isSearch) {
+      searchService.updateSearchVolumeV1(NANA, nanaTitle.getNana().getId());
+    }
 
     // nanaTitle에 맞는 게시물 조회
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(

@@ -57,4 +57,24 @@ public class SearchResponse {
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
   }
+
+  @Data
+  @Builder
+  public static class SearchVolumeDto {
+
+    @Schema(description = "게시물 id")
+    private Long id;
+
+    @Schema(description = "제목")
+    private String title;
+
+    @Schema(description = "썸네일 url")
+    private String thumbnailUrl;
+
+    @Schema(description = "게시물 카테고리")
+    private String category;
+
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
+  }
 }
