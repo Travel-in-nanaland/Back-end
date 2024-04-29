@@ -119,11 +119,16 @@ public class FavoriteController {
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
-  // TODO: NANA 찜리스트
-//  @GetMapping("/nana/list")
-//  public BaseResponse<FavoriteResponse.AllCategoryDto> getAllFavoriteList() {
-//    return null;
-//  }
+  @GetMapping("/nana/list")
+  public BaseResponse<FavoriteResponse.NanaDto> getNanaFavoriteList(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
+
+    FavoriteResponse.NanaDto resultDto =
+        favoriteService.getNanaFavoriteList(memberInfoDto, page, size);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
+  }
 
   @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")
   @ApiResponses(value = {
