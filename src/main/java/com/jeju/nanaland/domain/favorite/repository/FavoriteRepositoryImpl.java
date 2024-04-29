@@ -83,6 +83,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(nature.imageFile, imageFile)
         .leftJoin(natureTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.NATURE)
+            .and(favorite.postId.eq(postId))
             .and(language.locale.eq(locale)))
         .fetchOne();
   }
@@ -138,6 +139,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(experience.imageFile, imageFile)
         .leftJoin(experienceTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.EXPERIENCE)
+            .and(favorite.postId.eq(postId))
             .and(language.locale.eq(locale)))
         .fetchOne();
   }
@@ -193,6 +195,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festivalTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.FESTIVAL)
+            .and(favorite.postId.eq(postId))
             .and(language.locale.eq(locale)))
         .fetchOne();
   }
@@ -248,6 +251,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(marketTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.MARKET)
+            .and(favorite.postId.eq(postId))
             .and(language.locale.eq(locale)))
         .fetchOne();
   }
@@ -303,6 +307,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(nanaTitle.imageFile, imageFile)
         .leftJoin(nanaTitle.language, language)
         .where(favorite.category.content.eq(CategoryContent.NANA)
+            .and(favorite.postId.eq(postId))
             .and(language.locale.eq(locale)))
         .fetchOne();
   }
