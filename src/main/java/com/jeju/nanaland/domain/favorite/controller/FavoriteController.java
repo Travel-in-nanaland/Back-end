@@ -137,7 +137,7 @@ public class FavoriteController {
       @ApiResponse(responseCode = "404", description = "카테고리에 해당하는 게시물 id가 존재하지 않는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping("/like/{id}")
+  @PostMapping("/like")
   public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid LikeToggleDto likeToggleDto) {
