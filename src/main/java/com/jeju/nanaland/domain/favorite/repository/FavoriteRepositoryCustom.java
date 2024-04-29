@@ -25,5 +25,9 @@ public interface FavoriteRepositoryCustom {
 
   ThumbnailDto findMarketThumbnailByPostId(Long postId, Locale locale);
 
+  Page<ThumbnailDto> findNanaThumbnails(Long memberId, Locale locale, Pageable pageable);
+
+  ThumbnailDto findNanaThumbnailByPostId(Long postId, Locale locale);
+
   Page<Favorite> findAllCategoryFavorite(Member member, Pageable pageable);
 }
