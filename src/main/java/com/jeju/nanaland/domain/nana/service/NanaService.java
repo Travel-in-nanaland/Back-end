@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
+import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
@@ -62,9 +63,14 @@ public class NanaService {
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long id) {
+  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId) {
+
+    // nana 찾아서
+    Nana nana = nanaRepository.findNanaById(nanaId)
+        .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 입니다."));
+
     // nanaTitle 찾아서
-    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(id)
+    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(nana.getId())
         .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 컨텐츠 입니다."));
 
     // nanaTitle에 맞는 게시물 조회
