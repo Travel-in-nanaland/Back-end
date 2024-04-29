@@ -106,7 +106,7 @@ public class MemberLoginService {
     }
   }
 
-  public String reissue(String bearerRefreshToken) {
+  public JwtDto reissue(String bearerRefreshToken) {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
     if (!jwtUtil.verifyRefreshToken(refreshToken)) {
@@ -123,6 +123,14 @@ public class MemberLoginService {
     Member member = memberRepository.findById(Long.valueOf(memberId))
         .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
-    return jwtUtil.getAccessToken(memberId, member.getRoleSet());
+    String newAccessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
+        member.getRoleSet());
+    String newRefreshToken = jwtUtil.getRefreshToken(String.valueOf(member.getId()),
+        member.getRoleSet());
+
+    return JwtDto.builder()
+        .accessToken(newAccessToken)
+        .refreshToken(newRefreshToken)
+        .build();
   }
 }

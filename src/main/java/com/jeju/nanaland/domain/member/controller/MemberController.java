@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.member.controller;
 
-import static com.jeju.nanaland.global.exception.SuccessCode.ACCESS_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
@@ -65,11 +65,11 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "RefreshToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/reissue")
-  public BaseResponse<String> reissue(
+  public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-    String newAccessToken = memberLoginService.reissue(refreshToken);
-    return BaseResponse.success(ACCESS_TOKEN_SUCCESS, newAccessToken);
+    JwtDto jwtDto = memberLoginService.reissue(refreshToken);
+    return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }
 
   @Operation(
