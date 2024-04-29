@@ -1,5 +1,7 @@
 package com.jeju.nanaland.domain.nana.service;
 
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
+
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
@@ -10,6 +12,7 @@ import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
+import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,7 @@ public class NanaService {
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
+  private final SearchService searchService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -57,10 +61,14 @@ public class NanaService {
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(Long id) {
+  public NanaResponse.NanaDetailDto getNanaDetail(Long id, boolean isSearch) {
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(id)
         .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 컨텐츠 입니다."));
+
+    if (isSearch) {
+      searchService.updateSearchVolumeV1(NANA, nanaTitle.getNana().getId());
+    }
 
     // nanaTitle에 맞는 게시물 조회
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(

@@ -7,7 +7,9 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -68,5 +70,20 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .where((nanaTitle.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public NanaThumbnailPost findNanaThumbnailPostDto(Long id, Locale locale) {
+    return queryFactory
+        .select(new QNanaResponse_NanaThumbnailPost(
+            nanaTitle.id,
+            imageFile.thumbnailUrl,
+            nanaTitle.heading
+        ))
+        .from(nanaTitle)
+        .leftJoin(nanaTitle.imageFile, imageFile)
+        .where(nanaTitle.nana.id.eq(id)
+            .and(nanaTitle.language.locale.eq(locale)))
+        .fetchOne();
   }
 }

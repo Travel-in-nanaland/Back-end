@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,8 +63,9 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<NanaDetailDto> nanaDetail(@PathVariable(name = "id") Long id) {
+  public BaseResponse<NanaDetailDto> nanaDetail(@PathVariable(name = "id") Long id,
+      @RequestParam(defaultValue = "false") boolean isSearch) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
-        nanaService.getNanaDetail(id));
+        nanaService.getNanaDetail(id, isSearch));
   }
 }
