@@ -178,7 +178,8 @@ class NanaServiceTest {
 
   @Test
   void getNanaDetail() {
-    NanaDetailDto nanaDetail = nanaService.getNanaDetail(nanaTitle.getId(), false);
+    NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto1,
+        nanaTitle.getNana().getId(), false);
     Assertions.assertThat(nanaDetail.getSubHeading()).isNotBlank();
   }
 

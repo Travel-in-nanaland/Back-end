@@ -75,6 +75,9 @@ public class NanaResponse {
     @Schema(description = "알아두면 좋아요! 내용")
     private String notice;
 
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
+
     @Schema(description = "게시물 데이터")
     private List<NanaDetail> nanaDetails;
 

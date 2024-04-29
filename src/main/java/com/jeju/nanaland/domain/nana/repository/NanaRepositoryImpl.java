@@ -27,7 +27,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   @Override
   public List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Locale locale) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
-            nanaTitle.id,
+            nana.id,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
@@ -47,7 +47,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   public Page<NanaResponse.NanaThumbnail> findAllNanaThumbnailDto(Locale locale,
       Pageable pageable) {
     List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
-            nanaTitle.id,
+            nana.id,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
