@@ -79,7 +79,7 @@ public class NanaService {
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
 
     if (isSearch) {
-      searchService.updateSearchVolumeV1(NANA, nanaTitle.getNana().getId());
+      searchService.updateSearchVolumeV1(NANA, nana.getId());
     }
 
     // nanaTitle에 맞는 게시물 조회
