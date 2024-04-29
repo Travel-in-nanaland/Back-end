@@ -162,26 +162,24 @@ class FavoriteServiceTest {
      */
     Festival festival1 = Festival.builder()
         .imageFile(imageFile1)
-        .season("봄")
+        .season("spring") // TODO: Test DB 한글 설정
         .build();
     em.persist(festival1);
     FestivalTrans festivalTrans1 = FestivalTrans.builder()
         .festival(festival1)
         .language(language)
-        .addressTag("제주시")
-        .title("축제1")
+        .title("festival1")
         .build();
     em.persist(festivalTrans1);
     Festival festival2 = Festival.builder()
         .imageFile(imageFile2)
-        .season("여름")
+        .season("summer")
         .build();
     em.persist(festival2);
     FestivalTrans festivalTrans2 = FestivalTrans.builder()
         .festival(festival2)
         .language(language)
-        .addressTag("서귀포시")
-        .title("축제2")
+        .title("festival2")
         .build();
     em.persist(festivalTrans2);
 
@@ -227,6 +225,6 @@ class FavoriteServiceTest {
 
     // 최근에 좋아요한 순서대로 표시
     assertThat(festivalFavoriteList.getData()).extracting("title")
-        .containsExactly("축제2", "축제1");
+        .containsExactly("festival2", "festival1");
   }
 }
