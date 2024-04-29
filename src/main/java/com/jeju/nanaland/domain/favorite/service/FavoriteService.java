@@ -56,13 +56,22 @@ public class FavoriteService {
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
+    // Favorite 테이블에서 유저 id에 해당하는 튜플 모두 조회
     Page<Favorite> favorites = favoriteRepository.findAllCategoryFavorite(member, pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+
+    // Favorite의 postId, 카테고리 정보를 통해 튜플 하나하나 조회
     for (Favorite favorite : favorites) {
       CategoryContent category = favorite.getCategory().getContent();
       Long postId = favorite.getPostId();
 
       switch (category) {
+        case NANA -> {
+          ThumbnailDto thumbnailDto = favoriteRepository.findNanaThumbnailByPostId(postId,
+              locale);
+          thumbnailDto.setCategory(NANA.name());
+          thumbnailDtoList.add(thumbnailDto);
+        }
         case NATURE -> {
           ThumbnailDto thumbnailDto = favoriteRepository.findNatureThumbnailByPostId(postId,
               locale);
@@ -176,6 +185,27 @@ public class FavoriteService {
     }
 
     return FavoriteResponse.MarketDto.builder()
+        .totalElements(thumbnails.getTotalElements())
+        .data(thumbnailDtoList)
+        .build();
+  }
+
+  public FavoriteResponse.NanaDto getNanaFavoriteList(MemberInfoDto memberInfoDto, int page,
+      int size) {
+
+    Long memberId = memberInfoDto.getMember().getId();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Pageable pageable = PageRequest.of(page, size);
+
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findNanaThumbnails(memberId, locale,
+        pageable);
+    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    for (ThumbnailDto thumbnailDto : thumbnails) {
+      thumbnailDto.setCategory(NANA.name());
+      thumbnailDtoList.add(thumbnailDto);
+    }
+
+    return FavoriteResponse.NanaDto.builder()
         .totalElements(thumbnails.getTotalElements())
         .data(thumbnailDtoList)
         .build();
