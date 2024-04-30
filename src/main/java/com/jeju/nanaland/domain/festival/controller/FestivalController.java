@@ -41,7 +41,8 @@ public class FestivalController {
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @Parameter(name = "startDate", description = "날짜는 yyyyMMdd 형태 ex) 20240430 / endDate도 동일")
+  @Parameter(name = "startDate", description = "날짜는 yyyyMMdd 형태 ex) 20240430 / endDate도 동일,"
+      + " 날짜 선택 안했을 경우 startDate, endDate 파라미터에 추가 안해주시면 됩니다.(이 경우 오늘 날짜 포함한 축제 반환)")
   @GetMapping("/this-month")
   public BaseResponse<FestivalThumbnailDto> getFestival(@AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
@@ -82,7 +83,7 @@ public class FestivalController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
-      @RequestParam(defaultValue = "spring") String season) {
+      @RequestParam String season) {
 
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
         festivalService.getSeasonFestivalList(memberInfoDto, page, size,
