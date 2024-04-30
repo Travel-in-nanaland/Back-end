@@ -36,7 +36,8 @@ public class ReportController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "잘못된 요청 (이메일 형식 오류, category로 NANA 요청)", content = @Content),
-      @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content)
+      @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "사진파일 업로드 실패 또는 관리자에게로 메일 전송 실패", content = @Content)
   })
   @PostMapping(value = "/info-fix",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
