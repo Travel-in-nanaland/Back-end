@@ -40,6 +40,7 @@ public enum SuccessCode {
 
   // festival
   FESTIVAL_LIST_SUCCESS(OK, "축제 썸네일 리스트 조회 성공"),
+  FESTIVAL_DETAIL_SUCCESS(OK, "축제 상세정보 조회 성공"),
 
   // market
   MARKET_LIST_SUCCESS(OK, "전통시장 썸네일 리스트 조회 성공"),

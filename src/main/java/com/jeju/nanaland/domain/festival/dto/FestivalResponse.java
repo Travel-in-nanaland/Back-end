@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 public class FestivalResponse {
 
@@ -48,4 +49,46 @@ public class FestivalResponse {
 
   }
 
+  @Builder
+  @Getter
+  @Schema(description = "축제 상세 정보")
+  public static class FestivalDetailDto {
+
+    @Schema(description = "7대 자연 게시물 id")
+    private Long id;
+
+    @Schema(description = "원본 이미지 url")
+    private String originUrl;
+
+    @Schema(description = "주소 태그")
+    private String addressTag;
+
+    @Schema(description = "제목")
+    private String title;
+
+    @Schema(description = "본문")
+    private String content;
+
+    @Schema(description = "주소")
+    private String address;
+
+    @Schema(description = "연락처")
+    private String contact;
+
+    @Schema(description = "이용 시간")
+    private String time;
+
+    @Schema(description = "입장료")
+    private String fee;
+
+    @Schema(description = "홈페이지")
+    private String homepage;
+
+    @Schema(description = "기간")
+    private String period;
+
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
+
+  }
 }

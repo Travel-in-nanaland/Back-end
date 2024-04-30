@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
@@ -154,5 +155,12 @@ class FestivalServiceTest {
         memberInfoDto1, 0, 1, Collections.singletonList("우도"), LocalDate.of(2023, 8, 8),
         LocalDate.of(2023, 8, 9));
     Assertions.assertThat(thisMonthFestivalList.getTotalElements()).isSameAs(1L);
+  }
+
+  @Test
+  void getFestivalDetail() {
+    FestivalDetailDto festivalDetail = festivalService.getFestivalDetail(memberInfoDto1, 1L, false);
+    System.out.println("festivalDetail.getPeriod() = " + festivalDetail.getPeriod());
+
   }
 }
