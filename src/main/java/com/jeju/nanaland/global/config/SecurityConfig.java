@@ -47,6 +47,8 @@ public class SecurityConfig {
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/member/login",
                 "/member/reissue")
             .permitAll()
+            .requestMatchers("/favorite/**", "/member/type")
+            .hasAnyRole("MEMBER", "ADMIN")
             .anyRequest().authenticated());
 
     http
