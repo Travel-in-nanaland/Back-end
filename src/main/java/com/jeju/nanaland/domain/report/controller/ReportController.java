@@ -38,9 +38,9 @@ public class ReportController {
           description = "정보 수정 요청 이미지파일",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
-      @RequestPart("multipartFile") MultipartFile multipartFile) {
+      @RequestPart(value = "multipartFile", required = false) MultipartFile multipartFile) {
 
-    reportService.postInfoFixReport(reqDto, multipartFile);
+    reportService.postInfoFixReport(memberInfoDto, reqDto, multipartFile);
     return BaseResponse.success(POST_INFO_FIX_REPORT_SUCCESS);
   }
 }

@@ -6,6 +6,7 @@ import com.jeju.nanaland.domain.report.entity.FixType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 public class ReportRequest {
@@ -14,6 +15,10 @@ public class ReportRequest {
   @Schema(description = "정보 수정 요청 Dto")
   public static class InfoFixDto {
 
+    @NotNull
+    @Schema(description = "수정 요청 게시물 id")
+    private Long postId;
+    
     @EnumValid(
         enumClass = FixType.class,
         message = "정보 수정 요청 타입이 유효하지 않습니다."

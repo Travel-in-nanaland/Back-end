@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.report.entity;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,8 +23,18 @@ import lombok.NoArgsConstructor;
 public class InfoFixReport extends BaseEntity {
 
   @NotNull
+  private Long postId;
+
+  @NotNull
   @Enumerated(EnumType.STRING)
   private CategoryContent category;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private Locale locale;
+
+  @NotNull
+  private String title;
 
   @NotNull
   @Enumerated(EnumType.STRING)
