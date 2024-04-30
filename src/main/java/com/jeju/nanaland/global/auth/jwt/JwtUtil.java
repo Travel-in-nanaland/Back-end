@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.jwt;
+package com.jeju.nanaland.global.auth.jwt;
 
 import com.jeju.nanaland.domain.member.entity.Role;
 import io.jsonwebtoken.Claims;
