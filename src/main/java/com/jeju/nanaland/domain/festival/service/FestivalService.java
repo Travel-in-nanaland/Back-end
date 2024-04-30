@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailD
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -53,7 +54,7 @@ public class FestivalService {
     } else {
       assert startDate != null; // null 검사하기
       if (startDate.isAfter(endDate)) {
-        throw new BadRequestException("endDate보다 startDate가 더 큽니다.");
+        throw new BadRequestException(ErrorCode.START_DATE_AFTER_END_DATE.getMessage());
       }
     }
     // compositeDto로 기간에 맞는 festival 가져오기
