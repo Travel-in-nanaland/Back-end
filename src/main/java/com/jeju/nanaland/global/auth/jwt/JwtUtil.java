@@ -160,4 +160,8 @@ public class JwtUtil {
         .getBody()
         .getSubject();
   }
+
+  public void deleteRefreshToken(String memberId) {
+    redisTemplate.delete(REDIS_KEY + memberId);
+  }
 }

@@ -117,6 +117,7 @@ public class MemberLoginService {
     String savedRefreshToken = jwtUtil.findRefreshTokenById(memberId);
 
     if (!refreshToken.equals(savedRefreshToken)) {
+      jwtUtil.deleteRefreshToken(memberId);
       throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
     }
 
