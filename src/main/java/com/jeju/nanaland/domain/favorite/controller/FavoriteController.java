@@ -1,6 +1,10 @@
 package com.jeju.nanaland.domain.favorite.controller;
 
+import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
+
+import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
@@ -11,9 +15,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -112,9 +119,36 @@ public class FavoriteController {
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
-  // TODO: NANA 찜리스트
-//  @GetMapping("/nana/list")
-//  public BaseResponse<FavoriteResponse.AllCategoryDto> getAllFavoriteList() {
-//    return null;
-//  }
+  @Operation(summary = "나나스픽 찜리스트 조회", description = "나나스픽 찜리스트 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
+  @GetMapping("/nana/list")
+  public BaseResponse<FavoriteResponse.NanaDto> getNanaFavoriteList(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
+
+    FavoriteResponse.NanaDto resultDto =
+        favoriteService.getNanaFavoriteList(memberInfoDto, page, size);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
+  }
+
+  @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "요청이 잘못된 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "카테고리에 해당하는 게시물 id가 존재하지 않는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
+  @PostMapping("/like")
+  public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid LikeToggleDto likeToggleDto) {
+
+    StatusDto statusDto = favoriteService.toggleLikeStatus(memberInfoDto, likeToggleDto);
+    return BaseResponse.success(POST_LIKE_TOGGLE_SUCCESS, statusDto);
+  }
 }

@@ -1,13 +1,10 @@
 package com.jeju.nanaland.domain.nana.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -18,7 +15,6 @@ import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import jakarta.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Set;
@@ -129,7 +125,7 @@ class NanaServiceTest {
         .heading("heading1")
         .build();
     em.persist(nanaTitle);
-    
+
     nanaContent1 = NanaContent.builder()
         .nanaTitle(nanaTitle)
         .imageFile(imageFile1)
@@ -181,51 +177,9 @@ class NanaServiceTest {
   }
 
   @Test
-  void toggleLikeStatusTest() {
-    /**
-     * WHEN
-     *
-     * member1 : toggleLikeStatus 2번 적용
-     * member2 : toggleLikeStatus 1번 적용
-     */
-    nanaService.toggleLikeStatus(memberInfoDto1, nana.getId());
-    FavoriteResponse.StatusDto result1 = nanaService.toggleLikeStatus(memberInfoDto1,
-        nana.getId());
-
-    FavoriteResponse.StatusDto result2 = nanaService.toggleLikeStatus(memberInfoDto2,
-        nana.getId());
-
-    /**
-     * THEN
-     *
-     * member1 = 좋아요 X, member2 = 좋아요
-     */
-    assertThat(result1.isFavorite()).isFalse();
-    assertThat(result2.isFavorite()).isTrue();
-  }
-
-  @Test
-  void toggleLikeStatusFailedWithNoSuchPostIdTest() {
-    /**
-     * GIVEN
-     *
-     * 존재하지 않는 postId
-     */
-    Long postId = -1L;
-
-    /**
-     * WHEN
-     * THEN
-     *
-     * toggleLikeStatus 요청 시 BadRequestException 발생
-     */
-    Assertions.assertThatThrownBy(() -> nanaService.toggleLikeStatus(memberInfoDto1, postId))
-        .isInstanceOf(BadRequestException.class);
-  }
-
-  @Test
   void getNanaDetail() {
-    NanaDetailDto nanaDetail = nanaService.getNanaDetail(nanaTitle.getId());
+    NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto1,
+        nanaTitle.getNana().getId(), false);
     Assertions.assertThat(nanaDetail.getSubHeading()).isNotBlank();
   }
 

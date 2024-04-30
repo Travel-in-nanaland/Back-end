@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.market.dto;
 
-import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -55,6 +54,9 @@ public class MarketResponse {
 
     @Schema(description = "편의시설")
     private String amenity;
+
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
   }
 
   @Data
@@ -76,12 +78,8 @@ public class MarketResponse {
     @Schema(description = "위치 정보 태그")
     private String addressTag;
 
-    @QueryProjection
-    public MarketThumbnail(Long id, String title, String thumbnailUrl, String address) {
-      this.id = id;
-      this.title = title;
-      this.thumbnailUrl = thumbnailUrl;
-      this.addressTag = address;
-    }
+    @NotBlank
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
   }
 }

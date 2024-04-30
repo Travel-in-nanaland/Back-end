@@ -1,21 +1,23 @@
 package com.jeju.nanaland.domain.nana.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
+
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
+import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.domain.search.service.SearchService;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +26,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class NanaService {
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
   private final FavoriteService favoriteService;
+  private final SearchService searchService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -64,10 +66,21 @@ public class NanaService {
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(Long id) {
+  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,
+      boolean isSearch) {
+
+    // nana 찾아서
+    Nana nana = nanaRepository.findNanaById(nanaId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+
     // nanaTitle 찾아서
-    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleById(id)
-        .orElseThrow(() -> new BadRequestException("존재하지 않는 Nana 컨텐츠 입니다."));
+    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
+            memberInfoDto.getLanguage())
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+
+    if (isSearch) {
+      searchService.updateSearchVolumeV1(NANA, nana.getId());
+    }
 
     // nanaTitle에 맞는 게시물 조회
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
@@ -75,6 +88,8 @@ public class NanaService {
 
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
 
+    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
+        nanaTitle.getNana().getId());
     for (NanaContent nanaContent : nanaContentList) {
 
       // TODO hashtag 기능 구현 시 꼭 수정하기!!!!
@@ -100,21 +115,9 @@ public class NanaService {
         .heading(nanaTitle.getHeading())
         .notice(nanaTitle.getNotice())
         .nanaDetails(nanaDetails)
+        .isFavorite(isPostInFavorite)
         .build();
 
-  }
-
-  @Transactional
-  public StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto, Long postId) {
-    nanaRepository.findById(postId)
-        .orElseThrow(() -> new BadRequestException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
-
-    Boolean status = favoriteService.toggleLikeStatus(memberInfoDto.getMember(),
-        CategoryContent.NANA, postId);
-
-    return FavoriteResponse.StatusDto.builder()
-        .isFavorite(status)
-        .build();
   }
 
   // nanaContent의 AdditionalInfo dto로 바꾸기

@@ -75,6 +75,9 @@ public class NanaResponse {
     @Schema(description = "알아두면 좋아요! 내용")
     private String notice;
 
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
+
     @Schema(description = "게시물 데이터")
     private List<NanaDetail> nanaDetails;
 
@@ -121,5 +124,29 @@ public class NanaResponse {
     @Schema(description = "부가 정보 value 값")
     public String infoValue;
 
+  }
+
+  @Data
+  @Builder
+  @Schema(description = "나나's pick 개별 게시글 썸네일 조회 DTO")
+  public static class NanaThumbnailPost {
+
+    @Schema(description = "게시물 id")
+    private Long id;
+
+    @NotBlank
+    @Schema(description = "게시물 썸네일 url")
+    private String thumbnailUrl;
+
+    @Schema(description = "제목 ex) TOP 10 야경 맛집")
+    private String heading;
+
+
+    @QueryProjection
+    public NanaThumbnailPost(Long id, String thumbnailUrl, String heading) {
+      this.id = id;
+      this.thumbnailUrl = thumbnailUrl;
+      this.heading = heading;
+    }
   }
 }
