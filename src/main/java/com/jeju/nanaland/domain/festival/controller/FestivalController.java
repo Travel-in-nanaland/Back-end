@@ -49,7 +49,7 @@ public class FestivalController {
       @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
       LocalDate endDate) {
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getThisMonthFestivalList(memberInfoDto.getLanguage().getLocale(),
+        festivalService.getThisMonthFestivalList(memberInfoDto,
             page, size, addressFilterList, startDate, endDate));
   }
 
@@ -64,7 +64,7 @@ public class FestivalController {
       @RequestParam(defaultValue = "12") int size) {
 
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getPastFestivalList(memberInfoDto.getLanguage().getLocale(), page, size));
+        festivalService.getPastFestivalList(memberInfoDto, page, size));
   }
 
   @Operation(summary = "계절별 축제 리스트 조회", description = "계절별 축제 리스트 조회 (페이징)")
@@ -82,7 +82,7 @@ public class FestivalController {
       @RequestParam(defaultValue = "spring") String season) {
 
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getSeasonFestivalList(memberInfoDto.getLanguage().getLocale(), page, size,
+        festivalService.getSeasonFestivalList(memberInfoDto, page, size,
             season));
   }
 }

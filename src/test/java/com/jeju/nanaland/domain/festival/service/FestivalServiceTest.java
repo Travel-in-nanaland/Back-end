@@ -119,10 +119,10 @@ class FestivalServiceTest {
 
   @Test
   void getSeasonFestivalListTest() {
-    FestivalThumbnailDto summerFestival1 = festivalService.getSeasonFestivalList(Locale.KOREAN, 0,
+    FestivalThumbnailDto summerFestival1 = festivalService.getSeasonFestivalList(memberInfoDto1, 0,
         1,
         "summer");
-    FestivalThumbnailDto summerFestival2 = festivalService.getSeasonFestivalList(Locale.KOREAN, 0,
+    FestivalThumbnailDto summerFestival2 = festivalService.getSeasonFestivalList(memberInfoDto1, 0,
         1,
         "autumn");
 
@@ -134,7 +134,7 @@ class FestivalServiceTest {
   void getThisMonthFestivalListTest() {
     // "2023-08-07" ~ "2023-08-10"
     FestivalThumbnailDto thisMonthFestivalList = festivalService.getThisMonthFestivalList(
-        Locale.KOREAN, 0, 1, Collections.singletonList("우도"), LocalDate.of(2023, 8, 8),
+        memberInfoDto1, 0, 1, Collections.singletonList("우도"), LocalDate.of(2023, 8, 8),
         LocalDate.of(2023, 8, 9));
     Assertions.assertThat(thisMonthFestivalList.getTotalElements()).isSameAs(1L);
   }

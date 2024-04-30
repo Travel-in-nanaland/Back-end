@@ -1,11 +1,11 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnail;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,17 +27,18 @@ public class FestivalService {
   private final FestivalRepository festivalRepository;
   private final FavoriteService favoriteService;
 
-  public FestivalThumbnailDto getPastFestivalList(Locale locale, int page, int size) {
+  public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
-        locale, pageable, false);
+        memberInfoDto.getLanguage().getLocale(), pageable, false);
 
     return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
   }
 
-  public FestivalThumbnailDto getThisMonthFestivalList(Locale locale, int page, int size,
+  public FestivalThumbnailDto getThisMonthFestivalList(MemberInfoDto memberInfoDto, int page,
+      int size,
       List<String> addressFilterList, LocalDate startDate, LocalDate endDate) {
     Pageable pageable = PageRequest.of(page, size);
     if (startDate == null && endDate == null) {
@@ -53,12 +54,12 @@ public class FestivalService {
     }
     // compositeDto로 기간에 맞는 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByMonth(
-        locale, pageable, startDate, endDate, addressFilterList);
+        memberInfoDto.getLanguage().getLocale(), pageable, startDate, endDate, addressFilterList);
 
     return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
   }
 
-  public FestivalThumbnailDto getSeasonFestivalList(Locale locale, int page, int size,
+  public FestivalThumbnailDto getSeasonFestivalList(MemberInfoDto memberInfoDto, int page, int size,
       String season) {
     Pageable pageable = PageRequest.of(page, size);
 
@@ -67,7 +68,7 @@ public class FestivalService {
 
     // compositeDto로 계절별 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
-        locale, pageable, seasonKoreanValue);
+        memberInfoDto.getLanguage().getLocale(), pageable, seasonKoreanValue);
     getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
 
     return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
