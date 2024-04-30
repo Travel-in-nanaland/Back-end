@@ -8,7 +8,6 @@ import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailD
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -66,38 +65,17 @@ public class FestivalService {
   public FestivalThumbnailDto getSeasonFestivalList(Locale locale, int page, int size,
       String season) {
     Pageable pageable = PageRequest.of(page, size);
-    LocalDate startDate = null;
-    LocalDate endDate = null;
-    int currentYear = Year.now().getValue();
 
-    switch (season) {
-      case "spring":
-        startDate = LocalDate.of(currentYear, 3, 1);
-        endDate = LocalDate.of(currentYear, 4, 30);
-        break;
-      case "summer":
-        startDate = LocalDate.of(currentYear, 5, 1);
-        endDate = LocalDate.of(currentYear, 8, 31);
-        break;
-      case "autumn":
-        startDate = LocalDate.of(currentYear, 9, 1);
-        endDate = LocalDate.of(currentYear, 10, 31);
-        break;
-      case "winter":
-        startDate = LocalDate.of(currentYear, 11, 1);
-        endDate = LocalDate.of(currentYear, 2, 1);
-        break;
-    }
-    if (startDate == null) {
-      throw new BadRequestException("계절 정보 오류");
-    }
+    // 없는 계절이면(계절 요청 오류)
+    String seasonKoreanValue = seasonValueChangeToKorean(season);
 
     // compositeDto로 계절별 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
-        locale, pageable, startDate, endDate, currentYear);
+        locale, pageable, seasonKoreanValue);
     getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
 
     return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList);
+
   }
 
   public FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
@@ -132,5 +110,15 @@ public class FestivalService {
     String endDay = endDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
     return formattedStartDate + "(" + startDay + ")" + " ~ " + formattedEndDate + "(" + endDay
         + ")";
+  }
+
+  public String seasonValueChangeToKorean(String season) {
+    return switch (season) {
+      case "spring" -> "봄";
+      case "summer" -> "여름";
+      case "autumn" -> "가을";
+      case "winter" -> "겨울";
+      default -> throw new BadRequestException("계절 정보 오류");
+    };
   }
 }

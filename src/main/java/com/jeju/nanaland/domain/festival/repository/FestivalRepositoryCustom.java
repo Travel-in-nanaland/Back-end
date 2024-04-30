@@ -18,7 +18,7 @@ public interface FestivalRepositoryCustom {
       boolean onGoing);
 
   Page<FestivalCompositeDto> searchCompositeDtoBySeason(Locale locale, Pageable pageable,
-      LocalDate startDate, LocalDate endDate, int currentYear);
+      String season);
 
   Page<FestivalCompositeDto> searchCompositeDtoByMonth(Locale locale, Pageable pageable,
       LocalDate startDate, LocalDate endDate, List<String> addressFilterList);

@@ -69,6 +69,7 @@ public class FestivalController {
       @ApiResponse(responseCode = "400", description = "계절 선택시 Query Parameter가 spring, summer, autumn, winter 가 아닌 경우", content = @Content),
 
   })
+  @Parameter(name = "season", description = "spring, summer, autumn, winter 형태로 입력 받음. (default 값은 따로 없으며 프론트에서 월로 구분하여 초기 값 세팅 해주어야 합니다.)")
   @GetMapping("/season")
   public BaseResponse<FestivalThumbnailDto> getSeasonFestival(
       @AuthMember MemberInfoDto memberInfoDto,
