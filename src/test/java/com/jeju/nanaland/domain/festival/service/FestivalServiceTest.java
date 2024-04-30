@@ -127,7 +127,7 @@ class FestivalServiceTest {
   void getSeasonFestivalListTest() {
     FavoriteRequest.LikeToggleDto festivalLikeToggleDto = new LikeToggleDto();
     //좋아요 누르기
-    festivalLikeToggleDto.setId(1L);
+    festivalLikeToggleDto.setId(festival.getId());
     festivalLikeToggleDto.setCategory("FESTIVAL");
     favoriteService.toggleLikeStatus(memberInfoDto1, festivalLikeToggleDto);
 
@@ -159,7 +159,8 @@ class FestivalServiceTest {
 
   @Test
   void getFestivalDetail() {
-    FestivalDetailDto festivalDetail = festivalService.getFestivalDetail(memberInfoDto1, 1L, false);
+    FestivalDetailDto festivalDetail = festivalService.getFestivalDetail(memberInfoDto1,
+        festival.getId(), false);
     System.out.println("festivalDetail.getPeriod() = " + festivalDetail.getPeriod());
 
   }

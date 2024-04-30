@@ -153,7 +153,7 @@ public class FestivalService {
     String startDay = startDate.getDayOfWeek()
         .getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
     String endDay = endDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
-    return formattedStartDate + "(" + startDay + ")" + "~" + formattedEndDate + "(" + endDay
+    return formattedStartDate + "(" + startDay + ")" + " ~ " + formattedEndDate + "(" + endDay
         + ")";
   }
 
@@ -166,7 +166,7 @@ public class FestivalService {
     String startDay = startDate.getDayOfWeek()
         .getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
     String endDay = endDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
-    return formattedStartDate + "(" + startDay + ")" + "~" + formattedEndDate + "(" + endDay
+    return formattedStartDate + "(" + startDay + ")" + " ~ " + formattedEndDate + "(" + endDay
         + ")";
   }
 
