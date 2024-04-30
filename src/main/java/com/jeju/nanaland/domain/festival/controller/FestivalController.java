@@ -13,9 +13,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,14 +38,16 @@ public class FestivalController {
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @Parameter(name = "startDate", description = "날짜는 일만 작성. ex) 1,2,3,4,,,")
+  @Parameter(name = "startDate", description = "날짜는 yyyyMMdd 형태 ex) 20240430 / endDate도 동일")
   @GetMapping("/this-month")
   public BaseResponse<FestivalThumbnailDto> getFestival(@AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
       @RequestParam(defaultValue = "") List<String> addressFilterList,
-      @RequestParam(name = "startDate", defaultValue = "0") int startDate,
-      @RequestParam(name = "endDate", defaultValue = "0") int endDate) {
+      @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
+      LocalDate startDate,
+      @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
+      LocalDate endDate) {
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
         festivalService.getThisMonthFestivalList(memberInfoDto.getLanguage().getLocale(),
             page, size, addressFilterList, startDate, endDate));

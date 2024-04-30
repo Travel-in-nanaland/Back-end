@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.util.Collections;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,5 +128,14 @@ class FestivalServiceTest {
 
     Assertions.assertThat(summerFestival1.getTotalElements()).isSameAs(1L);
     Assertions.assertThat(summerFestival2.getTotalElements()).isSameAs(0L);
+  }
+
+  @Test
+  void getThisMonthFestivalListTest() {
+    // "2023-08-07" ~ "2023-08-10"
+    FestivalThumbnailDto thisMonthFestivalList = festivalService.getThisMonthFestivalList(
+        Locale.KOREAN, 0, 1, Collections.singletonList("우도"), LocalDate.of(2023, 8, 8),
+        LocalDate.of(2023, 8, 9));
+    Assertions.assertThat(thisMonthFestivalList.getTotalElements()).isSameAs(1L);
   }
 }
