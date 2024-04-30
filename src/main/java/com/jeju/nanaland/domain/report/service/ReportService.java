@@ -56,14 +56,14 @@ public class ReportService {
   public void postInfoFixReport(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
       MultipartFile multipartFile) {
 
-    if (reqDto.getCategoryContent().equals(CategoryContent.NANA.name())) {
+    if (reqDto.getCategory().equals(CategoryContent.NANA.name())) {
       throw new BadRequestException("나나스픽 게시물은 정보 수정 요청이 불가능합니다.");
     }
 
     Long postId = reqDto.getPostId();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     String title = null;
-    switch (CategoryContent.valueOf(reqDto.getCategoryContent())) {
+    switch (CategoryContent.valueOf(reqDto.getCategory())) {
       case NATURE -> {
         NatureCompositeDto compositeDto = natureRepository.findCompositeDtoById(postId, locale);
         if (compositeDto == null) {
@@ -105,7 +105,7 @@ public class ReportService {
       }
     }
 
-    CategoryContent categoryContent = CategoryContent.valueOf(reqDto.getCategoryContent());
+    CategoryContent categoryContent = CategoryContent.valueOf(reqDto.getCategory());
     FixType fixType = FixType.valueOf(reqDto.getFixType());
 
     InfoFixReport infoFixReport = InfoFixReport.builder()

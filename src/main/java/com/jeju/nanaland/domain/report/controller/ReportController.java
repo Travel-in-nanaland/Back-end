@@ -7,8 +7,11 @@ import com.jeju.nanaland.domain.report.dto.ReportRequest;
 import com.jeju.nanaland.domain.report.service.ReportService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.jwt.AuthMember;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,12 @@ public class ReportController {
 
   private final ReportService reportService;
 
+  @Operation(summary = "정보 수정 제안", description = "게시물 id와 카테고리를 통해 게시물 정보 수정 제안 요청")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "잘못된 요청 (이메일 형식 오류, category로 NANA 요청)", content = @Content),
+      @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content)
+  })
   @PostMapping(value = "/info-fix",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> requestPostInfoFix(

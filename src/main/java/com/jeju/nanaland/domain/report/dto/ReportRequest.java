@@ -18,7 +18,7 @@ public class ReportRequest {
     @NotNull
     @Schema(description = "수정 요청 게시물 id")
     private Long postId;
-    
+
     @EnumValid(
         enumClass = FixType.class,
         message = "정보 수정 요청 타입이 유효하지 않습니다."
@@ -40,7 +40,7 @@ public class ReportRequest {
         example = "EXPERIENCE",
         allowableValues = {"NANA", "EXPERIENCE", "FESTIVAL", "NATURE", "PRICE", "MARKET"}
     )
-    private String categoryContent;
+    private String category;
 
     @NotBlank
     @Schema(description = "정보 수정 내용")

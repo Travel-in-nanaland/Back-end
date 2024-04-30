@@ -78,7 +78,7 @@ class ReportServiceTest {
     InfoFixDto infoFixDto = new InfoFixDto();
     infoFixDto.setFixType(FixType.TIME.name());
     infoFixDto.setPostId(-1L);
-    infoFixDto.setCategoryContent(CategoryContent.FESTIVAL.name());
+    infoFixDto.setCategory(CategoryContent.FESTIVAL.name());
     infoFixDto.setContent("content");
     infoFixDto.setEmail("test@naver.com");
 
@@ -113,7 +113,7 @@ class ReportServiceTest {
     InfoFixDto infoFixDto = new InfoFixDto();
     infoFixDto.setFixType(FixType.CONTACT_OR_HOMEPAGE.name());
     infoFixDto.setPostId(nana.getId());
-    infoFixDto.setCategoryContent(CategoryContent.NANA.name());
+    infoFixDto.setCategory(CategoryContent.NANA.name());
     infoFixDto.setContent("content");
     infoFixDto.setEmail("test@naver.com");
 
