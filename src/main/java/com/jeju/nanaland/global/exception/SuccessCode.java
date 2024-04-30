@@ -24,7 +24,7 @@ public enum SuccessCode {
 
   // login
   LOGIN_SUCCESS(OK, "로그인에 성공했습니다."),
-  ACCESS_TOKEN_SUCCESS(OK, "AccessToken이 재발급되었습니다."),
+  REISSUE_TOKEN_SUCCESS(OK, "AccessToken, RefreshToken이 재발급되었습니다."),
 
   // nana
   NANA_MAIN_SUCCESS(OK, "나나 메인 페이지 썸네일 조회 성공"),

@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.jwt;
+package com.jeju.nanaland.global.auth.jwt;
 
 import com.jeju.nanaland.domain.member.entity.Role;
 import io.jsonwebtoken.Claims;
@@ -8,12 +8,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,6 +31,7 @@ public class JwtUtil {
   private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
   private static final String REDIS_KEY = "REFRESH:";
   private static final String AUTHORITIES_KEY = "auth";
+  private static final long MAX_REFRESH_TOKENS = 10;
   private final SecretKey secretKey;
   private final SecretKey secretKey2;
   private final RedisTemplate<String, String> redisTemplate;
@@ -80,13 +81,14 @@ public class JwtUtil {
         .signWith(secretKey2, SignatureAlgorithm.HS512)
         .compact();
 
-    redisTemplate.opsForValue().set(
-        REDIS_KEY + memberId,
-        refreshToken,
-        refreshExpirationPeriod,
-        TimeUnit.MILLISECONDS
-    );
+    storeRefreshToken(memberId, refreshToken);
     return refreshToken;
+  }
+
+  public void storeRefreshToken(String memberId, String refreshToken) {
+    ListOperations<String, String> listOperations = redisTemplate.opsForList();
+    listOperations.trim(REDIS_KEY + memberId, 0, MAX_REFRESH_TOKENS - 2);
+    listOperations.leftPush(REDIS_KEY + memberId, refreshToken);
   }
 
   public boolean verifyAccessToken(String accessToken) {
@@ -146,7 +148,8 @@ public class JwtUtil {
   }
 
   public String findRefreshTokenById(String memberId) {
-    return redisTemplate.opsForValue().get(REDIS_KEY + memberId);
+    ListOperations<String, String> listOperations = redisTemplate.opsForList();
+    return listOperations.index(REDIS_KEY + memberId, 0);
   }
 
   public String getMemberIdFromRefresh(String refreshToken) {
@@ -156,5 +159,9 @@ public class JwtUtil {
         .parseClaimsJws(refreshToken)
         .getBody()
         .getSubject();
+  }
+
+  public void deleteRefreshToken(String memberId) {
+    redisTemplate.delete(REDIS_KEY + memberId);
   }
 }
