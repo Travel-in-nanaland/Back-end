@@ -42,8 +42,9 @@ public class FestivalResponse {
 
     @NotBlank
     private String period;
-//    @NotBlank
-//    private String addressTag;
+
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
 
   }
 

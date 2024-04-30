@@ -5,7 +5,10 @@ import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
@@ -32,6 +35,8 @@ class FestivalServiceTest {
   FestivalService festivalService;
   @Autowired
   FavoriteRepository favoriteRepository;
+  @Autowired
+  FavoriteService favoriteService;
 
   Language language;
   Member member1, member2;
@@ -119,6 +124,12 @@ class FestivalServiceTest {
 
   @Test
   void getSeasonFestivalListTest() {
+    FavoriteRequest.LikeToggleDto festivalLikeToggleDto = new LikeToggleDto();
+    //좋아요 누르기
+    festivalLikeToggleDto.setId(1L);
+    festivalLikeToggleDto.setCategory("FESTIVAL");
+    favoriteService.toggleLikeStatus(memberInfoDto1, festivalLikeToggleDto);
+
     FestivalThumbnailDto summerFestival1 = festivalService.getSeasonFestivalList(memberInfoDto1, 0,
         1,
         "summer");
@@ -126,7 +137,13 @@ class FestivalServiceTest {
         1,
         "autumn");
 
+    // 좋아요 반환 되는지
+    Assertions.assertThat(summerFestival1.getData().get(0).isFavorite()).isTrue();
+
+    // 여름 축제 반환 (데이터 있음)
     Assertions.assertThat(summerFestival1.getTotalElements()).isSameAs(1L);
+
+    // 여름 축제 반환 (데이터 없음)
     Assertions.assertThat(summerFestival2.getTotalElements()).isSameAs(0L);
   }
 
