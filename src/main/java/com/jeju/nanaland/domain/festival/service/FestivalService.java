@@ -7,12 +7,14 @@ import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnail;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
+import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -23,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -120,6 +123,18 @@ public class FestivalService {
         .build();
 
 
+  }
+
+  // 매일 00시마다 종료된 축제 상태 업데이트
+  @Transactional
+  @Scheduled(cron = "0 0 0 * * *")
+  public void updateOnGoingToFalse() {
+    List<Festival> finishedFestival = festivalRepository.findAllByOnGoingAndEndDateBefore(
+        true, LocalDate.now());
+
+    if (!finishedFestival.isEmpty()) {
+      finishedFestival.forEach(festival -> festival.updateOnGoing(false));
+    }
   }
 
   public FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(

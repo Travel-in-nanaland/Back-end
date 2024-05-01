@@ -43,4 +43,8 @@ public class Festival extends Common {
     this.festivalTrans = new ArrayList<>();
     this.onGoing = onGoing;
   }
+
+  public void updateOnGoing(boolean onGoing) {
+    this.onGoing = onGoing;
+  }
 }
