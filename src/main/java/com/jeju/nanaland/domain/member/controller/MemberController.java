@@ -88,7 +88,7 @@ public class MemberController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
 
-    memberTypeService.updateMemberType(memberInfoDto.getMember().getId(), request.getType());
+    memberTypeService.updateMemberType(memberInfoDto, request);
     return BaseResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
@@ -107,7 +107,7 @@ public class MemberController {
       @AuthMember MemberInfoDto memberInfoDto) {
 
     List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
-        memberInfoDto.getMember().getId());
+        memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 }
