@@ -1,6 +1,7 @@
 package com.jeju.nanaland.global.auth.jwt;
 
 import com.jeju.nanaland.domain.member.entity.Role;
+import com.jeju.nanaland.global.util.RedisUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,8 +14,6 @@ import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,12 +28,12 @@ public class JwtUtil {
 
   private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
   private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-  private static final String REDIS_KEY = "REFRESH:";
+  private static final String REFRESH_KEY = "REFRESH:";
   private static final String AUTHORITIES_KEY = "auth";
   private static final long MAX_REFRESH_TOKENS = 10;
   private final SecretKey secretKey;
   private final SecretKey secretKey2;
-  private final RedisTemplate<String, String> redisTemplate;
+  private final RedisUtil redisUtil;
   @Value("${jwt.access.expiration}")
   private Long accessExpirationPeriod;
   @Value("${jwt.refresh.expiration}")
@@ -81,14 +80,8 @@ public class JwtUtil {
         .signWith(secretKey2, SignatureAlgorithm.HS512)
         .compact();
 
-    storeRefreshToken(memberId, refreshToken);
+    redisUtil.trimAndPushLeft(REFRESH_KEY + memberId, MAX_REFRESH_TOKENS, refreshToken);
     return refreshToken;
-  }
-
-  public void storeRefreshToken(String memberId, String refreshToken) {
-    ListOperations<String, String> listOperations = redisTemplate.opsForList();
-    listOperations.trim(REDIS_KEY + memberId, 0, MAX_REFRESH_TOKENS - 2);
-    listOperations.leftPush(REDIS_KEY + memberId, refreshToken);
   }
 
   public boolean verifyAccessToken(String accessToken) {
@@ -148,8 +141,7 @@ public class JwtUtil {
   }
 
   public String findRefreshTokenById(String memberId) {
-    ListOperations<String, String> listOperations = redisTemplate.opsForList();
-    return listOperations.index(REDIS_KEY + memberId, 0);
+    return redisUtil.getRecentDataFromList(REFRESH_KEY + memberId);
   }
 
   public String getMemberIdFromRefresh(String refreshToken) {
@@ -162,6 +154,6 @@ public class JwtUtil {
   }
 
   public void deleteRefreshToken(String memberId) {
-    redisTemplate.delete(REDIS_KEY + memberId);
+    redisUtil.deleteData(REFRESH_KEY + memberId);
   }
 }
