@@ -61,6 +61,7 @@ public class MemberController {
   @Operation(summary = "로그아웃")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @PostMapping("/logout")
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
