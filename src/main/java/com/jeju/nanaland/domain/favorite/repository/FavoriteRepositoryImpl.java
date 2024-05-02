@@ -265,7 +265,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             imageFile.thumbnailUrl
         ))
         .from(nana)
-        .innerJoin(nana)
+        .innerJoin(favorite)
         .on(favorite.postId.eq(nana.id)
             .and(favorite.member.eq(member))
             .and(favorite.category.content.eq(CategoryContent.NANA)))
@@ -281,7 +281,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(nana.count())
         .from(nana)
-        .innerJoin(nana)
+        .innerJoin(favorite)
         .on(favorite.postId.eq(nana.id)
             .and(favorite.member.eq(member))
             .and(favorite.category.content.eq(CategoryContent.NANA)))
