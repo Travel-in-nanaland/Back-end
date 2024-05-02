@@ -10,7 +10,7 @@ public class SearchResponse {
   @Data
   @Builder
   @Schema
-  public static class CategoryDto {
+  public static class AllCategoryDto {
 
     @Schema(description = "축제 조회 결과")
     private ResultDto festival;
@@ -45,6 +45,9 @@ public class SearchResponse {
 
     @Schema(description = "게시물 id")
     private Long id;
+
+    @Schema(description = "게시물 카테고리")
+    private String category;
 
     @Schema(description = "게시물 썸네일 이미지")
     private String thumbnailUrl;
