@@ -75,15 +75,15 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   public Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Locale locale,
       Pageable pageable) {
     List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
-            nanaTitle.id,
+            nana.id,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
             nanaTitle.subHeading
         ))
-        .from(nanaTitle)
+        .from(nana)
         .leftJoin(nanaTitle.nana, nana)
-        .join(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
+        .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
         .leftJoin(nanaTitle.imageFile, imageFile)
         .where(nanaTitle.language.locale.eq(locale)
             .and(nanaTitle.heading.contains(keyword)
