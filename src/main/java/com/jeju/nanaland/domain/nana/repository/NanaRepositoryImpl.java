@@ -8,7 +8,9 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -26,7 +28,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   @Override
   public List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Locale locale) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
-            nanaTitle.id,
+            nana.id,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
@@ -46,7 +48,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   public Page<NanaResponse.NanaThumbnail> findAllNanaThumbnailDto(Locale locale,
       Pageable pageable) {
     List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
-            nanaTitle.id,
+            nana.id,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
@@ -82,7 +84,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             nanaTitle.subHeading
         ))
         .from(nana)
-        .leftJoin(nanaTitle.nana, nana)
+        .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
         .leftJoin(nanaTitle.imageFile, imageFile)
         .where(nanaTitle.language.locale.eq(locale)
@@ -104,5 +106,19 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
                 .or(nanaContent.subTitle.contains(keyword))));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  public NanaThumbnailPost findNanaThumbnailPostDto(Long id, Locale locale) {
+    return queryFactory
+        .select(new QNanaResponse_NanaThumbnailPost(
+            nanaTitle.id,
+            imageFile.thumbnailUrl,
+            nanaTitle.heading
+        ))
+        .from(nanaTitle)
+        .leftJoin(nanaTitle.imageFile, imageFile)
+        .where(nanaTitle.nana.id.eq(id)
+            .and(nanaTitle.language.locale.eq(locale)))
+        .fetchOne();
   }
 }

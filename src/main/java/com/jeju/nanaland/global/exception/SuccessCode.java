@@ -20,6 +20,7 @@ public enum SuccessCode {
 
   // search
   SEARCH_SUCCESS(OK, "검색에 성공했습니다."),
+  SEARCH_VOLUME_SUCCESS(OK, "검색량 UP 게시물 조회 성공"),
 
   // login
   LOGIN_SUCCESS(OK, "로그인에 성공했습니다."),
@@ -36,6 +37,10 @@ public enum SuccessCode {
 
   // favorite
   POST_LIKE_TOGGLE_SUCCESS(OK, "게시물 좋아요 토글 요청 성공"),
+
+  // festival
+  FESTIVAL_LIST_SUCCESS(OK, "축제 썸네일 리스트 조회 성공"),
+  FESTIVAL_DETAIL_SUCCESS(OK, "축제 상세정보 조회 성공"),
 
   // market
   MARKET_LIST_SUCCESS(OK, "전통시장 썸네일 리스트 조회 성공"),

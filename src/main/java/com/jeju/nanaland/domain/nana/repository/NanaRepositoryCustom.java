@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.nana.repository;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,4 +20,6 @@ public interface NanaRepositoryCustom {
 
   Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Locale locale,
       Pageable pageable);
+
+  NanaThumbnailPost findNanaThumbnailPostDto(Long id, Locale locale);
 }

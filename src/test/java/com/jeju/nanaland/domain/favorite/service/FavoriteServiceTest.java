@@ -162,7 +162,7 @@ class FavoriteServiceTest {
      */
     Festival festival1 = Festival.builder()
         .imageFile(imageFile1)
-        .season("spring") // TODO: Test DB 한글 설정
+        .season("봄")
         .build();
     em.persist(festival1);
     FestivalTrans festivalTrans1 = FestivalTrans.builder()
@@ -173,7 +173,7 @@ class FavoriteServiceTest {
     em.persist(festivalTrans1);
     Festival festival2 = Festival.builder()
         .imageFile(imageFile2)
-        .season("summer")
+        .season("여름")
         .build();
     em.persist(festival2);
     FestivalTrans festivalTrans2 = FestivalTrans.builder()

@@ -6,6 +6,8 @@ import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -17,11 +19,15 @@ import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
+import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,14 +47,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SearchService {
 
+  private static final String SEARCH_VOLUME_KEY = "searchVolume";
+  private static final String SEARCH_VOLUME_REGEX = ":";
+  private final NanaRepository nanaRepository;
   private final NatureRepository natureRepository;
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
-  private final NanaRepository nanaRepository;
-
   private final FavoriteService favoriteService;
-
   private final RedisTemplate<String, String> redisTemplate;
 
   public SearchResponse.AllCategoryDto searchAllResultDto(MemberInfoDto memberInfoDto,
@@ -308,5 +314,93 @@ public class SearchService {
         redisTemplate.delete(key1);
       }
     }
+  }
+
+  public void updateSearchVolumeV1(CategoryContent categoryContent, Long id) {
+    String value = categoryContent + SEARCH_VOLUME_REGEX + id;
+    redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
+  }
+
+  public List<SearchVolumeDto> getTopSearchVolumePosts(MemberInfoDto memberInfoDto) {
+    List<String> topSearchVolumeList = getTopSearchVolumeList();
+
+    List<SearchVolumeDto> searchVolumeDtoList = new ArrayList<>();
+    for (String element : topSearchVolumeList) {
+      String[] parts = element.split(SEARCH_VOLUME_REGEX);
+      CategoryContent categoryContent = CategoryContent.valueOf(parts[0]);
+      Long postId = Long.valueOf(parts[1]);
+
+      switch (categoryContent) {
+        case NANA -> {
+          NanaThumbnailPost nanaThumbnailPostDto = nanaRepository.findNanaThumbnailPostDto(
+              postId, memberInfoDto.getLanguage().getLocale()
+          );
+          if (nanaThumbnailPostDto == null) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+          }
+          searchVolumeDtoList.add(SearchVolumeDto.builder()
+              .id(nanaThumbnailPostDto.getId())
+              .title(nanaThumbnailPostDto.getHeading())
+              .thumbnailUrl(nanaThumbnailPostDto.getThumbnailUrl())
+              .category(categoryContent.name())
+              .isFavorite(
+                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                      nanaThumbnailPostDto.getId()))
+              .build());
+        }
+        case FESTIVAL -> {
+          CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
+              postId, memberInfoDto.getLanguage().getLocale());
+
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, festivalCompositeDto));
+        }
+        case NATURE -> {
+          CompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
+              memberInfoDto.getLanguage().getLocale());
+
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, natureCompositeDto));
+        }
+        case MARKET -> {
+          CompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
+              memberInfoDto.getLanguage().getLocale());
+
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
+        }
+        case EXPERIENCE -> {
+          CompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+              postId, memberInfoDto.getLanguage().getLocale());
+
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, experienceCompositeDto));
+        }
+        default -> throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+      }
+    }
+    return searchVolumeDtoList;
+  }
+
+  private SearchVolumeDto getSearchVolumeDto(MemberInfoDto memberInfoDto,
+      CategoryContent categoryContent, CompositeDto compositeDto) {
+    if (compositeDto == null) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
+    return SearchVolumeDto.builder()
+        .id(compositeDto.getId())
+        .title(compositeDto.getTitle())
+        .thumbnailUrl(compositeDto.getThumbnailUrl())
+        .category(categoryContent.name())
+        .isFavorite(
+            favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                compositeDto.getId()))
+        .build();
+  }
+
+  private List<String> getTopSearchVolumeList() {
+    ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+    Set<String> topSearchVolumes = zSetOperations.reverseRange(SEARCH_VOLUME_KEY, 0, 3);
+    return topSearchVolumes != null ? new ArrayList<>(topSearchVolumes) : new ArrayList<>();
   }
 }
