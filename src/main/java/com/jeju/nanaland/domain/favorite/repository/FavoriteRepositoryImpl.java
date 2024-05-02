@@ -61,10 +61,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(nature.imageFile, imageFile)
         .leftJoin(natureTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.NATURE)
-            .and(language.locale.eq(locale)))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+            .and(language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -117,10 +114,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(experience.imageFile, imageFile)
         .leftJoin(experienceTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.EXPERIENCE)
-            .and(language.locale.eq(locale)))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+            .and(language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -173,10 +167,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festivalTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.FESTIVAL)
-            .and(language.locale.eq(locale)))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+            .and(language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -229,10 +220,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(market.imageFile, imageFile)
         .leftJoin(marketTrans.language, language)
         .where(favorite.category.content.eq(CategoryContent.MARKET)
-            .and(language.locale.eq(locale)))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+            .and(language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -285,10 +273,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .leftJoin(nanaTitle.imageFile, imageFile)
         .leftJoin(nanaTitle.language, language)
         .where(favorite.category.content.eq(CategoryContent.NANA)
-            .and(language.locale.eq(locale)))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+            .and(language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -326,9 +311,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(favorite.count())
         .from(favorite)
         .where(favorite.member.eq(member))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .orderBy(favorite.createdAt.desc());
 
     return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
   }
