@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jeju.nanaland.global.auth.handler.CustomAccessDeniedHandler;
 import com.jeju.nanaland.global.auth.handler.CustomAuthenticationEntryPoint;
 import com.jeju.nanaland.global.auth.jwt.JWTAuthenticationFilter;
-import com.jeju.nanaland.global.auth.jwt.JwtUtil;
+import com.jeju.nanaland.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

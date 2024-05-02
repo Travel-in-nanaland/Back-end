@@ -1,7 +1,6 @@
-package com.jeju.nanaland.global.auth.jwt;
+package com.jeju.nanaland.global.util;
 
 import com.jeju.nanaland.domain.member.entity.Role;
-import com.jeju.nanaland.global.util.RedisUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

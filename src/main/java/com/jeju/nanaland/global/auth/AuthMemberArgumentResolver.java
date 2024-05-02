@@ -2,10 +2,10 @@ package com.jeju.nanaland.global.auth;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.global.auth.jwt.JwtUtil;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
+import com.jeju.nanaland.global.util.JwtUtil;
 import com.jeju.nanaland.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;

@@ -1,5 +1,6 @@
 package com.jeju.nanaland.global.auth.jwt;
 
+import com.jeju.nanaland.global.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
