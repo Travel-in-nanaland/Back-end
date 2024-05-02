@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
+import com.jeju.nanaland.global.exception.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -55,6 +56,17 @@ public class MemberController {
   public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
     JwtDto jwtDto = memberLoginService.login(loginDto);
     return BaseResponse.success(LOGIN_SUCCESS, jwtDto);
+  }
+
+  @Operation(summary = "로그아웃")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+  })
+  @PostMapping("/logout")
+  public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
+      @RequestHeader("Authorization") String accessToken) {
+    memberLoginService.logout(memberInfoDto, accessToken);
+    return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
 
   @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."

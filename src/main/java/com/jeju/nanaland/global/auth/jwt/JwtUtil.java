@@ -30,6 +30,8 @@ public class JwtUtil {
   private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
   private static final String REFRESH_KEY = "REFRESH:";
   private static final String AUTHORITIES_KEY = "auth";
+  private static final String BLACK_LIST_VAL = "BLACKLIST";
+  private static final long BLACK_LIST_EXPIRE = 10 * 60L;
   private static final long MAX_REFRESH_TOKENS = 10;
   private final SecretKey secretKey;
   private final SecretKey secretKey2;
@@ -155,5 +157,9 @@ public class JwtUtil {
 
   public void deleteRefreshToken(String memberId) {
     redisUtil.deleteData(REFRESH_KEY + memberId);
+  }
+
+  public void setBlackList(String accessToken) {
+    redisUtil.setExpiringValue(accessToken, BLACK_LIST_VAL, BLACK_LIST_EXPIRE);
   }
 }

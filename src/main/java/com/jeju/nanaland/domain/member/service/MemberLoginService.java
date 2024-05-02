@@ -6,6 +6,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
@@ -133,5 +134,14 @@ public class MemberLoginService {
         .accessToken(newAccessToken)
         .refreshToken(newRefreshToken)
         .build();
+  }
+
+  public void logout(MemberInfoDto memberInfoDto, String bearerAccessToken) {
+    String accessToken = jwtUtil.resolveToken(bearerAccessToken);
+    jwtUtil.setBlackList(accessToken);
+    String memberId = String.valueOf(memberInfoDto.getMember().getId());
+    if (jwtUtil.findRefreshTokenById(memberId) != null) {
+      jwtUtil.deleteRefreshToken(memberId);
+    }
   }
 }

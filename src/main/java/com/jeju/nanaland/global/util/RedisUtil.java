@@ -1,8 +1,10 @@
 package com.jeju.nanaland.global.util;
 
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -10,6 +12,11 @@ import org.springframework.stereotype.Component;
 public class RedisUtil {
 
   private final RedisTemplate<String, String> redisTemplate;
+
+  public String getValue(String key) {
+    ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+    return valueOperations.get(key);
+  }
 
   public String getRecentDataFromList(String key) {
     ListOperations<String, String> listOperations = redisTemplate.opsForList();
@@ -24,5 +31,11 @@ public class RedisUtil {
 
   public void deleteData(String key) {
     redisTemplate.delete(key);
+  }
+
+  public void setExpiringValue(String key, String value, long duration) {
+    ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+    Duration expireDuration = Duration.ofSeconds(duration);
+    valueOperations.set(key, value, expireDuration);
   }
 }

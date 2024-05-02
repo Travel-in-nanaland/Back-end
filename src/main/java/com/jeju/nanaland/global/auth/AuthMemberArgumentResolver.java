@@ -5,6 +5,8 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.auth.jwt.JwtUtil;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.UnauthorizedException;
+import com.jeju.nanaland.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +20,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
+  private final RedisUtil redisUtil;
   private final JwtUtil jwtUtil;
   private final MemberRepository memberRepository;
 
@@ -33,6 +36,11 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
     String bearerAccessToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
+
+    if (redisUtil.getValue(accessToken) != null) {
+      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+    }
+
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
 
     MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
