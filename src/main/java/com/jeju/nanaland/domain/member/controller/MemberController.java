@@ -64,6 +64,7 @@ public class MemberController {
   })
   @PostMapping("/logout")
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
+      @Parameter(name = "accessToken", hidden = true)
       @RequestHeader("Authorization") String accessToken) {
     memberLoginService.logout(memberInfoDto, accessToken);
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
