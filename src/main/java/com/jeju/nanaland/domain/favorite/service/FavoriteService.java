@@ -68,31 +68,33 @@ public class FavoriteService {
 
       switch (category) {
         case NANA -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findNanaThumbnailByPostId(postId,
+          ThumbnailDto thumbnailDto = favoriteRepository.findNanaThumbnailByPostId(member, postId,
               locale);
           thumbnailDto.setCategory(NANA.name());
           thumbnailDtoList.add(thumbnailDto);
         }
         case NATURE -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findNatureThumbnailByPostId(postId,
+          ThumbnailDto thumbnailDto = favoriteRepository.findNatureThumbnailByPostId(member, postId,
               locale);
           thumbnailDto.setCategory(NATURE.name());
           thumbnailDtoList.add(thumbnailDto);
         }
         case MARKET -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findMarketThumbnailByPostId(postId,
+          ThumbnailDto thumbnailDto = favoriteRepository.findMarketThumbnailByPostId(member, postId,
               locale);
           thumbnailDto.setCategory(MARKET.name());
           thumbnailDtoList.add(thumbnailDto);
         }
         case EXPERIENCE -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findExperienceThumbnailByPostId(postId,
+          ThumbnailDto thumbnailDto = favoriteRepository.findExperienceThumbnailByPostId(member,
+              postId,
               locale);
           thumbnailDto.setCategory(EXPERIENCE.name());
           thumbnailDtoList.add(thumbnailDto);
         }
         case FESTIVAL -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findFestivalThumbnailByPostId(postId,
+          ThumbnailDto thumbnailDto = favoriteRepository.findFestivalThumbnailByPostId(member,
+              postId,
               locale);
           thumbnailDto.setCategory(FESTIVAL.name());
           thumbnailDtoList.add(thumbnailDto);
@@ -109,11 +111,11 @@ public class FavoriteService {
   public FavoriteResponse.NatureDto getNatureFavoriteList(MemberInfoDto memberInfoDto, int page,
       int size) {
 
-    Long memberId = memberInfoDto.getMember().getId();
+    Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findNatureThumbnails(memberId, locale,
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findNatureThumbnails(member, locale,
         pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
     for (ThumbnailDto thumbnailDto : thumbnails) {
@@ -130,11 +132,11 @@ public class FavoriteService {
   public FavoriteResponse.FestivalDto getFestivalFavoriteList(MemberInfoDto memberInfoDto, int page,
       int size) {
 
-    Long memberId = memberInfoDto.getMember().getId();
+    Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findFestivalThumbnails(memberId, locale,
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findFestivalThumbnails(member, locale,
         pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
     for (ThumbnailDto thumbnailDto : thumbnails) {
@@ -152,11 +154,11 @@ public class FavoriteService {
       int page,
       int size) {
 
-    Long memberId = memberInfoDto.getMember().getId();
+    Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findExperienceThumbnails(memberId, locale,
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findExperienceThumbnails(member, locale,
         pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
     for (ThumbnailDto thumbnailDto : thumbnails) {
@@ -173,11 +175,11 @@ public class FavoriteService {
   public FavoriteResponse.MarketDto getMarketFavoriteList(MemberInfoDto memberInfoDto, int page,
       int size) {
 
-    Long memberId = memberInfoDto.getMember().getId();
+    Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findMarketThumbnails(memberId, locale,
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findMarketThumbnails(member, locale,
         pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
     for (ThumbnailDto thumbnailDto : thumbnails) {
@@ -194,11 +196,11 @@ public class FavoriteService {
   public FavoriteResponse.NanaDto getNanaFavoriteList(MemberInfoDto memberInfoDto, int page,
       int size) {
 
-    Long memberId = memberInfoDto.getMember().getId();
+    Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findNanaThumbnails(memberId, locale,
+    Page<ThumbnailDto> thumbnails = favoriteRepository.findNanaThumbnails(member, locale,
         pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
     for (ThumbnailDto thumbnailDto : thumbnails) {

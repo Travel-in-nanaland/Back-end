@@ -4,7 +4,8 @@ import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
-import com.jeju.nanaland.domain.search.dto.SearchResponse.CategoryDto;
+import com.jeju.nanaland.domain.search.dto.SearchResponse.AllCategoryDto;
+import com.jeju.nanaland.domain.search.dto.SearchResponse.ResultDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.BaseResponse;
@@ -40,14 +41,13 @@ public class SearchController {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
-  @GetMapping("/category")
-  public BaseResponse<CategoryDto> searchCategory(
+  @GetMapping("/all")
+  public BaseResponse<AllCategoryDto> searchCategory(
       @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword) {
 
-    return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getCategorySearchResultDto(memberInfoDto.getMember(), keyword,
-            memberInfoDto.getLanguage().getLocale()));
+    SearchResponse.AllCategoryDto result = searchService.searchAllResultDto(memberInfoDto, keyword);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
   @Operation(
@@ -63,10 +63,8 @@ public class SearchController {
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
-
-    return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getNatureSearchResultDto(memberInfoDto.getMember(), keyword,
-            memberInfoDto.getLanguage().getLocale(), page, size));
+    ResultDto result = searchService.searchNatureResultDto(memberInfoDto, keyword, page, size);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
   @Operation(
@@ -83,9 +81,8 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getFestivalSearchResultDto(memberInfoDto.getMember(), keyword,
-            memberInfoDto.getLanguage().getLocale(), page, size));
+    ResultDto result = searchService.searchFestivalResultDto(memberInfoDto, keyword, page, size);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
   @Operation(
@@ -102,9 +99,9 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getExperienceSearchResultDto(memberInfoDto.getMember(), keyword,
-            memberInfoDto.getLanguage().getLocale(), page, size));
+    ResultDto result = searchService.searchExperienceResultDto(memberInfoDto, keyword, page,
+        size);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
   @Operation(
@@ -121,9 +118,26 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getMarketSearchResultDto(memberInfoDto.getMember(), keyword,
-            memberInfoDto.getLanguage().getLocale(), page, size));
+    ResultDto result = searchService.searchMarketResultDto(memberInfoDto, keyword, page, size);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
+  }
+
+  @Operation(
+      summary = "나나스픽 검색 결과",
+      description = "나나스픽 검색 결과 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/nana")
+  public BaseResponse<SearchResponse.ResultDto> searchNana(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @NotNull String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
+
+    ResultDto result = searchService.searchNanaResultDto(memberInfoDto, keyword, page, size);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
   @Operation(
@@ -136,8 +150,8 @@ public class SearchController {
   @GetMapping("/popular")
   public BaseResponse<List<String>> getPopularSearch(@AuthMember MemberInfoDto memberInfoDto) {
 
-    return BaseResponse.success(SEARCH_SUCCESS,
-        searchService.getPopularSearch(memberInfoDto.getLanguage().getLocale()));
+    List<String> result = searchService.getPopularSearch(memberInfoDto.getLanguage().getLocale());
+    return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
   @Operation(
