@@ -46,7 +46,8 @@ public class FestivalService {
 
     List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
 
-    return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList, favoriteIds);
+    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
+        favoriteIds);
   }
 
   public FestivalThumbnailDto getThisMonthFestivalList(MemberInfoDto memberInfoDto, int page,
@@ -70,7 +71,8 @@ public class FestivalService {
 
     List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
 
-    return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList, favoriteIds);
+    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
+        favoriteIds);
   }
 
   public FestivalThumbnailDto getSeasonFestivalList(MemberInfoDto memberInfoDto, int page, int size,
@@ -86,7 +88,8 @@ public class FestivalService {
 
     List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
 
-    return getFestivalThumbnailDtoByCompositeDto(festivalCompositeDtoList, favoriteIds);
+    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
+        favoriteIds);
 
   }
 
@@ -117,7 +120,8 @@ public class FestivalService {
         .time(compositeDtoById.getTime())
         .fee(compositeDtoById.getFee())
         .homepage(compositeDtoById.getHomepage())
-        .period(formatLocalDateToStringWithYearAndMonthAndDay(compositeDtoById.getStartDate(),
+        .period(formatLocalDateToStringWithDayOfWeek(memberInfoDto,
+            compositeDtoById.getStartDate(),
             compositeDtoById.getEndDate()))
         .isFavorite(isPostInFavorite)
         .build();
@@ -138,12 +142,14 @@ public class FestivalService {
   }
 
   public FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
-      Page<FestivalCompositeDto> festivalCompositeDtoList, List<Long> favoriteIds) {
+      MemberInfoDto memberInfoDto, Page<FestivalCompositeDto> festivalCompositeDtoList,
+      List<Long> favoriteIds) {
     List<FestivalThumbnail> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : festivalCompositeDtoList) {
 
-      // LocalDate 타입의 startDate, endDate를 04.1(월) ~ 05.13(수)형태로 formatting
-      String period = formatLocalDateToStringWithMonthAndDay(dto.getStartDate(), dto.getEndDate());
+      // LocalDate 타입의 startDate, endDate를 24. 04. 01 ~ 24. 05. 13형태로 formatting
+      String period = formatLocalDateToStringWithoutDayOfWeek(memberInfoDto, dto.getStartDate(),
+          dto.getEndDate());
       thumbnails.add(
           FestivalThumbnail.builder()
               .id(dto.getId())
@@ -161,9 +167,14 @@ public class FestivalService {
         .build();
   }
 
-  public String formatLocalDateToStringWithMonthAndDay(LocalDate startDate, LocalDate endDate) {
-    String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("M. dd"));
-    String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("M. dd"));
+  // 2024.04.01(월) ~ 2024.05.13(화)
+  public String formatLocalDateToStringWithDayOfWeek(MemberInfoDto memberInfoDto,
+      LocalDate startDate, LocalDate endDate) {
+    String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
+    log.info("1st =>{}", startDate.format(DateTimeFormatter.ofPattern(nationalDateFormat)));
+    String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern(nationalDateFormat));
+    String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern(nationalDateFormat));
+
 // LocalDate 타입의 startDate, endDate를 04.1(월) ~ 05.13(수)형태로 formatting
     String startDay = startDate.getDayOfWeek()
         .getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
@@ -172,17 +183,21 @@ public class FestivalService {
         + ")";
   }
 
-  public String formatLocalDateToStringWithYearAndMonthAndDay(LocalDate startDate,
-      LocalDate endDate) {
-    String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
-    String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
+  // 24.04.01 ~ 24.05.13
+  public String formatLocalDateToStringWithoutDayOfWeek(MemberInfoDto memberInfoDto,
+      LocalDate startDate, LocalDate endDate) {
 
-// LocalDate 타입의 startDate, endDate를 2024.04.1(월) ~ 2024.05.13(수)형태로 formatting
-    String startDay = startDate.getDayOfWeek()
-        .getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
-    String endDay = endDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
-    return formattedStartDate + "(" + startDay + ")" + " ~ " + formattedEndDate + "(" + endDay
-        + ")";
+    // - 을 . 으로 대체
+    String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
+
+    // yyyy 포맷을 yy로 변경
+    String finalDateFormat = nationalDateFormat.replace("yyyy", "yy");
+
+    String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern(finalDateFormat));
+    String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern(finalDateFormat));
+
+// LocalDate 타입의 startDate, endDate를 24.04.1 ~ 24.05.13 형태로 formatting
+    return formattedStartDate + " ~ " + formattedEndDate;
   }
 
   public String seasonValueChangeToKorean(String season) {
