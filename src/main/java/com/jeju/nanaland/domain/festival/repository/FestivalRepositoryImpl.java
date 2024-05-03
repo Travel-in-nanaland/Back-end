@@ -165,7 +165,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
             .and(festivalTrans.language.locale.eq(locale)))
-        .orderBy(festivalTrans.createdAt.desc())
+        .orderBy(festival.endDate.asc()) // 종료일 오름차 순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -218,7 +218,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                 .and(festivalTrans.language.locale.eq(locale)
                     .and(addressTagCondition(addressFilterList)))
         )
-        .orderBy(festivalTrans.createdAt.desc())
+        .orderBy(festival.endDate.asc()) // 종료일 오름차 순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
