@@ -168,7 +168,7 @@ class FavoriteServiceTest {
     FestivalTrans festivalTrans1 = FestivalTrans.builder()
         .festival(festival1)
         .language(language)
-        .title("festival1")
+        .title("축제1")
         .build();
     em.persist(festivalTrans1);
     Festival festival2 = Festival.builder()
@@ -179,7 +179,7 @@ class FavoriteServiceTest {
     FestivalTrans festivalTrans2 = FestivalTrans.builder()
         .festival(festival2)
         .language(language)
-        .title("festival2")
+        .title("축제2")
         .build();
     em.persist(festivalTrans2);
 
@@ -225,6 +225,6 @@ class FavoriteServiceTest {
 
     // 최근에 좋아요한 순서대로 표시
     assertThat(festivalFavoriteList.getData()).extracting("title")
-        .containsExactly("festival2", "festival1");
+        .containsExactly("축제2", "축제1");
   }
 }
