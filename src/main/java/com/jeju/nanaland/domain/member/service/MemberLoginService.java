@@ -27,6 +27,7 @@ public class MemberLoginService {
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
   private final JwtUtil jwtUtil;
+  private final MemberConsentService memberConsentService;
 
   @Transactional
   public JwtDto login(LoginDto loginDto) {
@@ -86,7 +87,11 @@ public class MemberLoginService {
         .provider(Provider.valueOf(loginDto.getProvider()))
         .providerId(loginDto.getProviderId())
         .build();
-    return memberRepository.save(member);
+    Member saveMember = memberRepository.save(member);
+    if (saveMember.getProvider() != Provider.GUEST) {
+      memberConsentService.createMemberConsents(saveMember);
+    }
+    return saveMember;
   }
 
   // 임시로 만든 랜덤 프로필 사진
