@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.member.entity.ConsentType;
 import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.Data;
 import lombok.Getter;
 
@@ -50,6 +52,30 @@ public class MemberRequest {
     @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
     @NotNull
     private Long providerId;
+  }
+
+  @Data
+  @Schema(description = "이용약관 동의 요청 DTO")
+  public static class MemberConsentDTO {
+
+    @Schema(description = "이용약관 동의 여부")
+    List<ConsentItem> consentItems;
+  }
+
+  @Getter
+  public static class ConsentItem {
+
+    @Schema(description = "이용약관", example = "TERMS_OF_USE",
+        allowableValues = {"TERMS_OF_USE", "MARKETING", "LOCATION_SERVICE"})
+    @NotNull
+    @EnumValid(
+        enumClass = ConsentType.class,
+        message = "ConsentType이 유효하지 않습니다."
+    )
+    private String consentType;
+
+    @Schema(description = "동의 여부", defaultValue = "false")
+    private Boolean consent;
   }
 
   @Data

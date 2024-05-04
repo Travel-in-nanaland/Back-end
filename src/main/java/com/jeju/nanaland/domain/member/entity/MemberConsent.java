@@ -34,11 +34,15 @@ public class MemberConsent extends BaseEntity {
   private LocalDateTime consentDate;
 
   @Builder
-  public MemberConsent(Member member, ConsentType consentType, boolean consent,
-      LocalDateTime consentDate) {
+  public MemberConsent(Member member, ConsentType consentType, boolean consent) {
     this.member = member;
     this.consentType = consentType;
     this.consent = consent;
-    this.consentDate = consentDate;
+    this.consentDate = consent ? LocalDateTime.now() : null;
+  }
+
+  public void updateConsent(boolean consent) {
+    this.consent = consent;
+    this.consentDate = consent ? LocalDateTime.now() : null;
   }
 }

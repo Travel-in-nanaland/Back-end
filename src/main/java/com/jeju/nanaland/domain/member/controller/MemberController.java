@@ -7,8 +7,10 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.MemberConsentDTO;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
+import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
@@ -26,6 +28,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +46,7 @@ public class MemberController {
 
   private final MemberLoginService memberLoginService;
   private final MemberTypeService memberTypeService;
+  private final MemberConsentService memberConsentService;
 
 
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")
@@ -70,6 +74,14 @@ public class MemberController {
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
     String newAccessToken = memberLoginService.reissue(refreshToken);
     return BaseResponse.success(ACCESS_TOKEN_SUCCESS, newAccessToken);
+  }
+
+  @PostMapping("/consent")
+  public ResponseEntity updateConsent(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid MemberConsentDTO memberConsentDTO) {
+    memberConsentService.updateConsent(memberInfoDto, memberConsentDTO);
+    return ResponseEntity.ok().build();
   }
 
   @Operation(
