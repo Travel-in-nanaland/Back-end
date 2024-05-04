@@ -157,7 +157,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
             .and(festivalTrans.language.locale.eq(locale)))
-        .orderBy(festivalTrans.createdAt.desc())
+        .orderBy(festival.endDate.desc()) // 최근에 끝난 순
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
