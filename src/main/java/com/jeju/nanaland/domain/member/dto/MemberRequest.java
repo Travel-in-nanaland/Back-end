@@ -6,6 +6,7 @@ import com.jeju.nanaland.domain.member.entity.ConsentType;
 import com.jeju.nanaland.domain.member.entity.MemberType;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -59,6 +60,7 @@ public class MemberRequest {
   public static class MemberConsentDTO {
 
     @Schema(description = "이용약관 동의 여부")
+    @Valid
     List<ConsentItem> consentItems;
   }
 
@@ -75,6 +77,7 @@ public class MemberRequest {
     private String consentType;
 
     @Schema(description = "동의 여부", defaultValue = "false")
+    @NotNull
     private Boolean consent;
   }
 

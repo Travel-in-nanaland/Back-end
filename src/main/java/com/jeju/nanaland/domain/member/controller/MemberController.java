@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
+import com.jeju.nanaland.global.exception.SuccessCode;
 import com.jeju.nanaland.global.jwt.AuthMember;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -76,12 +76,18 @@ public class MemberController {
     return BaseResponse.success(ACCESS_TOKEN_SUCCESS, newAccessToken);
   }
 
+  @Operation(summary = "이용약관 동의 여부", description = "회원의 이용약관 동의 여부를 업데이트합니다.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "401", description = "RefreshToken이 유효하지 않은 경우", content = @Content)
+  })
   @PostMapping("/consent")
-  public ResponseEntity updateConsent(
+  public BaseResponse<Null> updateConsent(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid MemberConsentDTO memberConsentDTO) {
     memberConsentService.updateConsent(memberInfoDto, memberConsentDTO);
-    return ResponseEntity.ok().build();
+    return BaseResponse.success(SuccessCode.CONSENT_UPDATE_SUCCESS);
   }
 
   @Operation(
