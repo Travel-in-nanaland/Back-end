@@ -67,6 +67,9 @@ public class NanaResponse {
     @Schema(description = "사진에 들어갈 제목 ex) TOP 10 야경 맛집")
     private String heading;
 
+    @Schema(description = "ex) nana's Pick vol.1")
+    private String version;
+    
     @NotBlank
     @Schema(description = "게시물 url")
     private String originUrl;
