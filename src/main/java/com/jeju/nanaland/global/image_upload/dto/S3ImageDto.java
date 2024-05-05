@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.imageUpload.dto;
+package com.jeju.nanaland.global.image_upload.dto;
 
 import lombok.Builder;
 import lombok.Getter;

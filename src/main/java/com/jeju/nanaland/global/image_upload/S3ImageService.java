@@ -1,11 +1,11 @@
-package com.jeju.nanaland.global.imageUpload;
+package com.jeju.nanaland.global.image_upload;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
-import com.jeju.nanaland.global.imageUpload.dto.S3ImageDto;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import jakarta.transaction.Transactional;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
