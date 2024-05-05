@@ -6,18 +6,22 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.imageUpload.S3ImageService;
 import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +31,7 @@ public class MemberLoginService {
   private final LanguageRepository languageRepository;
   private final ImageFileRepository imageFileRepository;
   private final JwtUtil jwtUtil;
+  private final S3ImageService s3ImageService;
 
   @Transactional
   public JwtDto login(LoginDto loginDto) {
@@ -123,5 +128,27 @@ public class MemberLoginService {
         .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
     return jwtUtil.getAccessToken(memberId, member.getRoleSet());
+  }
+
+  @Transactional
+  public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
+      MultipartFile multipartFile) {
+    Member member = memberInfoDto.getMember();
+
+    /*
+     * 만약 multipartFile이 null이 아니라면, 새로 ImageFile을 만들어 member와 연결해주어야 한다.
+     * 또한, 기존에 연결되어있던 imageFile을 삭제해야 한다..?
+     * => 기존에 연결되어있던 imageFile의 origin과 thumbnail url을 변경해주는 거로,,
+     * */
+    ImageFile imageFile = null;
+//    if (multipartFile != null) {
+//      try {
+//        imageFile = s3ImageService.uploadAndSaveImage(multipartFile, false);
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+//      }
+//    }
+    member.updateProfile(profileUpdateDto, imageFile);
   }
 }

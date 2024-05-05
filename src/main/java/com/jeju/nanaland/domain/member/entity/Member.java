@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -99,5 +100,15 @@ public class Member extends BaseEntity {
 
   public void updateEmail(String email) {
     this.email = email;
+  }
+
+  public void updateProfile(ProfileUpdateDto profileUpdateDto, ImageFile imageFile) {
+    // TODO: 닉네임 중복 확인 & 닉네임 글자수 제한
+    this.nickname =
+        profileUpdateDto.getNickname() != null ? profileUpdateDto.getNickname() : this.nickname;
+    this.description =
+        profileUpdateDto.getDescription() != null ? profileUpdateDto.getDescription()
+            : this.description;
+    this.profileImageFile = imageFile != null ? imageFile : this.profileImageFile;
   }
 }

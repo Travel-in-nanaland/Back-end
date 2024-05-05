@@ -7,6 +7,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
@@ -26,13 +27,16 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -109,5 +113,15 @@ public class MemberController {
     List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
         memberInfoDto.getMember().getId());
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+  }
+
+  @PatchMapping("/profile")
+  public ResponseEntity updateProfile(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestPart @Valid ProfileUpdateDto reqDto,
+      @RequestPart(required = false) MultipartFile multipartFile
+  ) {
+    memberLoginService.updateProfile(memberInfoDto, reqDto, multipartFile);
+    return ResponseEntity.ok().build();
   }
 }
