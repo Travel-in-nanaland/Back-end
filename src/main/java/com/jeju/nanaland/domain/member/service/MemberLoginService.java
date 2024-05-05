@@ -14,9 +14,12 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
-import com.jeju.nanaland.global.imageUpload.S3ImageService;
+import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.image_upload.S3ImageService;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
+import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -134,21 +137,18 @@ public class MemberLoginService {
   public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
       MultipartFile multipartFile) {
     Member member = memberInfoDto.getMember();
-
-    /*
-     * 만약 multipartFile이 null이 아니라면, 새로 ImageFile을 만들어 member와 연결해주어야 한다.
-     * 또한, 기존에 연결되어있던 imageFile을 삭제해야 한다..?
-     * => 기존에 연결되어있던 imageFile의 origin과 thumbnail url을 변경해주는 거로,,
-     * */
-    ImageFile imageFile = null;
-//    if (multipartFile != null) {
-//      try {
-//        imageFile = s3ImageService.uploadAndSaveImage(multipartFile, false);
-//      } catch (IOException e) {
-//        e.printStackTrace();
-//        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
-//      }
-//    }
-    member.updateProfile(profileUpdateDto, imageFile);
+    ImageFile profileImageFile = member.getProfileImageFile();
+    if (multipartFile != null) {
+      try {
+        S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true);
+        // TODO: 프로필 사진이 기본 사진이면 삭제되지 않도록
+        s3ImageService.deleteImageS3(profileImageFile);
+        profileImageFile.updateImageFile(s3ImageDto);
+      } catch (IOException e) {
+        e.printStackTrace();
+        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+      }
+    }
+    member.updateProfile(profileUpdateDto);
   }
 }

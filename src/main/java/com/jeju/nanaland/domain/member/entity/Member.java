@@ -106,13 +106,12 @@ public class Member extends BaseEntity {
     this.email = email;
   }
 
-  public void updateProfile(ProfileUpdateDto profileUpdateDto, ImageFile imageFile) {
+  public void updateProfile(ProfileUpdateDto profileUpdateDto) {
     // TODO: 닉네임 중복 확인 & 닉네임 글자수 제한
     this.nickname =
         profileUpdateDto.getNickname() != null ? profileUpdateDto.getNickname() : this.nickname;
     this.description =
         profileUpdateDto.getDescription() != null ? profileUpdateDto.getDescription()
             : this.description;
-    this.profileImageFile = imageFile != null ? imageFile : this.profileImageFile;
   }
 }
