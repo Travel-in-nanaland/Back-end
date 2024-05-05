@@ -51,8 +51,8 @@ public class S3ImageService {
     String contentType = multipartFile.getContentType();
 
     // 확장자가 jpeg, png인 파일들만 받아서 처리
-    if (ObjectUtils.isEmpty(contentType) | (!contentType.contains("image/jpeg")
-        & !contentType.contains("image/png"))) {
+    if (ObjectUtils.isEmpty(contentType) ||
+        (!contentType.contains("image/jpeg") && !contentType.contains("image/png"))) {
       throw new UnsupportedFileFormatException();
     }
   }
@@ -63,13 +63,19 @@ public class S3ImageService {
    */
   @Transactional
   public List<ImageFile> uploadAndSaveImages(List<MultipartFile> multipartFileList,
-      boolean autoThumbnail)
-      throws IOException {
+      boolean autoThumbnail) throws IOException {
     List<ImageFile> imageFileList = new ArrayList<>();
     for (MultipartFile multipartFile : multipartFileList) {
       imageFileList.add(uploadAndSaveImage(multipartFile, autoThumbnail));
     }
     return imageFileList;
+  }
+
+  private String generateUniqueFileName(String extension) {
+    // 오늘 날짜 yyMMdd 포맷으로 string 타입 생성
+    String uniqueId = UUID.randomUUID().toString().substring(0, 16);
+    String formattedDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+    return uniqueId + "_" + formattedDate + extension;
   }
 
   @Transactional
@@ -82,16 +88,13 @@ public class S3ImageService {
 
     //uuid_originalFilename 로 s3에 업로드할 파일 이름 설정 (파일명이 한글일 경우 동작 안해서 uuid 자체로 파일명 수정)
     //확장자 추출
-    String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
-    UUID uuid = UUID.randomUUID();
-
-    // 오늘 날짜 yyMMdd 포맷으로 string 타입 생성
-    LocalDate today = LocalDate.now();
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
-    String formattedDate = today.format(formatter);
+    String extension = null;
+    if (originalFileName != null) {
+      extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+    }
 
     //최종 파일 이름 => uuid16자리 + _ + yyMMdd
-    String uploadImageName = uuid.toString().substring(0, 16) + "_" + formattedDate + extension;
+    String uploadImageName = generateUniqueFileName(extension);
 
     //메타데이터 설정
     ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -143,7 +146,9 @@ public class S3ImageService {
 
     ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
     String imageType = multipartFile.getContentType();
-    ImageIO.write(thumbnailImage, imageType.substring(imageType.indexOf("/") + 1), thumbOutput);
+    if (imageType != null) {
+      ImageIO.write(thumbnailImage, imageType.substring(imageType.indexOf("/") + 1), thumbOutput);
+    }
 
     //메타데이터 설정
     ObjectMetadata objectMetadata = new ObjectMetadata();
