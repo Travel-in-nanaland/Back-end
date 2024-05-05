@@ -3,9 +3,9 @@ package com.jeju.nanaland.global.imageUpload;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
+import com.jeju.nanaland.global.imageUpload.dto.S3ImageDto;
 import jakarta.transaction.Transactional;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -30,8 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class S3ImageService {
-
-  private final ImageFileRepository imageFileRepository;
 
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.s3.bucket}")
@@ -62,9 +60,9 @@ public class S3ImageService {
   dto 생성하면 인풋 수정.
    */
   @Transactional
-  public List<ImageFile> uploadAndSaveImages(List<MultipartFile> multipartFileList,
+  public List<S3ImageDto> uploadAndSaveImages(List<MultipartFile> multipartFileList,
       boolean autoThumbnail) throws IOException {
-    List<ImageFile> imageFileList = new ArrayList<>();
+    List<S3ImageDto> imageFileList = new ArrayList<>();
     for (MultipartFile multipartFile : multipartFileList) {
       imageFileList.add(uploadAndSaveImage(multipartFile, autoThumbnail));
     }
@@ -79,7 +77,7 @@ public class S3ImageService {
   }
 
   @Transactional
-  public ImageFile uploadAndSaveImage(MultipartFile multipartFile, boolean autoThumbnail)
+  public S3ImageDto uploadAndSaveImage(MultipartFile multipartFile, boolean autoThumbnail)
       throws IOException {
 
     //이미지 파일인지 검증
@@ -96,13 +94,8 @@ public class S3ImageService {
     //최종 파일 이름 => uuid16자리 + _ + yyMMdd
     String uploadImageName = generateUniqueFileName(extension);
 
-    //메타데이터 설정
-    ObjectMetadata objectMetadata = new ObjectMetadata();
-    objectMetadata.setContentType(multipartFile.getContentType());
-    objectMetadata.setContentLength(multipartFile.getInputStream().available());
-
     //S3에 사진 올리기
-    String originalImageUrl = uploadOriginImage(multipartFile, objectMetadata, uploadImageName);
+    String originalImageUrl = uploadOriginImage(multipartFile, uploadImageName);
 
     //true, false로 구분해서 썸네일 만들고 안만들고 동작.
     String thumbnailImageUrl = "";
@@ -110,18 +103,19 @@ public class S3ImageService {
       //섬네일 생성 후 저장
       thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
     }
-    ImageFile imageFile = ImageFile.builder()
+
+    return S3ImageDto.builder()
         .originUrl(originalImageUrl)
         .thumbnailUrl(thumbnailImageUrl)
         .build();
-
-    return imageFileRepository.save(imageFile);
-
   }
 
-  public String uploadOriginImage(MultipartFile multipartFile, ObjectMetadata objectMetadata,
-      String imageName)
+  public String uploadOriginImage(MultipartFile multipartFile, String imageName)
       throws IOException {
+    //메타데이터 설정
+    ObjectMetadata objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentType(multipartFile.getContentType());
+    objectMetadata.setContentLength(multipartFile.getInputStream().available());
     amazonS3Client.putObject(bucketName + imageDirectory, imageName, multipartFile.getInputStream(),
         objectMetadata);
     return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
@@ -184,7 +178,6 @@ public class S3ImageService {
 
       //썸네일 이미지 삭제
       amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
-      imageFileRepository.delete(imageFile);
     }
   }
 
