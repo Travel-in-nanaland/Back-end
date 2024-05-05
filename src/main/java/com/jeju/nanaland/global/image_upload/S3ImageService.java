@@ -48,9 +48,9 @@ public class S3ImageService {
   public void verifyExtension(MultipartFile multipartFile) throws UnsupportedFileFormatException {
     String contentType = multipartFile.getContentType();
 
-    // 확장자가 jpeg, png인 파일들만 받아서 처리
     if (ObjectUtils.isEmpty(contentType) ||
-        (!contentType.contains("image/jpeg") && !contentType.contains("image/png"))) {
+        (!contentType.contains("image/jpeg") && !contentType.contains("image/png")
+            && !contentType.contains("image/jpg") && !contentType.contains("image/webp"))) {
       throw new UnsupportedFileFormatException();
     }
   }
