@@ -9,6 +9,6 @@ public interface ExperienceRepositoryCustom {
 
   ExperienceCompositeDto findCompositeDtoById(Long id, Locale locale);
 
-  Page<ExperienceCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String Keyword, Locale locale,
       Pageable pageable);
 }

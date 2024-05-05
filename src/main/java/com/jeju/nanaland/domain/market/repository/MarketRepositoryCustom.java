@@ -13,6 +13,6 @@ public interface MarketRepositoryCustom {
   Page<MarketCompositeDto> findMarketThumbnails(Locale locale, List<String> addressFilterList,
       Pageable pageable);
 
-  Page<MarketCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  Page<MarketCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable);
 }

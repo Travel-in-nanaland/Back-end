@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.nana.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.nana.entity.QNana.nana;
+import static com.jeju.nanaland.domain.nana.entity.QNanaContent.nanaContent;
 import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -73,6 +74,40 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   @Override
+  public Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Locale locale,
+      Pageable pageable) {
+    List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
+            nana.id,
+            imageFile.thumbnailUrl,
+            nana.version,
+            nanaTitle.heading,
+            nanaTitle.subHeading
+        ))
+        .from(nana)
+        .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana))
+        .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
+        .leftJoin(nanaTitle.imageFile, imageFile)
+        .where(nanaTitle.language.locale.eq(locale)
+            .and(nanaTitle.heading.contains(keyword)
+                .or(nanaContent.subTitle.contains(keyword))))
+        .orderBy(nanaTitle.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(nanaTitle.count())
+        .from(nanaTitle)
+        .leftJoin(nanaTitle.nana, nana)
+        .join(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
+        .leftJoin(nanaTitle.imageFile, imageFile)
+        .where(nanaTitle.language.locale.eq(locale)
+            .and(nanaTitle.heading.contains(keyword)
+                .or(nanaContent.subTitle.contains(keyword))));
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
   public NanaThumbnailPost findNanaThumbnailPostDto(Long id, Locale locale) {
     return queryFactory
         .select(new QNanaResponse_NanaThumbnailPost(

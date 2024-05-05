@@ -18,5 +18,8 @@ public interface NanaRepositoryCustom {
   //이거 좀 어렵군요...
 //  NanaResponse.nanaDetailDto findNanaDetailById(Long id, Locale locale);
 
+  Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Locale locale,
+      Pageable pageable);
+
   NanaThumbnailPost findNanaThumbnailPostDto(Long id, Locale locale);
 }
