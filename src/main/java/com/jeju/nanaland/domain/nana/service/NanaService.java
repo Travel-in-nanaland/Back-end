@@ -113,6 +113,7 @@ public class NanaService {
         .originUrl(nanaTitle.getImageFile().getOriginUrl())
         .subHeading(nanaTitle.getSubHeading())
         .heading(nanaTitle.getHeading())
+        .version(nana.getVersion())
         .notice(nanaTitle.getNotice())
         .nanaDetails(nanaDetails)
         .isFavorite(isPostInFavorite)
