@@ -64,7 +64,7 @@ public class S3ImageService {
       boolean autoThumbnail) throws IOException {
     List<S3ImageDto> imageFileList = new ArrayList<>();
     for (MultipartFile multipartFile : multipartFileList) {
-      imageFileList.add(uploadAndSaveImage(multipartFile, autoThumbnail));
+      imageFileList.add(uploadImageToS3(multipartFile, autoThumbnail));
     }
     return imageFileList;
   }
@@ -77,7 +77,7 @@ public class S3ImageService {
   }
 
   @Transactional
-  public S3ImageDto uploadAndSaveImage(MultipartFile multipartFile, boolean autoThumbnail)
+  public S3ImageDto uploadImageToS3(MultipartFile multipartFile, boolean autoThumbnail)
       throws IOException {
 
     //이미지 파일인지 검증
@@ -165,7 +165,7 @@ public class S3ImageService {
 
   // 이미지 여러 개 삭제 필요시 추후 별도 메서드 생성 예정.
   @Transactional
-  public void deleteImage(ImageFile imageFile) {
+  public void deleteImageS3(ImageFile imageFile) {
     // 원본 파일 이름 찾기
     String filename = extractFileName(imageFile.getOriginUrl());
 
@@ -182,14 +182,12 @@ public class S3ImageService {
   }
 
   public String extractFileName(String accessUrl) {
-    String extractedString = "";
     String[] parts = accessUrl.split("images/");
     if (parts.length > 1) {
       // "images/" 다음의 부분 추출
-      extractedString = parts[1];
+      return parts[1];
     } else {
       throw new ServerErrorException("이미지 파일 이름 추출 에러");
     }
-    return extractedString;
   }
 }
