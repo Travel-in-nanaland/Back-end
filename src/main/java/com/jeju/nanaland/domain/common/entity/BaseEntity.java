@@ -2,8 +2,6 @@ package com.jeju.nanaland.domain.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,11 +28,4 @@ public abstract class BaseEntity {
   @LastModifiedDate
   private LocalDateTime modifiedAt;
 
-  @Enumerated(value = EnumType.STRING)
-  @Column(name = "status")
-  private Status status = Status.ACTIVE;
-
-  public void updateStatus(Status status) {
-    this.status = status;
-  }
 }
