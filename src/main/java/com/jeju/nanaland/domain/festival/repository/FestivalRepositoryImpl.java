@@ -8,6 +8,7 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -50,7 +51,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .where(festival.id.eq(id).and(festivalTrans.language.locale.eq(locale)))
+        .where(festival.id.eq(id).and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE))
+        )
         .fetchOne();
   }
 
@@ -86,7 +89,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(festivalTrans.title.contains(keyword)
             .or(festivalTrans.addressTag.contains(keyword))
             .or(festivalTrans.content.contains(keyword))
-            .or(festival.id.in(idListContainAllHashtags)))
+            .or(festival.id.in(idListContainAllHashtags))
+            .and(festival.status.eq(Status.ACTIVE)))
         .orderBy(festivalTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -101,7 +105,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(festivalTrans.title.contains(keyword)
             .or(festivalTrans.addressTag.contains(keyword))
             .or(festivalTrans.content.contains(keyword))
-            .or(festival.id.in(idListContainAllHashtags)));
+            .or(festival.id.in(idListContainAllHashtags))
+            .and(festival.status.eq(Status.ACTIVE)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -114,7 +119,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .on(hashtag.postId.eq(festival.id)
             .and(hashtag.category.content.eq(CategoryContent.FESTIVAL))
             .and(hashtag.language.locale.eq(locale)))
-        .where(hashtag.keyword.content.in(splitKeyword(keyword)))
+        .where(hashtag.keyword.content.in(splitKeyword(keyword))
+            .and(festival.status.eq(Status.ACTIVE)))
         .groupBy(festival.id)
         .having(festival.id.count().eq(splitKeyword(keyword).stream().count()))
         .fetch();
@@ -156,7 +162,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
-            .and(festivalTrans.language.locale.eq(locale)))
+            .and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE)))
         .orderBy(festivalTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -168,7 +175,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
-            .and(festivalTrans.language.locale.eq(locale)));
+            .and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -199,7 +207,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
-            .and(festivalTrans.language.locale.eq(locale)))
+            .and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE))
+        )
         .orderBy(festivalTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -211,7 +221,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
-            .and(festivalTrans.language.locale.eq(locale)));
+            .and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE))
+        );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -252,6 +264,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
 
                 .and(festivalTrans.language.locale.eq(locale)
                     .and(addressTagCondition(addressFilterList)))
+                .and(festival.status.eq(Status.ACTIVE))
         )
         .orderBy(festivalTrans.createdAt.desc())
         .offset(pageable.getOffset())
@@ -274,6 +287,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
 
                 .and(festivalTrans.language.locale.eq(locale)
                     .and(addressTagCondition(addressFilterList)))
+
+                .and(festival.status.eq(Status.ACTIVE))
         );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
