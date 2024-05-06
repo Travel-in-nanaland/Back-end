@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
@@ -13,9 +14,9 @@ import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
+import com.jeju.nanaland.global.auth.AuthMember;
+import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.SuccessCode;
-import com.jeju.nanaland.global.jwt.AuthMember;
-import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
