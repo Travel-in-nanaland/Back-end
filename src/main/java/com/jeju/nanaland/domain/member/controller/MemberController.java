@@ -7,10 +7,8 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.MemberConsentDTO;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
-import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
@@ -46,7 +44,6 @@ public class MemberController {
 
   private final MemberLoginService memberLoginService;
   private final MemberTypeService memberTypeService;
-  private final MemberConsentService memberConsentService;
 
 
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")
@@ -87,20 +84,6 @@ public class MemberController {
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
     JwtDto jwtDto = memberLoginService.reissue(refreshToken);
     return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
-  }
-
-  @Operation(summary = "이용약관 동의 여부", description = "회원의 이용약관 동의 여부를 업데이트합니다.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
-      @ApiResponse(responseCode = "401", description = "RefreshToken이 유효하지 않은 경우", content = @Content)
-  })
-  @PostMapping("/consent")
-  public BaseResponse<Null> updateConsent(
-      @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid MemberConsentDTO memberConsentDTO) {
-    memberConsentService.updateConsent(memberInfoDto, memberConsentDTO);
-    return BaseResponse.success(SuccessCode.CONSENT_UPDATE_SUCCESS);
   }
 
   @Operation(
