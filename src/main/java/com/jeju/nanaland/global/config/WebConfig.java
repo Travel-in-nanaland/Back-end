@@ -1,6 +1,6 @@
 package com.jeju.nanaland.global.config;
 
-import com.jeju.nanaland.global.jwt.AuthMemberArgumentResolver;
+import com.jeju.nanaland.global.auth.AuthMemberArgumentResolver;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
