@@ -8,6 +8,7 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -161,11 +162,11 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
-            .and(festivalTrans.language.locale.eq(locale)))
-        .orderBy(festival.endDate.desc()) // 최근에 끝난 순
             .and(festivalTrans.language.locale.eq(locale))
-            .and(festival.status.eq(Status.ACTIVE)))
-        .orderBy(festivalTrans.createdAt.desc())
+            .and(festival.status.eq(Status.ACTIVE))
+            .and(festivalTrans.language.locale.eq(locale))
+        )
+        .orderBy(festival.endDate.desc()) // 최근에 끝난 순
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -208,12 +209,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.imageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
-            .and(festivalTrans.language.locale.eq(locale)))
-        .orderBy(festival.endDate.asc()) // 종료일 오름차 순 (곧 종료되는)
             .and(festivalTrans.language.locale.eq(locale))
-            .and(festival.status.eq(Status.ACTIVE))
-        )
-        .orderBy(festivalTrans.createdAt.desc())
+            .and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE)))
+        .orderBy(festival.endDate.asc())// 종료일 오름차 순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
