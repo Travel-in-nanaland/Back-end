@@ -28,10 +28,12 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("status = 'ACTIVE'")
 public class Member extends BaseEntity {
 
   @Enumerated(value = EnumType.STRING)
