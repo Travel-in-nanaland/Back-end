@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import javax.imageio.ImageIO;
@@ -189,5 +190,12 @@ public class S3ImageService {
     } else {
       throw new ServerErrorException("이미지 파일 이름 추출 에러");
     }
+  }
+
+  public boolean isDefaultProfileImage(ImageFile profileImageFile) {
+    List<String> defaultProfile = Arrays.asList("LightPurple.png", "LightGray.png", "Gray.png",
+        "DeepBlue.png");
+    String fileName = extractFileName(profileImageFile.getOriginUrl());
+    return defaultProfile.contains(fileName);
   }
 }

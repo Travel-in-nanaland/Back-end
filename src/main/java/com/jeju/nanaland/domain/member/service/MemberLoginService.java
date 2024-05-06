@@ -141,8 +141,9 @@ public class MemberLoginService {
     if (multipartFile != null) {
       try {
         S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true);
-        // TODO: 프로필 사진이 기본 사진이면 삭제되지 않도록
-        s3ImageService.deleteImageS3(profileImageFile);
+        if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
+          s3ImageService.deleteImageS3(profileImageFile);
+        }
         profileImageFile.updateImageFile(s3ImageDto);
       } catch (IOException e) {
         e.printStackTrace();
