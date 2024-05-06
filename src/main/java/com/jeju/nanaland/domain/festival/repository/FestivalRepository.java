@@ -9,4 +9,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long>,
     FestivalRepositoryCustom {
 
   List<Festival> findAllByOnGoingAndEndDateBefore(boolean onGoing, LocalDate localDate);
+
+  List<Festival> findAllByEndDateBefore(LocalDate localDate);
 }

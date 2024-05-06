@@ -4,6 +4,7 @@ import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
 
 import com.jeju.nanaland.domain.common.entity.DayOfWeek;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -141,6 +142,17 @@ public class FestivalService {
 
     if (!finishedFestival.isEmpty()) {
       finishedFestival.forEach(festival -> festival.updateOnGoing(false));
+    }
+  }
+
+  @Transactional
+  @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
+  public void updateActiveToInActive() {
+    List<Festival> finishedFestival = festivalRepository.findAllByEndDateBefore(
+        LocalDate.now().minusYears(2));
+
+    if (!finishedFestival.isEmpty()) {
+      finishedFestival.forEach(festival -> festival.updateStatus(Status.INACTIVE));
     }
   }
 
