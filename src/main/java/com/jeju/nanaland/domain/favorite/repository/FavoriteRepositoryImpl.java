@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.favorite.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
-import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.favorite.entity.QFavorite.favorite;
@@ -9,9 +8,12 @@ import static com.jeju.nanaland.domain.festival.entity.QFestival.festival;
 import static com.jeju.nanaland.domain.festival.entity.QFestivalTrans.festivalTrans;
 import static com.jeju.nanaland.domain.market.entity.QMarket.market;
 import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
+import static com.jeju.nanaland.domain.nana.entity.QNana.nana;
+import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.dto.QFavoriteResponse_ThumbnailDto;
@@ -31,41 +33,42 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public Page<ThumbnailDto> findNatureThumbnails(Long memberId, Locale locale, Pageable pageable) {
+  public Page<ThumbnailDto> findNatureThumbnails(Member member, Locale locale, Pageable pageable) {
     List<ThumbnailDto> resultDto = queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
-            favorite.postId,
+            nature.id,
             natureTrans.title,
             imageFile.thumbnailUrl
         ))
-        .from(favorite)
-        .join(nature).on(favorite.postId.eq(nature.id))
-        .leftJoin(nature.natureTrans, natureTrans)
-        .leftJoin(nature.imageFile, imageFile)
-        .leftJoin(natureTrans.language, language)
-        .where(language.locale.eq(locale))
+        .from(nature)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(nature.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.NATURE)))
+        .innerJoin(nature.natureTrans, natureTrans)
+        .on(natureTrans.language.locale.eq(locale))
+        .innerJoin(nature.imageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .select(favorite.count())
-        .from(favorite)
-        .join(nature).on(favorite.postId.eq(nature.id))
-        .leftJoin(nature.natureTrans, natureTrans)
-        .leftJoin(nature.imageFile, imageFile)
-        .leftJoin(natureTrans.language, language)
-        .where(language.locale.eq(locale))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .select(nature.count())
+        .from(nature)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(nature.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.NATURE)))
+        .innerJoin(nature.natureTrans, natureTrans)
+        .on(natureTrans.language.locale.eq(locale))
+        .innerJoin(nature.imageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public ThumbnailDto findNatureThumbnailByPostId(Long postId, Locale locale) {
+  public ThumbnailDto findNatureThumbnailByPostId(Member member, Long postId, Locale locale) {
     return queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
             nature.id,
@@ -73,50 +76,55 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             imageFile.thumbnailUrl
         ))
         .from(nature)
-        .leftJoin(nature.natureTrans, natureTrans)
-        .leftJoin(nature.imageFile, imageFile)
-        .leftJoin(natureTrans.language, language)
-        .where(nature.id.eq(postId).and(language.locale.eq(locale)))
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(nature.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.NATURE)))
+        .innerJoin(nature.natureTrans, natureTrans)
+        .on(natureTrans.language.locale.eq(locale))
+        .innerJoin(nature.imageFile, imageFile)
+        .where(favorite.postId.eq(postId))
         .fetchOne();
   }
 
   @Override
-  public Page<ThumbnailDto> findExperienceThumbnails(Long memberId, Locale locale,
+  public Page<ThumbnailDto> findExperienceThumbnails(Member member, Locale locale,
       Pageable pageable) {
     List<ThumbnailDto> resultDto = queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
-            favorite.postId,
+            experience.id,
             experienceTrans.title,
             imageFile.thumbnailUrl
         ))
-        .from(favorite)
-        .join(experience).on(favorite.postId.eq(experience.id))
-        .leftJoin(experience.experienceTrans, experienceTrans)
-        .leftJoin(experience.imageFile, imageFile)
-        .leftJoin(experienceTrans.language, language)
-        .where(language.locale.eq(locale))
+        .from(experience)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(experience.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .on(experienceTrans.language.locale.eq(locale))
+        .innerJoin(experience.imageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .select(favorite.count())
-        .from(favorite)
-        .join(experience).on(favorite.postId.eq(experience.id))
-        .leftJoin(experience.experienceTrans, experienceTrans)
-        .leftJoin(experience.imageFile, imageFile)
-        .leftJoin(experienceTrans.language, language)
-        .where(language.locale.eq(locale))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .select(experience.count())
+        .from(experience)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(experience.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .on(experienceTrans.language.locale.eq(locale))
+        .innerJoin(experience.imageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public ThumbnailDto findExperienceThumbnailByPostId(Long postId, Locale locale) {
+  public ThumbnailDto findExperienceThumbnailByPostId(Member member, Long postId, Locale locale) {
     return queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
             experience.id,
@@ -124,50 +132,55 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             imageFile.thumbnailUrl
         ))
         .from(experience)
-        .leftJoin(experience.experienceTrans, experienceTrans)
-        .leftJoin(experience.imageFile, imageFile)
-        .leftJoin(experienceTrans.language, language)
-        .where(experience.id.eq(postId).and(language.locale.eq(locale)))
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(experience.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .on(experienceTrans.language.locale.eq(locale))
+        .innerJoin(experience.imageFile, imageFile)
+        .where(favorite.postId.eq(postId))
         .fetchOne();
   }
 
   @Override
-  public Page<ThumbnailDto> findFestivalThumbnails(Long memberId, Locale locale,
+  public Page<ThumbnailDto> findFestivalThumbnails(Member member, Locale locale,
       Pageable pageable) {
     List<ThumbnailDto> resultDto = queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
-            favorite.postId,
+            festival.id,
             festivalTrans.title,
             imageFile.thumbnailUrl
         ))
-        .from(favorite)
-        .join(festival).on(favorite.postId.eq(festival.id))
-        .leftJoin(festival.festivalTrans, festivalTrans)
-        .leftJoin(festival.imageFile, imageFile)
-        .leftJoin(festivalTrans.language, language)
-        .where(language.locale.eq(locale))
+        .from(festival)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(festival.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .on(festivalTrans.language.locale.eq(locale))
+        .innerJoin(festival.imageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .select(favorite.count())
-        .from(favorite)
-        .join(festival).on(favorite.postId.eq(festival.id))
-        .leftJoin(festival.festivalTrans, festivalTrans)
-        .leftJoin(festival.imageFile, imageFile)
-        .leftJoin(festivalTrans.language, language)
-        .where(language.locale.eq(locale))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .select(festival.count())
+        .from(festival)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(festival.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .on(festivalTrans.language.locale.eq(locale))
+        .innerJoin(festival.imageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public ThumbnailDto findFestivalThumbnailByPostId(Long postId, Locale locale) {
+  public ThumbnailDto findFestivalThumbnailByPostId(Member member, Long postId, Locale locale) {
     return queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
             festival.id,
@@ -175,50 +188,55 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             imageFile.thumbnailUrl
         ))
         .from(festival)
-        .leftJoin(festival.festivalTrans, festivalTrans)
-        .leftJoin(festival.imageFile, imageFile)
-        .leftJoin(festivalTrans.language, language)
-        .where(festival.id.eq(postId).and(language.locale.eq(locale)))
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(festival.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .on(festivalTrans.language.locale.eq(locale))
+        .innerJoin(festival.imageFile, imageFile)
+        .where(favorite.postId.eq(postId))
         .fetchOne();
   }
 
   @Override
-  public Page<ThumbnailDto> findMarketThumbnails(Long memberId, Locale locale,
+  public Page<ThumbnailDto> findMarketThumbnails(Member member, Locale locale,
       Pageable pageable) {
     List<ThumbnailDto> resultDto = queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
-            favorite.postId,
+            market.id,
             marketTrans.title,
             imageFile.thumbnailUrl
         ))
-        .from(favorite)
-        .join(market).on(favorite.postId.eq(market.id))
-        .leftJoin(market.marketTrans, marketTrans)
-        .leftJoin(market.imageFile, imageFile)
-        .leftJoin(marketTrans.language, language)
-        .where(language.locale.eq(locale))
+        .from(market)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(market.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.MARKET)))
+        .innerJoin(market.marketTrans, marketTrans)
+        .on(marketTrans.language.locale.eq(locale))
+        .innerJoin(market.imageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .select(favorite.count())
-        .from(favorite)
-        .join(market).on(favorite.postId.eq(marketTrans.id))
-        .leftJoin(market.marketTrans, marketTrans)
-        .leftJoin(market.imageFile, imageFile)
-        .leftJoin(marketTrans.language, language)
-        .where(language.locale.eq(locale))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .select(market.count())
+        .from(market)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(market.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.MARKET)))
+        .innerJoin(market.marketTrans, marketTrans)
+        .on(marketTrans.language.locale.eq(locale))
+        .innerJoin(market.imageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public ThumbnailDto findMarketThumbnailByPostId(Long postId, Locale locale) {
+  public ThumbnailDto findMarketThumbnailByPostId(Member member, Long postId, Locale locale) {
     return queryFactory
         .select(new QFavoriteResponse_ThumbnailDto(
             market.id,
@@ -226,10 +244,72 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             imageFile.thumbnailUrl
         ))
         .from(market)
-        .leftJoin(market.marketTrans, marketTrans)
-        .leftJoin(market.imageFile, imageFile)
-        .leftJoin(marketTrans.language, language)
-        .where(market.id.eq(postId).and(language.locale.eq(locale)))
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(market.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.MARKET)))
+        .innerJoin(market.marketTrans, marketTrans)
+        .on(marketTrans.language.locale.eq(locale))
+        .innerJoin(market.imageFile, imageFile)
+        .where(favorite.postId.eq(postId))
+        .fetchOne();
+  }
+
+  @Override
+  public Page<ThumbnailDto> findNanaThumbnails(Member member, Locale locale,
+      Pageable pageable) {
+    List<ThumbnailDto> resultDto = queryFactory
+        .select(new QFavoriteResponse_ThumbnailDto(
+            nana.id,
+            nanaTitle.heading,
+            imageFile.thumbnailUrl
+        ))
+        .from(nana)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(nana.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.NANA)))
+        .innerJoin(nanaTitle)
+        .on(nanaTitle.nana.eq(nana)
+            .and(nanaTitle.language.locale.eq(locale)))
+        .innerJoin(nanaTitle.imageFile, imageFile)
+        .orderBy(favorite.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(nana.count())
+        .from(nana)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(nana.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.NANA)))
+        .innerJoin(nanaTitle)
+        .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
+        .innerJoin(nanaTitle.imageFile, imageFile);
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public ThumbnailDto findNanaThumbnailByPostId(Member member, Long postId, Locale locale) {
+    return queryFactory
+        .select(new QFavoriteResponse_ThumbnailDto(
+            nana.id,
+            nanaTitle.heading,
+            imageFile.thumbnailUrl
+        ))
+        .from(nana)
+        .innerJoin(favorite)
+        .on(favorite.postId.eq(nana.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.content.eq(CategoryContent.NANA)))
+        .innerJoin(nanaTitle)
+        .on(nana.eq(nanaTitle.nana)
+            .and(nanaTitle.language.locale.eq(locale)))
+        .innerJoin(nanaTitle.imageFile, imageFile)
+        .where(favorite.postId.eq(postId))
         .fetchOne();
   }
 
@@ -247,9 +327,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(favorite.count())
         .from(favorite)
         .where(favorite.member.eq(member))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .orderBy(favorite.createdAt.desc());
 
     return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
   }

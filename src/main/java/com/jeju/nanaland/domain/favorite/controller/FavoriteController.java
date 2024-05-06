@@ -119,11 +119,22 @@ public class FavoriteController {
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
-  // TODO: NANA 찜리스트
-//  @GetMapping("/nana/list")
-//  public BaseResponse<FavoriteResponse.AllCategoryDto> getAllFavoriteList() {
-//    return null;
-//  }
+  @Operation(summary = "나나스픽 찜리스트 조회", description = "나나스픽 찜리스트 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
+  @GetMapping("/nana/list")
+  public BaseResponse<FavoriteResponse.NanaDto> getNanaFavoriteList(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
+
+    FavoriteResponse.NanaDto resultDto =
+        favoriteService.getNanaFavoriteList(memberInfoDto, page, size);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
+  }
 
   @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")
   @ApiResponses(value = {
@@ -132,7 +143,7 @@ public class FavoriteController {
       @ApiResponse(responseCode = "404", description = "카테고리에 해당하는 게시물 id가 존재하지 않는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping("/like/{id}")
+  @PostMapping("/like")
   public BaseResponse<FavoriteResponse.StatusDto> toggleLikeStatus(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid LikeToggleDto likeToggleDto) {

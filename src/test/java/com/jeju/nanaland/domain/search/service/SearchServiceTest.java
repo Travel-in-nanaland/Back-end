@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ResultDto;
@@ -35,6 +36,7 @@ class SearchServiceTest {
   Member member;
   ImageFile imageFile1, imageFile2;
   Category category;
+  MemberInfoDto memberInfoDto;
 
   @BeforeEach
   void init() {
@@ -64,6 +66,11 @@ class SearchServiceTest {
         .profileImageFile(imageFile1)
         .build();
     em.persist(member);
+
+    memberInfoDto = MemberInfoDto.builder()
+        .language(language)
+        .member(member)
+        .build();
 
     category = Category.builder()
         .content(CategoryContent.MARKET)
@@ -108,9 +115,9 @@ class SearchServiceTest {
      * result2 : keyword = title1
      */
     ResultDto result1 =
-        searchService.getMarketSearchResultDto(member, "title", Locale.KOREAN, 0, 4);
+        searchService.searchMarketResultDto(memberInfoDto, "title", 0, 4);
     ResultDto result2 =
-        searchService.getMarketSearchResultDto(member, "title1", Locale.KOREAN, 0, 4);
+        searchService.searchMarketResultDto(memberInfoDto, "title1", 0, 4);
 
     /**
      * THEN
