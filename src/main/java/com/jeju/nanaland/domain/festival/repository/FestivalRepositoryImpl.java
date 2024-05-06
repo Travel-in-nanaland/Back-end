@@ -163,8 +163,10 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
             .and(festivalTrans.language.locale.eq(locale))
-            .and(festival.status.eq(Status.ACTIVE)))
-        .orderBy(festivalTrans.createdAt.desc())
+            .and(festival.status.eq(Status.ACTIVE))
+            .and(festivalTrans.language.locale.eq(locale))
+        )
+        .orderBy(festival.endDate.desc()) // 최근에 끝난 순
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -208,9 +210,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
             .and(festivalTrans.language.locale.eq(locale))
-            .and(festival.status.eq(Status.ACTIVE))
-        )
-        .orderBy(festivalTrans.createdAt.desc())
+            .and(festivalTrans.language.locale.eq(locale))
+            .and(festival.status.eq(Status.ACTIVE)))
+        .orderBy(festival.endDate.asc())// 종료일 오름차 순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -266,7 +268,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                     .and(addressTagCondition(addressFilterList)))
                 .and(festival.status.eq(Status.ACTIVE))
         )
-        .orderBy(festivalTrans.createdAt.desc())
+        .orderBy(festival.endDate.asc()) // 종료일 오름차 순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

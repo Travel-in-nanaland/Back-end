@@ -32,7 +32,8 @@ public enum ErrorCode {
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
 
-  START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다.");
+  START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다."),
+  DAY_OF_WEEK_MAPPING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "나라별 요일 추출 에러입니다.");
 
 
   private final HttpStatus httpStatus;
