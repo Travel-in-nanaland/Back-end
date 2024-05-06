@@ -101,7 +101,6 @@ public class Member extends BaseEntity {
         : new HashSet<>(List.of(Role.ROLE_MEMBER));
     this.type = type;
     this.favorites = new ArrayList<>();
-    this.status = Status.ACTIVE;
   }
 
   public void updateMemberType(MemberType type) {
