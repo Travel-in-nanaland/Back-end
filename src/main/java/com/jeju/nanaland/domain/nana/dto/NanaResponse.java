@@ -69,7 +69,7 @@ public class NanaResponse {
 
     @Schema(description = "ex) nana's Pick vol.1")
     private String version;
-    
+
     @NotBlank
     @Schema(description = "게시물 url")
     private String originUrl;
@@ -120,6 +120,10 @@ public class NanaResponse {
   @Builder
   @Schema(description = "나나's pick 각 게시글 부가 정보")
   public static class NanaAdditionalInfo {
+
+    @Schema(description = "이모지 구분을 위한 필드 /"
+        + " ADDRESS, PARKING, SPECIAL, AMENITY, WEBSITE, RESERVATION_LINK, AGE, TIME, FEE, DATE, DESCRIPTION")
+    public String infoEmoji;
 
     @Schema(description = "부가 정보 key 값 ex: 주차정보, 스페셜, 예약링크,,")
     public String infoKey;
