@@ -186,7 +186,7 @@ public class FestivalService {
   public String formatLocalDateToStringWithDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
     String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
-    log.info("1st =>{}", startDate.format(DateTimeFormatter.ofPattern(nationalDateFormat)));
+
     String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern(nationalDateFormat));
     String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern(nationalDateFormat));
 
