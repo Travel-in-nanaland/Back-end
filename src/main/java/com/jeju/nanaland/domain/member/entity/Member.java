@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.member.entity;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import jakarta.persistence.CascadeType;
@@ -28,11 +29,17 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("status = 'ACTIVE'")
 public class Member extends BaseEntity {
+
+  @Enumerated(value = EnumType.STRING)
+  @Column(name = "status")
+  private Status status = Status.ACTIVE;
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
@@ -93,7 +100,8 @@ public class Member extends BaseEntity {
     this.birthDate = birthDate;
     this.provider = provider;
     this.providerId = providerId;
-    this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
+    this.roleSet = (provider == Provider.GUEST) ? new HashSet<>(List.of(Role.ROLE_GUEST))
+        : new HashSet<>(List.of(Role.ROLE_MEMBER));
     this.type = type;
     this.favorites = new ArrayList<>();
   }
@@ -113,5 +121,9 @@ public class Member extends BaseEntity {
     this.description =
         profileUpdateDto.getDescription() != null ? profileUpdateDto.getDescription()
             : this.description;
+  }
+  
+  public void updateStatus(Status status) {
+    this.status = status;
   }
 }

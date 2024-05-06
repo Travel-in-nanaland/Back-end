@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.member.controller;
 
-import static com.jeju.nanaland.global.exception.SuccessCode.ACCESS_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
@@ -13,8 +13,9 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
-import com.jeju.nanaland.global.jwt.AuthMember;
-import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
+import com.jeju.nanaland.global.auth.AuthMember;
+import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
+import com.jeju.nanaland.global.exception.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -61,6 +62,19 @@ public class MemberController {
     return BaseResponse.success(LOGIN_SUCCESS, jwtDto);
   }
 
+  @Operation(summary = "로그아웃")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @PostMapping("/logout")
+  public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
+      @Parameter(name = "accessToken", hidden = true)
+      @RequestHeader("Authorization") String accessToken) {
+    memberLoginService.logout(memberInfoDto, accessToken);
+    return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
+  }
+
   @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
       + "header에 AccessToken이 아닌 RefreshToken을 담아 요청해주세요.")
   @ApiResponses(value = {
@@ -69,11 +83,11 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "RefreshToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/reissue")
-  public BaseResponse<String> reissue(
+  public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-    String newAccessToken = memberLoginService.reissue(refreshToken);
-    return BaseResponse.success(ACCESS_TOKEN_SUCCESS, newAccessToken);
+    JwtDto jwtDto = memberLoginService.reissue(refreshToken);
+    return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }
 
   @Operation(

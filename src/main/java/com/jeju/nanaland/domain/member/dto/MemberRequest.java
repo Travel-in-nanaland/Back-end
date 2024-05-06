@@ -39,7 +39,7 @@ public class MemberRequest {
     private LocalDate birthDate;
 
     @Schema(description = "소셜 로그인 Provider", example = "KAKAO",
-        allowableValues = {"KAKAO", "GOOGLE", "APPLE"})
+        allowableValues = {"KAKAO", "GOOGLE", "APPLE", "GUEST"})
     @NotNull
     @EnumValid(
         enumClass = Provider.class,

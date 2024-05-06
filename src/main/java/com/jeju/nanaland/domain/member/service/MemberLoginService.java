@@ -11,7 +11,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -20,6 +20,9 @@ import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import com.jeju.nanaland.global.jwt.JwtUtil;
 import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
 import java.io.IOException;
+import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.UnauthorizedException;
+import com.jeju.nanaland.global.util.JwtUtil;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -113,24 +116,42 @@ public class MemberLoginService {
     }
   }
 
-  public String reissue(String bearerRefreshToken) {
+  public JwtDto reissue(String bearerRefreshToken) {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
     if (!jwtUtil.verifyRefreshToken(refreshToken)) {
-      throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
     }
 
     String memberId = jwtUtil.getMemberIdFromRefresh(refreshToken);
     String savedRefreshToken = jwtUtil.findRefreshTokenById(memberId);
 
     if (!refreshToken.equals(savedRefreshToken)) {
-      throw new BadRequestException(ErrorCode.INVALID_TOKEN.getMessage());
+      jwtUtil.deleteRefreshToken(memberId);
+      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
     }
 
     Member member = memberRepository.findById(Long.valueOf(memberId))
-        .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
-    return jwtUtil.getAccessToken(memberId, member.getRoleSet());
+    String newAccessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
+        member.getRoleSet());
+    String newRefreshToken = jwtUtil.getRefreshToken(String.valueOf(member.getId()),
+        member.getRoleSet());
+
+    return JwtDto.builder()
+        .accessToken(newAccessToken)
+        .refreshToken(newRefreshToken)
+        .build();
+  }
+
+  public void logout(MemberInfoDto memberInfoDto, String bearerAccessToken) {
+    String accessToken = jwtUtil.resolveToken(bearerAccessToken);
+    jwtUtil.setBlackList(accessToken);
+    String memberId = String.valueOf(memberInfoDto.getMember().getId());
+    if (jwtUtil.findRefreshTokenById(memberId) != null) {
+      jwtUtil.deleteRefreshToken(memberId);
+    }
   }
 
   @Transactional

@@ -133,6 +133,7 @@ public class NanaService {
     List<NanaResponse.NanaAdditionalInfo> result = new ArrayList<>();
     for (NanaAdditionalInfo info : nanaAdditionalInfos) {
       result.add(NanaResponse.NanaAdditionalInfo.builder()
+          .infoEmoji(info.getInfoType().toString())
           .infoKey(info.getInfoType().getDescription())
           .infoValue(info.getDescription())
           .build());

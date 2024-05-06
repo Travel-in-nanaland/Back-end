@@ -7,8 +7,8 @@ import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailD
 import com.jeju.nanaland.domain.festival.service.FestivalService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
+import com.jeju.nanaland.global.auth.AuthMember;
 import com.jeju.nanaland.global.exception.SuccessCode;
-import com.jeju.nanaland.global.jwt.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
