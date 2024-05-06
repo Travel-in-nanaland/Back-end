@@ -223,9 +223,12 @@ class EntityBuilderTest {
     // test 2 -> JpaMethod 테스트
     Optional<Member> member1 = memberRepository.findMemberById(memberStatusActive.getId());
     Optional<Member> member2 = memberRepository.findMemberById(memberStatusInActive.getId());
+    Optional<Member> member3 = memberRepository.findByEmailAndProviderAndProviderId("email2",
+        Provider.APPLE, 1234L);
 
     Assertions.assertThat(member1).isNotNull();
     Assertions.assertThat(member2.isPresent()).isFalse();
+    Assertions.assertThat(member3.isPresent()).isFalse();
 
     // test 3 -> queryDsl 테스트
     MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
