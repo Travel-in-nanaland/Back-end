@@ -10,7 +10,7 @@ public interface NatureRepositoryCustom {
 
   NatureCompositeDto findCompositeDtoById(Long id, Locale locale);
 
-  Page<NatureCompositeDto> searchCompositeDtoByTitle(String title, Locale locale,
+  Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
       Pageable pageable);
 
   Page<NatureCompositeDto> findNatureThumbnails(Locale locale, List<String> addressFilterList,

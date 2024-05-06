@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.service.MarketService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
-import com.jeju.nanaland.global.jwt.AuthMember;
+import com.jeju.nanaland.global.auth.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

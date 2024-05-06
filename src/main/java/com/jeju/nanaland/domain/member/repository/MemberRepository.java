@@ -12,7 +12,7 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
   Optional<Member> findByEmailAndProviderAndProviderId(String email, Provider provider,
       Long providerId);
 
-  @Query("select m from Member m join fetch m.roleSet where m.id = :memberId")
+  @Query("select m from Member m join fetch m.roleSet where m.id = :memberId and m.status = 'ACTIVE'")
   Optional<Member> findMemberById(@Param("memberId") Long memberId);
 }
 
