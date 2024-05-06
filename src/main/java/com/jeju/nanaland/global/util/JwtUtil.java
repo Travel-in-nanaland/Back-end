@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.jwt;
+package com.jeju.nanaland.global.util;
 
 import com.jeju.nanaland.domain.member.entity.Role;
 import io.jsonwebtoken.Claims;
@@ -8,13 +8,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,11 +27,14 @@ public class JwtUtil {
 
   private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
   private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-  private static final String REDIS_KEY = "REFRESH:";
+  private static final String REFRESH_KEY = "REFRESH:";
   private static final String AUTHORITIES_KEY = "auth";
+  private static final String BLACK_LIST_VAL = "BLACKLIST";
+  private static final long BLACK_LIST_EXPIRE = 10 * 60L;
+  private static final long MAX_REFRESH_TOKENS = 10;
   private final SecretKey secretKey;
   private final SecretKey secretKey2;
-  private final RedisTemplate<String, String> redisTemplate;
+  private final RedisUtil redisUtil;
   @Value("${jwt.access.expiration}")
   private Long accessExpirationPeriod;
   @Value("${jwt.refresh.expiration}")
@@ -80,12 +81,7 @@ public class JwtUtil {
         .signWith(secretKey2, SignatureAlgorithm.HS512)
         .compact();
 
-    redisTemplate.opsForValue().set(
-        REDIS_KEY + memberId,
-        refreshToken,
-        refreshExpirationPeriod,
-        TimeUnit.MILLISECONDS
-    );
+    redisUtil.trimAndPushLeft(REFRESH_KEY + memberId, MAX_REFRESH_TOKENS, refreshToken);
     return refreshToken;
   }
 
@@ -146,7 +142,7 @@ public class JwtUtil {
   }
 
   public String findRefreshTokenById(String memberId) {
-    return redisTemplate.opsForValue().get(REDIS_KEY + memberId);
+    return redisUtil.getRecentDataFromList(REFRESH_KEY + memberId);
   }
 
   public String getMemberIdFromRefresh(String refreshToken) {
@@ -156,5 +152,13 @@ public class JwtUtil {
         .parseClaimsJws(refreshToken)
         .getBody()
         .getSubject();
+  }
+
+  public void deleteRefreshToken(String memberId) {
+    redisUtil.deleteData(REFRESH_KEY + memberId);
+  }
+
+  public void setBlackList(String accessToken) {
+    redisUtil.setExpiringValue(accessToken, BLACK_LIST_VAL, BLACK_LIST_EXPIRE);
   }
 }

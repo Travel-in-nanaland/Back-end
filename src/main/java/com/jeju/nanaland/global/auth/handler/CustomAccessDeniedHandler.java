@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.jwt.handler;
+package com.jeju.nanaland.global.auth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jeju.nanaland.global.BaseResponse;
@@ -9,23 +9,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 /**
- * 인증 실패 시, 예외 핸들러
+ * 인가 실패 시, 예외 핸들러
  */
 @Component
 @RequiredArgsConstructor
-public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
   private final ObjectMapper objectMapper;
 
   @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException authException) throws IOException, ServletException {
-    BaseResponse<Void> baseResponse = BaseResponse.error(ErrorCode.INVALID_TOKEN);
+  public void handle(HttpServletRequest request, HttpServletResponse response,
+      AccessDeniedException accessDeniedException) throws IOException, ServletException {
+
+    BaseResponse<Void> baseResponse = BaseResponse.error(ErrorCode.ACCESS_DENIED);
 
     response.setStatus(baseResponse.getStatus());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");

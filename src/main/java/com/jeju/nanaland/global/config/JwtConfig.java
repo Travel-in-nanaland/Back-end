@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.jwt;
+package com.jeju.nanaland.global.config;
 
 import io.jsonwebtoken.security.Keys;
 import java.util.Base64;

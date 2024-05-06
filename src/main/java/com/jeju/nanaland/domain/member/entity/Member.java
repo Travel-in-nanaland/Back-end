@@ -92,7 +92,8 @@ public class Member extends BaseEntity {
     this.birthDate = birthDate;
     this.provider = provider;
     this.providerId = providerId;
-    this.roleSet = new HashSet<>(List.of(Role.ROLE_MEMBER));
+    this.roleSet = (provider == Provider.GUEST) ? new HashSet<>(List.of(Role.ROLE_GUEST))
+        : new HashSet<>(List.of(Role.ROLE_MEMBER));
     this.type = type;
     this.favorites = new ArrayList<>();
   }
