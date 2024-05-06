@@ -165,7 +165,7 @@ public class FestivalService {
       );
     }
     return FestivalThumbnailDto.builder()
-        .totalElements((long) thumbnails.size())
+        .totalElements(festivalCompositeDtoList.getTotalElements())
         .data(thumbnails)
         .build();
   }
