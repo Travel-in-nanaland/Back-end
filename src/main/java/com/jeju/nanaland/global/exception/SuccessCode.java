@@ -23,6 +23,7 @@ public enum SuccessCode {
   SEARCH_VOLUME_SUCCESS(OK, "검색량 UP 게시물 조회 성공"),
 
   // login
+  JOIN_SUCCESS(OK, "회원 가입 성공"),
   LOGIN_SUCCESS(OK, "로그인에 성공했습니다."),
   REISSUE_TOKEN_SUCCESS(OK, "AccessToken, RefreshToken이 재발급되었습니다."),
   LOGOUT_SUCCESS(OK, "로그아웃 성공"),

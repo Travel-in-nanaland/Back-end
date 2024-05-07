@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
@@ -28,7 +29,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,12 +58,13 @@ public class MemberController {
       @ApiResponse(responseCode = "409", description = "이미 가입된 계정이 있는 경우, 닉네임이 중복되는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping("/join")
-  public ResponseEntity join(
+  @PostMapping(value = "/join",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public BaseResponse<JwtDto> join(
       @RequestPart(value = "reqDto") @Valid JoinDto joinDto,
       @RequestPart(required = false) MultipartFile multipartFile) {
     JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
-    return ResponseEntity.ok(jwtDto);
+    return BaseResponse.success(JOIN_SUCCESS, jwtDto);
   }
 
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")
