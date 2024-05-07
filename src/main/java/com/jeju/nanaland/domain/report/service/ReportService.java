@@ -98,7 +98,7 @@ public class ReportService {
     String imageUrl = null;
     if (multipartFile != null) {
       try {
-        ImageFile imageFile = s3ImageService.uploadAndSaveImage(multipartFile, false);
+        ImageFile imageFile = s3ImageService.saveInfoFixReportImage(multipartFile);
         imageUrl = imageFile.getOriginUrl();
       } catch (IOException e) {
         throw new InternalException("이미지 업로드 실패");

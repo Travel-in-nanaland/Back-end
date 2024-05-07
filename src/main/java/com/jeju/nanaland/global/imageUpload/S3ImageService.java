@@ -44,6 +44,9 @@ public class S3ImageService {
   @Value("/thumbnail_images")
   private String thumbnailDirectory;
 
+  @Value("/info_fix_report_image")
+  private String infoFixReportDirectory;
+
   @Value("thumbnail_")
   private String thumbnailPrefix;
 
@@ -63,17 +66,23 @@ public class S3ImageService {
    */
   @Transactional
   public List<ImageFile> uploadAndSaveImages(List<MultipartFile> multipartFileList,
+      String directory,
       boolean autoThumbnail)
       throws IOException {
     List<ImageFile> imageFileList = new ArrayList<>();
     for (MultipartFile multipartFile : multipartFileList) {
-      imageFileList.add(uploadAndSaveImage(multipartFile, autoThumbnail));
+      imageFileList.add(uploadAndSaveImage(multipartFile, autoThumbnail, directory));
     }
     return imageFileList;
   }
 
   @Transactional
-  public ImageFile uploadAndSaveImage(MultipartFile multipartFile, boolean autoThumbnail)
+  public ImageFile saveInfoFixReportImage(MultipartFile multipartFile) throws IOException {
+    return uploadAndSaveImage(multipartFile, false, infoFixReportDirectory);
+  }
+
+  private ImageFile uploadAndSaveImage(MultipartFile multipartFile, boolean autoThumbnail,
+      String directory)
       throws IOException {
 
     //이미지 파일인지 검증
@@ -99,7 +108,8 @@ public class S3ImageService {
     objectMetadata.setContentLength(multipartFile.getInputStream().available());
 
     //S3에 사진 올리기
-    String originalImageUrl = uploadOriginImage(multipartFile, objectMetadata, uploadImageName);
+    String originalImageUrl = uploadImage(multipartFile, objectMetadata, directory,
+        uploadImageName);
 
     //true, false로 구분해서 썸네일 만들고 안만들고 동작.
     String thumbnailImageUrl = "";
@@ -116,21 +126,13 @@ public class S3ImageService {
 
   }
 
-  public String uploadOriginImage(MultipartFile multipartFile, ObjectMetadata objectMetadata,
+  public String uploadImage(MultipartFile multipartFile, ObjectMetadata objectMetadata,
+      String directory,
       String imageName)
       throws IOException {
-    amazonS3Client.putObject(bucketName + imageDirectory, imageName, multipartFile.getInputStream(),
+    amazonS3Client.putObject(bucketName + directory, imageName, multipartFile.getInputStream(),
         objectMetadata);
-    return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
-  }
-
-  // 자동 생성 아닌 직접 썸네일 올릴 때만 사용
-  public String uploadThumbnailImage(MultipartFile multipartFile, ObjectMetadata objectMetadata,
-      String imageName)
-      throws IOException {
-    amazonS3Client.putObject(bucketName + imageDirectory, imageName, multipartFile.getInputStream(),
-        objectMetadata);
-    return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
+    return amazonS3Client.getUrl(bucketName + directory, imageName).toString();
   }
 
   public String makeThumbnailImageAndUpload(MultipartFile multipartFile, String originImageFileName)
