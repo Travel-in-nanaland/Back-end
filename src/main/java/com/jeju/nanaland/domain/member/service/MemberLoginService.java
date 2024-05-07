@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.member.service;
 
-import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static java.lang.String.format;
+
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
@@ -34,7 +34,8 @@ public class MemberLoginService {
   @Transactional
   public JwtDto login(LoginDto loginDto) {
 
-    Member member = getOrCreateMember(loginDto);
+    Member member = findLoginMember(loginDto);
+    updateEmailDifferent(loginDto, member);
 
     String accessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
         member.getRoleSet());
@@ -47,63 +48,67 @@ public class MemberLoginService {
         .build();
   }
 
-  @Transactional
-  public Member getOrCreateMember(LoginDto loginDto) {
+  private Member findLoginMember(LoginDto loginDto) {
+    // 이메일, provider, providerId가 일치하는 회원 조회
     Optional<Member> memberOptional = memberRepository.findByEmailAndProviderAndProviderId(
         loginDto.getEmail(),
-        Provider.valueOf(loginDto.getProvider()),
-        loginDto.getProviderId());
+        Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId());
 
-    if (memberOptional.isEmpty()) {
-      return createMember(loginDto);
+    if (memberOptional.isPresent()) {
+      return memberOptional.get();
     }
-    Member member = memberOptional.get();
-    updateEmailDifferent(loginDto, member);
+
+    // 해당 이메일로 가입된 계정이 없는 경우, 회원 가입 필요
+    Member member = memberRepository.findByEmail(loginDto.getEmail())
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+
+    // 해당 이메일로 가입된 계정이 있으나, provider과 providerId가 다른 경우, 소셜 로그인 변경 필요
+    if (member.getProvider() != Provider.valueOf(loginDto.getProvider())
+        || !member.getProviderId().equals(loginDto.getProviderId())) {
+      throw new ConflictException(
+          format(ErrorCode.CONFLICT_PROVIDER.getMessage(), member.getProvider()));
+    }
     return member;
   }
 
-  private Member createMember(LoginDto loginDto) {
-
-    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
-        loginDto.getEmail(),
-        Provider.valueOf(loginDto.getProvider()),
-        loginDto.getProviderId());
-
-    if (memberOptional.isPresent()) {
-      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
-    }
-
-    Language language = languageRepository.findByLocale(Locale.valueOf(loginDto.getLocale()));
-
-    ImageFile profileImageFile = getRandomProfileImageFile();
-
-    String nickname = loginDto.getProvider() + "_" + loginDto.getProviderId();
-
-    Member member = Member.builder()
-        .language(language)
-        .email(loginDto.getEmail())
-        .profileImageFile(profileImageFile)
-        .nickname(nickname)
-        .gender(loginDto.getGender())
-        .birthDate(loginDto.getBirthDate())
-        .provider(Provider.valueOf(loginDto.getProvider()))
-        .providerId(loginDto.getProviderId())
-        .build();
-    Member saveMember = memberRepository.save(member);
-    if (saveMember.getProvider() != Provider.GUEST) {
-      memberConsentService.createMemberConsents(saveMember);
-    }
-    return saveMember;
-  }
+//  private Member createMember(LoginDto loginDto) {
+//
+//    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
+//        loginDto.getEmail(),
+//        Provider.valueOf(loginDto.getProvider()),
+//        loginDto.getProviderId());
+//
+//    if (memberOptional.isPresent()) {
+//      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+//    }
+//
+//    Language language = languageRepository.findByLocale(Locale.valueOf(loginDto.getLocale()));
+//
+//    ImageFile profileImageFile = getRandomProfileImageFile();
+//
+//    String nickname = loginDto.getProvider() + "_" + loginDto.getProviderId();
+//
+//    Member member = Member.builder()
+//        .language(language)
+//        .email(loginDto.getEmail())
+//        .profileImageFile(profileImageFile)
+//        .nickname(nickname)
+//        .gender(loginDto.getGender())
+//        .birthDate(loginDto.getBirthDate())
+//        .provider(Provider.valueOf(loginDto.getProvider()))
+//        .providerId(loginDto.getProviderId())
+//        .build();
+//    return memberRepository.save(member);
+//  }
 
   // 임시로 만든 랜덤 프로필 사진
-  private ImageFile getRandomProfileImageFile() {
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("originUrl")
-        .thumbnailUrl("thumbnailUrl")
-        .build();
-    return imageFileRepository.save(imageFile);
-  }
+//  private ImageFile getRandomProfileImageFile() {
+//    ImageFile imageFile = ImageFile.builder()
+//        .originUrl("originUrl")
+//        .thumbnailUrl("thumbnailUrl")
+//        .build();
+//    return imageFileRepository.save(imageFile);
+//  }
 
   @Transactional
   public void updateEmailDifferent(LoginDto loginDto, Member member) {
@@ -128,7 +133,7 @@ public class MemberLoginService {
     }
 
     Member member = memberRepository.findById(Long.valueOf(memberId))
-        .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
     String newAccessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
         member.getRoleSet());

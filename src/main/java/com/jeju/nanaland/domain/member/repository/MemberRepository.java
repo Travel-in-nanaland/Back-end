@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
+  Optional<Member> findByEmail(String email);
+
   Optional<Member> findByEmailAndProviderAndProviderId(String email, Provider provider,
       Long providerId);
 
