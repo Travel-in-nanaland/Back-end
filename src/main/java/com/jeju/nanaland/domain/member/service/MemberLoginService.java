@@ -1,10 +1,12 @@
 package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import static java.lang.String.format;
 
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -20,6 +22,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +34,36 @@ public class MemberLoginService {
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
 
+
+  public void join(JoinDto joinDto, MultipartFile multipartFile) {
+    /**
+     * TODO : 회원 가입
+     * TODO : multipart가 없으면 기본 프로필 사진 랜덤 지정
+     * TODO : JWT 발급
+     */
+    validateNickname(joinDto.getNickname());
+  }
+
+  private void validateNickname(String nickname) {
+    /**
+     * TODO : 닉네임 글자 제한 확인
+     */
+    Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
+    if (memberOptional.isPresent()) {
+      throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
+    }
+  }
+
   @Transactional
   public JwtDto login(LoginDto loginDto) {
 
     Member member = findLoginMember(loginDto);
     updateEmailDifferent(loginDto, member);
 
+    return getJwtDto(member);
+  }
+
+  private JwtDto getJwtDto(Member member) {
     String accessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
         member.getRoleSet());
     String refreshToken = jwtUtil.getRefreshToken(String.valueOf(member.getId()),
@@ -135,15 +162,7 @@ public class MemberLoginService {
     Member member = memberRepository.findById(Long.valueOf(memberId))
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
-    String newAccessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
-        member.getRoleSet());
-    String newRefreshToken = jwtUtil.getRefreshToken(String.valueOf(member.getId()),
-        member.getRoleSet());
-
-    return JwtDto.builder()
-        .accessToken(newAccessToken)
-        .refreshToken(newRefreshToken)
-        .build();
+    return getJwtDto(member);
   }
 
   public void logout(MemberInfoDto memberInfoDto, String bearerAccessToken) {

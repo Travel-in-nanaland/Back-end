@@ -32,6 +32,7 @@ public enum ErrorCode {
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   CONFLICT_PROVIDER(CONFLICT, "해당 이메일은 %s로 로그인한 계정입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
+  NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다."),
 
   START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다.");
 

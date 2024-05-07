@@ -18,6 +18,48 @@ import lombok.Getter;
 public class MemberRequest {
 
   @Getter
+  @Schema(description = "회원 가입 요청 DTO")
+  public static class JoinDto {
+
+    @Schema(description = "이메일", example = "ABD123@kakao.com")
+    @NotBlank
+    @Email(message = "이메일 형식에 맞지 않습니다.")
+    private String email;
+
+    @Schema(description = "소셜 로그인 Provider", example = "KAKAO",
+        allowableValues = {"KAKAO", "GOOGLE", "APPLE", "GUEST"})
+    @NotNull
+    @EnumValid(
+        enumClass = Provider.class,
+        message = "Provider이 유효하지 않습니다."
+    )
+    private String provider;
+
+    @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
+    @NotNull
+    private Long providerId;
+
+    @Schema(description = "언어", example = "KOREAN",
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+    @NotNull
+    @EnumValid(
+        enumClass = Locale.class,
+        message = "Locale이 유효하지 않습니다."
+    )
+    private String locale;
+
+    @Schema(description = "성별", example = "male", allowableValues = {"male", "female"})
+    private String gender;
+
+    @Schema(description = "생년월일", example = "2000-01-01")
+    private LocalDate birthDate;
+
+    @Schema(description = "닉네임")
+    @NotBlank
+    private String nickname;
+  }
+
+  @Getter
   @Schema(description = "로그인 요청 DTO")
   public static class LoginDto {
 
