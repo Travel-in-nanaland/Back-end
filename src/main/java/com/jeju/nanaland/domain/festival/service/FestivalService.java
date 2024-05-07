@@ -41,12 +41,13 @@ public class FestivalService {
   private final FavoriteService favoriteService;
   private final SearchService searchService;
 
-  public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size) {
+  public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
+      List<String> addressFilterList) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
-        memberInfoDto.getLanguage().getLocale(), pageable, false);
+        memberInfoDto.getLanguage().getLocale(), pageable, false, addressFilterList);
 
     List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
 

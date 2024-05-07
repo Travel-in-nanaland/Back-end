@@ -1,9 +1,15 @@
 package com.jeju.nanaland.domain.nana.service;
 
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA_CONTENT;
 
+import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
+import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
@@ -18,9 +24,11 @@ import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,9 +39,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NanaService {
 
+  private final CategoryRepository categoryRepository;
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
+  private final HashtagRepository hashtagRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
 
@@ -69,13 +79,15 @@ public class NanaService {
   public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,
       boolean isSearch) {
 
+    Language language = memberInfoDto.getLanguage();
+
     // nana 찾아서
     Nana nana = nanaRepository.findNanaById(nanaId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
-            memberInfoDto.getLanguage())
+            language)
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
 
     if (isSearch) {
@@ -90,12 +102,18 @@ public class NanaService {
 
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
         nanaTitle.getNana().getId());
+
+    Category category = categoryRepository.findByContent(NANA_CONTENT)
+        .orElseThrow(() -> new ServerErrorException("NANA_CONTENT에 해당하는 카테고리가 없습니다."));
+
     for (NanaContent nanaContent : nanaContentList) {
 
-      // TODO hashtag 기능 구현 시 꼭 수정하기!!!!
-      List<String> tmp = new ArrayList<>();
-      tmp.add("ex1");
-      tmp.add("ex2");
+      List<Hashtag> hashtagList = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
+          language, category, nanaContent.getId());
+
+      // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
+      List<String> stringKeywordList = getStringKeywordListFromHashtagList(hashtagList);
+
       nanaDetails.add(
           NanaResponse.NanaDetail.builder()
               .number(nanaContent.getNumber())
@@ -104,7 +122,7 @@ public class NanaService {
               .imageUrl(nanaContent.getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
               .additionalInfoList(getAdditionalInfoFromNanaContentEntity(nanaContent))
-              .hashtags(tmp)
+              .hashtags(stringKeywordList)
               .build());
 
     }
@@ -139,5 +157,11 @@ public class NanaService {
           .build());
     }
     return result;
+  }
+
+  public List<String> getStringKeywordListFromHashtagList(List<Hashtag> hashtagList) {
+    return hashtagList.stream()
+        .map(hashtag -> hashtag.getKeyword().getContent())
+        .collect(Collectors.toList());
   }
 }
