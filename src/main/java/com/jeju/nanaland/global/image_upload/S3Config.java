@@ -1,4 +1,4 @@
-package com.jeju.nanaland.global.imageUpload;
+package com.jeju.nanaland.global.image_upload;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
