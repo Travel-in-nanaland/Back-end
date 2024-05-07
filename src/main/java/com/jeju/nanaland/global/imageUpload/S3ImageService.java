@@ -44,7 +44,7 @@ public class S3ImageService {
   @Value("/thumbnail_images")
   private String thumbnailDirectory;
 
-  @Value("/info_fix_report_image")
+  @Value("/info_fix_report_images")
   private String infoFixReportDirectory;
 
   @Value("thumbnail_")
