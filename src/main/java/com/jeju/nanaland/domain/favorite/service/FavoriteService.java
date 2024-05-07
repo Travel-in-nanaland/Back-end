@@ -285,6 +285,8 @@ public class FavoriteService {
 
       case FESTIVAL -> categoryRepository.findByContent(FESTIVAL)
           .orElseThrow(() -> new ServerErrorException("FESTIVAL에 해당하는 카테고리가 없습니다."));
+
+      default -> throw new ServerErrorException("해당하는 카테고리가 없습니다.");
     };
   }
 
