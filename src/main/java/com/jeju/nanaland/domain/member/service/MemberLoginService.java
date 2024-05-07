@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,21 +50,37 @@ public class MemberLoginService {
   private final Random random = new Random();
 
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
-    validateNickname(joinDto.getNickname());
+    String nickname = validateNickname(joinDto);
+
+    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
+        joinDto.getEmail(),
+        Provider.valueOf(joinDto.getProvider()),
+        joinDto.getProviderId());
+
+    if (memberOptional.isPresent()) {
+      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+    }
+
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
-    Member member = createMember(joinDto, profileImageFile);
+    Member member = createMember(joinDto, profileImageFile, nickname);
     memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
     return getJwtDto(member);
   }
 
-  private void validateNickname(String nickname) {
+  private String validateNickname(JoinDto joinDto) {
     /**
      * TODO : 닉네임 글자 제한 확인
      */
+    String nickname = joinDto.getNickname();
+    if (Provider.valueOf(joinDto.getProvider()) == Provider.GUEST) {
+      nickname = UUID.randomUUID().toString().substring(0, 16);
+    }
+
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
     if (memberOptional.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
+    return nickname;
   }
 
   private ImageFile getProfileImageFile(MultipartFile multipartFile) {
@@ -91,16 +108,7 @@ public class MemberLoginService {
     return s3ImageService.getS3Urls(selectedProfile);
   }
 
-  private Member createMember(JoinDto joinDto, ImageFile imageFile) {
-
-    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
-        joinDto.getEmail(),
-        Provider.valueOf(joinDto.getProvider()),
-        joinDto.getProviderId());
-
-    if (memberOptional.isPresent()) {
-      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
-    }
+  private Member createMember(JoinDto joinDto, ImageFile imageFile, String nickname) {
 
     Language language = languageRepository.findByLocale(Locale.valueOf(joinDto.getLocale()));
 
@@ -108,7 +116,7 @@ public class MemberLoginService {
         .language(language)
         .email(joinDto.getEmail())
         .profileImageFile(imageFile)
-        .nickname(joinDto.getNickname())
+        .nickname(nickname)
         .gender(joinDto.getGender())
         .birthDate(joinDto.getBirthDate())
         .provider(Provider.valueOf(joinDto.getProvider()))
