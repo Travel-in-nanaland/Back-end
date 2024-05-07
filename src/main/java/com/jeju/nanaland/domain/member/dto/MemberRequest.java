@@ -21,11 +21,15 @@ public class MemberRequest {
   @Schema(description = "회원 가입 요청 DTO")
   public static class JoinDto {
 
+    @Schema(description = "이용약관 동의 여부")
+    @Valid
+    List<ConsentItem> consentItems;
+
     @Schema(description = "이메일", example = "ABD123@kakao.com")
     @NotBlank
     @Email(message = "이메일 형식에 맞지 않습니다.")
     private String email;
-
+    
     @Schema(description = "소셜 로그인 Provider", example = "KAKAO",
         allowableValues = {"KAKAO", "GOOGLE", "APPLE", "GUEST"})
     @NotNull
@@ -80,15 +84,6 @@ public class MemberRequest {
     @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
     @NotNull
     private Long providerId;
-  }
-
-  @Data
-  @Schema(description = "이용약관 동의 요청 DTO")
-  public static class MemberConsentDTO {
-
-    @Schema(description = "이용약관 동의 여부")
-    @Valid
-    List<ConsentItem> consentItems;
   }
 
   @Getter

@@ -52,10 +52,10 @@ public class MemberController {
 
   @PostMapping("/join")
   public ResponseEntity join(
-      @RequestPart @Valid JoinDto joinDto,
+      @RequestPart(value = "reqDto") @Valid JoinDto joinDto,
       @RequestPart(required = false) MultipartFile multipartFile) {
     JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok(jwtDto);
   }
 
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")

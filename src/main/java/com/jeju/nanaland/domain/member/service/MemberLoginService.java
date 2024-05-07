@@ -49,12 +49,10 @@ public class MemberLoginService {
   private final Random random = new Random();
 
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
-    /**
-     * TODO: 이용약관 저장
-     */
     validateNickname(joinDto.getNickname());
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile);
+    memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
     return getJwtDto(member);
   }
 
