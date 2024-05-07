@@ -49,7 +49,14 @@ public class MemberController {
   private final MemberLoginService memberLoginService;
   private final MemberTypeService memberTypeService;
 
-
+  @Operation(summary = "회원 가입", description = "회원 가입을 하면 JWT가 발급됩니다. ")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "이미 가입된 계정이 있는 경우, 닉네임이 중복되는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
   @PostMapping("/join")
   public ResponseEntity join(
       @RequestPart(value = "reqDto") @Valid JoinDto joinDto,

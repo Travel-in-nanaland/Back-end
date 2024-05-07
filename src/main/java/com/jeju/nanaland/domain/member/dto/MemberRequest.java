@@ -25,12 +25,12 @@ public class MemberRequest {
     @Valid
     List<ConsentItem> consentItems;
 
-    @Schema(description = "이메일", example = "ABD123@kakao.com")
+    @Schema(description = "이메일(필수) - GUEST이면 {providerId}@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
     @NotBlank
     @Email(message = "이메일 형식에 맞지 않습니다.")
     private String email;
-    
-    @Schema(description = "소셜 로그인 Provider", example = "KAKAO",
+
+    @Schema(description = "소셜 로그인 Provider(필수)", example = "KAKAO",
         allowableValues = {"KAKAO", "GOOGLE", "APPLE", "GUEST"})
     @NotNull
     @EnumValid(
@@ -39,11 +39,11 @@ public class MemberRequest {
     )
     private String provider;
 
-    @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
+    @Schema(description = "소셜 로그인 Provider ID(필수) - GUEST이면 디바이스 ID", example = "1234567890")
     @NotNull
     private Long providerId;
 
-    @Schema(description = "언어", example = "KOREAN",
+    @Schema(description = "언어(필수)", example = "KOREAN",
         allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
     @NotNull
     @EnumValid(
@@ -58,7 +58,7 @@ public class MemberRequest {
     @Schema(description = "생년월일", example = "2000-01-01")
     private LocalDate birthDate;
 
-    @Schema(description = "닉네임")
+    @Schema(description = "닉네임(필수) - GUEST이면 GUEST_{providerId}로 임시 지정하여 요청")
     @NotBlank
     private String nickname;
   }
