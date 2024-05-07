@@ -5,6 +5,8 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import static java.lang.String.format;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
@@ -46,13 +48,14 @@ public class MemberLoginService {
       "Gray.png", "DeepBlue.png");
   private final Random random = new Random();
 
-  public void join(JoinDto joinDto, MultipartFile multipartFile) {
+  public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
     /**
-     * TODO : 회원 가입
-     * TODO : JWT 발급
+     * TODO: 이용약관 저장
      */
     validateNickname(joinDto.getNickname());
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
+    Member member = createMember(joinDto, profileImageFile);
+    return getJwtDto(member);
   }
 
   private void validateNickname(String nickname) {
@@ -77,7 +80,7 @@ public class MemberLoginService {
         throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
       }
     }
-    
+
     ImageFile imageFile = ImageFile.builder()
         .originUrl(s3ImageDto.getOriginUrl())
         .thumbnailUrl(s3ImageDto.getThumbnailUrl())
@@ -88,6 +91,32 @@ public class MemberLoginService {
   private S3ImageDto getRandomProfileImageFile() {
     String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
     return s3ImageService.getS3Urls(selectedProfile);
+  }
+
+  private Member createMember(JoinDto joinDto, ImageFile imageFile) {
+
+    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
+        joinDto.getEmail(),
+        Provider.valueOf(joinDto.getProvider()),
+        joinDto.getProviderId());
+
+    if (memberOptional.isPresent()) {
+      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+    }
+
+    Language language = languageRepository.findByLocale(Locale.valueOf(joinDto.getLocale()));
+
+    Member member = Member.builder()
+        .language(language)
+        .email(joinDto.getEmail())
+        .profileImageFile(imageFile)
+        .nickname(joinDto.getNickname())
+        .gender(joinDto.getGender())
+        .birthDate(joinDto.getBirthDate())
+        .provider(Provider.valueOf(joinDto.getProvider()))
+        .providerId(joinDto.getProviderId())
+        .build();
+    return memberRepository.save(member);
   }
 
   @Transactional
@@ -133,36 +162,6 @@ public class MemberLoginService {
     }
     return member;
   }
-
-//  private Member createMember(LoginDto loginDto) {
-//
-//    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
-//        loginDto.getEmail(),
-//        Provider.valueOf(loginDto.getProvider()),
-//        loginDto.getProviderId());
-//
-//    if (memberOptional.isPresent()) {
-//      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
-//    }
-//
-//    Language language = languageRepository.findByLocale(Locale.valueOf(loginDto.getLocale()));
-//
-//    ImageFile profileImageFile = getRandomProfileImageFile();
-//
-//    String nickname = loginDto.getProvider() + "_" + loginDto.getProviderId();
-//
-//    Member member = Member.builder()
-//        .language(language)
-//        .email(loginDto.getEmail())
-//        .profileImageFile(profileImageFile)
-//        .nickname(nickname)
-//        .gender(loginDto.getGender())
-//        .birthDate(loginDto.getBirthDate())
-//        .provider(Provider.valueOf(loginDto.getProvider()))
-//        .providerId(loginDto.getProviderId())
-//        .build();
-//    return memberRepository.save(member);
-//  }
 
   @Transactional
   public void updateEmailDifferent(LoginDto loginDto, Member member) {

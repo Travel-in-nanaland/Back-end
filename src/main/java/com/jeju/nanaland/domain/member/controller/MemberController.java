@@ -53,8 +53,8 @@ public class MemberController {
   @PostMapping("/join")
   public ResponseEntity join(
       @RequestPart @Valid JoinDto joinDto,
-      @RequestPart MultipartFile multipartFile) {
-    memberLoginService.join(joinDto, multipartFile);
+      @RequestPart(required = false) MultipartFile multipartFile) {
+    JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
     return ResponseEntity.ok().build();
   }
 
