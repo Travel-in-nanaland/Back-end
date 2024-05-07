@@ -50,7 +50,8 @@ public class MemberController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
-      @ApiResponse(responseCode = "409", description = "데이터가 중복되는 경우", content = @Content)
+      @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "해당 이메일이 다른 소셜 로그인으로 가입된 경우", content = @Content)
   })
   @PostMapping("/login")
   public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
