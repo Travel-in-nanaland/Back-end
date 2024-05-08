@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -19,16 +20,10 @@ import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
-import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import com.jeju.nanaland.global.util.JwtUtil;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,9 +40,7 @@ public class MemberLoginService {
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
   private final S3ImageService s3ImageService;
-  private final List<String> defaultProfile = Arrays.asList("LightPurple.png", "LightGray.png",
-      "Gray.png", "DeepBlue.png");
-  private final Random random = new Random();
+  private final ImageFileService imageFileService;
 
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
     String nickname = validateNickname(joinDto);
@@ -84,28 +77,10 @@ public class MemberLoginService {
   }
 
   private ImageFile getProfileImageFile(MultipartFile multipartFile) {
-    S3ImageDto s3ImageDto;
     if (multipartFile == null) {
-      s3ImageDto = getRandomProfileImageFile();
-    } else {
-      try {
-        s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true);
-      } catch (IOException e) {
-        e.printStackTrace();
-        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
-      }
+      return imageFileService.getRandomProfileImageFile();
     }
-
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl(s3ImageDto.getOriginUrl())
-        .thumbnailUrl(s3ImageDto.getThumbnailUrl())
-        .build();
-    return imageFileRepository.save(imageFile);
-  }
-
-  private S3ImageDto getRandomProfileImageFile() {
-    String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
-    return s3ImageService.getS3Urls(selectedProfile);
+    return imageFileService.uploadAndSaveImageFile(multipartFile, true);
   }
 
   private Member createMember(JoinDto joinDto, ImageFile imageFile, String nickname) {
