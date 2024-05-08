@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.member.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
@@ -28,7 +29,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -136,6 +136,6 @@ public class MemberController {
       @RequestPart(required = false) MultipartFile multipartFile) {
 
     memberLoginService.updateProfile(memberInfoDto, reqDto, multipartFile);
-    return ResponseEntity.ok().build();
+    return BaseResponse.success(UPDATE_MEMBER_PROFILE_SUCCESS);
   }
 }
