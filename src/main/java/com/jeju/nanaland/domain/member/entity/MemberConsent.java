@@ -7,6 +7,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -17,6 +19,15 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+    name = "member_consent",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "memberConsentTypeUnique",
+            columnNames = {"member_id", "consent_type"}
+        )
+    }
+)
 public class MemberConsent extends BaseEntity {
 
   @NotNull
