@@ -7,7 +7,6 @@ import static java.lang.String.format;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
@@ -21,7 +20,6 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
-import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,15 +34,12 @@ public class MemberLoginService {
 
   private final MemberRepository memberRepository;
   private final LanguageRepository languageRepository;
-  private final ImageFileRepository imageFileRepository;
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
-  private final S3ImageService s3ImageService;
   private final ImageFileService imageFileService;
 
+  @Transactional
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
-    String nickname = validateNickname(joinDto);
-
     Optional<Member> memberOptional = memberRepository.findDuplicateMember(
         joinDto.getEmail(),
         Provider.valueOf(joinDto.getProvider()),
@@ -54,6 +49,7 @@ public class MemberLoginService {
       throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
     }
 
+    String nickname = validateNickname(joinDto);
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
     memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
@@ -122,9 +118,8 @@ public class MemberLoginService {
   }
 
   private Member findLoginMember(LoginDto loginDto) {
-    // 이메일, provider, providerId가 일치하는 회원 조회
-    Optional<Member> memberOptional = memberRepository.findByEmailAndProviderAndProviderId(
-        loginDto.getEmail(),
+    // provider, providerId가 일치하는 회원 조회
+    Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
         Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId());
 
     if (memberOptional.isPresent()) {
