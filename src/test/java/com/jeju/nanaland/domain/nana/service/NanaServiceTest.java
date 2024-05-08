@@ -42,7 +42,7 @@ class NanaServiceTest {
   Nana nana;
   NanaTitle nanaTitle;
   NanaContent nanaContent1, nanaContent2, nanaContent3, nanaContent4;
-  Category category;
+  Category category, category2;
   NanaAdditionalInfo nanaAdditionalInfo1, nanaAdditionalInfo2;
   Set<NanaAdditionalInfo> infoList = new HashSet<>();
 
@@ -62,7 +62,7 @@ class NanaServiceTest {
 
     language = Language.builder()
         .locale(Locale.KOREAN)
-        .dateFormat("yy-mm-dd")
+        .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language);
 
@@ -174,6 +174,11 @@ class NanaServiceTest {
         .content(CategoryContent.NANA)
         .build();
     em.persist(category);
+
+    category2 = Category.builder()
+        .content(CategoryContent.NANA_CONTENT)
+        .build();
+    em.persist(category2);
   }
 
   @Test

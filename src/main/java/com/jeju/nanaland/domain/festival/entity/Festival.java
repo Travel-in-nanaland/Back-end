@@ -53,6 +53,10 @@ public class Festival extends Common {
     this.onGoing = onGoing;
   }
 
+  public void updateOnGoing(boolean onGoing) {
+    this.onGoing = onGoing;
+  }
+
   public void updateStatus(Status status) {
     this.status = status;
   }

@@ -49,7 +49,7 @@ class ExperienceServiceTest {
 
     language = Language.builder()
         .locale(Locale.KOREAN)
-        .dateFormat("yy-mm-dd")
+        .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language);
 

@@ -46,7 +46,7 @@ class EntityBuilderTest {
   void init() {
     language = Language.builder()
         .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
+        .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language);
 

@@ -40,13 +40,13 @@ public class NanaRepositoryTest {
   void init() {
     language = Language.builder()
         .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
+        .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language);
 
     language2 = Language.builder()
         .locale(Locale.CHINESE)
-        .dateFormat("yyyy-mm-dd")
+        .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language2);
 
