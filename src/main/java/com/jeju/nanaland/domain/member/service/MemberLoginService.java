@@ -14,23 +14,23 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
-import com.jeju.nanaland.global.jwt.JwtUtil;
-import com.jeju.nanaland.global.jwt.dto.JwtResponseDto.JwtDto;
-import java.io.IOException;
-import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
+import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
@@ -161,16 +161,17 @@ public class MemberLoginService {
     ImageFile profileImageFile = member.getProfileImageFile();
     if (multipartFile != null) {
       try {
-        S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true);
+        S3ImageDto s3ImageDto = s3ImageService.uploadOriginImageToS3(multipartFile, true);
         if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
           s3ImageService.deleteImageS3(profileImageFile);
         }
         profileImageFile.updateImageFile(s3ImageDto);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error("S3 image upload error : {}", e.getMessage());
         throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
       }
     }
+
     member.updateProfile(profileUpdateDto);
   }
 }

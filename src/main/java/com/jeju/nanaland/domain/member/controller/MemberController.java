@@ -130,11 +130,11 @@ public class MemberController {
   }
 
   @PatchMapping("/profile")
-  public ResponseEntity updateProfile(
+  public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestPart @Valid ProfileUpdateDto reqDto,
-      @RequestPart(required = false) MultipartFile multipartFile
-  ) {
+      @RequestPart(required = false) MultipartFile multipartFile) {
+
     memberLoginService.updateProfile(memberInfoDto, reqDto, multipartFile);
     return ResponseEntity.ok().build();
   }
