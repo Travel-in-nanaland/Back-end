@@ -13,18 +13,18 @@ public enum DayOfWeek {
   SATURDAY("토", "SAT", "SAT", "T7", "周六"),
   SUNDAY("일", "SUN", "SUN", "CN", "周日");
 
-  private final String kr;
-  private final String en; //영어
-  private final String vi; //베트남어
-  private final String ms; //말레이시아어
-  private final String zh; //중국어
+  private final String korean;
+  private final String english; //영어
+  private final String vietnamese; //베트남어
+  private final String malaysia; //말레이시아어
+  private final String chinese; //중국어
 
-  DayOfWeek(String kr, String en, String vi, String ms, String zh) {
-    this.kr = kr;
-    this.en = en;
-    this.vi = vi;
-    this.ms = ms;
-    this.zh = zh;
+  DayOfWeek(String korean, String english, String vietnamese, String malaysia, String chinese) {
+    this.korean = korean;
+    this.english = english;
+    this.vietnamese = vietnamese;
+    this.malaysia = malaysia;
+    this.chinese = chinese;
   }
 }
 
