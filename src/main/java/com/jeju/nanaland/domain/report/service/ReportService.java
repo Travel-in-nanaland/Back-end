@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.report.service;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -19,12 +20,9 @@ import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
-import com.jeju.nanaland.global.imageUpload.S3ImageService;
-import com.sun.jdi.InternalException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +45,7 @@ public class ReportService {
   private final FestivalRepository festivalRepository;
   private final ExperienceRepository experienceRepository;
 
-  private final S3ImageService s3ImageService;
+  private final ImageFileService imageFileService;
   private final Environment env;
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
@@ -97,12 +95,8 @@ public class ReportService {
 
     String imageUrl = null;
     if (multipartFile != null) {
-      try {
-        ImageFile imageFile = s3ImageService.uploadAndSaveImage(multipartFile, false);
-        imageUrl = imageFile.getOriginUrl();
-      } catch (IOException e) {
-        throw new InternalException("이미지 업로드 실패");
-      }
+      ImageFile imageFile = imageFileService.uploadAndSaveImageFile(multipartFile, false);
+      imageUrl = imageFile.getOriginUrl();
     }
 
     CategoryContent categoryContent = CategoryContent.valueOf(reqDto.getCategory());
