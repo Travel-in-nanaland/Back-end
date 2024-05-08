@@ -135,13 +135,13 @@ public class MemberLoginService {
     Member member = memberRepository.findByEmail(loginDto.getEmail())
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
-    // 해당 이메일로 가입된 계정이 있으나, provider과 providerId가 다른 경우, 소셜 로그인 변경 필요
-    if (member.getProvider() != Provider.valueOf(loginDto.getProvider())
-        || !member.getProviderId().equals(loginDto.getProviderId())) {
+    // 해당 이메일로 가입된 계정이 있으나, provider가 다른 경우, 소셜 로그인 변경 필요
+    if (member.getProvider() != Provider.valueOf(loginDto.getProvider())) {
       throw new ConflictException(
           format(ErrorCode.CONFLICT_PROVIDER.getMessage(), member.getProvider()));
+    } else {
+      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
     }
-    return member;
   }
 
   @Transactional
