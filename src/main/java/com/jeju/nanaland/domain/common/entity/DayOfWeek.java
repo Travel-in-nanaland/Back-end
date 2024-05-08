@@ -26,5 +26,15 @@ public enum DayOfWeek {
     this.ms = ms;
     this.zh = zh;
   }
+
+  public String getValueByLocale(Locale locale) {
+    return switch (locale) {
+      case KOREAN -> this.getKr();
+      case ENGLISH -> this.getEn();
+      case CHINESE -> this.getZh();
+      case MALAYSIA -> this.getMs();
+      case VIETNAMESE -> this.getVi();
+    };
+  }
 }
 
