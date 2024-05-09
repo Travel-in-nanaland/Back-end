@@ -19,7 +19,8 @@ public enum SuccessCode {
   GET_RECOMMENDED_POSTS_SUCCESS(OK, "사용자 추천 게시물 조회에 성공했습니다."),
 
   // member profile
-  UPDATE_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 수정에 성공했습니다."),
+  UPDATE_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 수정 성공"),
+  GET_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 조회 성공"),
 
   // search
   SEARCH_SUCCESS(OK, "검색에 성공했습니다."),
