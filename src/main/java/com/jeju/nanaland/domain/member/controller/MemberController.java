@@ -31,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -150,11 +149,18 @@ public class MemberController {
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
+  @Operation(
+      summary = "회원 탈퇴")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
   @PostMapping("/withdrawal")
-  public ResponseEntity withdrawal(
+  public BaseResponse<Null> withdrawal(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid WithdrawalDto withdrawalType) {
     memberLoginService.withdrawal(memberInfoDto, withdrawalType);
-    return ResponseEntity.ok().build();
+    return BaseResponse.success(SuccessCode.WITHDRAWAL_SUCCESS);
   }
 }
