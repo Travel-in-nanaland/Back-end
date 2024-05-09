@@ -7,14 +7,19 @@ import static java.lang.String.format;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
 import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -33,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
+  private final MemberWithdrawalRepository memberWithdrawalRepository;
   private final LanguageRepository languageRepository;
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
@@ -174,5 +180,17 @@ public class MemberLoginService {
     if (jwtUtil.findRefreshTokenById(memberId) != null) {
       jwtUtil.deleteRefreshToken(memberId);
     }
+  }
+
+  @Transactional
+  public void withdrawal(MemberInfoDto memberInfoDto, WithdrawalDto withdrawalType) {
+
+    memberInfoDto.getMember().updateStatus(Status.INACTIVE);
+
+    MemberWithdrawal memberWithdrawal = MemberWithdrawal.builder()
+        .member(memberInfoDto.getMember())
+        .withdrawalType(WithdrawalType.valueOf(withdrawalType.getWithdrawalType()))
+        .build();
+    memberWithdrawalRepository.save(memberWithdrawal);
   }
 }

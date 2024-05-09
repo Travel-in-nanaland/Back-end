@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,4 +35,11 @@ public class MemberWithdrawal {
   private WithdrawalType withdrawalType;
 
   private LocalDateTime withdrawalDate;
+
+  @Builder
+  public MemberWithdrawal(Member member, WithdrawalType withdrawalType) {
+    this.member = member;
+    this.withdrawalType = withdrawalType;
+    this.withdrawalDate = LocalDateTime.now();
+  }
 }

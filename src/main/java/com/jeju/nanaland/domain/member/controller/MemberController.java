@@ -9,6 +9,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -146,5 +148,13 @@ public class MemberController {
     List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
         memberInfoDto.getMember().getId());
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+  }
+
+  @PostMapping("/withdrawal")
+  public ResponseEntity withdrawal(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid WithdrawalDto withdrawalType) {
+    memberLoginService.withdrawal(memberInfoDto, withdrawalType);
+    return ResponseEntity.ok().build();
   }
 }
