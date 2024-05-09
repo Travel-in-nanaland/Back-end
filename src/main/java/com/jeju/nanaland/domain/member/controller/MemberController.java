@@ -2,12 +2,14 @@ package com.jeju.nanaland.domain.member.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -54,12 +56,30 @@ public class MemberController {
   private final MemberTypeService memberTypeService;
   private final MemberProfileService memberProfileService;
 
+  @Operation(summary = "회원 가입", description = "회원 가입을 하면 JWT가 발급됩니다. ")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "이미 가입된 계정이 있는 경우, 닉네임이 중복되는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
+  @PostMapping(value = "/join",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public BaseResponse<JwtDto> join(
+      @RequestPart(value = "reqDto") @Valid JoinDto joinDto,
+      @RequestPart(required = false) MultipartFile multipartFile) {
+    JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
+    return BaseResponse.success(JOIN_SUCCESS, jwtDto);
+  }
 
   @Operation(summary = "로그인", description = "로그인을 하면 JWT가 발급됩니다.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
-      @ApiResponse(responseCode = "409", description = "데이터가 중복되는 경우", content = @Content)
+      @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "해당 이메일이 다른 소셜 로그인으로 가입된 경우,"
+          + " 해당 이메일과 provider로 가입된 계정이 있으나, providerId가 다른 경우", content = @Content)
   })
   @PostMapping("/login")
   public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {

@@ -205,4 +205,16 @@ public class S3ImageService {
     String fileName = extractFileName(profileImageFile.getOriginUrl());
     return defaultProfile.contains(fileName);
   }
+
+  public S3ImageDto getS3Urls(String imageName) {
+    String originUrl = amazonS3Client.getUrl(bucketName + imageDirectory,
+        imageName).toString();
+    String thumbnailUrl = amazonS3Client.getUrl(bucketName + thumbnailDirectory,
+            thumbnailPrefix + imageName)
+        .toString();
+    return S3ImageDto.builder()
+        .originUrl(originUrl)
+        .thumbnailUrl(thumbnailUrl)
+        .build();
+  }
 }
