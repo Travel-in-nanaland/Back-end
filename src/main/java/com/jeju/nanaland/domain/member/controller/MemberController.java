@@ -32,6 +32,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -141,7 +142,9 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "이미지 업로드에 실패한 경우", content = @Content)
   })
-  @PatchMapping("/profile")
+  @PatchMapping(
+      value = "/profile",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestPart @Valid ProfileUpdateDto reqDto,
