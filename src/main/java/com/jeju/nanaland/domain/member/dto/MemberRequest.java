@@ -67,6 +67,15 @@ public class MemberRequest {
   @Schema(description = "로그인 요청 DTO")
   public static class LoginDto {
 
+    @Schema(description = "언어", example = "KOREAN",
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+    @NotNull
+    @EnumValid(
+        enumClass = Locale.class,
+        message = "Locale이 유효하지 않습니다."
+    )
+    private String locale;
+
     @Schema(description = "이메일", example = "ABD123@kakao.com")
     @NotBlank
     @Email(message = "이메일 형식에 맞지 않습니다.")

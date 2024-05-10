@@ -105,7 +105,7 @@ public class MemberLoginService {
 
     Member member = findLoginMember(loginDto);
     updateEmailDifferent(loginDto, member);
-
+    updateLanguageDifferent(loginDto, member);
     return getJwtDto(member);
   }
 
@@ -147,6 +147,16 @@ public class MemberLoginService {
   public void updateEmailDifferent(LoginDto loginDto, Member member) {
     if (!member.getEmail().equals(loginDto.getEmail())) {
       member.updateEmail(loginDto.getEmail());
+    }
+  }
+
+  @Transactional
+  public void updateLanguageDifferent(LoginDto loginDto, Member member) {
+    Locale locale = Locale.valueOf(loginDto.getLocale());
+    if (!member.getLanguage().getLocale().equals(locale)) {
+      Language language = languageRepository.findByLocale(locale);
+
+      member.updateLanguage(language);
     }
   }
 
