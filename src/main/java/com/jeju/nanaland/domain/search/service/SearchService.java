@@ -217,7 +217,7 @@ public class SearchService {
     Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, MARKET);
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, NANA);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NanaThumbnail thumbnail : resultPage) {
