@@ -121,4 +121,16 @@ public class MemberRequest {
             "GAMGYUL_LATTE", "GAMGYUL_SIKHYE", "GAMGYUL_ADE", "GAMGYUL_BUBBLE_TEA"})
     private String type;
   }
+
+  @Data
+  @Schema(description = "프로필 정보 업데이트 요청 DTO")
+  public static class ProfileUpdateDto {
+
+    @Schema(description = "닉네임")
+    @NotBlank
+    private String nickname;
+
+    @Schema(description = "소개")
+    private String description;
+  }
 }

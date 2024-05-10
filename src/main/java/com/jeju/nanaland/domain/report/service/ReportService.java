@@ -1,9 +1,7 @@
 package com.jeju.nanaland.domain.report.service;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -20,9 +18,13 @@ import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.image_upload.S3ImageService;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
+import com.sun.jdi.InternalException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,10 +47,12 @@ public class ReportService {
   private final FestivalRepository festivalRepository;
   private final ExperienceRepository experienceRepository;
 
-  private final ImageFileService imageFileService;
+  private final S3ImageService s3ImageService;
   private final Environment env;
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
+
+  private final String INFO_FIX_REPORT_IMAGE_DIRECTORY = "/info_fix_report_images";
 
   @Transactional
   public void postInfoFixReport(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
@@ -95,8 +99,13 @@ public class ReportService {
 
     String imageUrl = null;
     if (multipartFile != null) {
-      ImageFile imageFile = imageFileService.uploadAndSaveImageFile(multipartFile, false);
-      imageUrl = imageFile.getOriginUrl();
+      try {
+        S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, false,
+            INFO_FIX_REPORT_IMAGE_DIRECTORY);
+        imageUrl = s3ImageDto.getOriginUrl();
+      } catch (IOException e) {
+        throw new InternalException("이미지 업로드 실패");
+      }
     }
 
     CategoryContent categoryContent = CategoryContent.valueOf(reqDto.getCategory());

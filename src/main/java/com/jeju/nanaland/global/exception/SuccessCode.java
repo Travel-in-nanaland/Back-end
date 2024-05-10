@@ -18,6 +18,10 @@ public enum SuccessCode {
   UPDATE_MEMBER_TYPE_SUCCESS(OK, "사용자 타입 업데이트에 성공했습니다."),
   GET_RECOMMENDED_POSTS_SUCCESS(OK, "사용자 추천 게시물 조회에 성공했습니다."),
 
+  // member profile
+  UPDATE_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 수정 성공"),
+  GET_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 조회 성공"),
+
   // search
   SEARCH_SUCCESS(OK, "검색에 성공했습니다."),
   SEARCH_VOLUME_SUCCESS(OK, "검색량 UP 게시물 조회 성공"),

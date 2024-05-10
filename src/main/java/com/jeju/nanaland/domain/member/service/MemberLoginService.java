@@ -20,21 +20,25 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
+import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
   private final LanguageRepository languageRepository;
   private final JwtUtil jwtUtil;
+  private final S3ImageService s3ImageService;
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
 

@@ -35,7 +35,7 @@ public class ImageFileService {
 
   public ImageFile uploadAndSaveImageFile(MultipartFile multipartFile, boolean autoThumbnail) {
     try {
-      S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, autoThumbnail);
+      S3ImageDto s3ImageDto = s3ImageService.uploadOriginImageToS3(multipartFile, autoThumbnail);
       return saveS3ImageFile(s3ImageDto);
     } catch (IOException e) {
       e.printStackTrace();
