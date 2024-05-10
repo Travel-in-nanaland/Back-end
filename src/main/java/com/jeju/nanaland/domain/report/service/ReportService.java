@@ -113,6 +113,7 @@ public class ReportService {
 
     InfoFixReport infoFixReport = InfoFixReport.builder()
         .postId(reqDto.getPostId())
+        .member(memberInfoDto.getMember())
         .category(categoryContent)
         .fixType(fixType)
         .title(title)
