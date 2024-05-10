@@ -197,4 +197,16 @@ public class S3ImageService {
       throw new ServerErrorException("이미지 파일 이름 추출 에러");
     }
   }
+
+  public S3ImageDto getS3Urls(String imageName) {
+    String originUrl = amazonS3Client.getUrl(bucketName + imageDirectory,
+        imageName).toString();
+    String thumbnailUrl = amazonS3Client.getUrl(bucketName + thumbnailDirectory,
+            thumbnailPrefix + imageName)
+        .toString();
+    return S3ImageDto.builder()
+        .originUrl(originUrl)
+        .thumbnailUrl(thumbnailUrl)
+        .build();
+  }
 }

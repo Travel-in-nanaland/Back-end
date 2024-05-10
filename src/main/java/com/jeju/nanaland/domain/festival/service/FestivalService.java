@@ -17,11 +17,9 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -41,12 +39,13 @@ public class FestivalService {
   private final FavoriteService favoriteService;
   private final SearchService searchService;
 
-  public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size) {
+  public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
+      List<String> addressFilterList) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
-        memberInfoDto.getLanguage().getLocale(), pageable, false);
+        memberInfoDto.getLanguage().getLocale(), pageable, false, addressFilterList);
 
     List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
 
@@ -230,53 +229,15 @@ public class FestivalService {
     return favoriteService.getMemberFavoritePostIds(memberInfoDto.getMember(), FESTIVAL);
   }
 
-  //월,화,수,목 형태로 한국어 요일 반환
-  public String getKoreanDayOfWeek(LocalDate date) {
-    return date.getDayOfWeek()
-        .getDisplayName(TextStyle.SHORT, java.util.Locale.KOREA);
+  public DayOfWeek getIntDayOfWeek(LocalDate date) {
+    /*
+      getDayOfWeek().getValue()는 월요일이 1부터 시작,
+      선언한 enum DayOfWeek은 getValue()로 불러왔을 때 0부터시작이므로 -1 작성
+     */
+    return DayOfWeek.values()[date.getDayOfWeek().getValue() - 1];
   }
 
   public String getDayOfWeekByLocale(Locale locale, LocalDate date) {
-    String result = null;
-
-    if (locale == Locale.KOREAN) { //한국어 요일
-      result = getKoreanDayOfWeek(date);
-    } else if ((locale == Locale.ENGLISH) || locale == Locale.MALAYSIA) {// 영어와 말레이시아어는 영어로 표기
-      result = date.getDayOfWeek()
-          .getDisplayName(TextStyle.SHORT, java.util.Locale.ENGLISH);
-    } else if (locale == Locale.VIETNAMESE) { // 베트남어 일 경우
-      String koreanDayOfWeek = getKoreanDayOfWeek(date);
-
-      result = switch (koreanDayOfWeek) {
-        case "월" -> DayOfWeek.VIE_MON.getValue();
-        case "화" -> DayOfWeek.VIE_TUE.getValue();
-        case "수" -> DayOfWeek.VIE_WED.getValue();
-        case "목" -> DayOfWeek.VIE_THU.getValue();
-        case "금" -> DayOfWeek.VIE_FRI.getValue();
-        case "토" -> DayOfWeek.VIE_SAT.getValue();
-        case "일" -> DayOfWeek.VIE_SUN.getValue();
-        default -> result;
-      };
-
-    } else if (locale == Locale.CHINESE) {
-      String koreanDayOfWeek = getKoreanDayOfWeek(date);
-
-      result = switch (koreanDayOfWeek) {
-        case "월" -> DayOfWeek.CN_MON.getValue();
-        case "화" -> DayOfWeek.CN_TUE.getValue();
-        case "수" -> DayOfWeek.CN_WED.getValue();
-        case "목" -> DayOfWeek.CN_THU.getValue();
-        case "금" -> DayOfWeek.CN_FRI.getValue();
-        case "토" -> DayOfWeek.CN_SAT.getValue();
-        case "일" -> DayOfWeek.CN_SUN.getValue();
-        default -> result;
-      };
-
-    }
-    if (result == null) {
-      throw new ServerErrorException(ErrorCode.DAY_OF_WEEK_MAPPING_ERROR.getMessage());
-    }
-    return result;
-
+    return getIntDayOfWeek(date).getValueByLocale(locale);
   }
 }
