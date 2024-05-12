@@ -22,7 +22,6 @@ import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.util.JwtUtil;
@@ -98,12 +97,12 @@ public class MemberLoginService {
     if (language == null) {
       String errorMessage = joinDto.getLocale() + "에 해당하는 언어 정보가 없습니다.";
       log.error(errorMessage);
-      throw new ServerErrorException(errorMessage);
+      throw new NotFoundException(errorMessage);
     }
     if (memberTravelType == null) {
       String errorMessage = TravelType.NONE + "에 해당하는 타입 정보가 없습니다.";
       log.error(errorMessage);
-      throw new ServerErrorException(errorMessage);
+      throw new NotFoundException(errorMessage);
     }
 
     Member member = Member.builder()

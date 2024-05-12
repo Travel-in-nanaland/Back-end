@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_MEMBER_PROFILE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
@@ -13,6 +14,7 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberProfileService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
@@ -28,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -132,24 +135,23 @@ public class MemberController {
     return BaseResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
-//  @Operation(
-//      summary = "유저 타입에 따른 추천 게시물 2개 반환",
-//      description =
-//          "https://docs.google.com/spreadsheets/d/1zhqBmQx6kGLWk3W29wVPDRSlQJqa8vfS0luX7enL_Cg/edit#gid=1427669947 "
-//              + "의 온보딩 페이지에 정리된 결과에 따른 추천 게시물 2개 반환")
-//  @ApiResponses(value = {
-//      @ApiResponse(responseCode = "200", description = "성공"),
-//      @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),
-//      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
-//  })
-//  @GetMapping("/recommended")
-//  public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
-//      @AuthMember MemberInfoDto memberInfoDto) {
-//
-//    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
-//        memberInfoDto.getMember().getId());
-//    return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
-//  }
+  @Operation(
+      summary = "유저 타입에 따른 추천 게시물 2개 반환",
+      description =
+          "https://docs.google.com/spreadsheets/d/1zhqBmQx6kGLWk3W29wVPDRSlQJqa8vfS0luX7enL_Cg/edit#gid=1427669947 "
+              + "의 온보딩 페이지에 정리된 결과에 따른 추천 게시물 2개 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/recommended")
+  public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
+      @AuthMember MemberInfoDto memberInfoDto) {
+
+    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+  }
 
   @Operation(
       summary = "유저 프로필 수정",
