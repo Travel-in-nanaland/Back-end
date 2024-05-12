@@ -64,12 +64,17 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommendTrans.introduction
         ))
         .from(recommend)
+
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
+
         .innerJoin(experience).on(experience.id.eq(recommend.postId))
+
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
+
         .innerJoin(experience.imageFile, imageFile)
+
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.EXPERIENCE))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
@@ -89,11 +94,16 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommendTrans.introduction
         ))
         .from(recommend)
+
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
+
         .innerJoin(market).on(market.id.eq(recommend.postId))
+
         .innerJoin(market.marketTrans, marketTrans).on(marketTrans.language.locale.eq(locale))
+
         .innerJoin(market.imageFile, imageFile)
+
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.MARKET))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
