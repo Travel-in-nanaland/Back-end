@@ -12,7 +12,7 @@ import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;

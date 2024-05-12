@@ -1,9 +1,9 @@
 package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentItem;
-import com.jeju.nanaland.domain.member.entity.ConsentType;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
+import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import java.util.List;
 import java.util.stream.Collectors;

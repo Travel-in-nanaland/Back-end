@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;

@@ -13,12 +13,16 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.util.JwtUtil;
@@ -41,6 +45,7 @@ public class MemberLoginService {
   private final S3ImageService s3ImageService;
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
+  private final MemberTravelTypeRepository memberTravelTypeRepository;
 
   @Transactional
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
@@ -86,6 +91,20 @@ public class MemberLoginService {
   private Member createMember(JoinDto joinDto, ImageFile imageFile, String nickname) {
 
     Language language = languageRepository.findByLocale(Locale.valueOf(joinDto.getLocale()));
+    MemberTravelType memberTravelType = memberTravelTypeRepository.findByTravelType(
+        TravelType.NONE);
+
+    // Enum에는 있지만 DB에는 없는 경우
+    if (language == null) {
+      String errorMessage = joinDto.getLocale() + "에 해당하는 언어 정보가 없습니다.";
+      log.error(errorMessage);
+      throw new ServerErrorException(errorMessage);
+    }
+    if (memberTravelType == null) {
+      String errorMessage = TravelType.NONE + "에 해당하는 타입 정보가 없습니다.";
+      log.error(errorMessage);
+      throw new ServerErrorException(errorMessage);
+    }
 
     Member member = Member.builder()
         .language(language)
@@ -96,6 +115,7 @@ public class MemberLoginService {
         .birthDate(joinDto.getBirthDate())
         .provider(Provider.valueOf(joinDto.getProvider()))
         .providerId(joinDto.getProviderId())
+        .memberTravelType(memberTravelType)
         .build();
     return memberRepository.save(member);
   }

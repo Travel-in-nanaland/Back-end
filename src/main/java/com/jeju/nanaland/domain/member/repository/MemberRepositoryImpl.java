@@ -6,7 +6,7 @@ import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

@@ -7,17 +7,18 @@ import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberType;
+import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.mysema.commons.lang.Pair;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,33 +34,44 @@ public class MemberTypeService {
   private final FestivalRepository festivalRepository;
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
+  private final MemberTravelTypeRepository memberTravelTypeRepository;
 
   @Transactional
-  public void updateMemberType(Long memberId, String type) {
+  public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
 
-    Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
+    Member member = memberInfoDto.getMember();
+    String newTravelType = updateTypeDto.getType();
+    MemberTravelType newType = memberTravelTypeRepository.findByTravelType(
+        TravelType.valueOf(newTravelType));
 
-    member.updateMemberType(MemberType.valueOf(type));
-  }
-
-  public List<MemberResponse.RecommendPostDto> getRecommendPostsByType(Long memberId) {
-
-    Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
-
-    MemberType type = member.getType();
-    if (type == null) {
-      throw new ServerErrorException("사용자 타입이 설정돼있지 않습니다.");
-    }
-    com.jeju.nanaland.domain.common.entity.Locale locale = member.getLanguage().getLocale();
-
-    // memberType에 저장된 Pair<카테고리, Id>를 순회하며 DTO 추가
-    List<MemberResponse.RecommendPostDto> result = new ArrayList<>();
-    for (Pair<String, Long> recommendPost : type.getRecommendPosts()) {
-      result.add(getRecommendPostDto(recommendPost, locale));
+    // Enum에는 있지만 DB에는 없는 경우
+    if (newType == null) {
+      String errorMessage = newTravelType + "에 해당하는 타입 정보가 없습니다.";
+      log.error(errorMessage);
+      throw new ServerErrorException(errorMessage);
     }
 
-    return result;
+    member.updateMemberTravelType(newType);
   }
+
+//  public List<MemberResponse.RecommendPostDto> getRecommendPostsByType(Long memberId) {
+//
+//    Member member = memberRepository.findById(memberId).orElseThrow(BadRequestException::new);
+//
+//    TravelType type = member.getMemberTravelType().getTravelType();
+//    if (type == TravelType.NONE) {
+//
+//    }
+//    com.jeju.nanaland.domain.common.entity.Locale locale = member.getLanguage().getLocale();
+//
+//    // memberType에 저장된 Pair<카테고리, Id>를 순회하며 DTO 추가
+//    List<MemberResponse.RecommendPostDto> result = new ArrayList<>();
+//    for (Pair<String, Long> recommendPost : type.getRecommendPosts()) {
+//      result.add(getRecommendPostDto(recommendPost, locale));
+//    }
+//
+//    return result;
+//  }
 
   private MemberResponse.RecommendPostDto getRecommendPostDto(Pair<String, Long> recommendPost,
       Locale locale) {
