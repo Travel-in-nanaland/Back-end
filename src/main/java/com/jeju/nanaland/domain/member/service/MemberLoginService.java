@@ -25,10 +25,12 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -175,5 +177,15 @@ public class MemberLoginService {
         .withdrawalType(WithdrawalType.valueOf(withdrawalType.getWithdrawalType()))
         .build();
     memberWithdrawalRepository.save(memberWithdrawal);
+  }
+
+  @Transactional
+  @Scheduled(cron = "0 0 0 * * *")
+  public void deleteWithdrawalMemberInfo() {
+    List<Member> members = memberRepository.findInactiveMembersForWithdrawalDate();
+
+    if (!members.isEmpty()) {
+      members.forEach(Member::updatePersonalInfo);
+    }
   }
 }

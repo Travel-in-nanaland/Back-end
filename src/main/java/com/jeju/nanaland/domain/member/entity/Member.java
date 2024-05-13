@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -25,16 +26,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLRestriction("status = 'ACTIVE'")
 public class Member extends BaseEntity {
 
   @Enumerated(value = EnumType.STRING)
@@ -47,6 +47,7 @@ public class Member extends BaseEntity {
   private Language language;
 
   @NotBlank
+  @Email
   @Column(nullable = false)
   private String email;
 
@@ -125,5 +126,13 @@ public class Member extends BaseEntity {
 
   public void updateLanguage(Language language) {
     this.language = language;
+  }
+
+  public void updatePersonalInfo() {
+    this.email = "INACTIVE@nanaland.com";
+    this.nickname = UUID.randomUUID().toString().substring(0, 16);
+    this.providerId = -1L;
+    this.gender = "";
+    this.birthDate = null;
   }
 }
