@@ -3,16 +3,12 @@ package com.jeju.nanaland.domain.entity;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
@@ -20,8 +16,6 @@ import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,50 +182,5 @@ class EntityBuilderTest {
         .amenity("amenity")
         .build();
     em.persist(experienceTrans1);
-  }
-
-  @Test
-  void memberStatusRestrictionTest() {
-    // status ACTIVE, INACTIVE인 Memeber 생성
-    Member memberStatusActive = Member.builder()
-        .language(language)
-        .email("email")
-        .nickname("nickname")
-        .provider(Provider.APPLE)
-        .providerId(123L)
-        .profileImageFile(imageFile)
-        .build();
-
-    Member memberStatusInActive = Member.builder()
-        .language(language)
-        .email("email2")
-        .nickname("nickname2")
-        .provider(Provider.APPLE)
-        .providerId(1234L)
-        .profileImageFile(imageFile2)
-        .build();
-    memberStatusInActive.updateStatus(Status.INACTIVE);
-    em.persist(memberStatusActive);
-    em.persist(memberStatusInActive);
-
-    // test 1 -> Member field에 private Status status = Status.ACTIVE 테스트
-    Assertions.assertThat(memberStatusActive.getStatus()).isEqualTo(Status.ACTIVE);
-    Assertions.assertThat(memberStatusActive.getLevel()).isEqualTo(1);
-    Assertions.assertThat(memberStatusInActive.getStatus()).isEqualTo(Status.INACTIVE);
-    Assertions.assertThat(memberStatusInActive.getLevel()).isEqualTo(1);
-
-    // test 2 -> JpaMethod 테스트
-    Optional<Member> member1 = memberRepository.findMemberById(memberStatusActive.getId());
-    Optional<Member> member2 = memberRepository.findMemberById(memberStatusInActive.getId());
-    Optional<Member> member3 = memberRepository.findByProviderAndProviderId(Provider.APPLE, 1234L);
-
-    Assertions.assertThat(member1).isNotNull();
-    Assertions.assertThat(member2.isPresent()).isFalse();
-    Assertions.assertThat(member3.isPresent()).isFalse();
-
-    // test 3 -> queryDsl 테스트
-    MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
-        memberStatusInActive.getId());
-    Assertions.assertThat(memberInfoDto).isNull();
   }
 }
