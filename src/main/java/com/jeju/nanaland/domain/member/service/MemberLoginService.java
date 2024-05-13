@@ -110,7 +110,7 @@ public class MemberLoginService {
     Member member = memberRepository.findByProviderAndProviderId(
             Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId())
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
-
+    updateMemberActive(member);
     updateLanguageDifferent(loginDto, member);
     return getJwtDto(member);
   }
@@ -125,6 +125,13 @@ public class MemberLoginService {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
+  }
+
+  @Transactional
+  public void updateMemberActive(Member member) {
+    if (member.getStatus().equals(Status.INACTIVE)) {
+      member.updateStatus(Status.ACTIVE);
+    }
   }
 
   @Transactional
