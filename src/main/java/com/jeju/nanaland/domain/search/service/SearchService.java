@@ -39,7 +39,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -218,7 +217,7 @@ public class SearchService {
     Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, MARKET);
+    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, NANA);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NanaThumbnail thumbnail : resultPage) {
@@ -254,21 +253,9 @@ public class SearchService {
 
     // 가장 검색어가 많은 8개
     ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-    Set<TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores(key, 0, 7);
-    if (typedTuples != null) {
-      List<String> rankList = new ArrayList<>();
-      for (TypedTuple<String> typedTuple : typedTuples) {
-        // 최대 8개
-        if (rankList.size() == 8) {
-          break;
-        }
-        rankList.add(typedTuple.getValue());
-      }
+    Set<String> popularKeywords = zSetOperations.reverseRange(key, 0, 7);
 
-      return rankList;
-    }
-
-    return null;
+    return popularKeywords != null ? new ArrayList<>(popularKeywords) : null;
   }
 
   // version1 : 인기검색어 정보 삭제하지 않고 계속 누적됨

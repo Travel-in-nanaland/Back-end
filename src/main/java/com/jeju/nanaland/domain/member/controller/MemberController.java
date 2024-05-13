@@ -1,18 +1,23 @@
 package com.jeju.nanaland.domain.member.controller;
 
+import static com.jeju.nanaland.global.exception.SuccessCode.GET_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
+import com.jeju.nanaland.domain.member.service.MemberProfileService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -50,6 +55,7 @@ public class MemberController {
 
   private final MemberLoginService memberLoginService;
   private final MemberTypeService memberTypeService;
+  private final MemberProfileService memberProfileService;
 
   @Operation(summary = "회원 가입", description = "회원 가입을 하면 JWT가 발급됩니다. ")
   @ApiResponses(value = {
@@ -162,5 +168,40 @@ public class MemberController {
       @RequestBody @Valid WithdrawalDto withdrawalType) {
     memberLoginService.withdrawal(memberInfoDto, withdrawalType);
     return BaseResponse.success(SuccessCode.WITHDRAWAL_SUCCESS);
+  }
+
+  @Operation(
+      summary = "유저 프로필 수정",
+      description = "유저 닉네임, 설명, 프로필 사진 수정")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "이미지 업로드에 실패한 경우", content = @Content)
+  })
+  @PatchMapping(
+      value = "/profile",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public BaseResponse<String> updateProfile(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestPart @Valid ProfileUpdateDto reqDto,
+      @RequestPart(required = false) MultipartFile multipartFile) {
+
+    memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile);
+    return BaseResponse.success(UPDATE_MEMBER_PROFILE_SUCCESS);
+  }
+
+  @Operation(
+      summary = "유저 프로필 조회",
+      description = "유저 이메일, provider, 프로필 썸네일 이미지, 닉네임, 설명, 레벨, 해시태그 리스트 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/profile")
+  public BaseResponse<ProfileDto> getMemberProfile(
+      @AuthMember MemberInfoDto memberInfoDto) {
+
+    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
+    return BaseResponse.success(GET_MEMBER_PROFILE_SUCCESS, profileDto);
   }
 }
