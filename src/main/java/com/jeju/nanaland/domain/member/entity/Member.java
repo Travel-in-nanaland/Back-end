@@ -47,7 +47,7 @@ public class Member extends BaseEntity {
   private Language language;
 
   @NotBlank
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   private String email;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -110,10 +110,6 @@ public class Member extends BaseEntity {
     this.type = type;
   }
 
-  public void updateEmail(String email) {
-    this.email = email;
-  }
-
   public void updateProfile(ProfileUpdateDto profileUpdateDto) {
     // TODO: 닉네임 중복 확인 & 닉네임 글자수 제한
     this.nickname =
@@ -122,7 +118,7 @@ public class Member extends BaseEntity {
         profileUpdateDto.getDescription() != null ? profileUpdateDto.getDescription()
             : this.description;
   }
-  
+
   public void updateStatus(Status status) {
     this.status = status;
   }
