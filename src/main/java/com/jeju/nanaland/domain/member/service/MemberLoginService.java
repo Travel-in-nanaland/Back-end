@@ -2,7 +2,6 @@ package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
-import static java.lang.String.format;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
@@ -23,7 +22,6 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
-import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,15 +39,13 @@ public class MemberLoginService {
   private final MemberRepository memberRepository;
   private final LanguageRepository languageRepository;
   private final JwtUtil jwtUtil;
-  private final S3ImageService s3ImageService;
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
   private final MemberTravelTypeRepository memberTravelTypeRepository;
 
   @Transactional
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
-    Optional<Member> memberOptional = memberRepository.findDuplicateMember(
-        joinDto.getEmail(),
+    Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
         Provider.valueOf(joinDto.getProvider()),
         joinDto.getProviderId());
 
@@ -122,8 +118,10 @@ public class MemberLoginService {
   @Transactional
   public JwtDto login(LoginDto loginDto) {
 
-    Member member = findLoginMember(loginDto);
-    updateEmailDifferent(loginDto, member);
+    Member member = memberRepository.findByProviderAndProviderId(
+            Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId())
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+
     updateLanguageDifferent(loginDto, member);
     return getJwtDto(member);
   }
@@ -138,35 +136,6 @@ public class MemberLoginService {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
-  }
-
-  private Member findLoginMember(LoginDto loginDto) {
-    // provider, providerId가 일치하는 회원 조회
-    Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
-        Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId());
-
-    if (memberOptional.isPresent()) {
-      return memberOptional.get();
-    }
-
-    // 해당 이메일로 가입된 계정이 없는 경우, 회원 가입 필요
-    Member member = memberRepository.findByEmail(loginDto.getEmail())
-        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
-
-    // 해당 이메일로 가입된 계정이 있으나, provider가 다른 경우, 소셜 로그인 변경 필요
-    if (member.getProvider() != Provider.valueOf(loginDto.getProvider())) {
-      throw new ConflictException(
-          format(ErrorCode.CONFLICT_PROVIDER.getMessage(), member.getProvider()));
-    } else {
-      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
-    }
-  }
-
-  @Transactional
-  public void updateEmailDifferent(LoginDto loginDto, Member member) {
-    if (!member.getEmail().equals(loginDto.getEmail())) {
-      member.updateEmail(loginDto.getEmail());
-    }
   }
 
   @Transactional
