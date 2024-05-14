@@ -2,17 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Travel in Nanaland</title>
 </head>
 <body>
-<script>
-  var launchAppUrl = 'nanaland://detail?'; // 앱 스키마
+<script th:inline="javascript">
+  var category = /*[[${category}]]*/ '';
+  var id = /*[[${id}]]*/ '';
+  var launchAppUrl = 'nanaland://detail?category=' + category + '&id=' + id;
   var timer;	// 타이머
   var schInterval;
   var userAgent = navigator.userAgent.toLowerCase();
   var isAndroid = userAgent.search('android') > -1;
   var isIOS = !isAndroid && (/iphone|ipad|ipod/i.test(userAgent));
   var os;
+
+  console.log(launchAppUrl)
 
   function mo_chk() {
     var mobile = (/iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()));
