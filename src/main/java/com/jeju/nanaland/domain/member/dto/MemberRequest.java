@@ -2,6 +2,10 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.member.entity.ConsentType;
+import com.jeju.nanaland.domain.member.entity.MemberType;
+import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -125,6 +129,23 @@ public class MemberRequest {
             "GAMGYUL_LATTE", "GAMGYUL_SIKHYE", "GAMGYUL_ADE", "GAMGYUL_BUBBLE_TEA"})
     private String type;
   }
+
+  @Data
+  @Schema(description = "회원 탈퇴 요청 DTO")
+  public static class WithdrawalDto {
+
+    @Schema(description = "탈퇴 사유", example = "INSUFFICIENT_CONTENT",
+        allowableValues = {"INSUFFICIENT_CONTENT", "INCONVENIENT_SERVICE", "INCONVENIENT_COMMUNITY",
+            "RARE_VISITS"})
+    @NotBlank
+    @EnumValid(
+        enumClass = WithdrawalType.class,
+        message = "WithdrawalType이 유효하지 않습니다."
+    )
+    private String withdrawalType;
+
+  }
+
 
   @Data
   @Schema(description = "프로필 정보 업데이트 요청 DTO")

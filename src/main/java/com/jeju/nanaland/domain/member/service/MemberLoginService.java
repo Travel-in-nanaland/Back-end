@@ -6,12 +6,19 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
+import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.WithdrawalType;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -23,10 +30,12 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +46,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberLoginService {
 
   private final MemberRepository memberRepository;
+  private final MemberWithdrawalRepository memberWithdrawalRepository;
   private final LanguageRepository languageRepository;
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
@@ -121,7 +131,7 @@ public class MemberLoginService {
     Member member = memberRepository.findByProviderAndProviderId(
             Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId())
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
-
+    updateMemberActive(member);
     updateLanguageDifferent(loginDto, member);
     return getJwtDto(member);
   }
@@ -136,6 +146,13 @@ public class MemberLoginService {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
+  }
+
+  @Transactional
+  public void updateMemberActive(Member member) {
+    if (member.getStatus().equals(Status.INACTIVE)) {
+      member.updateStatus(Status.ACTIVE);
+    }
   }
 
   @Transactional
@@ -175,6 +192,28 @@ public class MemberLoginService {
     String memberId = String.valueOf(memberInfoDto.getMember().getId());
     if (jwtUtil.findRefreshTokenById(memberId) != null) {
       jwtUtil.deleteRefreshToken(memberId);
+    }
+  }
+
+  @Transactional
+  public void withdrawal(MemberInfoDto memberInfoDto, WithdrawalDto withdrawalType) {
+
+    memberInfoDto.getMember().updateStatus(Status.INACTIVE);
+
+    MemberWithdrawal memberWithdrawal = MemberWithdrawal.builder()
+        .member(memberInfoDto.getMember())
+        .withdrawalType(WithdrawalType.valueOf(withdrawalType.getWithdrawalType()))
+        .build();
+    memberWithdrawalRepository.save(memberWithdrawal);
+  }
+
+  @Transactional
+  @Scheduled(cron = "0 0 0 * * *")
+  public void deleteWithdrawalMemberInfo() {
+    List<Member> members = memberRepository.findInactiveMembersForWithdrawalDate();
+
+    if (!members.isEmpty()) {
+      members.forEach(Member::updatePersonalInfo);
     }
   }
 }
