@@ -57,6 +57,7 @@ public class MemberTypeService {
     if (travelType == TravelType.NONE) {
       // 타입이 NONE이면 랜덤으로 NONE이 아닌 하나의 타입 선택
       travelType = getRandomTravelType();
+      memberTravelType = memberTravelTypeRepository.findByTravelType(travelType);
     }
 
     List<Recommend> recommends = recommendRepository.findAllByMemberTravelType(memberTravelType);
