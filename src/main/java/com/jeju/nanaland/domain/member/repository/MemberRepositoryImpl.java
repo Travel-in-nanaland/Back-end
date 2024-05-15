@@ -1,11 +1,15 @@
 package com.jeju.nanaland.domain.member.repository;
 
 import static com.jeju.nanaland.domain.member.entity.QMember.member;
+import static com.jeju.nanaland.domain.member.entity.QMemberConsent.memberConsent;
 
 import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_MemberInfoDto;
+import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -24,5 +28,16 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .leftJoin(member.language)
         .where(member.id.eq(memberId).and(member.status.eq(Status.ACTIVE)))
         .fetchOne();
+  }
+
+  @Override
+  public List<MemberConsent> findExpiredMemberConsent() {
+    LocalDate expirationDate = LocalDate.now().minusYears(1).minusMonths(6);
+
+    return queryFactory
+        .selectFrom(memberConsent)
+        .where(memberConsent.consent.eq(true)
+            .and(memberConsent.consentDate.before(expirationDate.atStartOfDay())))
+        .fetch();
   }
 }
