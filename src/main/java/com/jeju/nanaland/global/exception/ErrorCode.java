@@ -32,8 +32,6 @@ public enum ErrorCode {
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
   NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다."),
-  NICKNAME_LENGTH_EXCEEDED(BAD_REQUEST, "닉네임의 길이를 알맞게 설정해주세요."),
-  DESCRIPTION_LENGTH_EXCEEDED(BAD_REQUEST, "소개글의 길이를 알맞게 설정해주세요."),
 
   START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다."),
   DAY_OF_WEEK_MAPPING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "나라별 요일 추출 에러입니다.");

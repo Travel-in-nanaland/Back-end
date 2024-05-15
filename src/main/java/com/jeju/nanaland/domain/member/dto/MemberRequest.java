@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
@@ -60,6 +61,7 @@ public class MemberRequest {
 
     @Schema(description = "닉네임(필수) - GUEST이면 GUEST_{providerId}로 임시 지정하여 요청")
     @NotBlank
+    @Size(max = 12, message = "닉네임 최대 길이 초과")
     private String nickname;
   }
 
@@ -132,9 +134,11 @@ public class MemberRequest {
 
     @Schema(description = "닉네임")
     @NotBlank
+    @Size(max = 12, message = "닉네임 최대 길이 초과")
     private String nickname;
 
     @Schema(description = "소개")
+    @Size(max = 70, message = "소개 최대 길이 초과")
     private String description;
   }
 }

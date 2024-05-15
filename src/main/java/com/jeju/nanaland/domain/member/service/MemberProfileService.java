@@ -1,8 +1,6 @@
 package com.jeju.nanaland.domain.member.service;
 
-import static com.jeju.nanaland.global.exception.ErrorCode.DESCRIPTION_LENGTH_EXCEEDED;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
-import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_LENGTH_EXCEEDED;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -11,7 +9,6 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -39,7 +36,7 @@ public class MemberProfileService {
   public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
       MultipartFile multipartFile) {
 
-    validateNicknameAndDescription(profileUpdateDto);
+    validateNickname(profileUpdateDto.getNickname());
     Member member = memberInfoDto.getMember();
     ImageFile profileImageFile = member.getProfileImageFile();
     if (multipartFile != null) {
@@ -58,18 +55,7 @@ public class MemberProfileService {
     member.updateProfile(profileUpdateDto);
   }
 
-  private void validateNicknameAndDescription(ProfileUpdateDto profileUpdateDto) {
-    String nickname = profileUpdateDto.getNickname();
-    String description = profileUpdateDto.getDescription();
-
-    if (nickname.length() > 12) {
-      throw new BadRequestException(NICKNAME_LENGTH_EXCEEDED.getMessage());
-    }
-
-    if (description.length() > 70) {
-      throw new BadRequestException(DESCRIPTION_LENGTH_EXCEEDED.getMessage());
-    }
-
+  private void validateNickname(String nickname) {
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
     if (memberOptional.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
