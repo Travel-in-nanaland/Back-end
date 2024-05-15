@@ -2,9 +2,6 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.member.entity.ConsentType;
-import com.jeju.nanaland.domain.member.entity.MemberType;
-import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
