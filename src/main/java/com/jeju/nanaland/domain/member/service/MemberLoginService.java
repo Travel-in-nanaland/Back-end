@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
+import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_LENGTH_EXCEEDED;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
@@ -15,6 +16,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
@@ -57,12 +59,13 @@ public class MemberLoginService {
   }
 
   private String validateNickname(JoinDto joinDto) {
-    /**
-     * TODO : 닉네임 글자 제한 확인
-     */
     String nickname = joinDto.getNickname();
     if (Provider.valueOf(joinDto.getProvider()) == Provider.GUEST) {
-      nickname = UUID.randomUUID().toString().substring(0, 16);
+      nickname = UUID.randomUUID().toString().substring(0, 12);
+    }
+
+    if (nickname.length() > 12) {
+      throw new BadRequestException(NICKNAME_LENGTH_EXCEEDED.getMessage());
     }
 
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
