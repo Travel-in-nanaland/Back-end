@@ -1,7 +1,10 @@
 package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.repository.LanguageRepository;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -24,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Slf4j
 public class MemberProfileService {
+
+  private final LanguageRepository languageRepository;
 
   private final S3ImageService s3ImageService;
 
@@ -69,5 +74,13 @@ public class MemberProfileService {
         .travelType(typeName)
         .hashtags(hashtags)
         .build();
+  }
+
+  @Transactional
+  public void updateLanguage(MemberInfoDto memberInfoDto, LanguageUpdateDto languageUpdateDto) {
+    Language locale = languageRepository.findByLocale(
+        Locale.valueOf(languageUpdateDto.getLocale()));
+
+    memberInfoDto.getMember().updateLanguage(locale);
   }
 }

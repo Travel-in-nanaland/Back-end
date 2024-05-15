@@ -155,4 +155,18 @@ public class MemberRequest {
     @Schema(description = "소개")
     private String description;
   }
+
+  @Data
+  @Schema(description = "언어 설정 변경 요청 DTO")
+  public static class LanguageUpdateDto {
+
+    @Schema(description = "언어", example = "KOREAN",
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+    @NotNull
+    @EnumValid(
+        enumClass = Locale.class,
+        message = "Locale이 유효하지 않습니다."
+    )
+    private String locale;
+  }
 }

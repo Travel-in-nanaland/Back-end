@@ -5,11 +5,13 @@ import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POS
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
@@ -200,5 +202,19 @@ public class MemberController {
 
     ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
     return BaseResponse.success(GET_MEMBER_PROFILE_SUCCESS, profileDto);
+  }
+
+  @Operation(
+      summary = "언어 설정 변경")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @PostMapping("/language")
+  public BaseResponse<Null> updateLanguage(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid LanguageUpdateDto languageUpdateDto) {
+    memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
+    return BaseResponse.success(UPDATE_LANGUAGE_SUCCESS);
   }
 }
