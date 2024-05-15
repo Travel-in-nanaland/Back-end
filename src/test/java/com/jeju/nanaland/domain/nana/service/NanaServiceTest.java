@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;

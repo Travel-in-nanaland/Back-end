@@ -15,7 +15,7 @@ import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Collections;
