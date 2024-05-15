@@ -129,9 +129,9 @@ public class MemberController {
   @PatchMapping("/type")
   public BaseResponse<Null> updateMemberType(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
+      @RequestBody @Valid MemberRequest.UpdateTypeDto updateTypeDto) {
 
-    memberTypeService.updateMemberType(memberInfoDto.getMember().getId(), request.getType());
+    memberTypeService.updateMemberType(memberInfoDto, updateTypeDto);
     return BaseResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
@@ -149,8 +149,7 @@ public class MemberController {
   public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
-        memberInfoDto.getMember().getId());
+    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 

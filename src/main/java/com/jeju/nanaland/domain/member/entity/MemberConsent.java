@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.entity;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
+import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
