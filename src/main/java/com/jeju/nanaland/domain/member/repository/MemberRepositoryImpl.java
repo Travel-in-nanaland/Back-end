@@ -1,11 +1,12 @@
 package com.jeju.nanaland.domain.member.repository;
 
 import static com.jeju.nanaland.domain.member.entity.QMember.member;
+import static com.jeju.nanaland.domain.member.entity.QMemberConsent.memberConsent;
 import static com.jeju.nanaland.domain.member.entity.QMemberWithdrawal.memberWithdrawal;
-
 import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_MemberInfoDto;
+import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .where(member.id.eq(memberId).and(member.status.eq(Status.ACTIVE)))
         .fetchOne();
   }
-
+  
   @Override
   public List<Member> findInactiveMembersForWithdrawalDate() {
     LocalDate threeMonthsAgo = LocalDate.now().minusMonths(3);
@@ -42,6 +43,17 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .where(member.status.eq(Status.INACTIVE)
             .and(member.providerId.ne(-1L))
             .and(memberWithdrawal.withdrawalDate.before(threeMonthsAgo.atStartOfDay())))
+        .fetch();
+  }
+
+  @Override
+  public List<MemberConsent> findExpiredMemberConsent() {
+    LocalDate expirationDate = LocalDate.now().minusYears(1).minusMonths(6);
+
+    return queryFactory
+        .selectFrom(memberConsent)
+        .where(memberConsent.consent.eq(true)
+            .and(memberConsent.consentDate.before(expirationDate.atStartOfDay())))
         .fetch();
   }
 }
