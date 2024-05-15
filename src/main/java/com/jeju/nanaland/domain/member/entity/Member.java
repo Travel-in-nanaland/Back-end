@@ -6,6 +6,8 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -79,8 +81,9 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
-  @Enumerated(EnumType.STRING)
-  private MemberType type;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_travel_type_id", nullable = true)
+  private MemberTravelType memberTravelType;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
@@ -88,7 +91,7 @@ public class Member extends BaseEntity {
   @Builder
   public Member(Language language, String email, ImageFile profileImageFile,
       String nickname, String description, String gender, LocalDate birthDate,
-      Provider provider, Long providerId, MemberType type) {
+      Provider provider, Long providerId, MemberTravelType memberTravelType) {
     this.language = language;
     this.email = email;
     this.profileImageFile = profileImageFile;
@@ -101,12 +104,13 @@ public class Member extends BaseEntity {
     this.providerId = providerId;
     this.roleSet = (provider == Provider.GUEST) ? new HashSet<>(List.of(Role.ROLE_GUEST))
         : new HashSet<>(List.of(Role.ROLE_MEMBER));
-    this.type = type;
+    this.memberTravelType = memberTravelType;
     this.favorites = new ArrayList<>();
   }
 
-  public void updateMemberType(MemberType type) {
-    this.type = type;
+  public void updateMemberTravelType(MemberTravelType memberTravelType) {
+
+    this.memberTravelType = memberTravelType;
   }
 
   public void updateProfile(ProfileUpdateDto profileUpdateDto) {
