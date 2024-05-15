@@ -1,10 +1,12 @@
 package com.jeju.nanaland.domain.member.dto;
 
+import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -26,6 +28,7 @@ public class MemberResponse {
 
   @Data
   @Builder
+  @AllArgsConstructor
   @Schema(description = "타입에 따른 추천 게시물 응답 DTO")
   public static class RecommendPostDto {
 
@@ -47,7 +50,18 @@ public class MemberResponse {
     private String title;
 
     @Schema(description = "게시물 짧은 설명", example = "성산일출봉은 ...")
-    private String intro;
+    private String introduction;
+
+    @QueryProjection
+    public RecommendPostDto(Long id, CategoryContent categoryContent, String thumbnailUrl,
+        String title,
+        String introduction) {
+      this.id = id;
+      this.category = categoryContent.name();
+      this.thumbnailUrl = thumbnailUrl;
+      this.title = title;
+      this.introduction = introduction;
+    }
   }
 
   @Data
@@ -72,6 +86,9 @@ public class MemberResponse {
 
     @Schema(description = "레벨")
     private Integer level;
+
+    @Schema(description = "타입")
+    private String travelType;
 
     @Schema(description = "해시태그 리스트")
     private List<String> hashtags;

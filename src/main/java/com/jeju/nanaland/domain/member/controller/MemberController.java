@@ -5,13 +5,16 @@ import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POS
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -77,9 +80,7 @@ public class MemberController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
-      @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content),
-      @ApiResponse(responseCode = "409", description = "해당 이메일이 다른 소셜 로그인으로 가입된 경우,"
-          + " 해당 이메일과 provider로 가입된 계정이 있으나, providerId가 다른 경우", content = @Content)
+      @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content)
   })
   @PostMapping("/login")
   public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
@@ -129,9 +130,9 @@ public class MemberController {
   @PatchMapping("/type")
   public BaseResponse<Null> updateMemberType(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid MemberRequest.UpdateTypeDto request) {
+      @RequestBody @Valid MemberRequest.UpdateTypeDto updateTypeDto) {
 
-    memberTypeService.updateMemberType(memberInfoDto.getMember().getId(), request.getType());
+    memberTypeService.updateMemberType(memberInfoDto, updateTypeDto);
     return BaseResponse.success(UPDATE_MEMBER_TYPE_SUCCESS);
   }
 
@@ -149,9 +150,23 @@ public class MemberController {
   public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
-        memberInfoDto.getMember().getId());
+    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+  }
+
+  @Operation(
+      summary = "회원 탈퇴")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @PostMapping("/withdrawal")
+  public BaseResponse<Null> withdrawal(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid WithdrawalDto withdrawalType) {
+    memberLoginService.withdrawal(memberInfoDto, withdrawalType);
+    return BaseResponse.success(SuccessCode.WITHDRAWAL_SUCCESS);
   }
 
   @Operation(
@@ -187,5 +202,19 @@ public class MemberController {
 
     ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
     return BaseResponse.success(GET_MEMBER_PROFILE_SUCCESS, profileDto);
+  }
+
+  @Operation(
+      summary = "언어 설정 변경")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @PostMapping("/language")
+  public BaseResponse<Null> updateLanguage(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid LanguageUpdateDto languageUpdateDto) {
+    memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
+    return BaseResponse.success(UPDATE_LANGUAGE_SUCCESS);
   }
 }

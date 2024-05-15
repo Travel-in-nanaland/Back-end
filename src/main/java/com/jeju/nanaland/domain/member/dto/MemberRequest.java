@@ -2,9 +2,10 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.member.entity.ConsentType;
-import com.jeju.nanaland.domain.member.entity.MemberType;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.WithdrawalType;
+import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -115,7 +116,7 @@ public class MemberRequest {
 
     @NotBlank
     @EnumValid(
-        enumClass = MemberType.class,
+        enumClass = TravelType.class,
         message = "테스트 결과 타입이 유효하지 않습니다."
     )
     @Schema(
@@ -129,6 +130,23 @@ public class MemberRequest {
   }
 
   @Data
+  @Schema(description = "회원 탈퇴 요청 DTO")
+  public static class WithdrawalDto {
+
+    @Schema(description = "탈퇴 사유", example = "INSUFFICIENT_CONTENT",
+        allowableValues = {"INSUFFICIENT_CONTENT", "INCONVENIENT_SERVICE", "INCONVENIENT_COMMUNITY",
+            "RARE_VISITS"})
+    @NotBlank
+    @EnumValid(
+        enumClass = WithdrawalType.class,
+        message = "WithdrawalType이 유효하지 않습니다."
+    )
+    private String withdrawalType;
+
+  }
+
+
+  @Data
   @Schema(description = "프로필 정보 업데이트 요청 DTO")
   public static class ProfileUpdateDto {
 
@@ -140,5 +158,19 @@ public class MemberRequest {
     @Schema(description = "소개")
     @Size(max = 70, message = "소개 최대 길이 초과")
     private String description;
+  }
+
+  @Data
+  @Schema(description = "언어 설정 변경 요청 DTO")
+  public static class LanguageUpdateDto {
+
+    @Schema(description = "언어", example = "KOREAN",
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+    @NotNull
+    @EnumValid(
+        enumClass = Locale.class,
+        message = "Locale이 유효하지 않습니다."
+    )
+    private String locale;
   }
 }

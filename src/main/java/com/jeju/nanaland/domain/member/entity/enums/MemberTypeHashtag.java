@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.member.entity;
+package com.jeju.nanaland.domain.member.entity.enums;
 
 import lombok.Getter;
 
