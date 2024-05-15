@@ -1,5 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
+
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -9,6 +11,8 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -17,6 +21,7 @@ import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,10 +36,13 @@ public class MemberProfileService {
   private final LanguageRepository languageRepository;
 
   private final S3ImageService s3ImageService;
+  private final MemberRepository memberRepository;
 
   @Transactional
   public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
       MultipartFile multipartFile) {
+
+    validateNickname(profileUpdateDto.getNickname());
     Member member = memberInfoDto.getMember();
     ImageFile profileImageFile = member.getProfileImageFile();
     if (multipartFile != null) {
@@ -51,6 +59,13 @@ public class MemberProfileService {
     }
 
     member.updateProfile(profileUpdateDto);
+  }
+
+  private void validateNickname(String nickname) {
+    Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
+    if (memberOptional.isPresent()) {
+      throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
+    }
   }
 
   public MemberResponse.ProfileDto getMemberProfile(MemberInfoDto memberInfoDto) {
