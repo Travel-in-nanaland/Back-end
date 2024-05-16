@@ -23,4 +23,6 @@ public @interface EnumValid {
   Class<? extends Payload>[] payload() default {};
 
   boolean ignoreCase() default false;
+
+  String[] exclude() default {};
 }

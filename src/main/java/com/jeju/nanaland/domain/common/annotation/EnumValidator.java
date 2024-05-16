@@ -2,38 +2,43 @@ package com.jeju.nanaland.domain.common.annotation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 
 @Slf4j
 public class EnumValidator implements ConstraintValidator<EnumValid, String> {
 
-  private EnumValid enumValid;
+  private Set<String> acceptedValues;
+  private boolean ignoreCase;
 
   @Override
-  public void initialize(EnumValid constraintAnnotation) {
-    this.enumValid = constraintAnnotation;
+  public void initialize(EnumValid annotation) {
+    ignoreCase = annotation.ignoreCase();
+    Class<? extends Enum<?>> enumClass = annotation.enumClass();
+    String[] exclude = annotation.exclude();
+
+    Enum<?>[] enumValues = enumClass.getEnumConstants();
+
+    acceptedValues = Arrays.stream(enumValues)
+        .map(Enum::name)
+        .filter(value -> Arrays.stream(exclude).noneMatch(excludeValue ->
+            ignoreCase ? excludeValue.equalsIgnoreCase(value) : excludeValue.equals(value)))
+        .collect(Collectors.toSet());
   }
 
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
-
-    boolean ResultDto = false;
-    // 해당 Enum 클래스의 모든 상수를 반환
-    Enum<?>[] enumValues = this.enumValid.enumClass().getEnumConstants();
-
-    // value로 들어온 값이 Enum에 존재하는지 확인
-    if (enumValues != null) {
-      for (Object enumValue : enumValues) {
-        if (ObjectUtils.isNotEmpty(value) && value.equals(enumValue.toString()) ||
-            this.enumValid.ignoreCase() && value.equalsIgnoreCase(enumValue.toString())) {
-
-          ResultDto = true;
-          break;
-        }
-      }
+    if (value == null) {
+      return true;
     }
 
-    return ResultDto;
+    if (ignoreCase) {
+      return acceptedValues.stream()
+          .anyMatch(enumValue -> enumValue.equalsIgnoreCase(value));
+    } else {
+      return acceptedValues.contains(value);
+    }
   }
 }
