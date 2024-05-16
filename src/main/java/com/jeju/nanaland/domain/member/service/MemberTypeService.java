@@ -56,8 +56,8 @@ public class MemberTypeService {
     TravelType travelType = member.getMemberTravelType().getTravelType();
     if (travelType == TravelType.NONE) {
       // 타입이 NONE이면 랜덤으로 NONE이 아닌 하나의 타입 선택
-      travelType = getRandomTravelType();
-      memberTravelType = memberTravelTypeRepository.findByTravelType(travelType);
+      memberTravelType = memberTravelTypeRepository.findByTravelType(getRandomTravelType());
+      travelType = memberTravelType.getTravelType();
     }
 
     List<Recommend> recommends = recommendRepository.findAllByMemberTravelType(memberTravelType);
@@ -66,8 +66,8 @@ public class MemberTypeService {
       log.error(errorMessage);
       throw new NotFoundException(errorMessage);
     }
-    recommends = getRandomTwoPosts(recommends);
 
+    recommends = getRandomTwoPosts(recommends);
     List<RecommendPostDto> result = new ArrayList<>();
     for (Recommend recommend : recommends) {
       Long postId = recommend.getPostId();
