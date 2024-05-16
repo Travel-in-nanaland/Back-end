@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
@@ -67,6 +69,8 @@ class MemberTypeServiceTest {
     // then
     assertThat(memberInfoDto.getMember().getMemberTravelType())
         .isEqualTo(memberTravelType);
+    verify(memberTravelTypeRepository, times(1))
+        .findByTravelType(any(TravelType.class));
   }
 
   @DisplayName("타입 수정 실패 - 없는 TravelType")
@@ -114,6 +118,14 @@ class MemberTypeServiceTest {
 
     // then
     assertThat(resultDto.size()).isEqualTo(2);
+
+    // verify
+    verify(recommendRepository, times(1))
+        .findAllByMemberTravelType(any(MemberTravelType.class));
+    verify(recommendRepository, times(1))
+        .findNatureRecommendPostDto(1L, locale, travelType);
+    verify(recommendRepository, times(1))
+        .findExperienceRecommendPostDto(2L, locale, travelType);
   }
 
   @DisplayName("추천 게시물 반환 성공 - NONE 타입일 때")
@@ -140,6 +152,16 @@ class MemberTypeServiceTest {
 
     // then
     assertThat(resultDto.size()).isEqualTo(2);
+
+    // verify
+    verify(memberTravelTypeRepository, times(1))
+        .findByTravelType(argThat(new ExcludeNoneTravelTypeMatcher()));
+    verify(recommendRepository, times(1))
+        .findAllByMemberTravelType(any(MemberTravelType.class));
+    verify(recommendRepository, times(1))
+        .findNatureRecommendPostDto(1L, locale, randomTravelType);
+    verify(recommendRepository, times(1))
+        .findExperienceRecommendPostDto(2L, locale, randomTravelType);
   }
 
   @DisplayName("추천 게시물 반환 실패 - 추천 게시물이 2개 이하일 때")
