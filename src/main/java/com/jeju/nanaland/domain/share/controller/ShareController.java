@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -12,9 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ShareController {
 
   @GetMapping("")
-  public String test(Model model, String category, Long id) {
+  public String test(Model model, String category, Long id,
+      @RequestParam(defaultValue = "en") String lang) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
-    return "deeplink";
+
+    return switch (lang) {
+      case "ko" -> "deeplink-ko";
+      case "zh" -> "deeplink-zh";
+      case "ms" -> "deeplink-ms";
+      default -> "deeplink-en";
+    };
   }
 }

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta
       content="nanaland in Jeju" property="og:title">
   <meta
-      content="Want Jeju travel tips? Click nanaland in Jeju!"
-      id="og-description"
+      content="要济州旅游贴士？点击 nanaland in Jeju！"
       property="og:description">
   <meta
       content="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/Group+632736.png"
@@ -13,28 +12,6 @@
 </head>
 <body>
 <script th:inline="javascript">
-  const userLang = navigator.language.split('-')[0];
-
-  const translations = {
-    "en": {
-      "og:description": "Want Jeju travel tips? Click nanaland in Jeju!",
-    },
-    "ko": {
-      "og:description": "제주도민과 제주 러버들의 여행 픽을 보고 싶다면? nanaland in Jeju 클릭!",
-    },
-    "zh": {
-      "og:description": "要济州旅游贴士？点击 nanaland in Jeju！"
-    },
-    "ms": {
-      "og:description": "Mahu tip perjalanan Jeju? Klik nanaland in Jeju!",
-    }
-  };
-
-  const defaultLang = "en";
-  const metaTags = translations[userLang] || translations[defaultLang];
-
-  document.getElementById("og-description").setAttribute("content", metaTags["og:description"]);
-
   var category = /*[[${category}]]*/ '';
   var id = /*[[${id}]]*/ '';
   var launchAppUrl = 'nanaland://detail?category=' + category + '&id=' + id;
