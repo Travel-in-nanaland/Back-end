@@ -14,7 +14,6 @@
 <body>
 <script th:inline="javascript">
   const userLang = navigator.language.split('-')[0];
-  console.log(userLang);
 
   const translations = {
     "en": {
@@ -45,8 +44,6 @@
   var isAndroid = userAgent.search('android') > -1;
   var isIOS = !isAndroid && (/iphone|ipad|ipod/i.test(userAgent));
   var os;
-
-  console.log(launchAppUrl)
 
   function mo_chk() {
     var mobile = (/iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()));
