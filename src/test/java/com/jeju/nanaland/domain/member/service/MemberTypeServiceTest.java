@@ -46,10 +46,10 @@ class MemberTypeServiceTest {
   @Mock
   RecommendRepository recommendRepository;
 
-  @DisplayName("타입 수정 성공")
+  @DisplayName("타입 수정 - NONE 타입이 아닐 때")
   @ParameterizedTest
-  @EnumSource(value = TravelType.class)
-  void updateTypeSuccess(TravelType travelType) {
+  @EnumSource(value = TravelType.class, names = "NONE", mode = EnumSource.Mode.EXCLUDE)
+  void updateTypeToNotNone(TravelType travelType) {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, TravelType.NONE);
 
@@ -73,9 +73,9 @@ class MemberTypeServiceTest {
         .findByTravelType(any(TravelType.class));
   }
 
-  @DisplayName("타입 수정 실패 - 없는 TravelType")
+  @DisplayName("타입 수정 - 없는 TravelType")
   @Test
-  void updateTypeFail() {
+  void updateTypeToWrongTravelType() {
     /**
      * given
      *
@@ -98,10 +98,10 @@ class MemberTypeServiceTest {
         .isEqualTo(updateTypeDto.getType() + "에 해당하는 타입 정보가 없습니다.");
   }
 
-  @DisplayName("추천 게시물 반환 성공 - NONE 타입이 아닐 때")
+  @DisplayName("추천 게시물 반환 - NONE 타입이 아닐 때")
   @ParameterizedTest
   @EnumSource(value = TravelType.class, names = "NONE", mode = EnumSource.Mode.EXCLUDE)
-  void getRecommendPostsSuccess(TravelType travelType) {
+  void getRecommendPostsWithNotNone(TravelType travelType) {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, travelType);
     Locale locale = memberInfoDto.getLanguage().getLocale();
@@ -128,9 +128,9 @@ class MemberTypeServiceTest {
         .findExperienceRecommendPostDto(2L, locale, travelType);
   }
 
-  @DisplayName("추천 게시물 반환 성공 - NONE 타입일 때")
+  @DisplayName("추천 게시물 반환 - NONE 타입일 때")
   @Test
-  void getRecommendPostsSuccess2() {
+  void getRecommendPostsWithNoneType() {
     // given
     TravelType travelType = TravelType.NONE;
     MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, travelType);
@@ -164,10 +164,10 @@ class MemberTypeServiceTest {
         .findExperienceRecommendPostDto(2L, locale, randomTravelType);
   }
 
-  @DisplayName("추천 게시물 반환 실패 - 추천 게시물이 2개 이하일 때")
+  @DisplayName("추천 게시물 반환 - 추천 게시물이 너무 적을 때")
   @ParameterizedTest
   @EnumSource(value = TravelType.class, names = "NONE", mode = Mode.EXCLUDE)
-  void getRecommendPostsFail(TravelType travelType) {
+  void getRecommendPostsWithNoRecommend(TravelType travelType) {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, travelType);
 
