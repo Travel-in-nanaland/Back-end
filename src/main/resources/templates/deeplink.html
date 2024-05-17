@@ -4,7 +4,7 @@
   <meta
       content="nanaland in Jeju" property="og:title">
   <meta
-      content="Looking for travel tips from Jeju locals and lovers? Click on nanaland in Jeju!"
+      content="Want Jeju travel tips? Click nanaland in Jeju!"
       id="og-description"
       property="og:description">
   <meta
@@ -13,20 +13,21 @@
 </head>
 <body>
 <script th:inline="javascript">
-  const userLang = navigator.language;
+  const userLang = navigator.language.split('-')[0];
+  console.log(userLang);
 
   const translations = {
     "en": {
-      "og:description": "Travel in Looking for travel tips from Jeju locals and lovers? Click on nanaland in Jeju!",
+      "og:description": "Want Jeju travel tips? Click nanaland in Jeju!",
     },
     "ko": {
-      "og:title": "제주도민과 제주 러버들의 여행 픽을 보고 싶다면? nanaland in Jeju 클릭!",
+      "og:description": "제주도민과 제주 러버들의 여행 픽을 보고 싶다면? nanaland in Jeju 클릭!",
     },
     "zh": {
-      "og:description": "想要了解济州当地人和爱好者的旅行贴士吗？点击 nanaland in Jeju！"
+      "og:description": "要济州旅游贴士？点击 nanaland in Jeju！"
     },
     "ms": {
-      "og:description": "Mencari tip perjalanan dari penduduk dan pencinta Jeju? Klik nanaland in Jeju!",
+      "og:description": "Mahu tip perjalanan Jeju? Klik nanaland in Jeju!",
     }
   };
 
