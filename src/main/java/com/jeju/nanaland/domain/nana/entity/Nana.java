@@ -37,6 +37,11 @@ public class Nana extends BaseEntity {
     this.nanaTitleImageFile = nanaTitleImageFile;
     this.nanaContentImageList = nanaContentImageList;
   }
+
+  public void updateNanaContentImageList(List<NanaContentImage> nanaContentImageList) {
+    this.nanaContentImageList = nanaContentImageList;
+  }
+
 }
 
 

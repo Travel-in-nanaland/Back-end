@@ -33,8 +33,7 @@ public class NanaRepositoryTest {
 
   Language language2;
 
-  ImageFile imageFile;
-  ImageFile imageFile2;
+  ImageFile imageFile, imageFile2, imageFile3;
 
   @BeforeEach
   void init() {
@@ -61,6 +60,12 @@ public class NanaRepositoryTest {
         .thumbnailUrl("thumbnailUrl2")
         .build();
     em.persist(imageFile2);
+
+    imageFile3 = ImageFile.builder()
+        .originUrl("originUrl3")
+        .thumbnailUrl("thumbnailUrl3")
+        .build();
+    em.persist(imageFile3);
   }
 
   @Test
@@ -68,24 +73,25 @@ public class NanaRepositoryTest {
   void nanaQueryDslTest() {
     Nana nana1 = Nana.builder()
         .version("ver1")
+        .nanaTitleImageFile(imageFile)
         .build();
     em.persist(nana1);
 
     Nana nana2 = Nana.builder()
-
         .version("ver1")
+        .nanaTitleImageFile(imageFile2)
         .build();
     em.persist(nana2);
 
     Nana nana3 = Nana.builder()
         .version("ver1")
+        .nanaTitleImageFile(imageFile3)
         .build();
     em.persist(nana3);
 
     //nana1=> active = true / language2=> chinese
     NanaTitle nanaTitle1 = NanaTitle.builder()
         .notice("notice1")
-        .imageFile(imageFile)
         .language(language2)
         .nana(nana1)
         .build();
@@ -94,7 +100,6 @@ public class NanaRepositoryTest {
     //nana3=> active = true / language2=> chinese
     NanaTitle nanaTitle2 = NanaTitle.builder()
         .notice("notice2")
-        .imageFile(imageFile2)
         .language(language2)
         .nana(nana3)
         .build();
@@ -106,7 +111,6 @@ public class NanaRepositoryTest {
         .content("content")
         .number(1)
         .title("title")
-        .imageFile(imageFile)
         .build();
     em.persist(nanaContent1);
 
@@ -116,7 +120,6 @@ public class NanaRepositoryTest {
         .content("content2")
         .number(2)
         .title("title2")
-        .imageFile(imageFile)
         .build();
     em.persist(nanaContent2);
 

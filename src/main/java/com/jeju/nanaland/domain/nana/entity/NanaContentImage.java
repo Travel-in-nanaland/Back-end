@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -40,4 +41,10 @@ public class NanaContentImage extends BaseEntity {
   @Column(nullable = false)
   private int number;
 
+  @Builder
+  public NanaContentImage(Nana nana, ImageFile imageFile, int number) {
+    this.nana = nana;
+    this.imageFile = imageFile;
+    this.number = number;
+  }
 }
