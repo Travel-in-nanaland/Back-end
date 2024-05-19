@@ -24,16 +24,17 @@ public class Nana extends BaseEntity {
   private String version;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "image_file_id", nullable = false)
-  private ImageFile imageFile;
+  @JoinColumn(name = "nana_title_image_file_id", nullable = false)
+  private ImageFile nanaTitleImageFile;
 
   @OneToMany(mappedBy = "nana", cascade = CascadeType.REMOVE)
   private List<NanaContentImage> nanaContentImageList;
 
   @Builder
-  public Nana(String version, ImageFile imageFile, List<NanaContentImage> nanaContentImageList) {
+  public Nana(String version, ImageFile nanaTitleImageFile,
+      List<NanaContentImage> nanaContentImageList) {
     this.version = version;
-    this.imageFile = imageFile;
+    this.nanaTitleImageFile = nanaTitleImageFile;
     this.nanaContentImageList = nanaContentImageList;
   }
 }

@@ -138,7 +138,7 @@ public class NanaService {
     }
 
     return NanaResponse.NanaDetailDto.builder()
-        .originUrl(nana.getImageFile().getOriginUrl())
+        .originUrl(nana.getNanaTitleImageFile().getOriginUrl())
         .subHeading(nanaTitle.getSubHeading())
         .heading(nanaTitle.getHeading())
         .version(nana.getVersion())

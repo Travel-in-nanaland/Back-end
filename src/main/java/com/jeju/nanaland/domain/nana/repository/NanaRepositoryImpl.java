@@ -39,7 +39,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.imageFile, imageFile)
+        .leftJoin(nana.nanaTitleImageFile, imageFile)
         .where((nanaTitle.language.locale.eq(locale)))
         .orderBy(nanaTitle.createdAt.desc())
         .limit(4L)
@@ -59,7 +59,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.imageFile, imageFile)
+        .leftJoin(nana.nanaTitleImageFile, imageFile)
         .where((nanaTitle.language.locale.eq(locale)))
         .orderBy(nanaTitle.createdAt.desc())
         .offset(pageable.getOffset())
@@ -70,7 +70,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .select(nanaTitle.count())
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.imageFile, imageFile)
+        .leftJoin(nana.nanaTitleImageFile, imageFile)
         .where((nanaTitle.language.locale.eq(locale)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
@@ -92,7 +92,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .from(nana)
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
-        .leftJoin(nana.imageFile, imageFile)
+        .leftJoin(nana.nanaTitleImageFile, imageFile)
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
@@ -107,7 +107,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .from(nana)
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
-        .leftJoin(nana.imageFile, imageFile)
+        .leftJoin(nana.nanaTitleImageFile, imageFile)
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
@@ -124,7 +124,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             nanaTitle.heading
         ))
         .from(nanaTitle)
-        .leftJoin(nana.imageFile, imageFile)
+        .leftJoin(nana.nanaTitleImageFile, imageFile)
         .where(nanaTitle.nana.id.eq(id)
             .and(nanaTitle.language.locale.eq(locale)))
         .fetchOne();
