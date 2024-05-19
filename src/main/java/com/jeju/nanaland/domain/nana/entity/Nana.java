@@ -6,8 +6,10 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,10 +27,14 @@ public class Nana extends BaseEntity {
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile imageFile;
 
+  @OneToMany(mappedBy = "nana", cascade = CascadeType.REMOVE)
+  private List<NanaContentImage> nanaContentImageList;
+
   @Builder
-  public Nana(String version, ImageFile imageFile) {
+  public Nana(String version, ImageFile imageFile, List<NanaContentImage> nanaContentImageList) {
     this.version = version;
     this.imageFile = imageFile;
+    this.nanaContentImageList = nanaContentImageList;
   }
 }
 
