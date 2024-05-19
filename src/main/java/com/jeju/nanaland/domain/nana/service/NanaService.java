@@ -17,6 +17,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
+import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
@@ -26,6 +27,7 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -94,11 +96,17 @@ public class NanaService {
       searchService.updateSearchVolumeV1(NANA, nana.getId());
     }
 
-    // nanaTitle에 맞는 게시물 조회
+    // nanaTitle에 맞는 nanaContent게시물 조회, nanaContent에 맞는 image 정렬
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
         nanaTitle);
+    List<NanaContentImage> nanaContentImageList = nana.getNanaContentImageList().stream()
+        .sorted(Comparator.comparingInt(NanaContentImage::getNumber))
+        .toList();
 
-    List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
+    // 서버 오류 체크 (밑에 나오느 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
+    if (nanaContentList.size() != nanaContentImageList.size()) {
+      throw new ServerErrorException("나나's pick의 content와 image의 수가 일치하지 않습니다.");
+    }
 
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
         nanaTitle.getNana().getId());
@@ -106,6 +114,8 @@ public class NanaService {
     Category category = categoryRepository.findByContent(NANA_CONTENT)
         .orElseThrow(() -> new ServerErrorException("NANA_CONTENT에 해당하는 카테고리가 없습니다."));
 
+    List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
+    int nanaContentImageIdx = 0;
     for (NanaContent nanaContent : nanaContentList) {
 
       List<Hashtag> hashtagList = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
@@ -119,12 +129,12 @@ public class NanaService {
               .number(nanaContent.getNumber())
               .subTitle(nanaContent.getSubTitle())
               .title(nanaContent.getTitle())
-              .imageUrl(nanaContent.getImageFile().getOriginUrl())
+              .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
               .additionalInfoList(getAdditionalInfoFromNanaContentEntity(nanaContent))
               .hashtags(stringKeywordList)
               .build());
-
+      nanaContentImageIdx++;
     }
 
     return NanaResponse.NanaDetailDto.builder()
