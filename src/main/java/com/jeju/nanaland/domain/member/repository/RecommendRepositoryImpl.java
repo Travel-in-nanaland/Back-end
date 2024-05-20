@@ -162,7 +162,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
 
-        .innerJoin(nanaTitle.imageFile, imageFile)
+        .innerJoin(nana.nanaTitleImageFile, imageFile)
 
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NANA))

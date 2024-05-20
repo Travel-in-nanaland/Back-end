@@ -117,6 +117,7 @@ public class MemberRequest {
     @NotBlank
     @EnumValid(
         enumClass = TravelType.class,
+        exclude = "NONE",
         message = "테스트 결과 타입이 유효하지 않습니다."
     )
     @Schema(
