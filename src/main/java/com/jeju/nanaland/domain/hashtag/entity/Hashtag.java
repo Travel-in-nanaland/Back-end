@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+    name = "hashtag",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "LanguageKeywordCategoryPostUnique",
+            columnNames = {"language_id", "keyword_id", "category_id", "post_id"}
+        )
+    }
+)
 public class Hashtag extends BaseEntity {
 
   @NotNull
