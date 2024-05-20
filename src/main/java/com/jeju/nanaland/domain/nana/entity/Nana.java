@@ -24,7 +24,7 @@ public class Nana extends BaseEntity {
   private String version;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "nana_title_image_file_id", nullable = false)
+  @JoinColumn(name = "nana_title_image_file_id", nullable = false, unique = true)
   private ImageFile nanaTitleImageFile;
 
   @OneToMany(mappedBy = "nana", cascade = CascadeType.REMOVE)
