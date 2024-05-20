@@ -27,7 +27,7 @@ public class MemberRequest {
     @Valid
     List<ConsentItem> consentItems;
 
-    @Schema(description = "이메일(필수) - GUEST이면 {providerId}@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
+    @Schema(description = "이메일(필수) - GUEST이면 GUEST@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
     @NotBlank
     @Email(message = "이메일 형식에 맞지 않습니다.")
     private String email;
@@ -60,7 +60,7 @@ public class MemberRequest {
     @Schema(description = "생년월일", example = "2000-01-01")
     private LocalDate birthDate;
 
-    @Schema(description = "닉네임(필수) - GUEST이면 GUEST_{providerId}로 임시 지정하여 요청")
+    @Schema(description = "닉네임(필수) - GUEST이면 GUEST로 임시 지정하여 요청")
     @NotBlank
     @Size(max = 12, message = "닉네임 최대 길이 초과")
     private String nickname;
@@ -101,6 +101,24 @@ public class MemberRequest {
     @NotNull
     @EnumValid(
         enumClass = ConsentType.class,
+        message = "ConsentType이 유효하지 않습니다."
+    )
+    private String consentType;
+
+    @Schema(description = "동의 여부", defaultValue = "false")
+    @NotNull
+    private Boolean consent;
+  }
+
+  @Getter
+  public static class ConsentUpdateDto {
+
+    @Schema(description = "이용약관", example = "TERMS_OF_USE",
+        allowableValues = {"MARKETING", "LOCATION_SERVICE"})
+    @NotNull
+    @EnumValid(
+        enumClass = ConsentType.class,
+        exclude = "TERMS_OF_USE",
         message = "ConsentType이 유효하지 않습니다."
     )
     private String consentType;

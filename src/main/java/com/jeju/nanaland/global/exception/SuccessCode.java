@@ -34,6 +34,8 @@ public enum SuccessCode {
   LOGOUT_SUCCESS(OK, "로그아웃 성공"),
   WITHDRAWAL_SUCCESS(OK, "회원 탈퇴 성공"),
 
+  UPDATE_MEMBER_CONSENT_SUCCESS(OK, "이용약관 업데이트 성공"),
+
   // nana
   NANA_MAIN_SUCCESS(OK, "나나 메인 페이지 썸네일 조회 성공"),
   NANA_LIST_SUCCESS(OK, "나나 썸네일 리스트 조회 성공"),
