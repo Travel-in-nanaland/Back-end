@@ -98,11 +98,11 @@ class ReportServiceTest {
      */
     Nana nana = Nana.builder()
         .version("1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     em.persist(nana);
 
     NanaTitle nanaTitle = NanaTitle.builder()
-        .imageFile(imageFile1)
         .heading("heading")
         .subHeading("subHeading")
         .language(language)

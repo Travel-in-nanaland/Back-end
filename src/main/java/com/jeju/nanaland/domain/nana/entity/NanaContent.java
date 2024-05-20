@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.nana.entity;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,10 +24,6 @@ public class NanaContent extends BaseEntity {
   @JoinColumn(name = "nana_title_id", nullable = false)
   private NanaTitle nanaTitle;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "image_file_id", nullable = false)
-  private ImageFile imageFile;
-
   @Column(nullable = false)
   private int number;
 
@@ -51,10 +46,9 @@ public class NanaContent extends BaseEntity {
   private Set<NanaAdditionalInfo> infoList;
 
   @Builder
-  public NanaContent(NanaTitle nanaTitle, ImageFile imageFile, int number, String subTitle,
+  public NanaContent(NanaTitle nanaTitle, int number, String subTitle,
       String title, String content, Set<NanaAdditionalInfo> infoList) {
     this.nanaTitle = nanaTitle;
-    this.imageFile = imageFile;
     this.number = number;
     this.subTitle = subTitle;
     this.title = title;
