@@ -69,12 +69,9 @@ public class MemberLoginService {
   }
 
   private String validateNickname(JoinDto joinDto) {
-    /**
-     * TODO : 닉네임 글자 제한 확인
-     */
     String nickname = joinDto.getNickname();
     if (Provider.valueOf(joinDto.getProvider()) == Provider.GUEST) {
-      nickname = UUID.randomUUID().toString().substring(0, 16);
+      nickname = UUID.randomUUID().toString().substring(0, 12);
     }
 
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);

@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta
-      content="Travel in Nanaland" property="og:title">
+      content="nanaland in Jeju" property="og:title">
   <meta
-      content="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/nanaland-logo.png"
+      content="要济州旅游贴士？点击 nanaland in Jeju！"
+      property="og:description">
+  <meta
+      content="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/Group+632736.png"
       property="og:image">
 </head>
 <body>
@@ -18,8 +21,6 @@
   var isAndroid = userAgent.search('android') > -1;
   var isIOS = !isAndroid && (/iphone|ipad|ipod/i.test(userAgent));
   var os;
-
-  console.log(launchAppUrl)
 
   function mo_chk() {
     var mobile = (/iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()));

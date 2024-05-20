@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
@@ -41,8 +42,8 @@ public class MemberRequest {
     private String provider;
 
     @Schema(description = "소셜 로그인 Provider ID(필수) - GUEST이면 디바이스 ID", example = "1234567890")
-    @NotNull
-    private Long providerId;
+    @NotBlank
+    private String providerId;
 
     @Schema(description = "언어(필수)", example = "KOREAN",
         allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
@@ -61,6 +62,7 @@ public class MemberRequest {
 
     @Schema(description = "닉네임(필수) - GUEST이면 GUEST_{providerId}로 임시 지정하여 요청")
     @NotBlank
+    @Size(max = 12, message = "닉네임 최대 길이 초과")
     private String nickname;
   }
 
@@ -87,8 +89,8 @@ public class MemberRequest {
     private String provider;
 
     @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
-    @NotNull
-    private Long providerId;
+    @NotBlank
+    private String providerId;
   }
 
   @Getter
@@ -150,9 +152,11 @@ public class MemberRequest {
 
     @Schema(description = "닉네임")
     @NotBlank
+    @Size(max = 12, message = "닉네임 최대 길이 초과")
     private String nickname;
 
     @Schema(description = "소개")
+    @Size(max = 70, message = "소개 최대 길이 초과")
     private String description;
   }
 

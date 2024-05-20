@@ -42,7 +42,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .leftJoin(memberWithdrawal)
         .on(memberWithdrawal.member.eq(member))
         .where(member.status.eq(Status.INACTIVE)
-            .and(member.providerId.ne(-1L))
+            .and(member.providerId.ne("INACTIVE"))
             .and(memberWithdrawal.withdrawalDate.before(threeMonthsAgo.atStartOfDay())))
         .fetch();
   }

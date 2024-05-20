@@ -59,7 +59,7 @@ class EntityImageFileMappingTest {
         .email("email")
         .nickname("nickname")
         .provider(Provider.KAKAO)
-        .providerId(1L)
+        .providerId("1")
         .build();
     em.persist(member);
   }
