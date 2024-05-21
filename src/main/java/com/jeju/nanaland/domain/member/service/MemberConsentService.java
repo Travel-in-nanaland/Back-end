@@ -1,12 +1,15 @@
 package com.jeju.nanaland.domain.member.service;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentItem;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,24 +44,21 @@ public class MemberConsentService {
     }
   }
 
-//  @Transactional
-//  public void updateConsent(MemberInfoDto memberInfoDto, MemberConsentDTO memberConsentDTO) {
-//    for (ConsentItem consentItem : memberConsentDTO.getConsentItems()) {
-//      Optional<MemberConsent> memberConsentOptional = memberConsentRepository.findByConsentTypeAndMember(
-//          ConsentType.valueOf(consentItem.getConsentType()),
-//          memberInfoDto.getMember());
-//
-//      if (memberConsentOptional.isPresent()) {
-//        MemberConsent memberConsent = memberConsentOptional.get();
-//        memberConsent.updateConsent(consentItem.getConsent());
-//      } else {
-//        MemberConsent memberConsent = MemberConsent.builder()
-//            .member(memberInfoDto.getMember())
-//            .consentType(ConsentType.valueOf(consentItem.getConsentType()))
-//            .consent(consentItem.getConsent())
-//            .build();
-//        memberConsentRepository.save(memberConsent);
-//      }
-//    }
-//  }
+  @Transactional
+  public void updateMemberConsent(MemberInfoDto memberInfoDto, ConsentUpdateDto consentUpdateDto) {
+    Optional<MemberConsent> memberConsentOptional = memberConsentRepository.findByConsentTypeAndMember(
+        ConsentType.valueOf(consentUpdateDto.getConsentType()),
+        memberInfoDto.getMember());
+    if (memberConsentOptional.isPresent()) {
+      MemberConsent memberConsent = memberConsentOptional.get();
+      memberConsent.updateConsent(consentUpdateDto.getConsent());
+    } else {
+      MemberConsent memberConsent = MemberConsent.builder()
+          .member(memberInfoDto.getMember())
+          .consentType(ConsentType.valueOf(consentUpdateDto.getConsentType()))
+          .consent(consentUpdateDto.getConsent())
+          .build();
+      memberConsentRepository.save(memberConsent);
+    }
+  }
 }

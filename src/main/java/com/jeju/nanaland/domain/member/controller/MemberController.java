@@ -6,10 +6,12 @@ import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_CONSENT_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
@@ -18,6 +20,7 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
+import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberProfileService;
 import com.jeju.nanaland.domain.member.service.MemberTypeService;
@@ -58,6 +61,7 @@ public class MemberController {
   private final MemberLoginService memberLoginService;
   private final MemberTypeService memberTypeService;
   private final MemberProfileService memberProfileService;
+  private final MemberConsentService memberConsentService;
 
   @Operation(summary = "회원 가입", description = "회원 가입을 하면 JWT가 발급됩니다. ")
   @ApiResponses(value = {
@@ -216,5 +220,20 @@ public class MemberController {
       @RequestBody @Valid LanguageUpdateDto languageUpdateDto) {
     memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
     return BaseResponse.success(UPDATE_LANGUAGE_SUCCESS);
+  }
+
+  @Operation(
+      summary = "이용약관 동의 여부 수정")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @PostMapping("/consent")
+  public BaseResponse<Null> updateMemberConsent(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestBody @Valid ConsentUpdateDto consentUpdateDto
+  ) {
+    memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
+    return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS);
   }
 }
