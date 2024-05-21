@@ -42,8 +42,8 @@ public class MemberRequest {
     private String provider;
 
     @Schema(description = "소셜 로그인 Provider ID(필수) - GUEST이면 디바이스 ID", example = "1234567890")
-    @NotNull
-    private Long providerId;
+    @NotBlank
+    private String providerId;
 
     @Schema(description = "언어(필수)", example = "KOREAN",
         allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
@@ -89,8 +89,8 @@ public class MemberRequest {
     private String provider;
 
     @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
-    @NotNull
-    private Long providerId;
+    @NotBlank
+    private String providerId;
   }
 
   @Getter
@@ -117,6 +117,7 @@ public class MemberRequest {
     @NotBlank
     @EnumValid(
         enumClass = TravelType.class,
+        exclude = "NONE",
         message = "테스트 결과 타입이 유효하지 않습니다."
     )
     @Schema(

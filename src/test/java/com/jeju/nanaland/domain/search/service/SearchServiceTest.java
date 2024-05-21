@@ -60,7 +60,7 @@ class SearchServiceTest {
     member = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(123456789L)
+        .providerId("123456789")
         .nickname("nickname1")
         .language(language)
         .profileImageFile(imageFile1)

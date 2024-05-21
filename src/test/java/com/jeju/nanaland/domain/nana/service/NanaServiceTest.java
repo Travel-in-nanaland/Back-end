@@ -14,9 +14,11 @@ import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
+import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import jakarta.persistence.EntityManager;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +44,8 @@ class NanaServiceTest {
   Nana nana;
   NanaTitle nanaTitle;
   NanaContent nanaContent1, nanaContent2, nanaContent3, nanaContent4;
+
+  NanaContentImage nanaContentImage1, nanaContentImage2, nanaContentImage3, nanaContentImage4;
   Category category, category2;
   NanaAdditionalInfo nanaAdditionalInfo1, nanaAdditionalInfo2;
   Set<NanaAdditionalInfo> infoList = new HashSet<>();
@@ -60,6 +64,18 @@ class NanaServiceTest {
         .build();
     em.persist(imageFile2);
 
+    ImageFile imageFile3 = ImageFile.builder()
+        .originUrl("origin")
+        .thumbnailUrl("thumbnail")
+        .build();
+    em.persist(imageFile3);
+
+    ImageFile imageFile4 = ImageFile.builder()
+        .originUrl("origin")
+        .thumbnailUrl("thumbnail")
+        .build();
+    em.persist(imageFile4);
+
     language = Language.builder()
         .locale(Locale.KOREAN)
         .dateFormat("yyyy-MM-dd")
@@ -69,7 +85,7 @@ class NanaServiceTest {
     member1 = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(123456789L)
+        .providerId("123456789")
         .nickname("nickname1")
         .language(language)
         .profileImageFile(imageFile1)
@@ -84,7 +100,7 @@ class NanaServiceTest {
     member2 = Member.builder()
         .email("test2@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(1234567890L)
+        .providerId("1234567890")
         .nickname("nickname2")
         .language(language)
         .profileImageFile(imageFile2)
@@ -98,6 +114,7 @@ class NanaServiceTest {
 
     nana = Nana.builder()
         .version("version1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     em.persist(nana);
 
@@ -119,7 +136,6 @@ class NanaServiceTest {
     nanaTitle = NanaTitle.builder()
         .nana(nana)
         .notice("notice")
-        .imageFile(imageFile1)
         .language(language)
         .subHeading("subHeading1")
         .heading("heading1")
@@ -128,7 +144,6 @@ class NanaServiceTest {
 
     nanaContent1 = NanaContent.builder()
         .nanaTitle(nanaTitle)
-        .imageFile(imageFile1)
         .number(1)
         .subTitle("subtitle1")
         .title("title1")
@@ -139,7 +154,6 @@ class NanaServiceTest {
 
     nanaContent2 = NanaContent.builder()
         .nanaTitle(nanaTitle)
-        .imageFile(imageFile1)
         .number(2)
         .subTitle("subtitle2")
         .title("title2")
@@ -150,7 +164,6 @@ class NanaServiceTest {
 
     nanaContent3 = NanaContent.builder()
         .nanaTitle(nanaTitle)
-        .imageFile(imageFile1)
         .number(2)
         .subTitle("subtitle3")
         .title("title3")
@@ -161,7 +174,6 @@ class NanaServiceTest {
 
     nanaContent4 = NanaContent.builder()
         .nanaTitle(nanaTitle)
-        .imageFile(imageFile1)
         .number(4)
         .subTitle("subtitle4")
         .title("title4")
@@ -169,6 +181,37 @@ class NanaServiceTest {
         .infoList(infoList)
         .build();
     em.persist(nanaContent4);
+
+    nanaContentImage1 = NanaContentImage.builder()
+        .imageFile(imageFile1)
+        .nana(nana)
+        .number(1)
+        .build();
+    em.persist(nanaContentImage1);
+
+    nanaContentImage2 = NanaContentImage.builder()
+        .imageFile(imageFile2)
+        .nana(nana)
+        .number(1)
+        .build();
+    em.persist(nanaContentImage2);
+
+    nanaContentImage3 = NanaContentImage.builder()
+        .imageFile(imageFile3)
+        .nana(nana)
+        .number(3)
+        .build();
+    em.persist(nanaContentImage3);
+
+    nanaContentImage4 = NanaContentImage.builder()
+        .imageFile(imageFile4)
+        .nana(nana)
+        .number(4)
+        .build();
+    em.persist(nanaContentImage4);
+
+    nana.updateNanaContentImageList(
+        List.of(nanaContentImage1, nanaContentImage3, nanaContentImage4, nanaContentImage2));
 
     category = Category.builder()
         .content(CategoryContent.NANA)
