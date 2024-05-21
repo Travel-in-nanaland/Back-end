@@ -19,7 +19,7 @@ import lombok.Getter;
 
 public class MemberRequest {
 
-  @Getter
+  @Data
   @Schema(description = "회원 가입 요청 DTO")
   public static class JoinDto {
 
