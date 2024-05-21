@@ -72,9 +72,9 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Provider provider;
 
-  @NotNull
+  @NotBlank
   @Column(nullable = false)
-  private Long providerId;
+  private String providerId;
 
   @ElementCollection(targetClass = Role.class)
   @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "member_id"))
@@ -91,7 +91,7 @@ public class Member extends BaseEntity {
   @Builder
   public Member(Language language, String email, ImageFile profileImageFile,
       String nickname, String description, String gender, LocalDate birthDate,
-      Provider provider, Long providerId, MemberTravelType memberTravelType) {
+      Provider provider, String providerId, MemberTravelType memberTravelType) {
     this.language = language;
     this.email = email;
     this.profileImageFile = profileImageFile;
@@ -114,7 +114,6 @@ public class Member extends BaseEntity {
   }
 
   public void updateProfile(ProfileUpdateDto profileUpdateDto) {
-    // TODO: 닉네임 중복 확인 & 닉네임 글자수 제한
     this.nickname =
         profileUpdateDto.getNickname() != null ? profileUpdateDto.getNickname() : this.nickname;
     this.description =
@@ -133,7 +132,7 @@ public class Member extends BaseEntity {
   public void updatePersonalInfo() {
     this.email = "INACTIVE@nanaland.com";
     this.nickname = UUID.randomUUID().toString().substring(0, 16);
-    this.providerId = -1L;
+    this.providerId = "INACTIVE";
     this.gender = "";
     this.birthDate = null;
   }

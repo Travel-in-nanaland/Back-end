@@ -9,9 +9,6 @@ import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
@@ -64,6 +61,7 @@ class EntityBuilderTest {
   void NanaBuilderTest() {
     Nana nana1 = Nana.builder()
         .version("ver.1")
+        .nanaTitleImageFile(imageFile)
         .build();
 
     em.persist(nana1);
@@ -71,7 +69,6 @@ class EntityBuilderTest {
     NanaTitle nanaTitle1 = NanaTitle.builder()
         .nana(nana1)
         .language(language)
-        .imageFile(imageFile)
         .notice("notice!")
         .build();
   }
