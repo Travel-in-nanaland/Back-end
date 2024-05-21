@@ -5,24 +5,37 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/share")
 public class ShareController {
 
-  @GetMapping("")
-  public String test(Model model, String category, Long id,
-      @RequestParam(defaultValue = "en") String lang) {
+  @GetMapping("/en")
+  public String shareEn(Model model, String category, Long id) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
+    return "deeplink-en";
+  }
 
-    return switch (lang) {
-      case "ko" -> "deeplink-ko";
-      case "zh" -> "deeplink-zh";
-      case "ms" -> "deeplink-ms";
-      default -> "deeplink-en";
-    };
+  @GetMapping("/ko")
+  public String shareKo(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+    return "deeplink-ko";
+  }
+
+  @GetMapping("/zh")
+  public String shareZh(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+    return "deeplink-zh";
+  }
+
+  @GetMapping("/ms")
+  public String shareMs(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+    return "deeplink-ms";
   }
 }
