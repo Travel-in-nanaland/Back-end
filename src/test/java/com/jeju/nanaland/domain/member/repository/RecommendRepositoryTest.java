@@ -24,7 +24,6 @@ import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,277 +40,89 @@ public class RecommendRepositoryTest {
   @Autowired
   EntityManager em;
 
-  MemberTravelType memberTravelType;
-
-  @BeforeEach
-  void init() {
-    // memberTravelType init
-    memberTravelType = MemberTravelType.builder()
-        .travelType(TravelType.GAMGYUL_ICECREAM)
-        .build();
-    em.persist(memberTravelType);
-
-    // category init
-    Category natureCategory = Category.builder()
-        .content(CategoryContent.NATURE)
-        .build();
-    Category experienceCategory = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    Category festivalCategory = Category.builder()
-        .content(CategoryContent.FESTIVAL)
-        .build();
-    Category marketCategory = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    Category nanaCategory = Category.builder()
-        .content(CategoryContent.NANA)
-        .build();
-    em.persist(natureCategory);
-    em.persist(experienceCategory);
-    em.persist(festivalCategory);
-    em.persist(marketCategory);
-    em.persist(nanaCategory);
-
-    // language init
-    Language korean = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(korean);
-
-    // image file init
-    ImageFile imageFile1 = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile1);
-
-    // nature, natureTrans init
-    Nature nature1 = Nature.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(nature1);
-    NatureTrans natureTrans1 = NatureTrans.builder()
-        .title("7대자연 제목")
-        .nature(nature1)
-        .language(korean)
-        .build();
-    em.persist(natureTrans1);
-
-    // festival, festivalTrans init
-    Festival festival1 = Festival.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(festival1);
-    FestivalTrans festivalTrans1 = FestivalTrans.builder()
-        .title("축제 제목")
-        .language(korean)
-        .festival(festival1)
-        .build();
-    em.persist(festivalTrans1);
-
-    // market, marketTrans init
-    Market market1 = Market.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(market1);
-    MarketTrans marketTrans1 = MarketTrans.builder()
-        .title("전통시장 제목")
-        .language(korean)
-        .market(market1)
-        .build();
-    em.persist(marketTrans1);
-
-    // experience, experienceTrans init
-    Experience experience1 = Experience.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(experience1);
-    ExperienceTrans experienceTrans1 = ExperienceTrans.builder()
-        .title("이색체험 제목")
-        .experience(experience1)
-        .language(korean)
-        .build();
-    em.persist(experienceTrans1);
-
-    // nana, nanaTitle init
-    Nana nana1 = Nana.builder()
-        .version("1")
-        .nanaTitleImageFile(imageFile1)
-        .build();
-    em.persist(nana1);
-    NanaTitle nanaTitle1 = NanaTitle.builder()
-        .heading("나나스픽 제목")
-        .nana(nana1)
-        .language(korean)
-        .build();
-    em.persist(nanaTitle1);
-
-    // recommend, recommendTrans init
-    Recommend recommend1 = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(nature1.getId())
-        .category(natureCategory)
-        .build();
-    em.persist(recommend1);
-    RecommendTrans recommendTrans1 = RecommendTrans.builder()
-        .recommend(recommend1)
-        .introduction("7대자연 설명")
-        .language(korean)
-        .build();
-    em.persist(recommendTrans1);
-    Recommend recommend2 = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(experience1.getId())
-        .category(experienceCategory)
-        .build();
-    em.persist(recommend2);
-    RecommendTrans recommendTrans2 = RecommendTrans.builder()
-        .recommend(recommend2)
-        .introduction("이색체험 설명")
-        .language(korean)
-        .build();
-    em.persist(recommendTrans2);
-    Recommend recommend3 = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(festival1.getId())
-        .category(festivalCategory)
-        .build();
-    em.persist(recommend3);
-    RecommendTrans recommendTrans3 = RecommendTrans.builder()
-        .recommend(recommend3)
-        .introduction("축제 설명")
-        .language(korean)
-        .build();
-    em.persist(recommendTrans3);
-    Recommend recommend4 = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(market1.getId())
-        .category(marketCategory)
-        .build();
-    em.persist(recommend4);
-    RecommendTrans recommendTrans4 = RecommendTrans.builder()
-        .recommend(recommend4)
-        .introduction("전통시장 설명")
-        .language(korean)
-        .build();
-    em.persist(recommendTrans4);
-    Recommend recommend5 = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(nana1.getId())
-        .category(nanaCategory)
-        .build();
-    em.persist(recommend5);
-    RecommendTrans recommendTrans5 = RecommendTrans.builder()
-        .recommend(recommend5)
-        .introduction("나나 설명")
-        .language(korean)
-        .build();
-    em.persist(recommendTrans5);
-  }
-
   @DisplayName("타입을 통해 추천 게시물 조회")
   @Test
   void findAllByMemberTravelTypeTest() {
-    // given
+    /**
+     * given
+     *
+     * 한국어, 감귤 아이스크림 타입 Recommend에 nature, experience, nana 추가
+     */
+    Language language = initLanguageKorean();
+    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
+    initNatureRecommend(language, memberTravelType);
+    initExperienceRecommend(language, memberTravelType);
+    initNanaRecommend(language, memberTravelType);
+
     // when
     List<Recommend> result = recommendRepository.findAllByMemberTravelType(memberTravelType);
 
     // then
-    Assertions.assertThat(result.size()).isEqualTo(5);
+    Assertions.assertThat(result.size()).isEqualTo(3);
   }
 
   @DisplayName("7대자연 추천 게시물 조회")
   @Test
   void findNatureRecommendPostDtoTest() {
     // given
-    List<Recommend> recommendList = recommendRepository.findAllByMemberTravelType(memberTravelType);
+    Language language = initLanguageKorean();
+    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
+    Recommend recommend = initNatureRecommend(language, memberTravelType);
 
     // when
-    RecommendPostDto recommendPostDto = null;
-    for (Recommend recommend : recommendList) {
-      Long postId = recommend.getPostId();
-      Category category = recommend.getCategory();
-
-      if (category.getContent().equals(CategoryContent.NATURE)) {
-        recommendPostDto = recommendRepository.findNatureRecommendPostDto(
-            postId, Locale.KOREAN,
-            memberTravelType.getTravelType());
-      }
-    }
+    RecommendPostDto recommendPostDto = recommendRepository.findNatureRecommendPostDto(
+        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
         .isEqualTo("7대자연 설명");
   }
 
-  @DisplayName("축제 추천 게시물 조회")
-  @Test
-  void findFestivalRecommendPostDtoTest() {
-    // given
-    List<Recommend> recommendList = recommendRepository.findAllByMemberTravelType(memberTravelType);
-
-    // when
-    RecommendPostDto recommendPostDto = null;
-    for (Recommend recommend : recommendList) {
-      Long postId = recommend.getPostId();
-      Category category = recommend.getCategory();
-
-      if (category.getContent().equals(CategoryContent.FESTIVAL)) {
-        recommendPostDto = recommendRepository.findFestivalRecommendPostDto(
-            postId, Locale.KOREAN,
-            memberTravelType.getTravelType());
-      }
-    }
-
-    // then
-    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("축제 설명");
-  }
-
   @DisplayName("전통시장 추천 게시물 조회")
   @Test
   void findMarketRecommendPostDtoTest() {
     // given
-    List<Recommend> recommendList = recommendRepository.findAllByMemberTravelType(memberTravelType);
+    Language language = initLanguageKorean();
+    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
+    Recommend recommend = initMarketRecommend(language, memberTravelType);
 
     // when
-    RecommendPostDto recommendPostDto = null;
-    for (Recommend recommend : recommendList) {
-      Long postId = recommend.getPostId();
-      Category category = recommend.getCategory();
-
-      if (category.getContent().equals(CategoryContent.MARKET)) {
-        recommendPostDto = recommendRepository.findMarketRecommendPostDto(
-            postId, Locale.KOREAN,
-            memberTravelType.getTravelType());
-      }
-    }
+    RecommendPostDto recommendPostDto = recommendRepository.findMarketRecommendPostDto(
+        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
         .isEqualTo("전통시장 설명");
   }
 
+  @DisplayName("축제 추천 게시물 조회")
+  @Test
+  void findFestivalRecommendPostDtoTest() {
+    // given
+    Language language = initLanguageKorean();
+    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
+    Recommend recommend = initFestivalRecommend(language, memberTravelType);
+
+    // when
+    RecommendPostDto recommendPostDto = recommendRepository.findFestivalRecommendPostDto(
+        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+
+    // then
+    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
+        .isEqualTo("축제 설명");
+  }
+
   @DisplayName("이색체험 추천 게시물 조회")
   @Test
   void findExperienceRecommendPostDtoTest() {
     // given
-    List<Recommend> recommendList = recommendRepository.findAllByMemberTravelType(memberTravelType);
+    Language language = initLanguageKorean();
+    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
+    Recommend recommend = initExperienceRecommend(language, memberTravelType);
 
     // when
-    RecommendPostDto recommendPostDto = null;
-    for (Recommend recommend : recommendList) {
-      Long postId = recommend.getPostId();
-      Category category = recommend.getCategory();
-
-      if (category.getContent().equals(CategoryContent.EXPERIENCE)) {
-        recommendPostDto = recommendRepository.findExperienceRecommendPostDto(
-            postId, Locale.KOREAN,
-            memberTravelType.getTravelType());
-      }
-    }
+    RecommendPostDto recommendPostDto = recommendRepository.findExperienceRecommendPostDto(
+        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -322,23 +133,231 @@ public class RecommendRepositoryTest {
   @Test
   void findNanaRecommendPostDtoTest() {
     // given
-    List<Recommend> recommendList = recommendRepository.findAllByMemberTravelType(memberTravelType);
+    Language language = initLanguageKorean();
+    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
+    Recommend recommend = initNanaRecommend(language, memberTravelType);
 
     // when
-    RecommendPostDto recommendPostDto = null;
-    for (Recommend recommend : recommendList) {
-      Long postId = recommend.getPostId();
-      Category category = recommend.getCategory();
-
-      if (category.getContent().equals(CategoryContent.NANA)) {
-        recommendPostDto = recommendRepository.findNanaRecommendPostDto(
-            postId, Locale.KOREAN,
-            memberTravelType.getTravelType());
-      }
-    }
+    RecommendPostDto recommendPostDto = recommendRepository.findNanaRecommendPostDto(
+        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("나나 설명");
+        .isEqualTo("나나스픽 설명");
+  }
+
+  Language initLanguageKorean() {
+    Language language = Language.builder()
+        .locale(Locale.KOREAN)
+        .dateFormat("yyyy-mm-dd")
+        .build();
+    em.persist(language);
+
+    return language;
+  }
+
+  MemberTravelType initMemberTravelType(TravelType travelType) {
+    MemberTravelType memberTravelType = MemberTravelType.builder()
+        .travelType(travelType)
+        .build();
+    em.persist(memberTravelType);
+
+    return memberTravelType;
+  }
+
+  Recommend initNatureRecommend(Language language, MemberTravelType memberTravelType) {
+    Category category = Category.builder()
+        .content(CategoryContent.NATURE)
+        .build();
+    em.persist(category);
+
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
+
+    Nature nature = Nature.builder()
+        .imageFile(imageFile)
+        .build();
+    em.persist(nature);
+    NatureTrans natureTrans = NatureTrans.builder()
+        .title("7대자연 제목")
+        .nature(nature)
+        .language(language)
+        .build();
+    em.persist(natureTrans);
+
+    Recommend recommend = Recommend.builder()
+        .memberTravelType(memberTravelType)
+        .postId(nature.getId())
+        .category(category)
+        .build();
+    em.persist(recommend);
+    RecommendTrans recommendTrans = RecommendTrans.builder()
+        .recommend(recommend)
+        .introduction("7대자연 설명")
+        .language(language)
+        .build();
+    em.persist(recommendTrans);
+
+    return recommend;
+  }
+
+  Recommend initMarketRecommend(Language language, MemberTravelType memberTravelType) {
+    Category category = Category.builder()
+        .content(CategoryContent.MARKET)
+        .build();
+    em.persist(category);
+
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
+
+    Market market = Market.builder()
+        .imageFile(imageFile)
+        .build();
+    em.persist(market);
+    MarketTrans marketTrans = MarketTrans.builder()
+        .title("전통시장 제목")
+        .market(market)
+        .language(language)
+        .build();
+    em.persist(marketTrans);
+
+    Recommend recommend = Recommend.builder()
+        .memberTravelType(memberTravelType)
+        .postId(market.getId())
+        .category(category)
+        .build();
+    em.persist(recommend);
+    RecommendTrans recommendTrans = RecommendTrans.builder()
+        .recommend(recommend)
+        .introduction("전통시장 설명")
+        .language(language)
+        .build();
+    em.persist(recommendTrans);
+
+    return recommend;
+  }
+
+  Recommend initFestivalRecommend(Language language, MemberTravelType memberTravelType) {
+    Category category = Category.builder()
+        .content(CategoryContent.FESTIVAL)
+        .build();
+    em.persist(category);
+
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
+
+    Festival festival = Festival.builder()
+        .imageFile(imageFile)
+        .build();
+    em.persist(festival);
+    FestivalTrans festivalTrans = FestivalTrans.builder()
+        .title("축제 제목")
+        .festival(festival)
+        .language(language)
+        .build();
+    em.persist(festivalTrans);
+
+    Recommend recommend = Recommend.builder()
+        .memberTravelType(memberTravelType)
+        .postId(festival.getId())
+        .category(category)
+        .build();
+    em.persist(recommend);
+    RecommendTrans recommendTrans = RecommendTrans.builder()
+        .recommend(recommend)
+        .introduction("축제 설명")
+        .language(language)
+        .build();
+    em.persist(recommendTrans);
+
+    return recommend;
+  }
+
+  Recommend initExperienceRecommend(Language language, MemberTravelType memberTravelType) {
+    Category category = Category.builder()
+        .content(CategoryContent.EXPERIENCE)
+        .build();
+    em.persist(category);
+
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
+
+    Experience experience = Experience.builder()
+        .imageFile(imageFile)
+        .build();
+    em.persist(experience);
+    ExperienceTrans experienceTrans = ExperienceTrans.builder()
+        .title("이색체험 제목")
+        .experience(experience)
+        .language(language)
+        .build();
+    em.persist(experienceTrans);
+
+    Recommend recommend = Recommend.builder()
+        .memberTravelType(memberTravelType)
+        .postId(experience.getId())
+        .category(category)
+        .build();
+    em.persist(recommend);
+    RecommendTrans recommendTrans = RecommendTrans.builder()
+        .recommend(recommend)
+        .introduction("이색체험 설명")
+        .language(language)
+        .build();
+    em.persist(recommendTrans);
+
+    return recommend;
+  }
+
+  Recommend initNanaRecommend(Language language, MemberTravelType memberTravelType) {
+    Category category = Category.builder()
+        .content(CategoryContent.NANA)
+        .build();
+    em.persist(category);
+
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
+
+    Nana nana = Nana.builder()
+        .version("1")
+        .nanaTitleImageFile(imageFile)
+        .build();
+    em.persist(nana);
+    NanaTitle nanaTitle = NanaTitle.builder()
+        .heading("나나스픽 제목")
+        .nana(nana)
+        .language(language)
+        .build();
+    em.persist(nanaTitle);
+
+    Recommend recommend = Recommend.builder()
+        .memberTravelType(memberTravelType)
+        .postId(nana.getId())
+        .category(category)
+        .build();
+    em.persist(recommend);
+    RecommendTrans recommendTrans = RecommendTrans.builder()
+        .recommend(recommend)
+        .introduction("나나스픽 설명")
+        .language(language)
+        .build();
+    em.persist(recommendTrans);
+
+    return recommend;
   }
 }
