@@ -72,23 +72,15 @@ class MemberLoginServiceTest {
   private MemberLoginService memberLoginService;
 
   private JoinDto joinDto;
-  private Language language;
   private MemberTravelType memberTravelType;
   private ImageFile imageFile;
-  private Member member;
-  private LoginDto loginDto;
-  private MemberInfoDto memberInfoDto;
 
 
   @BeforeEach
   void setUp() {
     joinDto = createJoinDto();
-    language = createLanguage(Locale.KOREAN);
     memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
-    member = createMember();
-    loginDto = createLoginDto(Locale.KOREAN.name());
-    memberInfoDto = createMemberInfoDto(language, member);
   }
 
   private JoinDto createJoinDto() {
@@ -123,7 +115,7 @@ class MemberLoginServiceTest {
         .build();
   }
 
-  private Member createMember() {
+  private Member createMember(Language language) {
     return spy(Member.builder()
         .language(language)
         .email(joinDto.getEmail())
@@ -156,6 +148,9 @@ class MemberLoginServiceTest {
   @DisplayName("회원 가입 실패 - 이미 회원 가입된 경우")
   void joinFail() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    
     doReturn(Optional.of(member))
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
 
@@ -173,6 +168,9 @@ class MemberLoginServiceTest {
   @DisplayName("회원 가입 실패 - 닉네임 중복")
   void joinFail2() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+
     doReturn(Optional.empty())
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
     doReturn(Optional.of(member)).when(memberRepository).findByNickname(any());
@@ -194,6 +192,8 @@ class MemberLoginServiceTest {
     // given
     MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
         new byte[0]);
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
 
     doReturn(Optional.empty())
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
@@ -237,6 +237,8 @@ class MemberLoginServiceTest {
   @DisplayName("로그인 실패 - 회원 가입이 안된 경우")
   void loginFail() {
     // given
+    LoginDto loginDto = createLoginDto(Locale.KOREAN.name());
+
     doReturn(Optional.empty())
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
 
@@ -254,6 +256,10 @@ class MemberLoginServiceTest {
   @DisplayName("로그인 성공")
   void loginSuccess() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    LoginDto loginDto = createLoginDto(Locale.KOREAN.name());
+
     doReturn(Optional.of(member))
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
     doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
@@ -278,6 +284,8 @@ class MemberLoginServiceTest {
   @DisplayName("탈퇴 상태라면 다시 활성화")
   void updateMemberActive() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
     member.updateStatus(Status.INACTIVE);
 
     // when
@@ -291,12 +299,15 @@ class MemberLoginServiceTest {
   @DisplayName("언어가 다르면 업데이트")
   void updateLanguageDifferent() {
     // given
-    LoginDto newLanguageLoginDto = createLoginDto(Locale.ENGLISH.name());
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    LoginDto loginDto = createLoginDto(Locale.ENGLISH.name());
     Language languageEnglish = createLanguage(Locale.ENGLISH);
+
     doReturn(languageEnglish).when(languageRepository).findByLocale(any(Locale.class));
 
     // when
-    memberLoginService.updateLanguageDifferent(newLanguageLoginDto, member);
+    memberLoginService.updateLanguageDifferent(loginDto, member);
 
     // then
     assertThat(member.getLanguage().getLocale()).isEqualTo(Locale.ENGLISH);
@@ -349,6 +360,9 @@ class MemberLoginServiceTest {
   @DisplayName("토큰 재발행 성공")
   void reissueSuccess() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+
     doReturn("refreshToken").when(jwtUtil).resolveToken(any());
     doReturn(true).when(jwtUtil).verifyRefreshToken(any());
     doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
@@ -380,6 +394,10 @@ class MemberLoginServiceTest {
   @DisplayName("로그아웃 성공")
   void logoutSuccess() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+
     doReturn("accessToken").when(jwtUtil).resolveToken(any());
     doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
 
@@ -397,6 +415,9 @@ class MemberLoginServiceTest {
   @DisplayName("회원 탈퇴 성공")
   void withdrawal() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     WithdrawalDto withdrawalDto = new WithdrawalDto();
     withdrawalDto.setWithdrawalType(WithdrawalType.INCONVENIENT_SERVICE.name());
 
@@ -411,6 +432,9 @@ class MemberLoginServiceTest {
   @Test
   void deleteWithdrawalMemberInfo() {
     // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+
     doReturn(List.of(member)).when(memberRepository).findInactiveMembersForWithdrawalDate();
 
     // when
