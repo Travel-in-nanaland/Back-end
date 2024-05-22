@@ -66,7 +66,7 @@ public class MemberRequest {
     private String nickname;
   }
 
-  @Getter
+  @Data
   @Schema(description = "로그인 요청 DTO")
   public static class LoginDto {
 

@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -26,6 +27,7 @@ import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -66,14 +68,17 @@ class MemberLoginServiceTest {
   private MemberTravelType memberTravelType;
   private ImageFile imageFile;
   private Member member;
+  private LoginDto loginDto;
+
 
   @BeforeEach
   void setUp() {
     joinDto = createJoinDto();
-    language = createLanguage();
+    language = createLanguage(Locale.KOREAN);
     memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
     member = createMember();
+    loginDto = createLoginDto(Locale.KOREAN.name());
   }
 
   private JoinDto createJoinDto() {
@@ -89,9 +94,9 @@ class MemberLoginServiceTest {
     return joinDto;
   }
 
-  private Language createLanguage() {
+  private Language createLanguage(Locale locale) {
     return Language.builder()
-        .locale(Locale.KOREAN)
+        .locale(locale)
         .build();
   }
 
@@ -120,6 +125,14 @@ class MemberLoginServiceTest {
         .providerId(joinDto.getProviderId())
         .memberTravelType(memberTravelType)
         .build());
+  }
+
+  private LoginDto createLoginDto(String locale) {
+    LoginDto loginDto = new LoginDto();
+    loginDto.setLocale(locale);
+    loginDto.setProvider("GOOGLE");
+    loginDto.setProviderId("123");
+    return loginDto;
   }
 
   /**
@@ -155,7 +168,7 @@ class MemberLoginServiceTest {
     // then
     assertEquals(conflictException.getMessage(), ErrorCode.NICKNAME_DUPLICATE.getMessage());
   }
-  
+
   @Test
   @DisplayName("회원 가입 성공")
   void joinSuccess() {
@@ -202,7 +215,41 @@ class MemberLoginServiceTest {
   }
 
   @Test
-  void login() {
+  @DisplayName("로그인 실패 - 회원 가입이 안된 경우")
+  void loginFail() {
+    // given
+    doReturn(Optional.empty())
+        .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+
+    // when
+    NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> memberLoginService.login(loginDto));
+
+    // then
+    assertEquals(notFoundException.getMessage(), ErrorCode.MEMBER_NOT_FOUND.getMessage());
+  }
+
+  @Test
+  @DisplayName("로그인 성공")
+  void loginSuccess() {
+    // given
+    doReturn(Optional.of(member))
+        .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+    doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
+    doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
+    doReturn(1L).when(member).getId();
+
+    // when
+    JwtDto jwtDto = memberLoginService.login(loginDto);
+
+    // then
+    assertNotNull(jwtDto);
+    assertEquals("accessToken", jwtDto.getAccessToken());
+    assertEquals("refreshToken", jwtDto.getRefreshToken());
+    verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
+    verify(jwtUtil, times(1)).getAccessToken(any(), any());
+    verify(jwtUtil, times(1)).getRefreshToken(any(), any());
+    verify(member, times(2)).getId();
   }
 
   @Test
