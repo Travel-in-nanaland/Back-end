@@ -29,6 +29,7 @@ import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -136,9 +137,6 @@ class MemberLoginServiceTest {
     return loginDto;
   }
 
-  /**
-   * 회원 가입 실패 조건 - 이미 회원 가입된 경우 - 닉네임 중복
-   */
   @Test
   @DisplayName("회원 가입 실패 - 이미 회원 가입된 경우")
   void joinFail() {
@@ -152,6 +150,8 @@ class MemberLoginServiceTest {
 
     // then
     assertEquals(conflictException.getMessage(), ErrorCode.MEMBER_DUPLICATE.getMessage());
+
+    verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
   }
 
   @Test
@@ -168,6 +168,9 @@ class MemberLoginServiceTest {
 
     // then
     assertEquals(conflictException.getMessage(), ErrorCode.NICKNAME_DUPLICATE.getMessage());
+
+    verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
+    verify(memberRepository, times(1)).findByNickname(any());
   }
 
   @Test
@@ -228,6 +231,8 @@ class MemberLoginServiceTest {
 
     // then
     assertEquals(notFoundException.getMessage(), ErrorCode.MEMBER_NOT_FOUND.getMessage());
+
+    verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
   }
 
   @Test
@@ -247,6 +252,7 @@ class MemberLoginServiceTest {
     assertNotNull(jwtDto);
     assertEquals("accessToken", jwtDto.getAccessToken());
     assertEquals("refreshToken", jwtDto.getRefreshToken());
+
     verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
     verify(jwtUtil, times(1)).getAccessToken(any(), any());
     verify(jwtUtil, times(1)).getRefreshToken(any(), any());
@@ -279,12 +285,29 @@ class MemberLoginServiceTest {
 
     // then
     assertEquals(Locale.ENGLISH, member.getLanguage().getLocale());
+
+    verify(languageRepository, times(1)).findByLocale(any(Locale.class));
   }
+
 
   @Test
-  void reissue() {
-  }
+  @DisplayName("토큰 재발행 실패 - 저장된 토큰과 다른 경우")
+  void reissueFail() {
+    // given
+    doReturn("refreshToken").when(jwtUtil).resolveToken(any());
+    doReturn(false).when(jwtUtil).verifyRefreshToken(any());
 
+    // when
+    UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
+        () -> memberLoginService.reissue("bearer RefreshToken"));
+
+    // then
+    assertEquals(unauthorizedException.getMessage(), ErrorCode.INVALID_TOKEN.getMessage());
+
+    verify(jwtUtil, times(1)).resolveToken(any());
+    verify(jwtUtil, times(1)).verifyRefreshToken(any());
+  }
+  
   @Test
   void logout() {
   }
