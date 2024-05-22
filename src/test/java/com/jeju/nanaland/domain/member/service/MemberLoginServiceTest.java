@@ -289,9 +289,8 @@ class MemberLoginServiceTest {
     verify(languageRepository, times(1)).findByLocale(any(Locale.class));
   }
 
-
   @Test
-  @DisplayName("토큰 재발행 실패 - 저장된 토큰과 다른 경우")
+  @DisplayName("토큰 재발행 실패 - 유효하진 토큰인 경우")
   void reissueFail() {
     // given
     doReturn("refreshToken").when(jwtUtil).resolveToken(any());
@@ -307,7 +306,60 @@ class MemberLoginServiceTest {
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
   }
-  
+
+  @Test
+  @DisplayName("토큰 재발행 실패 - 저장된 토큰과 다른 경우")
+  void reissueFail2() {
+    // given
+    doReturn("refreshToken").when(jwtUtil).resolveToken(any());
+    doReturn(true).when(jwtUtil).verifyRefreshToken(any());
+    doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
+    doReturn("refreshToken2").when(jwtUtil).findRefreshTokenById(any());
+
+    // when
+    UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
+        () -> memberLoginService.reissue("bearer RefreshToken"));
+
+    // then
+    assertEquals(unauthorizedException.getMessage(), ErrorCode.INVALID_TOKEN.getMessage());
+
+    verify(jwtUtil, times(1)).resolveToken(any());
+    verify(jwtUtil, times(1)).verifyRefreshToken(any());
+    verify(jwtUtil, times(1)).getMemberIdFromRefresh(any());
+    verify(jwtUtil, times(1)).findRefreshTokenById(any());
+  }
+
+  @Test
+  @DisplayName("토큰 재발행 성공")
+  void reissueSuccess() {
+    // given
+    doReturn("refreshToken").when(jwtUtil).resolveToken(any());
+    doReturn(true).when(jwtUtil).verifyRefreshToken(any());
+    doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
+    doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
+    doReturn(Optional.of(member)).when(memberRepository).findById(any());
+    doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
+    doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
+    doReturn(1L).when(member).getId();
+
+    // when
+    JwtDto jwtDto = memberLoginService.reissue("bearer RefreshToken");
+
+    // then
+    assertNotNull(jwtDto);
+    assertEquals("accessToken", jwtDto.getAccessToken());
+    assertEquals("refreshToken", jwtDto.getRefreshToken());
+
+    verify(jwtUtil, times(1)).resolveToken(any());
+    verify(jwtUtil, times(1)).verifyRefreshToken(any());
+    verify(jwtUtil, times(1)).getMemberIdFromRefresh(any());
+    verify(jwtUtil, times(1)).findRefreshTokenById(any());
+    verify(memberRepository, times(1)).findById(any());
+    verify(jwtUtil, times(1)).getAccessToken(any(), any());
+    verify(jwtUtil, times(1)).getRefreshToken(any(), any());
+    verify(member, times(2)).getId();
+  }
+
   @Test
   void logout() {
   }
