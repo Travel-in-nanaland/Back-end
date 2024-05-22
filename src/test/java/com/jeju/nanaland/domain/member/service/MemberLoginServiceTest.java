@@ -18,6 +18,7 @@ import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -327,6 +328,7 @@ class MemberLoginServiceTest {
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
     verify(jwtUtil, times(1)).getMemberIdFromRefresh(any());
     verify(jwtUtil, times(1)).findRefreshTokenById(any());
+    verify(jwtUtil, times(1)).deleteRefreshToken(any());
   }
 
   @Test
@@ -361,7 +363,25 @@ class MemberLoginServiceTest {
   }
 
   @Test
-  void logout() {
+  @DisplayName("로그아웃 성공")
+  void logoutSuccess() {
+    // given
+    MemberInfoDto memberInfoDto = MemberInfoDto.builder()
+        .language(language)
+        .member(member)
+        .build();
+
+    doReturn("accessToken").when(jwtUtil).resolveToken(any());
+    doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
+
+    // when
+    memberLoginService.logout(memberInfoDto, "bearer refreshToken");
+
+    // then
+    verify(jwtUtil, times(1)).resolveToken(any());
+    verify(jwtUtil, times(1)).setBlackList(any());
+    verify(jwtUtil, times(1)).findRefreshTokenById(any());
+    verify(jwtUtil, times(1)).deleteRefreshToken(any());
   }
 
   @Test
