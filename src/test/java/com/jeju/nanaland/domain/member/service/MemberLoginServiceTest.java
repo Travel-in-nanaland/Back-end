@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
@@ -253,11 +254,31 @@ class MemberLoginServiceTest {
   }
 
   @Test
+  @DisplayName("탈퇴 상태라면 다시 활성화")
   void updateMemberActive() {
+    // given
+    member.updateStatus(Status.INACTIVE);
+
+    // when
+    memberLoginService.updateMemberActive(member);
+
+    // then
+    assertEquals(Status.ACTIVE, member.getStatus());
   }
 
   @Test
+  @DisplayName("언어가 다르면 업데이트")
   void updateLanguageDifferent() {
+    // given
+    LoginDto newLanguageLoginDto = createLoginDto(Locale.ENGLISH.name());
+    Language languageEnglish = createLanguage(Locale.ENGLISH);
+    doReturn(languageEnglish).when(languageRepository).findByLocale(any(Locale.class));
+
+    // when
+    memberLoginService.updateLanguageDifferent(newLanguageLoginDto, member);
+
+    // then
+    assertEquals(Locale.ENGLISH, member.getLanguage().getLocale());
   }
 
   @Test
