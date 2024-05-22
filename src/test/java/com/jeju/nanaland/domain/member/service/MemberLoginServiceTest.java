@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
@@ -23,10 +24,13 @@ import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
+import com.jeju.nanaland.global.exception.ConflictException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,15 +61,22 @@ class MemberLoginServiceTest {
   @InjectMocks
   private MemberLoginService memberLoginService;
 
-  /**
-   * 회원 가입 성공 조건 - DB에 Provider, providerId가 없어야 함 - 닉네임이 12자 내여야 함 & DB에 존재하지 않아야 함 -
-   * MultipartFile이 null이면 기본 프로필 사진, 그렇지 않으면 upload - language & memberTravelType이 null이 아니여야 함 -
-   * 이용 약관 저장 - JWT 저장
-   */
-  @Test
-  @DisplayName("회원 가입 성공")
-  void joinSuccess() {
-    // given
+  private JoinDto joinDto;
+  private Language language;
+  private MemberTravelType memberTravelType;
+  private ImageFile imageFile;
+  private Member member;
+
+  @BeforeEach
+  void setUp() {
+    joinDto = createJoinDto();
+    language = createLanguage();
+    memberTravelType = createMemberTravelType();
+    imageFile = createImageFile();
+    member = createMember();
+  }
+
+  private JoinDto createJoinDto() {
     JoinDto joinDto = new JoinDto();
     joinDto.setProvider("GOOGLE");
     joinDto.setProviderId("123");
@@ -75,22 +86,30 @@ class MemberLoginServiceTest {
     joinDto.setGender("MALE");
     joinDto.setBirthDate(LocalDate.now());
     joinDto.setConsentItems(Collections.emptyList());
+    return joinDto;
+  }
 
-    MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-        new byte[0]);
-
-    Language language = Language.builder()
+  private Language createLanguage() {
+    return Language.builder()
         .locale(Locale.KOREAN)
         .build();
-    MemberTravelType memberTravelType = MemberTravelType.builder()
+  }
+
+  private MemberTravelType createMemberTravelType() {
+    return MemberTravelType.builder()
         .travelType(TravelType.NONE)
         .build();
-    ImageFile imageFile = ImageFile.builder()
+  }
+
+  private ImageFile createImageFile() {
+    return ImageFile.builder()
         .originUrl("origin")
         .thumbnailUrl("thumbnail")
         .build();
+  }
 
-    Member member = spy(Member.builder()
+  private Member createMember() {
+    return spy(Member.builder()
         .language(language)
         .email(joinDto.getEmail())
         .profileImageFile(imageFile)
@@ -101,6 +120,48 @@ class MemberLoginServiceTest {
         .providerId(joinDto.getProviderId())
         .memberTravelType(memberTravelType)
         .build());
+  }
+
+  /**
+   * 회원 가입 실패 조건 - 이미 회원 가입된 경우 - 닉네임 중복
+   */
+  @Test
+  @DisplayName("회원 가입 실패 - 이미 회원 가입된 경우")
+  void joinFail() {
+    // given
+    doReturn(Optional.of(member))
+        .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+
+    // when
+    ConflictException conflictException = assertThrows(ConflictException.class,
+        () -> memberLoginService.join(joinDto, null));
+
+    // then
+    assertEquals(conflictException.getMessage(), ErrorCode.MEMBER_DUPLICATE.getMessage());
+  }
+
+  @Test
+  @DisplayName("회원 가입 실패 - 닉네임 중복")
+  void joinFail2() {
+    // given
+    doReturn(Optional.empty())
+        .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+    doReturn(Optional.of(member)).when(memberRepository).findByNickname(any());
+
+    // when
+    ConflictException conflictException = assertThrows(ConflictException.class,
+        () -> memberLoginService.join(joinDto, null));
+
+    // then
+    assertEquals(conflictException.getMessage(), ErrorCode.NICKNAME_DUPLICATE.getMessage());
+  }
+  
+  @Test
+  @DisplayName("회원 가입 성공")
+  void joinSuccess() {
+    // given
+    MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
+        new byte[0]);
 
     doReturn(Optional.empty())
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
