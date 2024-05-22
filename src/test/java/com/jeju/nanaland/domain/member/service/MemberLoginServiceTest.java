@@ -18,14 +18,17 @@ import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
+import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -58,6 +61,8 @@ class MemberLoginServiceTest {
   @Mock
   private MemberConsentRepository memberConsentRepository;
   @Mock
+  private MemberWithdrawalRepository memberWithdrawalRepository;
+  @Mock
   private JwtUtil jwtUtil;
   @Mock
   private ImageFileService imageFileService;
@@ -72,6 +77,7 @@ class MemberLoginServiceTest {
   private ImageFile imageFile;
   private Member member;
   private LoginDto loginDto;
+  private MemberInfoDto memberInfoDto;
 
 
   @BeforeEach
@@ -82,6 +88,7 @@ class MemberLoginServiceTest {
     imageFile = createImageFile();
     member = createMember();
     loginDto = createLoginDto(Locale.KOREAN.name());
+    memberInfoDto = createMemberInfoDto(language, member);
   }
 
   private JoinDto createJoinDto() {
@@ -128,6 +135,13 @@ class MemberLoginServiceTest {
         .providerId(joinDto.getProviderId())
         .memberTravelType(memberTravelType)
         .build());
+  }
+
+  private MemberInfoDto createMemberInfoDto(Language language, Member member) {
+    return MemberInfoDto.builder()
+        .language(language)
+        .member(member)
+        .build();
   }
 
   private LoginDto createLoginDto(String locale) {
@@ -366,11 +380,6 @@ class MemberLoginServiceTest {
   @DisplayName("로그아웃 성공")
   void logoutSuccess() {
     // given
-    MemberInfoDto memberInfoDto = MemberInfoDto.builder()
-        .language(language)
-        .member(member)
-        .build();
-
     doReturn("accessToken").when(jwtUtil).resolveToken(any());
     doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
 
@@ -385,7 +394,18 @@ class MemberLoginServiceTest {
   }
 
   @Test
+  @DisplayName("회원 탈퇴 성공")
   void withdrawal() {
+    // given
+    WithdrawalDto withdrawalDto = new WithdrawalDto();
+    withdrawalDto.setWithdrawalType(WithdrawalType.INCONVENIENT_SERVICE.name());
+
+    // when
+    memberLoginService.withdrawal(memberInfoDto, withdrawalDto);
+
+    // then
+    verify(member, times(1)).updateStatus(any());
+    verify(memberWithdrawalRepository, times(1)).save(any());
   }
 
   @Test
