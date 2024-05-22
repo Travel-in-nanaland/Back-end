@@ -1,8 +1,6 @@
 package com.jeju.nanaland.domain.member.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -166,7 +164,7 @@ class MemberLoginServiceTest {
         () -> memberLoginService.join(joinDto, null));
 
     // then
-    assertEquals(conflictException.getMessage(), ErrorCode.MEMBER_DUPLICATE.getMessage());
+    assertThat(conflictException.getMessage()).isEqualTo(ErrorCode.MEMBER_DUPLICATE.getMessage());
 
     verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
   }
@@ -184,7 +182,7 @@ class MemberLoginServiceTest {
         () -> memberLoginService.join(joinDto, null));
 
     // then
-    assertEquals(conflictException.getMessage(), ErrorCode.NICKNAME_DUPLICATE.getMessage());
+    assertThat(conflictException.getMessage()).isEqualTo(ErrorCode.NICKNAME_DUPLICATE.getMessage());
 
     verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
     verify(memberRepository, times(1)).findByNickname(any());
@@ -215,13 +213,13 @@ class MemberLoginServiceTest {
     JwtDto jwtDto2 = memberLoginService.join(joinDto, null);
 
     // then
-    assertNotNull(jwtDto);
-    assertEquals("accessToken", jwtDto.getAccessToken());
-    assertEquals("refreshToken", jwtDto.getRefreshToken());
+    assertThat(jwtDto).isNotNull();
+    assertThat(jwtDto.getAccessToken()).isEqualTo("accessToken");
+    assertThat(jwtDto.getRefreshToken()).isEqualTo("refreshToken");
 
-    assertNotNull(jwtDto2);
-    assertEquals("accessToken", jwtDto2.getAccessToken());
-    assertEquals("refreshToken", jwtDto2.getRefreshToken());
+    assertThat(jwtDto2).isNotNull();
+    assertThat(jwtDto2.getAccessToken()).isEqualTo("accessToken");
+    assertThat(jwtDto2.getRefreshToken()).isEqualTo("refreshToken");
 
     verify(memberRepository, times(2)).findByProviderAndProviderId(any(Provider.class), any());
     verify(memberRepository, times(2)).findByNickname(any());
@@ -247,7 +245,7 @@ class MemberLoginServiceTest {
         () -> memberLoginService.login(loginDto));
 
     // then
-    assertEquals(notFoundException.getMessage(), ErrorCode.MEMBER_NOT_FOUND.getMessage());
+    assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
     verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
   }
@@ -266,9 +264,9 @@ class MemberLoginServiceTest {
     JwtDto jwtDto = memberLoginService.login(loginDto);
 
     // then
-    assertNotNull(jwtDto);
-    assertEquals("accessToken", jwtDto.getAccessToken());
-    assertEquals("refreshToken", jwtDto.getRefreshToken());
+    assertThat(jwtDto).isNotNull();
+    assertThat(jwtDto.getAccessToken()).isEqualTo("accessToken");
+    assertThat(jwtDto.getRefreshToken()).isEqualTo("refreshToken");
 
     verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
     verify(jwtUtil, times(1)).getAccessToken(any(), any());
@@ -286,7 +284,7 @@ class MemberLoginServiceTest {
     memberLoginService.updateMemberActive(member);
 
     // then
-    assertEquals(Status.ACTIVE, member.getStatus());
+    assertThat(member.getStatus()).isEqualTo(Status.ACTIVE);
   }
 
   @Test
@@ -301,7 +299,7 @@ class MemberLoginServiceTest {
     memberLoginService.updateLanguageDifferent(newLanguageLoginDto, member);
 
     // then
-    assertEquals(Locale.ENGLISH, member.getLanguage().getLocale());
+    assertThat(member.getLanguage().getLocale()).isEqualTo(Locale.ENGLISH);
 
     verify(languageRepository, times(1)).findByLocale(any(Locale.class));
   }
@@ -318,7 +316,7 @@ class MemberLoginServiceTest {
         () -> memberLoginService.reissue("bearer RefreshToken"));
 
     // then
-    assertEquals(unauthorizedException.getMessage(), ErrorCode.INVALID_TOKEN.getMessage());
+    assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
 
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
@@ -338,7 +336,7 @@ class MemberLoginServiceTest {
         () -> memberLoginService.reissue("bearer RefreshToken"));
 
     // then
-    assertEquals(unauthorizedException.getMessage(), ErrorCode.INVALID_TOKEN.getMessage());
+    assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
 
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
@@ -364,9 +362,9 @@ class MemberLoginServiceTest {
     JwtDto jwtDto = memberLoginService.reissue("bearer RefreshToken");
 
     // then
-    assertNotNull(jwtDto);
-    assertEquals("accessToken", jwtDto.getAccessToken());
-    assertEquals("refreshToken", jwtDto.getRefreshToken());
+    assertThat(jwtDto).isNotNull();
+    assertThat(jwtDto.getAccessToken()).isEqualTo("accessToken");
+    assertThat(jwtDto.getRefreshToken()).isEqualTo("refreshToken");
 
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
@@ -419,10 +417,10 @@ class MemberLoginServiceTest {
     memberLoginService.deleteWithdrawalMemberInfo();
 
     // then
-    assertEquals("INACTIVE@nanaland.com", member.getEmail());
-    assertEquals("INACTIVE", member.getProviderId());
-    assertEquals("", member.getGender());
-    assertNull(member.getBirthDate());
+    assertThat(member.getEmail()).isEqualTo("INACTIVE@nanaland.com");
+    assertThat(member.getProviderId()).isEqualTo("INACTIVE");
+    assertThat(member.getGender()).isEmpty();
+    assertThat(member.getBirthDate()).isNull();
     verify(member, times(1)).updatePersonalInfo();
   }
 }
