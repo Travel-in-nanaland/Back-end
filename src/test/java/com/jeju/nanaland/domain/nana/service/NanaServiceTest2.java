@@ -13,13 +13,14 @@ import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
+import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
@@ -59,18 +60,28 @@ public class NanaServiceTest2 {
         .locale(Locale.KOREAN)
         .dateFormat("yyyy-MM-dd")
         .build();
-    ImageFile imageFile = ImageFile.builder()
-        .thumbnailUrl("thumbnail_url")
-        .originUrl("origin_url")
+    ImageFile imageFile1 = ImageFile.builder()
+        .thumbnailUrl("thumbnail_url1")
+        .originUrl("origin_url1")
+        .build();
+
+    ImageFile imageFile2 = ImageFile.builder()
+        .thumbnailUrl("thumbnail_url2")
+        .originUrl("origin_url2")
+        .build();
+
+    ImageFile imageFile3 = ImageFile.builder()
+        .thumbnailUrl("thumbnail_url3")
+        .originUrl("origin_url3")
         .build();
 
     Member member = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(123456789L)
+        .providerId(String.valueOf(123456789L))
         .nickname("nickname1")
         .language(language)
-        .profileImageFile(imageFile)
+        .profileImageFile(imageFile1)
         .build();
 
     MemberInfoDto memberInfoDto = MemberInfoDto.builder()
@@ -79,10 +90,10 @@ public class NanaServiceTest2 {
         .build();
     Nana nana = Nana.builder()
         .version("ver1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     NanaTitle nanaTitle = NanaTitle.builder()
         .notice("notice1")
-        .imageFile(imageFile)
         .language(language)
         .nana(nana)
         .build();
@@ -92,7 +103,6 @@ public class NanaServiceTest2 {
             .content("content")
             .number(1)
             .title("title")
-            .imageFile(imageFile)
             .infoList(Set.of(
                 NanaAdditionalInfo.builder()
                     .description("description1")
@@ -110,7 +120,6 @@ public class NanaServiceTest2 {
             .content("content2")
             .number(2)
             .title("title2")
-            .imageFile(imageFile)
             .infoList(Set.of(
                 NanaAdditionalInfo.builder()
                     .description("description3")
@@ -128,7 +137,6 @@ public class NanaServiceTest2 {
             .content("content3")
             .number(3)
             .title("title3")
-            .imageFile(imageFile)
             .infoList(Set.of(
                 NanaAdditionalInfo.builder()
                     .description("description5")
@@ -139,6 +147,28 @@ public class NanaServiceTest2 {
                     .infoType(InfoType.ADDRESS)
                     .build()))
             .build());
+
+    NanaContentImage nanaContentImage1 = NanaContentImage.builder()
+        .imageFile(imageFile1)
+        .nana(nana)
+        .number(1)
+        .build();
+
+    NanaContentImage nanaContentImage2 = NanaContentImage.builder()
+        .imageFile(imageFile2)
+        .nana(nana)
+        .number(2)
+        .build();
+
+    NanaContentImage nanaContentImage3 = NanaContentImage.builder()
+        .imageFile(imageFile3)
+        .nana(nana)
+        .number(3)
+        .build();
+
+    nana.updateNanaContentImageList(
+        List.of(nanaContentImage1, nanaContentImage2, nanaContentImage3));
+
     Category category = Category.builder()
         .content(CategoryContent.NANA_CONTENT)
         .build();

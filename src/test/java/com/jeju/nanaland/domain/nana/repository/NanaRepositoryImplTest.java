@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
+import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -28,7 +29,7 @@ import org.springframework.data.domain.PageRequest;
 class NanaRepositoryImplTest {
 
   Language language, language2;
-  ImageFile imageFile, imageFile2, imageFile3, imageFile4, imageFile5;
+  ImageFile imageFile1, imageFile2, imageFile3, imageFile4, imageFile5;
   Nana nana1, nana2, nana3, nana4, nana5;
   NanaTitle nanaTitle1, nanaTitle2, nanaTitle3, nanaTitle4, nanaTitle5;
   NanaContent nanaContent1, nanaContent2, nanaContent3;
@@ -57,11 +58,11 @@ class NanaRepositoryImplTest {
         .build();
     em.persist(language2);
 
-    imageFile = ImageFile.builder()
-        .originUrl("originUrl")
-        .thumbnailUrl("thumbnailUrl")
+    imageFile1 = ImageFile.builder()
+        .originUrl("originUrl1")
+        .thumbnailUrl("thumbnailUrl1")
         .build();
-    em.persist(imageFile);
+    em.persist(imageFile1);
 
     imageFile2 = ImageFile.builder()
         .originUrl("originUrl2")
@@ -70,8 +71,8 @@ class NanaRepositoryImplTest {
     em.persist(imageFile2);
 
     imageFile3 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
+        .originUrl("originUrl3")
+        .thumbnailUrl("thumbnailUrl3")
         .build();
     em.persist(imageFile3);
 
@@ -89,32 +90,37 @@ class NanaRepositoryImplTest {
 
     nana1 = Nana.builder()
         .version("ver1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     nanaRepository.save(nana1);
 
     nana2 = Nana.builder()
         .version("ver2")
+        .nanaTitleImageFile(imageFile2)
         .build();
     nanaRepository.save(nana2);
 
     nana3 = Nana.builder()
         .version("ver3")
+        .nanaTitleImageFile(imageFile3)
         .build();
     nanaRepository.save(nana3);
 
     nana4 = Nana.builder()
         .version("ver4")
+        .nanaTitleImageFile(imageFile4)
         .build();
     nanaRepository.save(nana4);
 
     nana5 = Nana.builder()
         .version("ver5")
+        .nanaTitleImageFile(imageFile5)
         .build();
     nanaRepository.save(nana5);
 
     nanaTitle1 = NanaTitle.builder()
         .notice("notice1")
-        .imageFile(imageFile)
+
         .language(language)
         .nana(nana1)
         .build();
@@ -124,7 +130,6 @@ class NanaRepositoryImplTest {
     nanaTitle2 = NanaTitle.builder()
         .notice("notice2")
         .heading("keyword")
-        .imageFile(imageFile2)
         .language(language)
         .nana(nana2)
         .build();
@@ -132,7 +137,6 @@ class NanaRepositoryImplTest {
 
     nanaTitle3 = NanaTitle.builder()
         .notice("notice3")
-        .imageFile(imageFile3)
         .language(language)
         .nana(nana3)
         .build();
@@ -140,14 +144,12 @@ class NanaRepositoryImplTest {
 
     nanaTitle4 = NanaTitle.builder()
         .notice("notice4")
-        .imageFile(imageFile4)
         .language(language)
         .nana(nana4)
         .build();
     nanaTitleRepository.save(nanaTitle4);
     nanaTitle5 = NanaTitle.builder()
         .notice("notice5")
-        .imageFile(imageFile5)
         .language(language)
         .nana(nana5)
         .build();
@@ -159,7 +161,6 @@ class NanaRepositoryImplTest {
         .content("content")
         .number(1)
         .title("title")
-        .imageFile(imageFile)
         .build();
     nanaContentRepository.save(nanaContent1);
 
@@ -169,7 +170,6 @@ class NanaRepositoryImplTest {
         .content("content2")
         .number(2)
         .title("title2")
-        .imageFile(imageFile2)
         .build();
     nanaContentRepository.save(nanaContent2);
 
@@ -179,10 +179,29 @@ class NanaRepositoryImplTest {
         .content("content3")
         .number(2)
         .title("title3")
-        .imageFile(imageFile3)
         .build();
     nanaContentRepository.save(nanaContent3);
 
+    NanaContentImage nanaContentImage1 = NanaContentImage.builder()
+        .imageFile(imageFile1)
+        .nana(nana1)
+        .number(1)
+        .build();
+
+    NanaContentImage nanaContentImage2 = NanaContentImage.builder()
+        .imageFile(imageFile2)
+        .nana(nana1)
+        .number(2)
+        .build();
+
+    NanaContentImage nanaContentImage3 = NanaContentImage.builder()
+        .imageFile(imageFile3)
+        .nana(nana1)
+        .number(3)
+        .build();
+
+    nana1.updateNanaContentImageList(
+        List.of(nanaContentImage1, nanaContentImage2, nanaContentImage3));
   }
 
   @Test
