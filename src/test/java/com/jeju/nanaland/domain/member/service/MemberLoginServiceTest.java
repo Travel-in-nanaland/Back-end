@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -37,6 +38,7 @@ import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -410,5 +412,17 @@ class MemberLoginServiceTest {
 
   @Test
   void deleteWithdrawalMemberInfo() {
+    // given
+    doReturn(List.of(member)).when(memberRepository).findInactiveMembersForWithdrawalDate();
+
+    // when
+    memberLoginService.deleteWithdrawalMemberInfo();
+
+    // then
+    assertEquals("INACTIVE@nanaland.com", member.getEmail());
+    assertEquals("INACTIVE", member.getProviderId());
+    assertEquals("", member.getGender());
+    assertNull(member.getBirthDate());
+    verify(member, times(1)).updatePersonalInfo();
   }
 }
