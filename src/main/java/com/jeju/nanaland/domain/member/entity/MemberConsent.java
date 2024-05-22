@@ -41,7 +41,7 @@ public class MemberConsent extends BaseEntity {
   private ConsentType consentType;
 
   @NotNull
-  private boolean consent;
+  private Boolean consent;
 
   private LocalDateTime consentDate;
 
