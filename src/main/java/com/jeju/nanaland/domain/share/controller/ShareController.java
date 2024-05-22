@@ -11,10 +11,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/share")
 public class ShareController {
 
-  @GetMapping("")
-  public String test(Model model, String category, Long id) {
+  @GetMapping("/en")
+  public String shareEn(Model model, String category, Long id) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
-    return "deeplink";
+    return "deeplink-en";
+  }
+
+  @GetMapping("/ko")
+  public String shareKo(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+    return "deeplink-ko";
+  }
+
+  @GetMapping("/zh")
+  public String shareZh(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+    return "deeplink-zh";
+  }
+
+  @GetMapping("/ms")
+  public String shareMs(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+    return "deeplink-ms";
   }
 }

@@ -9,7 +9,7 @@ import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ class ExperienceServiceTest {
     member1 = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(123456789L)
+        .providerId("123456789")
         .nickname("nickname1")
         .language(language)
         .profileImageFile(imageFile1)
@@ -71,7 +71,7 @@ class ExperienceServiceTest {
     member2 = Member.builder()
         .email("test2@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(1234567890L)
+        .providerId("1234567890")
         .nickname("nickname2")
         .language(language)
         .profileImageFile(imageFile2)

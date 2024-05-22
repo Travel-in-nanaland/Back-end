@@ -6,6 +6,8 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -25,16 +27,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLRestriction("status = 'ACTIVE'")
 public class Member extends BaseEntity {
 
   @Enumerated(value = EnumType.STRING)
@@ -71,17 +72,18 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Provider provider;
 
-  @NotNull
+  @NotBlank
   @Column(nullable = false)
-  private Long providerId;
+  private String providerId;
 
   @ElementCollection(targetClass = Role.class)
   @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "member_id"))
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
-  @Enumerated(EnumType.STRING)
-  private MemberType type;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_travel_type_id", nullable = true)
+  private MemberTravelType memberTravelType;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
@@ -89,7 +91,7 @@ public class Member extends BaseEntity {
   @Builder
   public Member(Language language, String email, ImageFile profileImageFile,
       String nickname, String description, String gender, LocalDate birthDate,
-      Provider provider, Long providerId, MemberType type) {
+      Provider provider, String providerId, MemberTravelType memberTravelType) {
     this.language = language;
     this.email = email;
     this.profileImageFile = profileImageFile;
@@ -102,16 +104,16 @@ public class Member extends BaseEntity {
     this.providerId = providerId;
     this.roleSet = (provider == Provider.GUEST) ? new HashSet<>(List.of(Role.ROLE_GUEST))
         : new HashSet<>(List.of(Role.ROLE_MEMBER));
-    this.type = type;
+    this.memberTravelType = memberTravelType;
     this.favorites = new ArrayList<>();
   }
 
-  public void updateMemberType(MemberType type) {
-    this.type = type;
+  public void updateMemberTravelType(MemberTravelType memberTravelType) {
+
+    this.memberTravelType = memberTravelType;
   }
 
   public void updateProfile(ProfileUpdateDto profileUpdateDto) {
-    // TODO: 닉네임 중복 확인 & 닉네임 글자수 제한
     this.nickname =
         profileUpdateDto.getNickname() != null ? profileUpdateDto.getNickname() : this.nickname;
     this.description =
@@ -125,5 +127,13 @@ public class Member extends BaseEntity {
 
   public void updateLanguage(Language language) {
     this.language = language;
+  }
+
+  public void updatePersonalInfo() {
+    this.email = "INACTIVE@nanaland.com";
+    this.nickname = UUID.randomUUID().toString().substring(0, 16);
+    this.providerId = "INACTIVE";
+    this.gender = "";
+    this.birthDate = null;
   }
 }

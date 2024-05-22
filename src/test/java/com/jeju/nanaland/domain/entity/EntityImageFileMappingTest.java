@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.story.entity.Story;
 import com.jeju.nanaland.domain.story.entity.StoryCategory;
 import com.jeju.nanaland.domain.story.entity.StoryImageFile;
@@ -59,7 +59,7 @@ class EntityImageFileMappingTest {
         .email("email")
         .nickname("nickname")
         .provider(Provider.KAKAO)
-        .providerId(1L)
+        .providerId("1")
         .build();
     em.persist(member);
   }

@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
@@ -56,7 +56,7 @@ class ReportServiceTest {
     member = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(123456789L)
+        .providerId("123456789")
         .nickname("nickname1")
         .language(language)
         .profileImageFile(imageFile1)
@@ -98,11 +98,11 @@ class ReportServiceTest {
      */
     Nana nana = Nana.builder()
         .version("1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     em.persist(nana);
 
     NanaTitle nanaTitle = NanaTitle.builder()
-        .imageFile(imageFile1)
         .heading("heading")
         .subHeading("subHeading")
         .language(language)

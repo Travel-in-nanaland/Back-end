@@ -17,7 +17,7 @@ import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import jakarta.persistence.EntityManager;
@@ -73,7 +73,7 @@ class FavoriteServiceTest {
     member = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId(123456789L)
+        .providerId("123456789")
         .nickname("nickname1")
         .language(language)
         .profileImageFile(imageFile1)
@@ -116,11 +116,11 @@ class FavoriteServiceTest {
 
     Nana nana = Nana.builder()
         .version("1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     em.persist(nana);
 
     NanaTitle nanaTitle = NanaTitle.builder()
-        .imageFile(imageFile1)
         .heading("heading")
         .subHeading("subHeading")
         .language(language)
@@ -185,10 +185,10 @@ class FavoriteServiceTest {
 
     Nana nana = Nana.builder()
         .version("1")
+        .nanaTitleImageFile(imageFile1)
         .build();
     em.persist(nana);
     NanaTitle nanaTitle = NanaTitle.builder()
-        .imageFile(imageFile1)
         .heading("heading")
         .subHeading("subHeading")
         .language(language)
