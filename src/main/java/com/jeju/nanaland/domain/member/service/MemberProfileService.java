@@ -9,11 +9,12 @@ import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.ConsentItemResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
-import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
@@ -79,6 +80,12 @@ public class MemberProfileService {
       hashtags = travelType.getHashtagsWithLocale(locale);
     }
 
+    List<ConsentItemResponse> consentItemResponses = memberRepository.findMemberConsentByMember(
+        member).stream().map(memberConsent -> ConsentItemResponse.builder()
+        .consentType(memberConsent.getConsentType().name())
+        .consent(memberConsent.getConsent())
+        .build()).toList();
+
     return MemberResponse.ProfileDto.builder()
         .email(member.getEmail())
         .provider(member.getProvider().name())
@@ -88,6 +95,7 @@ public class MemberProfileService {
         .level(member.getLevel())
         .travelType(typeName)
         .hashtags(hashtags)
+        .consentItems(consentItemResponses)
         .build();
   }
 
