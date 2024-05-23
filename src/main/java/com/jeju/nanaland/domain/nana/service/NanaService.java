@@ -150,7 +150,7 @@ public class NanaService {
   }
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
-  public List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
+  private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
       NanaContent nanaContent) {
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
@@ -169,7 +169,7 @@ public class NanaService {
     return result;
   }
 
-  public List<String> getStringKeywordListFromHashtagList(List<Hashtag> hashtagList) {
+  private List<String> getStringKeywordListFromHashtagList(List<Hashtag> hashtagList) {
     return hashtagList.stream()
         .map(hashtag -> hashtag.getKeyword().getContent())
         .collect(Collectors.toList());
