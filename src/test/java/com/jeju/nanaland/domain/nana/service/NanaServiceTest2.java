@@ -16,6 +16,8 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
 import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
@@ -35,6 +37,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 public class NanaServiceTest2 {
@@ -53,6 +59,55 @@ public class NanaServiceTest2 {
   private CategoryRepository categoryRepository;
   @InjectMocks
   private NanaService nanaService;
+
+
+  @Test
+  void getNanaThumbnails() {
+    // Given
+    Language language = createLanguage(Locale.KOREAN);
+    ImageFile imageFile = createImageFile(1);
+    Member member = createMember(language, imageFile);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
+
+    Nana nana1 = createNana(1, imageFile);
+    Nana nana2 = createNana(2, imageFile);
+    Nana nana3 = createNana(3, imageFile);
+    NanaTitle nanaTitle1 = createNanaTitle(1, nana1, language);
+    NanaTitle nanaTitle2 = createNanaTitle(2, nana2, language);
+    NanaTitle nanaTitle3 = createNanaTitle(3, nana3, language);
+
+    Pageable pageable = PageRequest.of(0, 10); // 0번 페이지, 페이지 크기 10
+    List<NanaThumbnail> nanaThumbnailList = List.of(
+        NanaThumbnail.builder()
+            .thumbnailUrl(nana1.getNanaTitleImageFile().getThumbnailUrl())
+            .subHeading(nanaTitle1.getSubHeading())
+            .heading(nanaTitle1.getHeading())
+            .version(nana1.getVersion())
+            .build(),
+        NanaThumbnail.builder()
+            .thumbnailUrl(nana2.getNanaTitleImageFile().getThumbnailUrl())
+            .subHeading(nanaTitle2.getSubHeading())
+            .heading(nanaTitle2.getHeading())
+            .version(nana2.getVersion())
+            .build(),
+        NanaThumbnail.builder()
+            .thumbnailUrl(nana3.getNanaTitleImageFile().getThumbnailUrl())
+            .subHeading(nanaTitle3.getSubHeading())
+            .heading(nanaTitle3.getHeading())
+            .version(nana3.getVersion())
+            .build());
+    Page<NanaThumbnail> nanaThumbnails = new PageImpl<>(nanaThumbnailList, pageable,
+        nanaThumbnailList.size());
+
+    when(nanaRepository.findAllNanaThumbnailDto(language.getLocale(), pageable)).thenReturn(
+        nanaThumbnails);
+
+    // When
+    NanaThumbnailDto nanaThumbnails1 = nanaService.getNanaThumbnails(Locale.KOREAN, 0, 10);
+
+    // Then
+    Assertions.assertThat(nanaThumbnails1.getTotalElements()).isEqualTo(3L);
+  }
 
   @Test
   void getNanaDetail() {
@@ -208,104 +263,4 @@ public class NanaServiceTest2 {
     }
     return nanaContentImageList;
   }
-
-//  void setData() {
-//    Member member = Member.builder()
-//        .email("test@naver.com")
-//        .provider(Provider.KAKAO)
-//        .providerId(String.valueOf(123456789L))
-//        .nickname("nickname1")
-//        .language(language)
-//        .profileImageFile(imageFile1)
-//        .build();
-//
-//    MemberInfoDto memberInfoDto = MemberInfoDto.builder()
-//        .member(member)
-//        .language(language)
-//        .build();
-//    Nana nana = Nana.builder()
-//        .version("ver1")
-//        .nanaTitleImageFile(imageFile1)
-//        .build();
-//    NanaTitle nanaTitle = NanaTitle.builder()
-//        .notice("notice1")
-//        .language(language)
-//        .nana(nana)
-//        .build();
-//    List<NanaContent> nanaContentList = List.of(NanaContent.builder()
-//            .subTitle("subtitle1")
-//            .nanaTitle(nanaTitle)
-//            .content("content")
-//            .number(1)
-//            .title("title")
-//            .infoList(Set.of(
-//                NanaAdditionalInfo.builder()
-//                    .description("description1")
-//                    .infoType(InfoType.ADDRESS)
-//                    .build()
-//                , NanaAdditionalInfo.builder()
-//                    .description("description2")
-//                    .infoType(InfoType.ADDRESS)
-//                    .build()))
-//            .build(),
-//
-//        NanaContent.builder()
-//            .subTitle("subtitle2")
-//            .nanaTitle(nanaTitle)
-//            .content("content2")
-//            .number(2)
-//            .title("title2")
-//            .infoList(Set.of(
-//                NanaAdditionalInfo.builder()
-//                    .description("description3")
-//                    .infoType(InfoType.ADDRESS)
-//                    .build()
-//                , NanaAdditionalInfo.builder()
-//                    .description("description4")
-//                    .infoType(InfoType.ADDRESS)
-//                    .build()))
-//            .build(),
-//
-//        NanaContent.builder()
-//            .subTitle("subtitle3")
-//            .nanaTitle(nanaTitle)
-//            .content("content3")
-//            .number(3)
-//            .title("title3")
-//            .infoList(Set.of(
-//                NanaAdditionalInfo.builder()
-//                    .description("description5")
-//                    .infoType(InfoType.ADDRESS)
-//                    .build()
-//                , NanaAdditionalInfo.builder()
-//                    .description("description6")
-//                    .infoType(InfoType.ADDRESS)
-//                    .build()))
-//            .build());
-//
-//    NanaContentImage nanaContentImage1 = NanaContentImage.builder()
-//        .imageFile(imageFile1)
-//        .nana(nana)
-//        .number(1)
-//        .build();
-//
-//    NanaContentImage nanaContentImage2 = NanaContentImage.builder()
-//        .imageFile(imageFile2)
-//        .nana(nana)
-//        .number(2)
-//        .build();
-//
-//    NanaContentImage nanaContentImage3 = NanaContentImage.builder()
-//        .imageFile(imageFile3)
-//        .nana(nana)
-//        .number(3)
-//        .build();
-//
-//    nana.updateNanaContentImageList(
-//        List.of(nanaContentImage1, nanaContentImage2, nanaContentImage3));
-//
-//    Category category = Category.builder()
-//        .content(CategoryContent.NANA_CONTENT)
-//        .build();
-//  }
 }
