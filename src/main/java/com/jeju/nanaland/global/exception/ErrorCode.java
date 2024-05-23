@@ -28,7 +28,7 @@ public enum ErrorCode {
   MEMBER_NOT_FOUND(NOT_FOUND, "존재하는 회원을 찾을 수 없습니다."),
   NANA_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana 입니다."),
   NANA_TITLE_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana Title 입니다."),
-
+  MEMBER_CONSENT_NOT_FOUND(NOT_FOUND, "존재하는 이용약관 동의 여부를 찾을 수 없습니다"),
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
   NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다."),
