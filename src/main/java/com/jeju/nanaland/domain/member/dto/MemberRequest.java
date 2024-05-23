@@ -113,7 +113,7 @@ public class MemberRequest {
   @Getter
   public static class ConsentUpdateDto {
 
-    @Schema(description = "이용약관", example = "TERMS_OF_USE",
+    @Schema(description = "이용약관", example = "MARKETING",
         allowableValues = {"MARKETING", "LOCATION_SERVICE"})
     @NotNull
     @EnumValid(

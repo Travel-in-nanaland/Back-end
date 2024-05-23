@@ -1,5 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_CONSENT_NOT_FOUND;
+
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentItem;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -8,10 +10,11 @@ import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,6 +34,11 @@ public class MemberConsentService {
             consentItem -> ConsentType.valueOf(consentItem.getConsentType()),
             ConsentItem::getConsent
         ));
+
+    Boolean termsOfUseConsent = consentItemMap.get(ConsentType.TERMS_OF_USE);
+    if (termsOfUseConsent == null || !termsOfUseConsent) {
+      throw new BadRequestException("TERMS_OF_USE는 필수로 동의해야 합니다.");
+    }
 
     List<MemberConsent> memberConsents = Arrays.stream(ConsentType.values())
         .map(consentType -> {
@@ -56,19 +64,10 @@ public class MemberConsentService {
 
   @Transactional
   public void updateMemberConsent(MemberInfoDto memberInfoDto, ConsentUpdateDto consentUpdateDto) {
-    Optional<MemberConsent> memberConsentOptional = memberConsentRepository.findByConsentTypeAndMember(
-        ConsentType.valueOf(consentUpdateDto.getConsentType()),
-        memberInfoDto.getMember());
-    if (memberConsentOptional.isPresent()) {
-      MemberConsent memberConsent = memberConsentOptional.get();
-      memberConsent.updateConsent(consentUpdateDto.getConsent());
-    } else {
-      MemberConsent memberConsent = MemberConsent.builder()
-          .member(memberInfoDto.getMember())
-          .consentType(ConsentType.valueOf(consentUpdateDto.getConsentType()))
-          .consent(consentUpdateDto.getConsent())
-          .build();
-      memberConsentRepository.save(memberConsent);
-    }
+    MemberConsent memberConsent = memberConsentRepository.findByConsentTypeAndMember(
+            ConsentType.valueOf(consentUpdateDto.getConsentType()),
+            memberInfoDto.getMember())
+        .orElseThrow(() -> new NotFoundException(MEMBER_CONSENT_NOT_FOUND.getMessage()));
+    memberConsent.updateConsent(consentUpdateDto.getConsent());
   }
 }
