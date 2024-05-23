@@ -69,28 +69,35 @@ public class MemberResponse {
   @Schema(description = "사용자 정보 조회 DTO")
   public static class ProfileDto {
 
+    @Schema(description = "이용약관 동의 여부")
+    List<ConsentItemResponse> consentItems;
     @Schema(description = "이메일")
     private String email;
-
     @Schema(description = "회원가입 형태", example = "KAKAO, GOOGLE, APPLE")
     private String provider;
-
     @Schema(description = "프로필 사진 url")
     private String profileImageUrl;
-
     @Schema(description = "닉네임")
     private String nickname;
-
     @Schema(description = "설명")
     private String description;
-
     @Schema(description = "레벨")
     private Integer level;
-
     @Schema(description = "타입")
     private String travelType;
-
     @Schema(description = "해시태그 리스트")
     private List<String> hashtags;
+  }
+
+  @Data
+  @Builder
+  public static class ConsentItemResponse {
+
+    @Schema(description = "이용약관", example = "TERMS_OF_USE",
+        allowableValues = {"MARKETING", "LOCATION_SERVICE"})
+    private String consentType;
+
+    @Schema(description = "동의 여부", defaultValue = "false")
+    private Boolean consent;
   }
 }
