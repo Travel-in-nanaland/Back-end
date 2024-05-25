@@ -48,7 +48,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -247,8 +246,11 @@ public class MemberController {
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
   @PostMapping("/forceWithdrawal")
-  public BaseResponse<Null> forceWithdrawal(@RequestParam Long memberId) {
-    memberLoginService.forceWithdrawal(memberId);
+  public BaseResponse<Null> forceWithdrawal(
+      @Parameter(name = "accessToken", hidden = true)
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken
+  ) {
+    memberLoginService.forceWithdrawal(accessToken);
     return BaseResponse.success(WITHDRAWAL_SUCCESS);
   }
 }

@@ -220,8 +220,16 @@ public class MemberLoginService {
   }
 
   @Transactional
-  public void forceWithdrawal(Long memberId) {
-    Member member = memberRepository.findById(memberId)
+  public void forceWithdrawal(String bearerAccessToken) {
+    String accessToken = jwtUtil.resolveToken(bearerAccessToken);
+
+    if (!jwtUtil.verifyAccessToken(accessToken)) {
+      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+    }
+
+    String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
+
+    Member member = memberRepository.findById(Long.valueOf(memberId))
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
     MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
