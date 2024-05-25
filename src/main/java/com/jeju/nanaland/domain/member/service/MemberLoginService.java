@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WTIHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
@@ -149,6 +150,10 @@ public class MemberLoginService {
   public void updateMemberActive(Member member) {
     if (member.getStatus().equals(Status.INACTIVE)) {
       member.updateStatus(Status.ACTIVE);
+
+      MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
+          .orElseThrow(() -> new NotFoundException(MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage()));
+      memberWithdrawal.updateStatus(Status.INACTIVE);
     }
   }
 
