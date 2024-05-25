@@ -218,4 +218,15 @@ public class MemberLoginService {
       members.forEach(Member::updatePersonalInfo);
     }
   }
+
+  @Transactional
+  public void forceWithdrawal(Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+
+    MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
+        .orElseThrow(() -> new NotFoundException(MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage()));
+    memberWithdrawal.updateWithdrawalDate(); // 탈퇴일을 4개월 전으로 변경
+    deleteWithdrawalMemberInfo();
+  }
 }

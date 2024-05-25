@@ -54,4 +54,8 @@ public class MemberWithdrawal {
   public void updateStatus(Status status) {
     this.status = status;
   }
+
+  public void updateWithdrawalDate() {
+    this.withdrawalDate = withdrawalDate.minusMonths(4);
+  }
 }

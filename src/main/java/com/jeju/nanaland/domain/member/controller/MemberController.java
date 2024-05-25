@@ -9,6 +9,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUC
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_CONSENT_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
@@ -47,6 +48,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -170,7 +172,7 @@ public class MemberController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid WithdrawalDto withdrawalType) {
     memberLoginService.withdrawal(memberInfoDto, withdrawalType);
-    return BaseResponse.success(SuccessCode.WITHDRAWAL_SUCCESS);
+    return BaseResponse.success(WITHDRAWAL_SUCCESS);
   }
 
   @Operation(
@@ -235,5 +237,18 @@ public class MemberController {
   ) {
     memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
     return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS);
+  }
+
+  @Operation(
+      summary = "강제 회원 탈퇴 [테스트용]", description = "[회원 탈퇴]를 먼저 진행해야 합니다. 탈퇴일을 3개월 전으로 업데이트 및 개인 정보 삭제하여 즉시 회원 탈퇴 처리")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
+  @PostMapping("/forceWithdrawal")
+  public BaseResponse<Null> forceWithdrawal(@RequestParam Long memberId) {
+    memberLoginService.forceWithdrawal(memberId);
+    return BaseResponse.success(WITHDRAWAL_SUCCESS);
   }
 }
