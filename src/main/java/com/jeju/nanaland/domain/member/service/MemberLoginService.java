@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WTIHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
@@ -64,7 +65,9 @@ public class MemberLoginService {
     String nickname = validateNickname(joinDto);
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
-    memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
+    if (!member.getProvider().equals(Provider.GUEST)) {
+      memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
+    }
     return getJwtDto(member);
   }
 
@@ -147,6 +150,10 @@ public class MemberLoginService {
   public void updateMemberActive(Member member) {
     if (member.getStatus().equals(Status.INACTIVE)) {
       member.updateStatus(Status.ACTIVE);
+
+      MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
+          .orElseThrow(() -> new NotFoundException(MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage()));
+      memberWithdrawal.updateStatus(Status.INACTIVE);
     }
   }
 
@@ -210,5 +217,16 @@ public class MemberLoginService {
     if (!members.isEmpty()) {
       members.forEach(Member::updatePersonalInfo);
     }
+  }
+
+  @Transactional
+  public void forceWithdrawal(Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+
+    MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
+        .orElseThrow(() -> new NotFoundException(MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage()));
+    memberWithdrawal.updateWithdrawalDate(); // 탈퇴일을 4개월 전으로 변경
+    deleteWithdrawalMemberInfo();
   }
 }

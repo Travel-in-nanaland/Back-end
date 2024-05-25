@@ -52,7 +52,8 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   public List<MemberConsent> findMemberConsentByMember(Member member) {
     return queryFactory
         .selectFrom(memberConsent)
-        .where(memberConsent.consentType.ne(ConsentType.TERMS_OF_USE))
+        .where(memberConsent.consentType.ne(ConsentType.TERMS_OF_USE)
+            .and(memberConsent.member.eq(member)))
         .fetch();
   }
 
