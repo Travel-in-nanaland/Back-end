@@ -64,7 +64,9 @@ public class MemberLoginService {
     String nickname = validateNickname(joinDto);
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
-    memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
+    if (!member.getProvider().equals(Provider.GUEST)) {
+      memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
+    }
     return getJwtDto(member);
   }
 
