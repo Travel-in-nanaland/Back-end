@@ -43,8 +43,8 @@ public class MemberProfileService {
   public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
       MultipartFile multipartFile) {
 
-    validateNickname(profileUpdateDto.getNickname());
     Member member = memberInfoDto.getMember();
+    validateNickname(profileUpdateDto.getNickname(), member);
     ImageFile profileImageFile = member.getProfileImageFile();
     if (multipartFile != null) {
       try {
@@ -62,9 +62,9 @@ public class MemberProfileService {
     member.updateProfile(profileUpdateDto);
   }
 
-  private void validateNickname(String nickname) {
+  private void validateNickname(String nickname, Member member) {
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
-    if (memberOptional.isPresent()) {
+    if (memberOptional.isPresent() && !memberOptional.get().equals(member)) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
   }

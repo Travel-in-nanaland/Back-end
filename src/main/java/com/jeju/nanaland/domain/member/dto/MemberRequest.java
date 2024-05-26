@@ -104,7 +104,7 @@ public class MemberRequest {
     )
     private String consentType;
 
-    @Schema(description = "동의 여부", defaultValue = "false")
+    @Schema(description = "동의 여부", defaultValue = "true")
     @NotNull
     private Boolean consent;
   }
