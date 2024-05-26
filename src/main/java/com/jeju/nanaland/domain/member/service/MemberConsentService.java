@@ -11,6 +11,7 @@ import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +38,7 @@ public class MemberConsentService {
 
     Boolean termsOfUseConsent = consentItemMap.get(ConsentType.TERMS_OF_USE);
     if (termsOfUseConsent == null || !termsOfUseConsent) {
-      throw new BadRequestException("TERMS_OF_USE는 필수로 동의해야 합니다.");
+      throw new BadRequestException(ErrorCode.MEMBER_CONSENT_BAD_REQUEST.getMessage());
     }
 
     List<MemberConsent> memberConsents = Arrays.stream(ConsentType.values())

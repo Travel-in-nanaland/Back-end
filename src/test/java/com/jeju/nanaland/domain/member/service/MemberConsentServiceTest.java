@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -21,6 +22,9 @@ import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -97,10 +101,10 @@ class MemberConsentServiceTest {
         .build());
   }
 
-  private ConsentItem createConsentItem(ConsentType consentType) {
+  private ConsentItem createConsentItem(ConsentType consentType, boolean consent) {
     ConsentItem consentItem = new ConsentItem();
     consentItem.setConsentType(consentType.name());
-    consentItem.setConsent(true);
+    consentItem.setConsent(consent);
     return consentItem;
   }
 
@@ -127,13 +131,30 @@ class MemberConsentServiceTest {
   }
 
   @Test
-  @DisplayName("이용약관 저장")
+  @DisplayName("이용약관 저장 실패 - TERMS_OF_USE가 true가 아닌 경우")
+  void createMemberConsentsFail() {
+    // when
+    List<ConsentItem> consentItems = List.of(
+        createConsentItem(ConsentType.TERMS_OF_USE, false),
+        createConsentItem(ConsentType.MARKETING, true),
+        createConsentItem(ConsentType.LOCATION_SERVICE, false)
+    );
+    BadRequestException badRequestException = assertThrows(BadRequestException.class,
+        () -> memberConsentService.createMemberConsents(member, consentItems));
+
+    // then
+    assertThat(badRequestException.getMessage()).isEqualTo(
+        ErrorCode.MEMBER_CONSENT_BAD_REQUEST.getMessage());
+  }
+
+  @Test
+  @DisplayName("이용약관 저장 성공")
   void createMemberConsentsSuccess() {
     // when
     List<ConsentItem> consentItems = List.of(
-        createConsentItem(ConsentType.TERMS_OF_USE),
-        createConsentItem(ConsentType.MARKETING),
-        createConsentItem(ConsentType.LOCATION_SERVICE)
+        createConsentItem(ConsentType.TERMS_OF_USE, true),
+        createConsentItem(ConsentType.MARKETING, true),
+        createConsentItem(ConsentType.LOCATION_SERVICE, true)
     );
     memberConsentService.createMemberConsents(member, consentItems);
 
@@ -175,9 +196,27 @@ class MemberConsentServiceTest {
   }
 
   @ParameterizedTest
+  @DisplayName("이용약관 업데이트 실패 - memberConsent를 찾을 수 없는 경우")
+  @EnumSource(value = ConsentType.class, names = "TERMS_OF_USE", mode = Mode.EXCLUDE)
+  void updateMemberConsentFail(ConsentType consentType) {
+    // given
+    ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType);
+    doReturn(Optional.empty()).when(memberConsentRepository)
+        .findByConsentTypeAndMember(consentType, member);
+
+    // when
+    NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto));
+
+    // then
+    assertThat(notFoundException.getMessage()).isEqualTo(
+        ErrorCode.MEMBER_CONSENT_NOT_FOUND.getMessage());
+  }
+
+  @ParameterizedTest
   @DisplayName("이용약관 업데이트")
   @EnumSource(value = ConsentType.class, names = "TERMS_OF_USE", mode = Mode.EXCLUDE)
-  void updateMemberConsent(ConsentType consentType) {
+  void updateMemberConsentSuccess(ConsentType consentType) {
     // given
     MemberConsent memberConsent = createMemberConsent(consentType);
     ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType);

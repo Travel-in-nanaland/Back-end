@@ -290,8 +290,26 @@ class MemberLoginServiceTest {
   }
 
   @Test
-  @DisplayName("탈퇴 상태라면 다시 활성화")
-  void updateMemberActive() {
+  @DisplayName("탈퇴 후 재로그인 실패 - memberWithdrawal를 찾을 수 없는 경우")
+  void updateMemberActiveFail() {
+    // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    member.updateStatus(Status.INACTIVE);
+    doReturn(Optional.empty()).when(memberWithdrawalRepository).findByMember(member);
+
+    // when
+    NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> memberLoginService.updateMemberActive(member));
+
+    // then
+    assertThat(notFoundException.getMessage()).isEqualTo(
+        ErrorCode.MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage());
+  }
+
+  @Test
+  @DisplayName("탈퇴 후 재로그인 성공")
+  void updateMemberActiveSuccess() {
     // given
     Language language = createLanguage(Locale.KOREAN);
     Member member = createMember(language);
@@ -327,7 +345,7 @@ class MemberLoginServiceTest {
   }
 
   @Test
-  @DisplayName("토큰 재발행 실패 - 유효하진 토큰인 경우")
+  @DisplayName("토큰 재발행 실패 - 유효하지 않은 토큰인 경우")
   void reissueFail() {
     // given
     doReturn("refreshToken").when(jwtUtil).resolveToken(any());
