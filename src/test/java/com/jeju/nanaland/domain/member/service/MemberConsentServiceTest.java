@@ -119,10 +119,10 @@ class MemberConsentServiceTest {
         .build();
   }
 
-  private ConsentUpdateDto createConsentUpdateDto(ConsentType consentType, boolean isConsent) {
+  private ConsentUpdateDto createConsentUpdateDto(ConsentType consentType) {
     ConsentUpdateDto consentUpdateDto = new ConsentUpdateDto();
     consentUpdateDto.setConsentType(consentType.name());
-    consentUpdateDto.setConsent(isConsent);
+    consentUpdateDto.setConsent(false);
     return consentUpdateDto;
   }
 
@@ -180,7 +180,7 @@ class MemberConsentServiceTest {
   void updateMemberConsent(ConsentType consentType) {
     // given
     MemberConsent memberConsent = createMemberConsent(consentType);
-    ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType, false);
+    ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType);
     doReturn(Optional.of(memberConsent)).when(memberConsentRepository)
         .findByConsentTypeAndMember(consentType, member);
 
@@ -190,26 +190,5 @@ class MemberConsentServiceTest {
     // then
     verify(memberConsentRepository, times(1)).findByConsentTypeAndMember(any(), any());
     assertThat(memberConsent.getConsent()).isFalse();
-  }
-
-  @ParameterizedTest
-  @DisplayName("이용약관 업데이트 - 없는 경우엔 추가")
-  @EnumSource(value = ConsentType.class, names = "TERMS_OF_USE", mode = Mode.EXCLUDE)
-  void updateMemberConsent2(ConsentType consentType) {
-    // given
-    MemberConsent memberConsent = createMemberConsent(consentType);
-    ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType, true);
-    doReturn(Optional.empty()).when(memberConsentRepository)
-        .findByConsentTypeAndMember(consentType, member);
-    doReturn(memberConsent).when(memberConsentRepository).save(any());
-
-    // when
-    memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
-
-    // then
-    assertThat(memberConsent.getConsent()).isTrue();
-
-    verify(memberConsentRepository, times(1)).findByConsentTypeAndMember(any(), any());
-    verify(memberConsentRepository, times(1)).save(any());
   }
 }

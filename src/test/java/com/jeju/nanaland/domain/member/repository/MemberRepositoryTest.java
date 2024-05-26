@@ -11,6 +11,8 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
+import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -43,17 +45,19 @@ class MemberRepositoryTest {
 
   private MemberTravelType memberTravelType;
   private ImageFile imageFile;
+  private Language language;
 
   @BeforeEach
   public void setUp() {
     memberRepository = new MemberRepositoryImpl(queryFactory);
     memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
+    language = createLanguage();
   }
 
-  private Language createLanguage(Locale locale) {
-    Language language = Language.builder()
-        .locale(locale)
+  private Language createLanguage() {
+    language = Language.builder()
+        .locale(Locale.KOREAN)
         .dateFormat("yy-MM-dd")
         .build();
     entityManager.persist(language);
@@ -93,7 +97,7 @@ class MemberRepositoryTest {
     return member;
   }
 
-  private MemberConsent createMemberConsent(ConsentType consentType, boolean consent,
+  private void createMemberConsent(ConsentType consentType, boolean consent,
       LocalDateTime consentDate, Member member) {
     MemberConsent memberConsent = MemberConsent.builder()
         .consentType(consentType)
@@ -102,14 +106,22 @@ class MemberRepositoryTest {
         .member(member)
         .build();
     entityManager.persist(memberConsent);
-    return memberConsent;
+  }
+
+  private void createMemberWithdrawal(Member member) {
+    MemberWithdrawal memberWithdrawal = MemberWithdrawal.builder()
+        .withdrawalType(WithdrawalType.INCONVENIENT_COMMUNITY)
+        .member(member)
+        .build();
+    memberWithdrawal.updateWithdrawalDate();
+    member.updateStatus(Status.INACTIVE);
+    entityManager.persist(memberWithdrawal);
   }
 
   @Test
   @DisplayName("memberId로 language를 join하여 member 조회")
   void findMemberWithLanguage() {
     // given
-    Language language = createLanguage(Locale.KOREAN);
     Member member = createMember(language);
 
     // when
@@ -126,7 +138,6 @@ class MemberRepositoryTest {
   @DisplayName("1년 6개월이 지나 만료된 이용약관 조회")
   void findExpiredMemberConsent() {
     // given
-    Language language = createLanguage(Locale.KOREAN);
     Member member = createMember(language);
     LocalDateTime pastDate = LocalDate.now().minusYears(1).minusMonths(7).atStartOfDay();
 
@@ -143,10 +154,37 @@ class MemberRepositoryTest {
   }
 
   @Test
+  @DisplayName("탈퇴일이 3개월이 지난 회원 리스트 조회")
   void findInactiveMembersForWithdrawalDate() {
+    // given
+    Member member = createMember(language);
+    createMemberWithdrawal(member);
+
+    // when
+    List<Member> inactiveMembersForWithdrawalDate = memberRepository.findInactiveMembersForWithdrawalDate();
+
+    // then
+    assertThat(inactiveMembersForWithdrawalDate).hasSize(1);
+    assertThat(inactiveMembersForWithdrawalDate.get(0).getId()).isEqualTo(member.getId());
   }
 
   @Test
+  @DisplayName("회원의 TERMS_OF_USE를 제외한 이용약관 조회")
   void findMemberConsentByMember() {
+    // given
+    Member member = createMember(language);
+    createMemberConsent(ConsentType.MARKETING, true, null, member);
+    createMemberConsent(ConsentType.LOCATION_SERVICE, false, null, member);
+
+    // when
+    List<MemberConsent> memberConsentByMember = memberRepository.findMemberConsentByMember(member);
+
+    // then
+    assertThat(memberConsentByMember).hasSize(2);
+    assertThat(memberConsentByMember.get(0).getConsentType()).isEqualTo(ConsentType.MARKETING);
+    assertThat(memberConsentByMember.get(0).getConsent()).isTrue();
+    assertThat(memberConsentByMember.get(1).getConsentType()).isEqualTo(
+        ConsentType.LOCATION_SERVICE);
+    assertThat(memberConsentByMember.get(1).getConsent()).isFalse();
   }
 }

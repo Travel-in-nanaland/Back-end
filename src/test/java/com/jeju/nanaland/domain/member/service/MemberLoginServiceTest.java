@@ -21,6 +21,7 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -143,6 +144,13 @@ class MemberLoginServiceTest {
     loginDto.setProvider("GOOGLE");
     loginDto.setProviderId("123");
     return loginDto;
+  }
+
+  private MemberWithdrawal createMemberWithdrawal(Member member) {
+    return MemberWithdrawal.builder()
+        .withdrawalType(WithdrawalType.INCONVENIENT_COMMUNITY)
+        .member(member)
+        .build();
   }
 
   @Test
@@ -288,6 +296,8 @@ class MemberLoginServiceTest {
     Language language = createLanguage(Locale.KOREAN);
     Member member = createMember(language);
     member.updateStatus(Status.INACTIVE);
+    MemberWithdrawal memberWithdrawal = createMemberWithdrawal(member);
+    doReturn(Optional.of(memberWithdrawal)).when(memberWithdrawalRepository).findByMember(member);
 
     // when
     memberLoginService.updateMemberActive(member);
@@ -431,6 +441,7 @@ class MemberLoginServiceTest {
   }
 
   @Test
+  @DisplayName("탈퇴된 회원 개인정보 삭제")
   void deleteWithdrawalMemberInfo() {
     // given
     Language language = createLanguage(Locale.KOREAN);
