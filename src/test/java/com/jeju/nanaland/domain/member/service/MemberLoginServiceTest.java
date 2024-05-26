@@ -99,6 +99,7 @@ class MemberLoginServiceTest {
   private Language createLanguage(Locale locale) {
     return Language.builder()
         .locale(locale)
+        .dateFormat("yy-MM-dd")
         .build();
   }
 
@@ -150,7 +151,7 @@ class MemberLoginServiceTest {
     // given
     Language language = createLanguage(Locale.KOREAN);
     Member member = createMember(language);
-    
+
     doReturn(Optional.of(member))
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
 
