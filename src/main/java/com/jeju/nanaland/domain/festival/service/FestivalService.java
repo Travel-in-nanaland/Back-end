@@ -135,7 +135,7 @@ public class FestivalService {
   // 매일 00시마다 종료된 축제 상태 업데이트
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
-  public void updateOnGoingToFalse() {
+  protected void updateOnGoingToFalse() {
     List<Festival> finishedFestival = festivalRepository.findAllByOnGoingAndEndDateBefore(
         true, LocalDate.now());
 
@@ -146,7 +146,7 @@ public class FestivalService {
 
   @Transactional
   @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
-  public void updateActiveToInActive() {
+  protected void updateActiveToInActive() {
     List<Festival> finishedFestival = festivalRepository.findAllByEndDateBefore(
         LocalDate.now().minusYears(2));
 
@@ -155,7 +155,7 @@ public class FestivalService {
     }
   }
 
-  public FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
+  private FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
       MemberInfoDto memberInfoDto, Page<FestivalCompositeDto> festivalCompositeDtoList,
       List<Long> favoriteIds) {
     List<FestivalThumbnail> thumbnails = new ArrayList<>();
@@ -182,7 +182,7 @@ public class FestivalService {
   }
 
   // 2024.04.01(월) ~ 2024.05.13(화)
-  public String formatLocalDateToStringWithDayOfWeek(MemberInfoDto memberInfoDto,
+  private String formatLocalDateToStringWithDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
     String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
 
@@ -199,7 +199,7 @@ public class FestivalService {
   }
 
   // 24.04.01 ~ 24.05.13
-  public String formatLocalDateToStringWithoutDayOfWeek(MemberInfoDto memberInfoDto,
+  private String formatLocalDateToStringWithoutDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
 
     // - 을 . 으로 대체
@@ -215,7 +215,7 @@ public class FestivalService {
     return formattedStartDate + " ~ " + formattedEndDate;
   }
 
-  public String seasonValueChangeToKorean(String season) {
+  private String seasonValueChangeToKorean(String season) {
     return switch (season) {
       case "spring" -> "봄";
       case "summer" -> "여름";
@@ -225,11 +225,11 @@ public class FestivalService {
     };
   }
 
-  public List<Long> getMemberFavoriteFestivalIds(MemberInfoDto memberInfoDto) {
+  private List<Long> getMemberFavoriteFestivalIds(MemberInfoDto memberInfoDto) {
     return favoriteService.getMemberFavoritePostIds(memberInfoDto.getMember(), FESTIVAL);
   }
 
-  public DayOfWeek getIntDayOfWeek(LocalDate date) {
+  private DayOfWeek getIntDayOfWeek(LocalDate date) {
     /*
       getDayOfWeek().getValue()는 월요일이 1부터 시작,
       선언한 enum DayOfWeek은 getValue()로 불러왔을 때 0부터시작이므로 -1 작성

@@ -15,9 +15,11 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
+@Getter
 @Entity
 @AllArgsConstructor
 @SQLRestriction("status = 'ACTIVE'")
