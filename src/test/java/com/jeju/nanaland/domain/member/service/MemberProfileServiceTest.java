@@ -12,24 +12,24 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.LanguageRepository;
-import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
-import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
-import com.jeju.nanaland.global.util.JwtUtil;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,18 +48,6 @@ class MemberProfileServiceTest {
   private MemberRepository memberRepository;
   @Mock
   private LanguageRepository languageRepository;
-  @Mock
-  private MemberTravelTypeRepository memberTravelTypeRepository;
-  @Mock
-  private MemberConsentRepository memberConsentRepository;
-  @Mock
-  private MemberWithdrawalRepository memberWithdrawalRepository;
-  @Mock
-  private JwtUtil jwtUtil;
-  @Mock
-  private ImageFileService imageFileService;
-  @Mock
-  private MemberConsentService memberConsentService;
   @Mock
   private S3ImageService s3ImageService;
   @InjectMocks
@@ -85,7 +73,7 @@ class MemberProfileServiceTest {
 
   private MemberTravelType createMemberTravelType() {
     return MemberTravelType.builder()
-        .travelType(TravelType.NONE)
+        .travelType(TravelType.GAMGYUL)
         .build();
   }
 
@@ -122,6 +110,14 @@ class MemberProfileServiceTest {
     profileUpdateDto.setNickname("updateNickname");
     profileUpdateDto.setDescription("updateDescription");
     return profileUpdateDto;
+  }
+
+  private MemberConsent createMemberConsent(ConsentType consentType, Member member) {
+    return MemberConsent.builder()
+        .consentType(consentType)
+        .consent(true)
+        .member(member)
+        .build();
   }
 
   @Test
@@ -177,10 +173,56 @@ class MemberProfileServiceTest {
   }
 
   @Test
+  @DisplayName("프로필 조회")
   void getMemberProfile() {
+    // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+    List<MemberConsent> memberConsents = List.of(
+        createMemberConsent(ConsentType.MARKETING, member),
+        createMemberConsent(ConsentType.LOCATION_SERVICE, member)
+    );
+    doReturn(memberConsents).when(memberRepository).findMemberConsentByMember(member);
+
+    // when
+    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
+
+    // then
+    assertThat(profileDto.getConsentItems()).hasSize(2);
+    assertThat(profileDto.getEmail()).isEqualTo(member.getEmail());
+    assertThat(profileDto.getProvider()).isEqualTo(member.getProvider().name());
+    assertThat(profileDto.getProfileImageUrl()).isEqualTo(
+        member.getProfileImageFile().getThumbnailUrl());
+    assertThat(profileDto.getNickname()).isEqualTo(member.getNickname());
+    assertThat(profileDto.getDescription()).isEqualTo(member.getDescription());
+    assertThat(profileDto.getLevel()).isEqualTo(member.getLevel());
+    assertThat(profileDto.getTravelType()).isEqualTo(
+        member.getMemberTravelType().getTravelType().getTypeNameWithLocale(language.getLocale()));
+    assertThat(profileDto.getHashtags()).hasSize(3);
+
+    verify(memberRepository, times(1)).findMemberConsentByMember(any());
   }
 
   @Test
+  @DisplayName("언어 변경")
   void updateLanguage() {
+    // given
+    Language language = createLanguage(Locale.KOREAN);
+    Member member = createMember(language);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+    Language language2 = createLanguage(Locale.ENGLISH);
+    LanguageUpdateDto languageUpdateDto = new LanguageUpdateDto();
+    languageUpdateDto.setLocale(Locale.ENGLISH.name());
+
+    doReturn(language2).when(languageRepository).findByLocale(any());
+
+    // when
+    memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
+
+    // then
+    assertThat(member.getLanguage()).isEqualTo(language2);
+
+    verify(languageRepository, times(1)).findByLocale(any());
   }
 }
