@@ -2,7 +2,9 @@ package com.jeju.nanaland.domain.member.repository;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
+import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import java.util.List;
 
 public interface RecommendRepositoryCustom {
 
@@ -17,4 +19,5 @@ public interface RecommendRepositoryCustom {
 
   RecommendPostDto findNanaRecommendPostDto(Long postId, Locale locale, TravelType travelType);
 
+  List<Recommend> findAllWithoutExperience();
 }

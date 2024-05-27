@@ -142,7 +142,7 @@ public class MemberController {
   }
 
   @Operation(
-      summary = "유저 타입에 따른 추천 게시물 2개 반환",
+      summary = "타입 테스트에 따른 추천 게시물 2개 반환",
       description =
           "https://docs.google.com/spreadsheets/d/1zhqBmQx6kGLWk3W29wVPDRSlQJqa8vfS0luX7enL_Cg/edit#gid=1427669947 "
               + "의 온보딩 페이지에 정리된 결과에 따른 추천 게시물 2개 반환")
@@ -156,6 +156,22 @@ public class MemberController {
       @AuthMember MemberInfoDto memberInfoDto) {
 
     List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+  }
+
+  @Operation(
+      summary = "랜덤 추천 게시물 2개 반환",
+      description = "홈에서 보여질 랜덤 추천 게시물 2개 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/recommended/random")
+  public BaseResponse<List<RecommendPostDto>> getRandomRecommendedPosts(
+      @AuthMember MemberInfoDto memberInfoDto) {
+
+    List<RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 

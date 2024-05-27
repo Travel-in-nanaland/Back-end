@@ -4,7 +4,6 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -79,7 +78,33 @@ public class MemberTypeService {
     return result;
   }
 
-  private MemberResponse.RecommendPostDto getRecommendPostDto(Long postId, Locale locale,
+  public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
+
+    Member member = memberInfoDto.getMember();
+    Locale locale = memberInfoDto.getLanguage().getLocale();
+
+    // 이색체험 제외하고 모두 조회
+    List<Recommend> recommends = recommendRepository.findAllWithoutExperience();
+    if (recommends == null || recommends.size() < 2) {
+      String errorMessage = "추천 게시물이 없거나 너무 적습니다.";
+      log.error(errorMessage);
+      throw new NotFoundException(errorMessage);
+    }
+    recommends = getRandomTwoPosts(recommends);
+
+    List<RecommendPostDto> result = new ArrayList<>();
+    for (Recommend recommend : recommends) {
+      Long postId = recommend.getPostId();
+      Category category = recommend.getCategory();
+      TravelType travelType = recommend.getMemberTravelType().getTravelType();
+
+      result.add(getRecommendPostDto(postId, locale, travelType, category));
+    }
+
+    return result;
+  }
+
+  private RecommendPostDto getRecommendPostDto(Long postId, Locale locale,
       TravelType travelType, Category category) {
 
     CategoryContent categoryContent = category.getContent();
