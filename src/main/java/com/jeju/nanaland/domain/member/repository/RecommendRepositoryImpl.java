@@ -18,8 +18,10 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_RecommendPostDto;
+import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -168,5 +170,14 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             .and(recommend.category.content.eq(CategoryContent.NANA))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
         .fetchOne();
+  }
+
+  @Override
+  public List<Recommend> findAllWithoutExperience() {
+    return queryFactory
+        .select(recommend)
+        .from(recommend)
+        .where(recommend.category.content.ne(CategoryContent.EXPERIENCE))
+        .fetch();
   }
 }
