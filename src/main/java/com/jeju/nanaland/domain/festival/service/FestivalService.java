@@ -135,7 +135,7 @@ public class FestivalService {
   // 매일 00시마다 종료된 축제 상태 업데이트
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
-  private void updateOnGoingToFalse() {
+  protected void updateOnGoingToFalse() {
     List<Festival> finishedFestival = festivalRepository.findAllByOnGoingAndEndDateBefore(
         true, LocalDate.now());
 
@@ -146,7 +146,7 @@ public class FestivalService {
 
   @Transactional
   @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
-  private void updateActiveToInActive() {
+  protected void updateActiveToInActive() {
     List<Festival> finishedFestival = festivalRepository.findAllByEndDateBefore(
         LocalDate.now().minusYears(2));
 
