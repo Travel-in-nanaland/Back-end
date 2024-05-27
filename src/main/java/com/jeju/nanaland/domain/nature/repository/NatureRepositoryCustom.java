@@ -14,5 +14,5 @@ public interface NatureRepositoryCustom {
       Pageable pageable);
 
   Page<NatureCompositeDto> findNatureThumbnails(Locale locale, List<String> addressFilterList,
-      Pageable pageable);
+      String keyword, Pageable pageable);
 }

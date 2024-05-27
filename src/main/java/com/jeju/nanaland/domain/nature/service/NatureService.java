@@ -31,11 +31,11 @@ public class NatureService {
 
 
   public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
-      List<String> addressFilterList, int page, int size) {
+      List<String> addressFilterList, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureCompositeDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
-        memberInfoDto.getLanguage().getLocale(), addressFilterList, pageable);
+        memberInfoDto.getLanguage().getLocale(), addressFilterList, keyword, pageable);
 
     List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(
         memberInfoDto.getMember(), NATURE);

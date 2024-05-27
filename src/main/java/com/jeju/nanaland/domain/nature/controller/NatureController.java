@@ -43,9 +43,10 @@ public class NatureController {
   public BaseResponse<NatureThumbnailDto> getNatureList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "") List<String> addressFilterList,
+      String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
-    NatureThumbnailDto data = natureService.getNatureList(memberInfoDto, addressFilterList,
+    NatureThumbnailDto data = natureService.getNatureList(memberInfoDto, addressFilterList, keyword,
         page, size);
     return BaseResponse.success(NATURE_LIST_SUCCESS, data);
   }
