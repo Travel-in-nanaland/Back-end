@@ -15,6 +15,7 @@ public class ShareController {
   public String shareEn(Model model, String category, Long id) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
+
     return "deeplink-en";
   }
 
@@ -22,6 +23,7 @@ public class ShareController {
   public String shareKo(Model model, String category, Long id) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
+
     return "deeplink-ko";
   }
 
@@ -29,6 +31,7 @@ public class ShareController {
   public String shareZh(Model model, String category, Long id) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
+
     return "deeplink-zh";
   }
 
@@ -36,6 +39,7 @@ public class ShareController {
   public String shareMs(Model model, String category, Long id) {
     model.addAttribute("category", category);
     model.addAttribute("id", id);
+
     return "deeplink-ms";
   }
 }
