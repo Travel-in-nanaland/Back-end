@@ -105,7 +105,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
 
   @Override
   public Page<NatureCompositeDto> findNatureThumbnails(Locale locale,
-      List<String> addressFilterList, Pageable pageable) {
+      List<String> addressFilterList, String keyword, Pageable pageable) {
     List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
@@ -127,7 +127,8 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.natureTrans, natureTrans)
         .leftJoin(nature.imageFile, imageFile)
         .where(natureTrans.language.locale.eq(locale)
-            .and(addressTagCondition(addressFilterList)))
+            .and(addressTagCondition(addressFilterList))
+            .and(natureTrans.title.contains(keyword)))
         .orderBy(nature.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -138,7 +139,8 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.natureTrans, natureTrans)
         .where(natureTrans.language.locale.eq(locale)
-            .and(addressTagCondition(addressFilterList)));
+            .and(addressTagCondition(addressFilterList))
+            .and(natureTrans.title.contains(keyword)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
