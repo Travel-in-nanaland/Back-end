@@ -3,7 +3,7 @@ name: Java CI with Gradle & Deploy to EC2
 # develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 
 # flow에서 사용할 변수
 env:
