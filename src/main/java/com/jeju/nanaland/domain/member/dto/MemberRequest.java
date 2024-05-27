@@ -15,11 +15,10 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
-import lombok.Getter;
 
 public class MemberRequest {
 
-  @Getter
+  @Data
   @Schema(description = "회원 가입 요청 DTO")
   public static class JoinDto {
 
@@ -66,7 +65,7 @@ public class MemberRequest {
     private String nickname;
   }
 
-  @Getter
+  @Data
   @Schema(description = "로그인 요청 DTO")
   public static class LoginDto {
 
@@ -93,7 +92,7 @@ public class MemberRequest {
     private String providerId;
   }
 
-  @Getter
+  @Data
   public static class ConsentItem {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
@@ -110,7 +109,7 @@ public class MemberRequest {
     private Boolean consent;
   }
 
-  @Getter
+  @Data
   public static class ConsentUpdateDto {
 
     @Schema(description = "이용약관", example = "MARKETING",
