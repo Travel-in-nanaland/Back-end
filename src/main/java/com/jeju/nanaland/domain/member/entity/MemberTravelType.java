@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,4 +21,9 @@ public class MemberTravelType extends BaseEntity {
   @Column(unique = true)
   @NotNull
   private TravelType travelType;
+
+  @Builder
+  public MemberTravelType(TravelType travelType) {
+    this.travelType = travelType;
+  }
 }
