@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta
+      content="nanaland in Jeju" property="og:title">
+  <meta
+      content="Mahu tip perjalanan Jeju? Klik nanaland in Jeju!"
+      property="og:description">
+  <meta
+      content="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/Group+632736.png"
+      property="og:image">
+</head>
+<body>
+<script th:inline="javascript">
+  var category = /*[[${category}]]*/ '';
+  var id = /*[[${id}]]*/ '';
+  var launchAppUrl = 'nanaland://detail?category=' + category + '&id=' + id + '&lang=ms';
+  var timer;	// 타이머
+  var schInterval;
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isAndroid = userAgent.search('android') > -1;
+  var isIOS = !isAndroid && (/iphone|ipad|ipod/i.test(userAgent));
+  var os;
+
+  function mo_chk() {
+    var mobile = (/iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()));
+
+    if (mobile) {
+      var userAgent = navigator.userAgent.toLowerCase();
+      if (userAgent.search("android") > -1) {
+        return os = "android";
+      } else if ((userAgent.search("iphone") > -1) || (userAgent.search("ipod") > -1)
+          || (userAgent.search("ipad") > -1)) {
+        return os = "ios";
+      } else {
+        return os = "other";
+      }
+    } else {
+      return os = "pc";
+    }
+  }
+
+  mo_chk();
+
+  if (os == "pc") {
+    location.href = 'https://play.google.com/store/apps/details?id=com.instagram.android';
+  } else if (os == "android" || os == "ios") {
+    participate()
+  }
+
+  function participate() {
+    // 인터벌, 타이머 삭제
+    function clearTimer() {
+      clearInterval(schInterval);
+      clearTimeout(timer);
+    }
+
+    // 인터벌 마다 동작할 기능
+    function intervalSch() {
+      // 매 인터벌 마다 웹뷰가 활성화 인지 체크
+      if (document.webkitHidden || document.hidden) { // 웹뷰 비활성화
+        clearTimer(); // 앱이 설치되어있을 경우 타이머 제거
+      } else {	// 웹뷰 활성화
+        console.log("타이머 동작");
+      }
+    }
+
+    // 앱 실행(iOS인 경우)
+    location.href = launchAppUrl;
+
+    // 앱이 설치 되어있는지 체크
+    schInterval = setInterval(intervalSch, 500);
+
+    timer = setTimeout(function () {
+      if (isAndroid) {
+        location.href = "https://play.google.com/store/apps/details?id=com.twitter.android";
+      } else if (isIOS) {
+        location.href = "https://apps.apple.com/kr/app/twitter/id1482454543";
+      }
+      clearInterval(schInterval);
+    }, 2000);
+  }
+</script>
+</body>
+</html>
