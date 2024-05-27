@@ -1,167 +1,121 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
-import com.jeju.nanaland.domain.festival.entity.Festival;
-import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
+import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
-import jakarta.persistence.EntityManager;
+import com.jeju.nanaland.domain.search.service.SearchService;
 import java.time.LocalDate;
-import java.util.Collections;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class FestivalServiceTest {
 
-  @Autowired
-  EntityManager em;
-  @Autowired
-  FestivalService festivalService;
-  @Autowired
-  FavoriteRepository favoriteRepository;
-  @Autowired
-  FavoriteService favoriteService;
-
-  Language language;
-  Member member1, member2;
-  MemberInfoDto memberInfoDto1, memberInfoDto2;
-  Festival festival;
-  FestivalTrans festivalTrans;
-  Category category;
-
-  @BeforeEach
-  void init() {
-    ImageFile imageFile1 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    em.persist(imageFile1);
-
-    ImageFile imageFile2 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    em.persist(imageFile2);
-
-    language = Language.builder()
+  @InjectMocks
+  private FestivalService festivalService;
+  @Mock
+  private FestivalRepository festivalRepository;
+  @Mock
+  private FavoriteService favoriteService;
+  @Mock
+  private SearchService searchService;
+  
+  @Test
+  @DisplayName("festival 상세 조회에서 기간 국가별 요일")
+  void getFestivalDetail() {
+    // Given
+    Language language1 = Language.builder()
+        .dateFormat("yy-MM-dd")
         .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
         .build();
-    em.persist(language);
 
-    member1 = Member.builder()
+    Language language2 = Language.builder()
+        .dateFormat("dd-MM-yy")
+        .locale(Locale.MALAYSIA)
+        .build();
+
+    // 각각 일요일 / 월요일 -> 말레이시아어로 CN / T2
+    LocalDate startDate = LocalDate.of(2024, 3, 10);
+    LocalDate endDate = LocalDate.of(2024, 5, 27);
+
+    ImageFile imageFile1 = createImageFile(1);
+    ImageFile imageFile2 = createImageFile(2);
+    Member krMember = createMember(language1, imageFile1);
+    Member msMember = createMember(language2, imageFile2);
+    MemberInfoDto krMemberInfoDto = createMemberInfoDto(krMember, language1);
+    MemberInfoDto msMemberInfoDto = createMemberInfoDto(msMember, language2);
+
+    FestivalCompositeDto krFestivalCompositeDto = createFestivalCompositeDto(Locale.KOREAN,
+        startDate, endDate);
+    FestivalCompositeDto msFestivalCompositeDto = createFestivalCompositeDto(Locale.MALAYSIA,
+        startDate, endDate);
+
+    when(festivalRepository.findCompositeDtoById(1L,
+        krMemberInfoDto.getLanguage().getLocale())).thenReturn(krFestivalCompositeDto);
+    when(festivalRepository.findCompositeDtoById(1L,
+        msMemberInfoDto.getLanguage().getLocale())).thenReturn(msFestivalCompositeDto);
+    when(favoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong())).thenReturn(false);
+
+    // When
+    FestivalDetailDto krFestivalDetail = festivalService.getFestivalDetail(krMemberInfoDto, 1L,
+        false);
+    FestivalDetailDto msFestivalDetail = festivalService.getFestivalDetail(msMemberInfoDto, 1L,
+        false);
+
+    // Then
+    Assertions.assertThat(krFestivalDetail.getPeriod()).isEqualTo("24. 03. 10(일) ~ 24. 05. 27(월)");
+    Assertions.assertThat(msFestivalDetail.getPeriod())
+        .isEqualTo("10. 03. 24(CN) ~ 27. 05. 24(T2)");
+  }
+
+  ImageFile createImageFile(int idx) {
+    return ImageFile.builder()
+        .thumbnailUrl("thumbnail_url" + idx)
+        .originUrl("origin_url" + idx)
+        .build();
+  }
+
+  Member createMember(Language language, ImageFile imageFile) {
+    return Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
-        .providerId("123456789")
+        .providerId(String.valueOf(123456789L))
         .nickname("nickname1")
         .language(language)
-        .profileImageFile(imageFile1)
+        .profileImageFile(imageFile)
         .build();
-    em.persist(member1);
-
-    member2 = Member.builder()
-        .email("test2@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("1234567890")
-        .nickname("nickname2")
-        .language(language)
-        .profileImageFile(imageFile2)
-        .build();
-    em.persist(member2);
-
-    memberInfoDto1 = MemberInfoDto.builder()
-        .language(language)
-        .member(member1)
-        .build();
-
-    memberInfoDto2 = MemberInfoDto.builder()
-        .language(language)
-        .member(member2)
-        .build();
-
-    festival = Festival.builder()
-        .imageFile(imageFile1)
-        .startDate(LocalDate.parse("2023-08-07"))
-        .endDate(LocalDate.parse("2023-08-10"))
-        .season("봄, 여름")
-        .build();
-    em.persist(festival);
-
-    festivalTrans = FestivalTrans.builder()
-        .festival(festival)
-        .fee("fee1")
-        .time("time1")
-        .title("festivalTitle1")
-        .intro("festivalIntro1")
-        .address("제주시 우도")
-        .addressTag("우도")
-        .content("content1")
-        .language(language)
-        .build();
-    em.persist(festivalTrans);
-
-    category = Category.builder()
-        .content(CategoryContent.FESTIVAL)
-        .build();
-    em.persist(category);
   }
 
-  @Test
-  void getSeasonFestivalListTest() {
-    FavoriteRequest.LikeToggleDto festivalLikeToggleDto = new LikeToggleDto();
-    //좋아요 누르기
-    festivalLikeToggleDto.setId(festival.getId());
-    festivalLikeToggleDto.setCategory("FESTIVAL");
-    favoriteService.toggleLikeStatus(memberInfoDto1, festivalLikeToggleDto);
-
-    FestivalThumbnailDto summerFestival1 = festivalService.getSeasonFestivalList(memberInfoDto1, 0,
-        1,
-        "summer");
-    FestivalThumbnailDto summerFestival2 = festivalService.getSeasonFestivalList(memberInfoDto1, 0,
-        1,
-        "autumn");
-
-    // 좋아요 반환 되는지
-    Assertions.assertThat(summerFestival1.getData().get(0).isFavorite()).isTrue();
-
-    // 여름 축제 반환 (데이터 있음)
-    Assertions.assertThat(summerFestival1.getTotalElements()).isSameAs(1L);
-
-    // 여름 축제 반환 (데이터 없음)
-    Assertions.assertThat(summerFestival2.getTotalElements()).isSameAs(0L);
+  MemberInfoDto createMemberInfoDto(Member member, Language language) {
+    return MemberInfoDto.builder()
+        .member(member)
+        .language(language)
+        .build();
   }
 
-  @Test
-  void getThisMonthFestivalListTest() {
-    // "2023-08-07" ~ "2023-08-10"
-    FestivalThumbnailDto thisMonthFestivalList = festivalService.getThisMonthFestivalList(
-        memberInfoDto1, 0, 1, Collections.singletonList("우도"), LocalDate.of(2023, 8, 8),
-        LocalDate.of(2023, 8, 9));
-    Assertions.assertThat(thisMonthFestivalList.getTotalElements()).isSameAs(1L);
-  }
-
-  @Test
-  void getFestivalDetail() {
-    FestivalDetailDto festivalDetail = festivalService.getFestivalDetail(memberInfoDto1,
-        festival.getId(), false);
-    System.out.println("festivalDetail.getPeriod() = " + festivalDetail.getPeriod());
-
+  FestivalCompositeDto createFestivalCompositeDto(Locale locale, LocalDate startDate,
+      LocalDate endDate) {
+    return new FestivalCompositeDto(1L, "url", "url", "contact", "home",
+        locale, "title", "content", "address", "addressTag", "time", "intro", "fee", startDate,
+        endDate,
+        "봄");
   }
 }
