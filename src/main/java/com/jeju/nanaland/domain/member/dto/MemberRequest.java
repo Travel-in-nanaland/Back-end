@@ -8,9 +8,9 @@ import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +28,9 @@ public class MemberRequest {
 
     @Schema(description = "이메일(필수) - GUEST이면 GUEST@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
     @NotBlank
-    @Email(message = "이메일 형식에 맞지 않습니다.")
+    @Pattern(
+        regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}\\$",
+        message = "이메일 형식이 올바르지 않습니다.")
     private String email;
 
     @Schema(description = "소셜 로그인 Provider(필수)", example = "KAKAO",
