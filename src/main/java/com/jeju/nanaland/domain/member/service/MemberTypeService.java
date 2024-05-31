@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.member.service;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -28,6 +29,7 @@ public class MemberTypeService {
 
   private final MemberTravelTypeRepository memberTravelTypeRepository;
   private final RecommendRepository recommendRepository;
+  private final FavoriteService favoriteService;
 
   @Transactional
   public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
