@@ -2,20 +2,17 @@ package com.jeju.nanaland.domain.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ResultDto;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,47 +35,8 @@ class SearchServiceTest {
   Category category;
   MemberInfoDto memberInfoDto;
 
-  @BeforeEach
-  void init() {
-    imageFile1 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    em.persist(imageFile1);
-    imageFile2 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    em.persist(imageFile2);
-
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
-
-    member = Member.builder()
-        .email("test@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("123456789")
-        .nickname("nickname1")
-        .language(language)
-        .profileImageFile(imageFile1)
-        .build();
-    em.persist(member);
-
-    memberInfoDto = MemberInfoDto.builder()
-        .language(language)
-        .member(member)
-        .build();
-
-    category = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    em.persist(category);
-  }
-
   @Test
+  @DisplayName("전통시장 검색 테스트")
   void marketSearchTest() {
     /**
      * GIVEN
