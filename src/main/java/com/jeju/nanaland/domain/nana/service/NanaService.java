@@ -131,7 +131,8 @@ public class NanaService {
               .title(nanaContent.getTitle())
               .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
-              .additionalInfoList(getAdditionalInfoFromNanaContentEntity(nanaContent))
+              .additionalInfoList(
+                  getAdditionalInfoFromNanaContentEntity(language.getLocale(), nanaContent))
               .hashtags(stringKeywordList)
               .build());
       nanaContentImageIdx++;
@@ -151,7 +152,7 @@ public class NanaService {
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
-      NanaContent nanaContent) {
+      Locale locale, NanaContent nanaContent) {
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
     // 순서 보장 위해 List 형으로 바꾸고
@@ -162,7 +163,7 @@ public class NanaService {
     for (NanaAdditionalInfo info : nanaAdditionalInfos) {
       result.add(NanaResponse.NanaAdditionalInfo.builder()
           .infoEmoji(info.getInfoType().toString())
-          .infoKey(info.getInfoType().getDescription())
+          .infoKey(info.getInfoType().getValueByLocale(locale))
           .infoValue(info.getDescription())
           .build());
     }
