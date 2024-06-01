@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,6 +13,7 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -23,6 +25,7 @@ import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.domain.member.repository.RecommendRepository;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +48,9 @@ class MemberTypeServiceTest {
 
   @Mock
   RecommendRepository recommendRepository;
+
+  @Mock
+  FavoriteRepository favoriteRepository;
 
   @DisplayName("타입 수정 - NONE 타입이 아닐 때")
   @ParameterizedTest
@@ -112,6 +118,11 @@ class MemberTypeServiceTest {
         .findNatureRecommendPostDto(1L, locale, travelType);
     doReturn(RecommendPostDto.builder().build()).when(recommendRepository)
         .findExperienceRecommendPostDto(2L, locale, travelType);
+    doReturn(Optional.empty()).when(favoriteRepository)
+        .findByMemberAndCategoryAndPostId(
+            eq(memberInfoDto.getMember()),
+            any(Category.class),
+            any(Long.class));
 
     // when
     List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
@@ -146,6 +157,11 @@ class MemberTypeServiceTest {
         .findNatureRecommendPostDto(1L, locale, randomTravelType);
     doReturn(RecommendPostDto.builder().build()).when(recommendRepository)
         .findExperienceRecommendPostDto(2L, locale, randomTravelType);
+    doReturn(Optional.empty()).when(favoriteRepository)
+        .findByMemberAndCategoryAndPostId(
+            eq(memberInfoDto.getMember()),
+            any(Category.class),
+            any(Long.class));
 
     // when
     List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
