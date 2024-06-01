@@ -52,6 +52,9 @@ public class MemberResponse {
     @Schema(description = "게시물 짧은 설명", example = "성산일출봉은 ...")
     private String introduction;
 
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
+
     @QueryProjection
     public RecommendPostDto(Long id, CategoryContent categoryContent, String thumbnailUrl,
         String title,
@@ -61,6 +64,7 @@ public class MemberResponse {
       this.thumbnailUrl = thumbnailUrl;
       this.title = title;
       this.introduction = introduction;
+      this.isFavorite = false;
     }
   }
 
