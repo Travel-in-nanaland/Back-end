@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,5 +56,9 @@ public class InfoFixReport extends BaseEntity {
   private String imageUrl;
 
   @NotBlank
+  @Pattern(
+      regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+      message = "이메일 형식이 올바르지 않습니다.")
+  @Column(nullable = false)
   private String email;
 }
