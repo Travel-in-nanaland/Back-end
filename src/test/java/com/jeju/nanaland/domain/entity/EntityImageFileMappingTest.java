@@ -56,7 +56,7 @@ class EntityImageFileMappingTest {
     member = Member.builder()
         .language(language)
         .profileImageFile(imageFile1)
-        .email("email")
+        .email("test@naver.com")
         .nickname("nickname")
         .provider(Provider.KAKAO)
         .providerId("1")
