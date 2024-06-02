@@ -4,9 +4,9 @@ import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 public class ReportRequest {
@@ -46,9 +46,11 @@ public class ReportRequest {
     @Schema(description = "정보 수정 내용")
     private String content;
 
-    @Email
+    @Pattern(
+        regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}\\$",
+        message = "이메일 형식이 올바르지 않습니다.")
     @Schema(
-        description = "이메일",
+        description = "이메일 정규식: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}\\$",
         example = "test@naver.com"
     )
     private String email;

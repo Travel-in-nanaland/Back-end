@@ -64,6 +64,7 @@ public class MemberResponse {
       this.thumbnailUrl = thumbnailUrl;
       this.title = title;
       this.introduction = introduction;
+      this.isFavorite = false;
     }
   }
 
