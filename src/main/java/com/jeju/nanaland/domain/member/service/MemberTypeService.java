@@ -3,7 +3,8 @@ package com.jeju.nanaland.domain.member.service;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.entity.Favorite;
+import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -16,6 +17,7 @@ import com.jeju.nanaland.domain.member.repository.RecommendRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +31,7 @@ public class MemberTypeService {
 
   private final MemberTravelTypeRepository memberTravelTypeRepository;
   private final RecommendRepository recommendRepository;
-  private final FavoriteService favoriteService;
+  private final FavoriteRepository favoriteRepository;
 
   @Transactional
   public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
@@ -74,7 +76,7 @@ public class MemberTypeService {
       Long postId = recommend.getPostId();
       Category category = recommend.getCategory();
 
-      result.add(getRecommendPostDto(postId, locale, travelType, category));
+      result.add(getRecommendPostDto(member, postId, locale, travelType, category));
     }
 
     return result;
@@ -100,13 +102,13 @@ public class MemberTypeService {
       Category category = recommend.getCategory();
       TravelType travelType = recommend.getMemberTravelType().getTravelType();
 
-      result.add(getRecommendPostDto(postId, locale, travelType, category));
+      result.add(getRecommendPostDto(member, postId, locale, travelType, category));
     }
 
     return result;
   }
 
-  private RecommendPostDto getRecommendPostDto(Long postId, Locale locale,
+  private RecommendPostDto getRecommendPostDto(Member member, Long postId, Locale locale,
       TravelType travelType, Category category) {
 
     CategoryContent categoryContent = category.getContent();
@@ -129,6 +131,12 @@ public class MemberTypeService {
       String errorMessage = postId + ", " + category.getContent().name() + "게시물이 없습니다.";
       log.error(errorMessage);
       throw new NotFoundException(errorMessage);
+    }
+
+    Optional<Favorite> favorite = favoriteRepository.findByMemberAndCategoryAndPostId(member,
+        category, postId);
+    if (favorite.isPresent()) {
+      recommendPostDto.setFavorite(true);
     }
 
     return recommendPostDto;
