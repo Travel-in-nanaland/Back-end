@@ -32,6 +32,7 @@ public class NanaTitle extends BaseEntity {
   //이미지 위에 올릴 제목
   private String heading;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String notice; // 알아두면 좋아요 밑에 들어가는 글, 회의 후 고정이라면 삭제
 
   @Builder
