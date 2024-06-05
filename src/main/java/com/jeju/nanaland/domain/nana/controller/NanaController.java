@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @RequestMapping("/nana")
@@ -67,5 +68,10 @@ public class NanaController {
       @PathVariable(name = "id") Long id, @RequestParam(defaultValue = "false") boolean isSearch) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
         nanaService.getNanaDetail(memberInfoDto, id, isSearch));
+  }
+
+  @GetMapping("/upload")
+  public ModelAndView uploadNana() {
+    return new ModelAndView("regist-nana.html");
   }
 }
