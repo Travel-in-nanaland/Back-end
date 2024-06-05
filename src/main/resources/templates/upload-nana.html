@@ -124,6 +124,26 @@
 <body>
 <div class="container">
   <h1>Nana Form</h1>
+  <div>
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Languages</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="entry : ${nanaInfo}">
+        <td th:text="${entry.key}"></td>
+        <td>
+          <ul>
+            <li th:each="lang : ${entry.value}" th:text="${lang}"></li>
+          </ul>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
   <div class="result" th:classappend="${result.startsWith('성공') ? ' success' : ' error'}"
        th:if="${result}"
        th:text="${result}"></div>

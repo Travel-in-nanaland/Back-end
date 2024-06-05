@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @RestController
@@ -77,14 +78,17 @@ public class NanaController {
 
   @GetMapping("/upload")
   public ModelAndView getUploadNana() {
-    return new ModelAndView("upload-nana.html");
+    ModelAndView modelAndView = new ModelAndView("upload-nana.html");
+    modelAndView.addObject("nanaInfo", nanaService.getExistNanaListInfo());
+    return modelAndView;
   }
 
   @PostMapping("/upload")
-  public ModelAndView uploadNana(@ModelAttribute NanaRequest.NanaUploadDto nanaUploadDto) {
+  public ModelAndView uploadNana(@ModelAttribute NanaRequest.NanaUploadDto nanaUploadDto,
+      RedirectAttributes redirectAttributes) {
     String result = nanaService.createNanaPick(nanaUploadDto);
-    ModelAndView modelAndView = new ModelAndView("upload-nana.html");
-    modelAndView.addObject("result", result);
-    return modelAndView;
+
+    redirectAttributes.addFlashAttribute("result", result);
+    return new ModelAndView("redirect:/nana/upload");
   }
 }

@@ -36,6 +36,7 @@ import com.jeju.nanaland.global.exception.ServerErrorException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -164,6 +165,28 @@ public class NanaService {
 
   }
 
+  public HashMap<Long, List<String>> getExistNanaListInfo() {
+    HashMap<Long, List<String>> result = new HashMap<>();
+    List<Nana> nanas = nanaRepository.findAll();
+    List<NanaTitle> nanaTitles = nanaTitleRepository.findAll();
+    for (NanaTitle nanaTitle : nanaTitles) {
+      Long id = nanaTitle.getNana().getId();
+      String language = nanaTitle.getLanguage().getLocale().toString();
+
+      if (result.containsKey(id)) {
+        result.get(id).add(language);
+      } else {
+        List<String> values = new ArrayList<>();
+        values.add(language);
+        result.put(id, values);
+      }
+    }
+    for (Long l : result.keySet()) {
+      System.out.println("l !!!!!!!!!= " + l);
+    }
+    return result;
+  }
+
   @Transactional
   public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
     Nana nana;
@@ -206,7 +229,7 @@ public class NanaService {
                     .nana(nana)
                     .imageFile(
                         imageFileService.uploadAndSaveImageFile(nanaContentDto.getNanaContentImage(),
-                            true))
+                            false))
                     .number(nanaContentDto.getNumber())
                     .build()
             );
