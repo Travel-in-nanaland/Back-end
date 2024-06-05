@@ -23,11 +23,11 @@ public class NanaRequest {
 
       private int number;
       private MultipartFile nanaContentImage;
-      private String subHeading;
-      private String heading;
+      private String subTitle;
+      private String title;
       private String content;
       private List<String> additionalInfo;
-      private List<String> answer;
+      private List<String> infoDesc;
       private String hashtag;
     }
   }

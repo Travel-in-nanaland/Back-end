@@ -225,11 +225,11 @@ public class NanaService {
             NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
                 .nanaTitle(nanaTitle)
                 .number(nanaContentDto.getNumber())
-                .subTitle(nanaContentDto.getSubHeading())
-                .title(nanaContentDto.getHeading())
+                .subTitle(nanaContentDto.getSubTitle())
+                .title(nanaContentDto.getTitle())
                 .content(nanaContentDto.getContent())
                 .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
-                    nanaContentDto.getAnswer()))
+                    nanaContentDto.getInfoDesc()))
                 .build());
             nanaContentImageRepository.save(
                 NanaContentImage.builder()
