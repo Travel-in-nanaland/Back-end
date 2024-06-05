@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
+import com.jeju.nanaland.domain.common.annotation.NicknameValid;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
@@ -62,8 +63,7 @@ public class MemberRequest {
     private LocalDate birthDate;
 
     @Schema(description = "닉네임(필수) - GUEST이면 GUEST로 임시 지정하여 요청")
-    @NotBlank
-    @Size(max = 12, message = "닉네임 최대 길이 초과")
+    @NicknameValid
     private String nickname;
   }
 
@@ -171,8 +171,7 @@ public class MemberRequest {
   public static class ProfileUpdateDto {
 
     @Schema(description = "닉네임")
-    @NotBlank
-    @Size(max = 12, message = "닉네임 최대 길이 초과")
+    @NicknameValid
     private String nickname;
 
     @Schema(description = "소개")
