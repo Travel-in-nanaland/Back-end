@@ -36,6 +36,11 @@
     .result.error {
       color: red;
     }
+
+    .textarea-label {
+      display: block; /* 라벨과 텍스트 영역이 한 줄에 나타나지 않도록 함 */
+      margin-bottom: 8px; /* 라벨과 텍스트 영역 사이의 간격 설정 */
+    }
   </style>
   <script>
     let contentCount = 1;
@@ -48,6 +53,7 @@
       section.innerHTML = `
                 <br>
                 <hr>
+                <br>
                 <div>
                     <label for="nanaContents[${contentCount}].number">Number:</label>
                     <input name="nanaContents[${contentCount}].number" required type="number"/>
@@ -60,7 +66,7 @@
                           <input name="nanaContents[0].title" required type="text"/>
                     </div>
                         <div>
-                            <label for="nanaContents[${contentCount}].content">Content:</label>
+                            <label class="textarea-label" for="nanaContents[${contentCount}].content">Content:</label>
                             <textarea name="nanaContents[${contentCount}].content" required></textarea>
                         </div>
                         <div class="nana-additionalInfo">
@@ -78,12 +84,12 @@
                                 <option value="DATE">date</option>
                                 <option value="DESCRIPTION">description</option>
                             </select>
-                            <label for="nanaContents[0].infoDesc[0]">desc:</label>
+                            <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
                             <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
                             <button type="button" onclick="addAdditionalInfo(this, ${contentCount})">+</button>
                         </div>
                         <div>
-                          <label for="nanaContents[${contentCount}].hashtag">Hashtag(띄어쓰기로 구분하기):</label>
+                          <label class="textarea-label" for="nanaContents[${contentCount}].hashtag">Hashtag(띄어쓰기로 구분하기):</label>
                           <textarea name="nanaContents[${contentCount}].hashtag" required></textarea>
                         </div>
                     </div>
@@ -113,7 +119,7 @@
               <option value="DATE">date</option>
               <option value="DESCRIPTION">description</option>
             </select>
-            <label for="nanaContents[0].infoDesc[0]">desc:</label>
+            <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
             <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
             `;
 
@@ -163,9 +169,9 @@
       </select>
       <label for="version">version:</label>
       <input id="version" name="version" required type="number"/>
-      <br>
-      <hr>
     </div>
+    <br>
+    <hr>
     <div>
       <h2>Nana Title</h2>
       <label for="subHeading">SubHeading:</label>
@@ -174,7 +180,7 @@
       <input id="heading" name="heading" required type="text"/>
     </div>
     <div>
-      <label for="notice">Notice:</label>
+      <label class="textarea-label" for="notice">Notice:</label>
       <textarea id="notice" name="notice" required></textarea>
     </div>
     <br>
@@ -192,7 +198,7 @@
           <label for="nanaContents[0].title">Title:</label>
           <input name="nanaContents[0].title" required type="text"/>
           <div>
-            <label for="nanaContents[0].content">Content:</label>
+            <label class="textarea-label" for="nanaContents[0].content">Content:</label>
             <textarea name="nanaContents[0].content" required></textarea>
           </div>
           <div class="nana-additionalInfo">
@@ -210,12 +216,12 @@
               <option value="DATE">date</option>
               <option value="DESCRIPTION">description</option>
             </select>
-            <label for="nanaContents[0].infoDesc[0]">desc:</label>
+            <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
             <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
             <button onclick="addAdditionalInfo(this, 0)" type="button">+</button>
           </div>
           <div>
-            <label for="nanaContents[0].hashtag">Hashtag(띄어쓰기로 구분하기):</label>
+            <label class="textarea-label" for="nanaContents[0].hashtag">Hashtag(띄어쓰기로 구분하기):</label>
             <textarea name="nanaContents[0].hashtag" required></textarea>
           </div>
         </div>
