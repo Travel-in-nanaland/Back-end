@@ -189,25 +189,30 @@ public class NanaService {
 
   @Transactional
   public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
-    Nana nana;
-    // 없는 nana이면 nana 만들기
-    if (!existNana(nanaUploadDto.getPostId())) {
-      nana = Nana.builder()
-          .version("나나's Pick vol." + nanaUploadDto.getVersion())
-          .nanaTitleImageFile(
-              imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), true))
-          .build();
-      nanaRepository.save(nana);
-    } else {
-      Optional<Nana> nanaById = nanaRepository.findNanaById(nanaUploadDto.getPostId());
-      nana = nanaById.orElseThrow(
-          () -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
-    }
-
     try {
+      Nana nana;
+      Language language = languageRepository.findByLocale(
+          Locale.contains(nanaUploadDto.getLanguage()));
+      // 없는 nana이면 nana 만들기
+      if (!existNana(nanaUploadDto.getPostId())) {
+        nana = Nana.builder()
+            .version("나나's Pick vol." + nanaUploadDto.getVersion())
+            .nanaTitleImageFile(
+                imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), true))
+            .build();
+        nanaRepository.save(nana);
+      } else {
+        Optional<Nana> nanaById = nanaRepository.findNanaById(nanaUploadDto.getPostId());
+        nana = nanaById.orElseThrow(
+            () -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+        if (existNanaTitleByLanguage(nana, language)) {
+          throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
+        }
+      }
+
       NanaTitle nanaTitle = NanaTitle.builder()
           .nana(nana)
-          .language(languageRepository.findByLocale(Locale.contains(nanaUploadDto.getLanguage())))
+          .language(language)
           .subHeading(nanaUploadDto.getSubHeading())
           .heading(nanaUploadDto.getHeading())
           .notice(nanaUploadDto.getNotice())
@@ -272,6 +277,10 @@ public class NanaService {
 
   private boolean existNana(Long id) {
     return nanaRepository.existsById(id);
+  }
+
+  private boolean existNanaTitleByLanguage(Nana nana, Language language) {
+    return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
   }
 
   private Set<NanaAdditionalInfo> createNanaAdditionalInfo(List<String> infoTypeList,

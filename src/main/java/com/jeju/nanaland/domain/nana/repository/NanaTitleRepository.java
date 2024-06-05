@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface NanaTitleRepository extends JpaRepository<NanaTitle, Long> {
 
   Optional<NanaTitle> findNanaTitleByNanaAndLanguage(Nana nana, Language language);
+
+  boolean existsByNanaAndLanguage(Nana nana, Language language);
 }
