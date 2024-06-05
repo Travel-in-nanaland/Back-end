@@ -12,6 +12,7 @@ import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
+import com.jeju.nanaland.domain.hashtag.service.HashtagService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
@@ -35,6 +36,7 @@ import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,6 +65,7 @@ public class NanaService {
   private final LanguageRepository languageRepository;
   private final NanaContentImageRepository nanaContentImageRepository;
   private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
+  private final HashtagService hashtagService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -181,9 +184,6 @@ public class NanaService {
         result.put(id, values);
       }
     }
-    for (Long l : result.keySet()) {
-      System.out.println("l !!!!!!!!!= " + l);
-    }
     return result;
   }
 
@@ -193,12 +193,14 @@ public class NanaService {
       Nana nana;
       Language language = languageRepository.findByLocale(
           Locale.contains(nanaUploadDto.getLanguage()));
+      Category category = categoryRepository.findByContent(NANA_CONTENT)
+          .orElseThrow(() -> new NotFoundException("존재하지 않는 카테고리입니다."));
       // 없는 nana이면 nana 만들기
       if (!existNana(nanaUploadDto.getPostId())) {
         nana = Nana.builder()
             .version("나나's Pick vol." + nanaUploadDto.getVersion())
             .nanaTitleImageFile(
-                imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), true))
+                imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
             .build();
         nanaRepository.save(nana);
       } else {
@@ -220,7 +222,7 @@ public class NanaService {
       nanaTitleRepository.save(nanaTitle);
 
       nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
-            nanaContentRepository.save(NanaContent.builder()
+            NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
                 .nanaTitle(nanaTitle)
                 .number(nanaContentDto.getNumber())
                 .subTitle(nanaContentDto.getSubHeading())
@@ -238,6 +240,10 @@ public class NanaService {
                     .number(nanaContentDto.getNumber())
                     .build()
             );
+
+            hashtagService.registerHashtag(splitHashtagContentFromString(nanaContentDto.getHashtag()),
+                language, category, nanaContent.getId());
+
 
           }
 
@@ -300,5 +306,13 @@ public class NanaService {
       );
     }
     return nanaAdditionalInfoSet;
+  }
+
+  private List<String> splitHashtagContentFromString(String content) {
+    List<String> strings = new ArrayList<>(Arrays.asList(content.split("\\s+")));
+    for (String string : strings) {
+      System.out.println("string = " + string);
+    }
+    return strings;
   }
 }
