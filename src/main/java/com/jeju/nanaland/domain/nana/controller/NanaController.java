@@ -72,6 +72,6 @@ public class NanaController {
 
   @GetMapping("/upload")
   public ModelAndView uploadNana() {
-    return new ModelAndView("regist-nana.html");
+    return new ModelAndView("upload-nana.html");
   }
 }
