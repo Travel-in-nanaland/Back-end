@@ -10,6 +10,7 @@ public class NanaRequest {
   public static class NanaUploadDto {
 
     private Long postId;
+    private int version;
     private MultipartFile nanaTitleImage;
     private String language;
     private String subHeading;

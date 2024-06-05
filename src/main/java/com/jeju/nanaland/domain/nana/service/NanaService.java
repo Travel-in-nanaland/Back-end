@@ -170,7 +170,7 @@ public class NanaService {
     // 없는 nana이면 nana 만들기
     if (!existNana(nanaUploadDto.getPostId())) {
       nana = Nana.builder()
-          .version("나나's Pick vol" + nanaUploadDto.getPostId())
+          .version("나나's Pick vol." + nanaUploadDto.getVersion())
           .nanaTitleImageFile(
               imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), true))
           .build();
