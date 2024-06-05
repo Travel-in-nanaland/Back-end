@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public class NicknameValidator implements ConstraintValidator<NicknameValid, String> {
 
-  private static final Pattern LENGTH_PATTERN = Pattern.compile("^.{2,8}$");
+  private static final Pattern LENGTH_PATTERN = Pattern.compile("^.{2,12}$");
   private static final Pattern VALID_CHARS_PATTERN = Pattern.compile(
       "^[a-zA-Z0-9\uAC00-\uD7AF\u4E00-\u9FFF\u00C0-\u024F\u1EFF ]+$");
   private static final Pattern START_END_PATTERN = Pattern.compile(
@@ -16,7 +16,7 @@ public class NicknameValidator implements ConstraintValidator<NicknameValid, Str
   public boolean isValid(String nickname, ConstraintValidatorContext context) {
     if (nickname == null || !LENGTH_PATTERN.matcher(nickname).matches()) {
       context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate("닉네임은 최소 2자에서 최대 8자여야 합니다.")
+      context.buildConstraintViolationWithTemplate("닉네임은 최소 2자에서 최대 12자여야 합니다.")
           .addConstraintViolation();
       return false;
     }

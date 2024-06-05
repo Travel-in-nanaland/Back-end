@@ -60,7 +60,7 @@ public class Member extends BaseEntity {
   private ImageFile profileImageFile;
 
   @NotBlank
-  @Pattern(regexp = "^[a-zA-Z0-9\\uAC00-\\uD7AF\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF][a-zA-Z0-9\\uAC00-\\uD7AF\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF ]{0,6}[a-zA-Z0-9\\uAC00-\\uD7AF\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]$")
+  @Pattern(regexp = "^[a-zA-Z0-9\\uAC00-\\uD7AF\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF][a-zA-Z0-9\\uAC00-\\uD7AF\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF ]{0,10}[a-zA-Z0-9\\uAC00-\\uD7AF\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]$")
   @Column(nullable = false, unique = true)
   private String nickname;
 
