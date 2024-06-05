@@ -82,8 +82,9 @@ public class NanaController {
 
   @PostMapping("/upload")
   public ModelAndView uploadNana(@ModelAttribute NanaRequest.NanaUploadDto nanaUploadDto) {
+    String result = nanaService.createNanaPick(nanaUploadDto);
     ModelAndView modelAndView = new ModelAndView("upload-nana.html");
-    modelAndView.addObject("result", "성공메세지~!");
+    modelAndView.addObject("result", result);
     return modelAndView;
   }
 }

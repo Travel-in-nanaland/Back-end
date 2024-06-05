@@ -7,28 +7,37 @@ import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.CategoryRepository;
+import com.jeju.nanaland.domain.common.repository.LanguageRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
+import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.domain.nana.repository.NanaContentImageRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +57,9 @@ public class NanaService {
   private final HashtagRepository hashtagRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
+  private final ImageFileService imageFileService;
+  private final LanguageRepository languageRepository;
+  private final NanaContentImageRepository nanaContentImageRepository;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -150,6 +162,63 @@ public class NanaService {
 
   }
 
+  @Transactional
+  public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
+    Nana nana;
+    // 없는 nana이면 nana 만들기
+    if (!existNana(nanaUploadDto.getPostId())) {
+      nana = Nana.builder()
+          .version("나나's Pick vol" + nanaUploadDto.getPostId())
+          .nanaTitleImageFile(
+              imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), true))
+          .build();
+      nanaRepository.save(nana);
+    } else {
+      Optional<Nana> nanaById = nanaRepository.findNanaById(nanaUploadDto.getPostId());
+      nana = nanaById.orElseThrow(
+          () -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+    }
+
+    try {
+      NanaTitle nanaTitle = NanaTitle.builder()
+          .nana(nana)
+          .language(languageRepository.findByLocale(Locale.contains(nanaUploadDto.getLanguage())))
+          .subHeading(nanaUploadDto.getSubHeading())
+          .heading(nanaUploadDto.getHeading())
+          .notice(nanaUploadDto.getNotice())
+          .build();
+      nanaTitleRepository.save(nanaTitle);
+
+      nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
+            nanaContentRepository.save(NanaContent.builder()
+                .nanaTitle(nanaTitle)
+                .number(nanaContentDto.getNumber())
+                .subTitle(nanaContentDto.getSubHeading())
+                .title(nanaContentDto.getHeading())
+                .content(nanaContentDto.getContent())
+                .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
+                    nanaContentDto.getAnswer()))
+                .build());
+            nanaContentImageRepository.save(
+                NanaContentImage.builder()
+                    .nana(nana)
+                    .imageFile(
+                        imageFileService.uploadAndSaveImageFile(nanaContentDto.getNanaContentImage(),
+                            true))
+                    .number(nanaContentDto.getNumber())
+                    .build()
+            );
+
+          }
+
+      );
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    return "성공~";
+
+  }
+
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
       Locale locale, NanaContent nanaContent) {
@@ -174,5 +243,26 @@ public class NanaService {
     return hashtagList.stream()
         .map(hashtag -> hashtag.getKeyword().getContent())
         .collect(Collectors.toList());
+  }
+
+  private boolean existNana(Long id) {
+    return nanaRepository.existsById(id);
+  }
+
+  private Set<NanaAdditionalInfo> createNanaAdditionalInfo(List<String> infoTypeList,
+      List<String> descriptionList) {
+    if (infoTypeList.size() != descriptionList.size()) {
+      throw new BadRequestException("nana Upload 중 infoTye과 description의 수가 일치하지 않습니다.");
+    }
+    Set<NanaAdditionalInfo> nanaAdditionalInfoSet = new HashSet<>();
+
+    for (int i = 0; i < infoTypeList.size(); i++) {
+      nanaAdditionalInfoSet.add(
+          NanaAdditionalInfo.builder()
+              .infoType(InfoType.contains(infoTypeList.get(i)))
+              .description(descriptionList.get(i))
+              .build());
+    }
+    return nanaAdditionalInfoSet;
   }
 }

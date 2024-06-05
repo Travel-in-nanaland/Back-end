@@ -32,6 +32,14 @@ public enum InfoType {
     this.zh = zh;
   }
 
+  public static InfoType contains(String name) {
+    for (InfoType infoType : values()) {
+      if (infoType.name().equals(name)) {
+        return infoType;
+      }
+    }
+  }
+
   public String getValueByLocale(Locale locale) {
     return switch (locale) {
       case KOREAN -> this.getKr();
