@@ -1,14 +1,12 @@
 package com.jeju.nanaland.domain.nana.dto;
 
 import java.util.List;
-import lombok.Builder;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 public class NanaRequest {
 
   @Data
-  @Builder
   public static class NanaUploadDto {
 
     private Long postId;
@@ -20,7 +18,6 @@ public class NanaRequest {
     private List<NanaContentDto> nanaContents;
 
     @Data
-    @Builder
     public static class NanaContentDto {
 
       private int number;

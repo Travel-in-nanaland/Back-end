@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.nana.controller;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -14,13 +15,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+@Slf4j
 @RestController
 @RequestMapping("/nana")
 @RequiredArgsConstructor
@@ -71,7 +76,14 @@ public class NanaController {
   }
 
   @GetMapping("/upload")
-  public ModelAndView uploadNana() {
+  public ModelAndView getUploadNana() {
     return new ModelAndView("upload-nana.html");
+  }
+
+  @PostMapping("/upload")
+  public ModelAndView uploadNana(@ModelAttribute NanaRequest.NanaUploadDto nanaUploadDto) {
+    ModelAndView modelAndView = new ModelAndView("upload-nana.html");
+    modelAndView.addObject("result", "성공메세지~!");
+    return modelAndView;
   }
 }

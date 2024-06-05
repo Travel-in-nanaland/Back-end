@@ -53,6 +53,8 @@ public class SecurityConfig {
             .hasAnyRole("MEMBER", "ADMIN")
             .requestMatchers(HttpMethod.PATCH, "/member/profile")
             .hasAnyRole("MEMBER", "ADMIN")
+            .requestMatchers(HttpMethod.POST, "/nana/upload")
+            .permitAll()
             .anyRequest().authenticated());
 
     http

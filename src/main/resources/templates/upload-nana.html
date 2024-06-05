@@ -21,6 +21,21 @@
       border-radius: 4px;
       box-sizing: border-box;
     }
+
+    .result {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .result.success {
+      color: green;
+    }
+
+    .result.error {
+      color: red;
+    }
   </style>
   <script>
     let contentCount = 1;
@@ -93,10 +108,13 @@
 <body>
 <div class="container">
   <h1>Nana Form</h1>
-  <form enctype="multipart/form-data" method="post" th:action="@{/nana/post}">
+  <div class="result" th:classappend="${result.startsWith('성공') ? ' success' : ' error'}"
+       th:if="${result}"
+       th:text="${result}"></div>
+  <form enctype="multipart/form-data" method="post" th:action="@{/nana/upload}">
     <div>
       <label for="postId">NANA ID:</label>
-      <input id="postId" name="postId" required type="text"/>
+      <input id="postId" name="postId" required type="number"/>
       <label for="nanaTitleImage">NanaTitle Image:</label>
       <input accept="image/*" id="nanaTitleImage" name="nanaTitleImage" required type="file"/>
       <label for="language">Language:</label>
