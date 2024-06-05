@@ -23,6 +23,7 @@ import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.domain.nana.repository.NanaAdditionalInfoRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaContentImageRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
@@ -60,6 +61,7 @@ public class NanaService {
   private final ImageFileService imageFileService;
   private final LanguageRepository languageRepository;
   private final NanaContentImageRepository nanaContentImageRepository;
+  private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -258,10 +260,12 @@ public class NanaService {
 
     for (int i = 0; i < infoTypeList.size(); i++) {
       nanaAdditionalInfoSet.add(
-          NanaAdditionalInfo.builder()
-              .infoType(InfoType.contains(infoTypeList.get(i)))
-              .description(descriptionList.get(i))
-              .build());
+          nanaAdditionalInfoRepository.save(
+              NanaAdditionalInfo.builder()
+                  .infoType(InfoType.contains(infoTypeList.get(i)))
+                  .description(descriptionList.get(i))
+                  .build())
+      );
     }
     return nanaAdditionalInfoSet;
   }
