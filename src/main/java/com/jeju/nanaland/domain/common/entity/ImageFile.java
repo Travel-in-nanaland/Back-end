@@ -20,9 +20,10 @@ public class ImageFile {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String thumbnailUrl;
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "VARCHAR(1024)")
   private String originUrl;
 
   @Builder
