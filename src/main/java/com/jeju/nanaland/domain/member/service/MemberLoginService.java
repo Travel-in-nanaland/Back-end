@@ -111,7 +111,7 @@ public class MemberLoginService {
 
     Member member = Member.builder()
         .language(language)
-        .email(joinDto.getEmail())
+        .email(joinDto.getEmail() != null ? joinDto.getEmail() : "ACTIVE@nanaland.com")
         .profileImageFile(imageFile)
         .nickname(nickname)
         .gender(joinDto.getGender())

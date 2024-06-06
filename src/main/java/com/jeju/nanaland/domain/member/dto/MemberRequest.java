@@ -27,7 +27,6 @@ public class MemberRequest {
     List<ConsentItem> consentItems;
 
     @Schema(description = "이메일(필수) - GUEST이면 GUEST@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
-    @NotBlank
     @Pattern(
         regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
         message = "이메일 형식이 올바르지 않습니다.")
