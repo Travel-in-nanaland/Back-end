@@ -190,25 +190,31 @@ public class NanaService {
   @Transactional
   public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
     try {
+      boolean existNanaContentImages = false;
       Nana nana;
       Language language = languageRepository.findByLocale(
           Locale.contains(nanaUploadDto.getLanguage()));
       Category category = categoryRepository.findByContent(NANA_CONTENT)
           .orElseThrow(() -> new NotFoundException("존재하지 않는 카테고리입니다."));
+
       // 없는 nana이면 nana 만들기
-      if (!existNana(nanaUploadDto.getPostId())) {
+      if (!existNanaById(nanaUploadDto.getPostId())) {
         nana = Nana.builder()
             .version("나나's Pick vol." + nanaUploadDto.getVersion())
             .nanaTitleImageFile(
                 imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
             .build();
         nanaRepository.save(nana);
-      } else {
+      } else {// 이미 존재하는 nana인 경우
         Optional<Nana> nanaById = nanaRepository.findNanaById(nanaUploadDto.getPostId());
         nana = nanaById.orElseThrow(
             () -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
-        if (existNanaTitleByLanguage(nana, language)) {
+        if (existNanaTitleByNanaAndLanguage(nana, language)) {
           throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
+        }
+
+        if (existNanaTitleByNana(nana)) { // 이미 nanaTilte이 존재해서 nanaContentImage 필요 없음
+          existNanaContentImages = true;
         }
       }
 
@@ -221,6 +227,10 @@ public class NanaService {
           .build();
       nanaTitleRepository.save(nanaTitle);
 
+//      람다 안에서 외부 변수를 사용하기 위해서는 effectively final 변수를 사용해야하므로 선언
+//      존재할 경우 flag -> false / 존재하지 않을 경우 flag -> true
+      boolean createNanaContentsImageFlag = !existNanaContentImages;
+
       nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
             NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
                 .nanaTitle(nanaTitle)
@@ -231,15 +241,18 @@ public class NanaService {
                 .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
                     nanaContentDto.getInfoDesc()))
                 .build());
-            nanaContentImageRepository.save(
-                NanaContentImage.builder()
-                    .nana(nana)
-                    .imageFile(
-                        imageFileService.uploadAndSaveImageFile(nanaContentDto.getNanaContentImage(),
-                            false))
-                    .number(nanaContentDto.getNumber())
-                    .build()
-            );
+
+            if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
+              nanaContentImageRepository.save(
+                  NanaContentImage.builder()
+                      .nana(nana)
+                      .imageFile(
+                          imageFileService.uploadAndSaveImageFile(nanaContentDto.getNanaContentImage(),
+                              false))
+                      .number(nanaContentDto.getNumber())
+                      .build()
+              );
+            }
 
             hashtagService.registerHashtag(splitHashtagContentFromString(nanaContentDto.getHashtag()),
                 language, category, nanaContent.getId());
@@ -281,11 +294,15 @@ public class NanaService {
         .collect(Collectors.toList());
   }
 
-  private boolean existNana(Long id) {
+  private boolean existNanaById(Long id) {
     return nanaRepository.existsById(id);
   }
 
-  private boolean existNanaTitleByLanguage(Nana nana, Language language) {
+  private boolean existNanaTitleByNana(Nana nana) {
+    return nanaTitleRepository.existsByNana(nana);
+  }
+
+  private boolean existNanaTitleByNanaAndLanguage(Nana nana, Language language) {
     return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
   }
 
