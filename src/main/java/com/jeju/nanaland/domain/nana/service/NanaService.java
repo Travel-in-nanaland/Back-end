@@ -243,6 +243,9 @@ public class NanaService {
                 .build());
 
             if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
+              if (nanaContentDto.getNanaContentImage() == null) {
+                throw new BadRequestException("nanaContentImage가 존재하지 않습니다.");
+              }
               nanaContentImageRepository.save(
                   NanaContentImage.builder()
                       .nana(nana)
