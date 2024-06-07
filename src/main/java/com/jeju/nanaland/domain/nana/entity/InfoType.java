@@ -6,17 +6,18 @@ import lombok.Getter;
 
 @Getter
 public enum InfoType {
-  ADDRESS("주소", "enAd", "viAd", "msAd", "zhAd"),
-  PARKING("주차", "enPa", "viPa", "msPa", "zhPa"),
-  SPECIAL("차별점", "enSp", "viSp", "msSp", "zhSp"),
-  AMENITY("편의시설", "enAm", "viAm", "msAm", "zhAm"),
-  WEBSITE("홈페이지", "enWb", "viWb", "msWb", "zhWb"),
-  RESERVATION_LINK("예약링크", "enRL", "viRL", "msRL", "zhRL"),
-  AGE("이용연령", "enAg", "viAg", "msAg", "zhAg"),
-  TIME("이용시간", "enTi", "viTi", "msTi", "zhTi"),
-  FEE("이용요금", "enFee", "viFee", "msFee", "zhFee"),
-  DATE("이용날짜", "enDate", "viDate", "msDate", "zhDate"),
-  DESCRIPTION("소개", "enDesc", "viDesc", "msDesc", "zhDesc");
+  ADDRESS("주소", "Address", "viAd", "Alamat", "地址"),
+  PARKING("주차", "Parking", "viPa", "Tempat Letak Kereta", "停车"),
+  SPECIAL("이 장소만의 매력포인트", "Unique Points of This Place", "viSp", "Tarikan Istimewa Tempat Ini",
+      "这个地方的独特魅力"),
+  AMENITY("편의시설", "Amenities", "viAm", "Kemudahan", "设施"),
+  WEBSITE("홈페이지", "Website", "viWb", "Website", "主页"),
+  RESERVATION_LINK("예약링크", "Booking Link", "viRL", "Pautan Tempahan", "预订链接"),
+  AGE("이용연령", "Age Restrictions", "viAg", "Sekatan Umur", "使用年龄"),
+  TIME("이용시간", "Operating Hours", "viTime", "Waktu Operasi", "利用时间"),
+  FEE("이용요금", "Pricing", "viFee", "Harga", "使用费用"),
+  DATE("이용날짜", "Available Dates", "viDate", "Tarikh Tersedia", "使用日期"),
+  DESCRIPTION("소개", "Overview", "viDesc", "Pengenalan", "介绍");
 
 
   private final String kr;
