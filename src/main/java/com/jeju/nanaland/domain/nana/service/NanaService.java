@@ -41,7 +41,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -102,8 +101,7 @@ public class NanaService {
     Language language = memberInfoDto.getLanguage();
 
     // nana 찾아서
-    Nana nana = nanaRepository.findNanaById(nanaId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+    Nana nana = getNanaById(nanaId);
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
@@ -192,28 +190,23 @@ public class NanaService {
     try {
       boolean existNanaContentImages = false;
       Nana nana;
+      Long nanaId = nanaUploadDto.getPostId();
       Language language = languageRepository.findByLocale(
           Locale.contains(nanaUploadDto.getLanguage()));
       Category category = categoryRepository.findByContent(NANA_CONTENT)
           .orElseThrow(() -> new NotFoundException("존재하지 않는 카테고리입니다."));
 
       // 없는 nana이면 nana 만들기
-      if (!existNanaById(nanaUploadDto.getPostId())) {
-        nana = Nana.builder()
-            .version("나나's Pick vol." + nanaUploadDto.getVersion())
-            .nanaTitleImageFile(
-                imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
-            .build();
+      if (!existNanaById(nanaId)) {
+        nana = createNana(nanaUploadDto);
         nanaRepository.save(nana);
       } else {// 이미 존재하는 nana인 경우
-        Optional<Nana> nanaById = nanaRepository.findNanaById(nanaUploadDto.getPostId());
-        nana = nanaById.orElseThrow(
-            () -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+        nana = getNanaById(nanaId);
         if (existNanaTitleByNanaAndLanguage(nana, language)) {
           throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
         }
-
-        if (existNanaTitleByNana(nana)) { // 이미 nanaTilte이 존재해서 nanaContentImage 필요 없음
+        // 이미 nanaTitle이 존재하면 nanaContentImage 추가 생성 필요 없음을 표시
+        if (existNanaTitleByNana(nana)) {
           existNanaContentImages = true;
         }
       }
@@ -257,12 +250,10 @@ public class NanaService {
               );
             }
 
+            //해시태그 생성
             hashtagService.registerHashtag(splitHashtagContentFromString(nanaContentDto.getHashtag()),
                 language, category, nanaContent.getId());
-
-
           }
-
       );
     } catch (Exception e) {
       return e.getMessage();
@@ -307,6 +298,20 @@ public class NanaService {
 
   private boolean existNanaTitleByNanaAndLanguage(Nana nana, Language language) {
     return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
+  }
+
+  private Nana createNana(NanaRequest.NanaUploadDto nanaUploadDto) {
+    return Nana.builder()
+        .version("나나's Pick vol." + nanaUploadDto.getVersion())
+        .nanaTitleImageFile(
+            imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
+        .build();
+  }
+
+  private Nana getNanaById(Long id) {
+    return nanaRepository.findNanaById(id)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+
   }
 
   private Set<NanaAdditionalInfo> createNanaAdditionalInfo(List<String> infoTypeList,
