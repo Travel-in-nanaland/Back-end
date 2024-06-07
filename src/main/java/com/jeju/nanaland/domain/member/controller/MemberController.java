@@ -195,6 +195,10 @@ public class MemberController {
       description = "유저 닉네임, 설명, 프로필 사진 수정")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "닉네임의 길이가 2~12자가 아닌 경우, "
+          + "닉네임이 한국어, 영어, 중국어, 베트남어, 말레이어, 숫자, 공백으로 이루어지지 않은 경우, "
+          + "닉네임의 첫 글자가 한국어, 영어, 중국어, 베트남어, 말레이어, 숫자가 아닌 경우, "
+          + "소개 글자 수가 70자를 넘는 경우", content = @Content),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "이미지 업로드에 실패한 경우", content = @Content)
   })
