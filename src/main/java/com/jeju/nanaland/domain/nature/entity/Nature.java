@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.nature.entity;
 
-import com.jeju.nanaland.domain.common.entity.Common;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
