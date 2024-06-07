@@ -199,14 +199,21 @@ public class NanaService {
 
       // 없는 nana이면 nana 만들기
       if (!existNanaById(nanaId)) {
+        // 처음 생성하는 nana인데 title image 없을 경우 에러
+        if (nanaUploadDto.getNanaTitleImage().isEmpty()) {
+          throw new BadRequestException("처음 생성하는 Nana's pick에는 title 이미지가 필수입니다.");
+        }
+        // nana 생성해서 저장하기
         nana = createNanaByNanaUploadDto(nanaUploadDto);
         nanaId = nanaRepository.save(nana).getId();
       } else {// 이미 존재하는 nana인 경우
         nana = getNanaById(nanaId);
+
         //존재하는 nana일 경우 해당 post가 이미 작성된 language로 요청이 올 경우 에러
         if (existNanaTitleByNanaAndLanguage(nana, language)) {
           throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
         }
+
         // 이미 nanaTitle이 존재하면 nanaContentImage 추가 생성 필요 없음을 표시
         if (existNanaTitleByNana(nana)) {
           existNanaContentImages = true;
@@ -226,6 +233,7 @@ public class NanaService {
 //      존재할 경우 flag -> false / 존재하지 않을 경우 flag -> true
       boolean createNanaContentsImageFlag = !existNanaContentImages;
 
+      //content 생성
       nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
             NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
                 .nanaTitle(nanaTitle)
@@ -238,8 +246,8 @@ public class NanaService {
                 .build());
 
             if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
-              if (nanaContentDto.getNanaContentImage() == null) {
-                throw new BadRequestException("nanaContentImage가 존재하지 않습니다.");
+              if (nanaContentDto.getNanaContentImage().isEmpty()) {
+                throw new BadRequestException("처음 생성하는 Nana's pick에는 content 이미지가 필수입니다. ");
               }
               nanaContentImageRepository.save(
                   NanaContentImage.builder()
@@ -258,7 +266,7 @@ public class NanaService {
           }
       );
     } catch (Exception e) {
-      // 외부 메서드 호출 시 에러 터지면 롤백위함
+      // 외부 메서드 호출 시 에러 터지면 롤백
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
       return e.getMessage();
     }
