@@ -60,10 +60,10 @@
                     <label for="nanaContents[${contentCount}].nanaContentImage">NanaContent Image:</label>
                     <input accept="image/*" name="nanaContents[${contentCount}].nanaContentImage"  type="file"/>
                     <div>
-                          <label for="nanaContents[0].subTitle">SubTitle:</label>
-                          <input name="nanaContents[0].subTitle" required type="text"/>
-                          <label for="nanaContents[0].title">Title:</label>
-                          <input name="nanaContents[0].title" required type="text"/>
+                          <label for="nanaContents[${contentCount}].subTitle">SubTitle:</label>
+                          <input name="nanaContents[${contentCount}].subTitle" required type="text"/>
+                          <label for="nanaContents[${contentCount}].title">Title:</label>
+                          <input name="nanaContents[${contentCount}].title" required type="text"/>
                     </div>
                         <div>
                             <label class="textarea-label" for="nanaContents[${contentCount}].content">Content:</label>
@@ -84,8 +84,8 @@
                                 <option value="DATE">date</option>
                                 <option value="DESCRIPTION">description</option>
                             </select>
-                            <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
-                            <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
+                            <label class="textarea-label" for="nanaContents[${contentCount}].infoDesc[0]">desc:</label>
+                            <textarea name="nanaContents[${contentCount}].infoDesc[0]" required></textarea>
                             <button type="button" onclick="addAdditionalInfo(this, ${contentCount})">+</button>
                         </div>
                         <div>
@@ -119,8 +119,8 @@
               <option value="DATE">date</option>
               <option value="DESCRIPTION">description</option>
             </select>
-            <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
-            <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
+            <label class="textarea-label" for="nanaContents[${contentIndex}].infoDesc[${count}]">desc:</label>
+            <textarea name="nanaContents[${contentIndex}].infoDesc[${count}]" required></textarea>
             `;
 
       container.appendChild(section);
