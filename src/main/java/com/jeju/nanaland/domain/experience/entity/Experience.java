@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@DiscriminatorValue("EXPERIENCE")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DiscriminatorValue("EXPERIENCE")
 public class Experience extends Post {
 
   private String contentId;
