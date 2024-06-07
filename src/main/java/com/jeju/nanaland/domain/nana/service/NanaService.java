@@ -199,10 +199,11 @@ public class NanaService {
 
       // 없는 nana이면 nana 만들기
       if (!existNanaById(nanaId)) {
-        nana = createNana(nanaUploadDto);
-        nanaRepository.save(nana);
+        nana = createNanaByNanaUploadDto(nanaUploadDto);
+        nanaId = nanaRepository.save(nana).getId();
       } else {// 이미 존재하는 nana인 경우
         nana = getNanaById(nanaId);
+        //존재하는 nana일 경우 해당 post가 이미 작성된 language로 요청이 올 경우 에러
         if (existNanaTitleByNanaAndLanguage(nana, language)) {
           throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
         }
@@ -292,7 +293,9 @@ public class NanaService {
   }
 
   private boolean existNanaById(Long id) {
-    return nanaRepository.existsById(id);
+    //id가 0(생성하는 경우) 또는 존재하지 않는 나나의 id일 경우 false
+    //id가 0이 아니고 존재하는 id일 경우 true
+    return id != 0 && nanaRepository.existsById(id);
   }
 
   private boolean existNanaTitleByNana(Nana nana) {
@@ -303,7 +306,7 @@ public class NanaService {
     return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
   }
 
-  private Nana createNana(NanaRequest.NanaUploadDto nanaUploadDto) {
+  private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
     return Nana.builder()
         .version("나나's Pick vol." + nanaUploadDto.getVersion())
         .nanaTitleImageFile(
