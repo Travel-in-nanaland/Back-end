@@ -110,6 +110,8 @@ public class S3ImageService {
     if (autoThumbnail) {
       //섬네일 생성 후 저장
       thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
+    } else {
+      thumbnailImageUrl = originalImageUrl;
     }
 
     return S3ImageDto.builder()
