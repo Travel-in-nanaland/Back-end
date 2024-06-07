@@ -1,7 +1,9 @@
 package com.jeju.nanaland.domain.nature.entity;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
@@ -14,14 +16,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Nature extends Common {
+@DiscriminatorValue("NATURE")
+public class Nature extends Post {
+
+  private String contentId;
+
+  private String contact;
 
   @OneToMany(mappedBy = "nature", cascade = CascadeType.REMOVE)
   private List<NatureTrans> natureTrans;
 
   @Builder
-  public Nature(String contentId, ImageFile imageFile, String contact) {
-    super(contentId, imageFile, contact);
+  public Nature(ImageFile imageFile, String contentId, String contact) {
+    super(imageFile);
+    this.contentId = contentId;
+    this.contact = contact;
     this.natureTrans = new ArrayList<>();
   }
 }
