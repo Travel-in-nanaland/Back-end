@@ -218,6 +218,12 @@ public class NanaService {
         if (existNanaTitleByNana(nana)) {
           existNanaContentImages = true;
         }
+
+        // 기존의 content 이미지의 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
+        if (nana.getNanaContentImageList().size() != nanaUploadDto.getNanaContents().size()) {
+          throw new BadRequestException(
+              "기존의 nana content 이미지 수와 현재 요청한 nana content의 수가 일치하지 않습니다.");
+        }
       }
 
       NanaTitle nanaTitle = NanaTitle.builder()
@@ -316,7 +322,7 @@ public class NanaService {
 
   private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
     return Nana.builder()
-        .version("나나's Pick vol." + nanaUploadDto.getVersion())
+        .version("Nana's Pick vol." + nanaUploadDto.getVersion())
         .nanaTitleImageFile(
             imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
         .build();
