@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.festival.entity;
 
-import com.jeju.nanaland.domain.common.entity.CommonTrans;
+import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FestivalTrans extends CommonTrans {
+public class FestivalTrans extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "festival_id", nullable = false)
