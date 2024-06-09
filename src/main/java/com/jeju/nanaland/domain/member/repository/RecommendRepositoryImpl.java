@@ -46,7 +46,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
         .innerJoin(nature).on(nature.id.eq(recommend.postId))
         .innerJoin(nature.natureTrans, natureTrans).on(natureTrans.language.locale.eq(locale))
-        .innerJoin(nature.imageFile, imageFile)
+        .innerJoin(nature.firstImageFile, imageFile)
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NATURE))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
@@ -75,7 +75,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
 
-        .innerJoin(experience.imageFile, imageFile)
+        .innerJoin(experience.firstImageFile, imageFile)
 
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.EXPERIENCE))
@@ -104,7 +104,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
 
         .innerJoin(market.marketTrans, marketTrans).on(marketTrans.language.locale.eq(locale))
 
-        .innerJoin(market.imageFile, imageFile)
+        .innerJoin(market.firstImageFile, imageFile)
 
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.MARKET))
@@ -134,7 +134,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
 
-        .innerJoin(festival.imageFile, imageFile)
+        .innerJoin(festival.firstImageFile, imageFile)
 
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.FESTIVAL))

@@ -47,7 +47,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.NATURE)))
         .innerJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
-        .innerJoin(nature.imageFile, imageFile)
+        .innerJoin(nature.firstImageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -62,7 +62,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.NATURE)))
         .innerJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
-        .innerJoin(nature.imageFile, imageFile);
+        .innerJoin(nature.firstImageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -82,7 +82,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.NATURE)))
         .innerJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
-        .innerJoin(nature.imageFile, imageFile)
+        .innerJoin(nature.firstImageFile, imageFile)
         .where(favorite.postId.eq(postId))
         .fetchOne();
   }
@@ -103,7 +103,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
-        .innerJoin(experience.imageFile, imageFile)
+        .innerJoin(experience.firstImageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -118,7 +118,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
-        .innerJoin(experience.imageFile, imageFile);
+        .innerJoin(experience.firstImageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -138,7 +138,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
-        .innerJoin(experience.imageFile, imageFile)
+        .innerJoin(experience.firstImageFile, imageFile)
         .where(favorite.postId.eq(postId))
         .fetchOne();
   }
@@ -159,7 +159,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
-        .innerJoin(festival.imageFile, imageFile)
+        .innerJoin(festival.firstImageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -174,7 +174,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
-        .innerJoin(festival.imageFile, imageFile);
+        .innerJoin(festival.firstImageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -194,7 +194,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
-        .innerJoin(festival.imageFile, imageFile)
+        .innerJoin(festival.firstImageFile, imageFile)
         .where(favorite.postId.eq(postId))
         .fetchOne();
   }
@@ -215,7 +215,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.MARKET)))
         .innerJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
-        .innerJoin(market.imageFile, imageFile)
+        .innerJoin(market.firstImageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -230,7 +230,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.MARKET)))
         .innerJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
-        .innerJoin(market.imageFile, imageFile);
+        .innerJoin(market.firstImageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -250,7 +250,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.content.eq(CategoryContent.MARKET)))
         .innerJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
-        .innerJoin(market.imageFile, imageFile)
+        .innerJoin(market.firstImageFile, imageFile)
         .where(favorite.postId.eq(postId))
         .fetchOne();
   }
