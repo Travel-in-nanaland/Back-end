@@ -45,7 +45,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.fee
         ))
         .from(nature)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
         .where(nature.id.eq(id)
             .and(natureTrans.language.locale.eq(locale))
@@ -77,7 +77,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.fee
         ))
         .from(nature)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
         .where(natureTrans.title.contains(keyword)
@@ -92,7 +92,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(nature.countDistinct())
         .from(nature)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
         .where(natureTrans.title.contains(keyword)
@@ -125,7 +125,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         ))
         .from(nature)
         .leftJoin(nature.natureTrans, natureTrans)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .where(natureTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList))
             .and(natureTrans.title.contains(keyword)))
