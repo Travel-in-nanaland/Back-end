@@ -9,6 +9,7 @@ import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
@@ -63,7 +64,7 @@ public class FavoriteService {
     // Favorite의 postId, 카테고리 정보를 통해 튜플 하나하나 조회
     for (Favorite favorite : favorites) {
       CategoryContent category = favorite.getCategory().getContent();
-      Long postId = favorite.getPostId();
+      Long postId = favorite.getPost().getId();
       log.info("postId: {}", postId);
 
       switch (category) {
@@ -220,10 +221,6 @@ public class FavoriteService {
 
     Long postId = likeToggleDto.getId();
     CategoryContent categoryContent = CategoryContent.valueOf(likeToggleDto.getCategory());
-
-    // 해당 카테고리에 해당하는 id의 게시물이 없다면 NotFoundException
-    checkPostIdIsExist(postId, categoryContent);
-
     Category category = getCategoryFromCategoryContent(categoryContent);
 
     Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
@@ -242,10 +239,13 @@ public class FavoriteService {
     }
     // 좋아요 상태가 아닐 때
     else {
+      // 해당 카테고리에 해당하는 id의 게시물이 없다면 NotFoundException
+      Post post = findPostIfExist(postId, categoryContent);
+
       Favorite favorite = Favorite.builder()
           .member(memberInfoDto.getMember())
           .category(category)
-          .postId(postId)
+          .post(post)
           .build();
 
       // 좋아요 추가
@@ -264,7 +264,7 @@ public class FavoriteService {
 
     List<Long> postIds = new ArrayList<>();
     for (Favorite favorite : favorites) {
-      postIds.add(favorite.getPostId());
+      postIds.add(favorite.getPost().getId());
     }
     return postIds;
   }
@@ -298,28 +298,25 @@ public class FavoriteService {
     return favoriteOptional.isPresent();
   }
 
-  private void checkPostIdIsExist(Long postId, CategoryContent categoryContent) {
-    switch (categoryContent) {
-      case NANA -> {
-        nanaRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
-      }
-      case NATURE -> {
-        natureRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("해당 id의 7대자연 게시물이 존재하지 않습니다."));
-      }
-      case EXPERIENCE -> {
-        experienceRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("해당 id의 이색체험 게시물이 존재하지 않습니다."));
-      }
-      case MARKET -> {
-        marketRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
-      }
-      case FESTIVAL -> {
-        festivalRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
-      }
-    }
+  private Post findPostIfExist(Long postId, CategoryContent categoryContent) {
+    return switch (categoryContent) {
+      // TODO: NANA Post 엔티티 상속 이후 수정
+//      case NANA -> nanaRepository.findById(postId)
+//          .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
+
+      case NATURE -> natureRepository.findById(postId)
+          .orElseThrow(() -> new NotFoundException("해당 id의 7대자연 게시물이 존재하지 않습니다."));
+
+      case EXPERIENCE -> experienceRepository.findById(postId)
+          .orElseThrow(() -> new NotFoundException("해당 id의 이색체험 게시물이 존재하지 않습니다."));
+
+      case MARKET -> marketRepository.findById(postId)
+          .orElseThrow(() -> new NotFoundException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
+
+      case FESTIVAL -> festivalRepository.findById(postId)
+          .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
+
+      default -> throw new NotFoundException("해당 id의 게시물이 존재하지 않습니다.");
+    };
   }
 }
