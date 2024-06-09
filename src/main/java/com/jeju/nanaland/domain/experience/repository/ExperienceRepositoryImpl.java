@@ -44,7 +44,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.amenity
         ))
         .from(experience)
-        .leftJoin(experience.imageFile, imageFile)
+        .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .where(experience.id.eq(id).and(experienceTrans.language.locale.eq(locale)))
         .fetchOne();
@@ -74,7 +74,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.amenity
         ))
         .from(experience)
-        .leftJoin(experience.imageFile, imageFile)
+        .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
         .where(experienceTrans.title.contains(keyword)
@@ -89,7 +89,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(experience.count())
         .from(experience)
-        .leftJoin(experience.imageFile, imageFile)
+        .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
         .where(experienceTrans.title.contains(keyword)

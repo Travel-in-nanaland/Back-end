@@ -1,7 +1,8 @@
 package com.jeju.nanaland.domain.experience.entity;
 
-import com.jeju.nanaland.domain.common.entity.CommonTrans;
+import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Language;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ExperienceTrans extends CommonTrans {
+public class ExperienceTrans extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "experience_id", nullable = false)
@@ -23,6 +24,19 @@ public class ExperienceTrans extends CommonTrans {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
+
+  private String title;
+
+  @Column(columnDefinition = "TEXT")
+  private String content;
+
+  @Column(columnDefinition = "VARCHAR(2048)")
+  private String address;
+
+  private String addressTag;
+
+  @Column(columnDefinition = "VARCHAR(1024)")
+  private String time;
 
   private String intro;
 
@@ -34,7 +48,11 @@ public class ExperienceTrans extends CommonTrans {
   public ExperienceTrans(Experience experience, Language language, String title, String content,
       String address, String addressTag, String time, String intro, String details,
       String amenity) {
-    super(title, content, address, addressTag, time);
+    this.title = title;
+    this.content = content;
+    this.address = address;
+    this.addressTag = addressTag;
+    this.time = time;
     this.experience = experience;
     this.language = language;
     this.intro = intro;
