@@ -44,7 +44,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.amenity
         ))
         .from(market)
-        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .where(market.id.eq(id).and(marketTrans.language.locale.eq(locale)))
         .fetchOne();
@@ -71,7 +71,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.amenity
         ))
         .from(market)
-        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList)))
@@ -113,7 +113,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             marketTrans.amenity
         ))
         .from(market)
-        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
         .where(marketTrans.title.contains(keyword)
@@ -128,7 +128,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(market.count())
         .from(market)
-        .leftJoin(market.imageFile, imageFile)
+        .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
         .where(marketTrans.title.contains(keyword)
