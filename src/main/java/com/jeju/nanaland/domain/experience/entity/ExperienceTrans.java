@@ -48,13 +48,13 @@ public class ExperienceTrans extends BaseEntity {
   public ExperienceTrans(Experience experience, Language language, String title, String content,
       String address, String addressTag, String time, String intro, String details,
       String amenity) {
+    this.experience = experience;
+    this.language = language;
     this.title = title;
     this.content = content;
     this.address = address;
     this.addressTag = addressTag;
     this.time = time;
-    this.experience = experience;
-    this.language = language;
     this.intro = intro;
     this.details = details;
     this.amenity = amenity;
