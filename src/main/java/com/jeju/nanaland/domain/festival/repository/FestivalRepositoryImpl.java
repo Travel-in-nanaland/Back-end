@@ -49,7 +49,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festival.season
         ))
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.id.eq(id).and(festivalTrans.language.locale.eq(locale))
             .and(festival.status.eq(Status.ACTIVE))
@@ -83,7 +83,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festival.season
         ))
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
         .where(festivalTrans.title.contains(keyword)
@@ -99,7 +99,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(festival.count())
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
         .where(festivalTrans.title.contains(keyword)
@@ -159,7 +159,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festival.season
         ))
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
             .and(festivalTrans.language.locale.eq(locale))
@@ -175,7 +175,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(festival.count())
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
             .and(festivalTrans.language.locale.eq(locale))
@@ -208,7 +208,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festival.season
         ))
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
             .and(festivalTrans.language.locale.eq(locale))
@@ -222,7 +222,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(festival.count())
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
             .and(festivalTrans.language.locale.eq(locale))
@@ -255,7 +255,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             festival.season
         ))
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where( // 축제의 시작일이 필터 시작일 보다 작고 축제의 종료일은 필터의 시작 일보다 클 때
             ((festival.startDate.loe(startDate).and(festival.endDate.goe(startDate)))
@@ -278,7 +278,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(festival.count())
         .from(festival)
-        .leftJoin(festival.imageFile, imageFile)
+        .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where( // 축제의 시작일이 필터 시작일 보다 작고 축제의 종료일은 필터의 시작 일보다 클 때
             ((festival.startDate.loe(startDate).and(festival.endDate.goe(startDate)))

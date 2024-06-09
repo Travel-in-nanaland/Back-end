@@ -25,6 +25,19 @@ public class FestivalTrans extends CommonTrans {
   @JoinColumn(name = "language_id", nullable = false)
   private Language language;
 
+  private String title;
+
+  @Column(columnDefinition = "TEXT")
+  private String content;
+
+  @Column(columnDefinition = "VARCHAR(2048)")
+  private String address;
+
+  private String addressTag;
+
+  @Column(columnDefinition = "VARCHAR(1024)")
+  private String time;
+
   private String intro;
 
   @Column(columnDefinition = "VARCHAR(1024)")
@@ -33,9 +46,13 @@ public class FestivalTrans extends CommonTrans {
   @Builder
   public FestivalTrans(Festival festival, Language language, String title, String content,
       String address, String addressTag, String time, String intro, String fee) {
-    super(title, content, address, addressTag, time);
     this.festival = festival;
     this.language = language;
+    this.title = title;
+    this.content = content;
+    this.address = address;
+    this.addressTag = addressTag;
+    this.time = time;
     this.intro = intro;
     this.fee = fee;
   }
