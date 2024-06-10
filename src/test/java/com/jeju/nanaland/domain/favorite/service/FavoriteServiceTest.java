@@ -142,16 +142,15 @@ class FavoriteServiceTest {
     StatusDto festivalStatusDto = favoriteService.toggleLikeStatus(memberInfoDto,
         festivalLikeToggleDto);
 
-    // TODO: NANA 엔티티 Post 엔티티 상속 이후 수정
-//    StatusDto nanaStatusDto1 = favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
-//    StatusDto nanaStatusDto2 = favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
+    StatusDto nanaStatusDto1 = favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
+    StatusDto nanaStatusDto2 = favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
 
     /**
      * THEN
      */
     assertThat(festivalStatusDto.isFavorite()).isTrue();
-//    assertThat(nanaStatusDto1.isFavorite()).isTrue();
-//    assertThat(nanaStatusDto2.isFavorite()).isFalse();
+    assertThat(nanaStatusDto1.isFavorite()).isTrue();
+    assertThat(nanaStatusDto2.isFavorite()).isFalse();
   }
 
   @Test
@@ -207,11 +206,10 @@ class FavoriteServiceTest {
     festivalLikeToggleDto.setId(festival2.getId());
     favoriteService.toggleLikeStatus(memberInfoDto, festivalLikeToggleDto);
 
-    // TODO: NANA 엔티티 Post 엔티티 상속 이후 수정
-//    LikeToggleDto nanaLikeToggleDto = new LikeToggleDto();
-//    nanaLikeToggleDto.setCategory(CategoryContent.NANA.name());
-//    nanaLikeToggleDto.setId(nana.getId());
-//    favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
+    LikeToggleDto nanaLikeToggleDto = new LikeToggleDto();
+    nanaLikeToggleDto.setCategory(CategoryContent.NANA.name());
+    nanaLikeToggleDto.setId(nana.getId());
+    favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
 
     AllCategoryDto allFavoriteList = favoriteService.getAllFavoriteList(memberInfoDto, 0, 12);
     FestivalDto festivalFavoriteList = favoriteService.getFestivalFavoriteList(memberInfoDto, 0,
@@ -221,10 +219,9 @@ class FavoriteServiceTest {
     /**
      * THEN
      */
-    // TODO: NANA 엔티티 Post 엔티티 상속 이후 수정
-//    assertThat(allFavoriteList.getTotalElements()).isEqualTo(3);
+    assertThat(allFavoriteList.getTotalElements()).isEqualTo(3);
     assertThat(festivalFavoriteList.getTotalElements()).isEqualTo(2);
-//    assertThat(nanaFavoriteList.getTotalElements()).isEqualTo(1);
+    assertThat(nanaFavoriteList.getTotalElements()).isEqualTo(1);
 
     // 최근에 좋아요한 순서대로 표시
     assertThat(festivalFavoriteList.getData()).extracting("title")

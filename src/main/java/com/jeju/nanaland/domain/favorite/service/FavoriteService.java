@@ -300,9 +300,8 @@ public class FavoriteService {
 
   private Post findPostIfExist(Long postId, CategoryContent categoryContent) {
     return switch (categoryContent) {
-      // TODO: NANA Post 엔티티 상속 이후 수정
-//      case NANA -> nanaRepository.findById(postId)
-//          .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
+      case NANA -> nanaRepository.findById(postId)
+          .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
 
       case NATURE -> natureRepository.findById(postId)
           .orElseThrow(() -> new NotFoundException("해당 id의 7대자연 게시물이 존재하지 않습니다."));
