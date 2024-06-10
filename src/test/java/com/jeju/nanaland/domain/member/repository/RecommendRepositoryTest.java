@@ -71,7 +71,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findNatureRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -88,7 +88,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findMarketRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -105,7 +105,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findFestivalRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -122,7 +122,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findExperienceRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -139,7 +139,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findNanaRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -190,7 +190,7 @@ public class RecommendRepositoryTest {
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
-        .postId(nature.getId())
+        .post(nature)
         .category(category)
         .build();
     em.persist(recommend);
@@ -229,7 +229,7 @@ public class RecommendRepositoryTest {
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
-        .postId(market.getId())
+        .post(market)
         .category(category)
         .build();
     em.persist(recommend);
@@ -268,7 +268,7 @@ public class RecommendRepositoryTest {
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
-        .postId(festival.getId())
+        .post(festival)
         .category(category)
         .build();
     em.persist(recommend);
@@ -307,7 +307,7 @@ public class RecommendRepositoryTest {
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
-        .postId(experience.getId())
+        .post(experience)
         .category(category)
         .build();
     em.persist(recommend);
@@ -347,7 +347,7 @@ public class RecommendRepositoryTest {
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
-        .postId(nana.getId())
+        .post(nana)
         .category(category)
         .build();
     em.persist(recommend);
