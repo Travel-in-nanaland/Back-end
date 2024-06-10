@@ -116,6 +116,7 @@ class FavoriteServiceTest {
 
     Nana nana = Nana.builder()
         .version("1")
+        .firstImageFile(imageFile1)
         .nanaTitleImageFile(imageFile1)
         .build();
     em.persist(nana);
@@ -186,6 +187,7 @@ class FavoriteServiceTest {
     Nana nana = Nana.builder()
         .version("1")
         .nanaTitleImageFile(imageFile1)
+        .firstImageFile(imageFile1)
         .build();
     em.persist(nana);
     NanaTitle nanaTitle = NanaTitle.builder()

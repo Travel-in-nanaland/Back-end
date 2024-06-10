@@ -229,8 +229,8 @@ class MemberTypeServiceTest {
         .build();
 
     return Arrays.asList(
-        new Recommend(memberTravelType, 1L, nature),
-        new Recommend(memberTravelType, 2L, experience)
+        new Recommend(memberTravelType, null, nature),
+        new Recommend(memberTravelType, null, experience)
     );
   }
 
