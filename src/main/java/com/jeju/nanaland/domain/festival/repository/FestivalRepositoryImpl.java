@@ -116,7 +116,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .select(festival.id)
         .from(festival)
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(festival.id)
+        .on(hashtag.post.id.eq(festival.id)
             .and(hashtag.category.content.eq(CategoryContent.FESTIVAL))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword))

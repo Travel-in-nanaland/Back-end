@@ -73,7 +73,7 @@ public class MemberTypeService {
     recommends = getRandomTwoPosts(recommends);
     List<RecommendPostDto> result = new ArrayList<>();
     for (Recommend recommend : recommends) {
-      Long postId = recommend.getPostId();
+      Long postId = recommend.getPost().getId();
       Category category = recommend.getCategory();
 
       result.add(getRecommendPostDto(member, postId, locale, travelType, category));
@@ -98,7 +98,7 @@ public class MemberTypeService {
 
     List<RecommendPostDto> result = new ArrayList<>();
     for (Recommend recommend : recommends) {
-      Long postId = recommend.getPostId();
+      Long postId = recommend.getPost().getId();
       Category category = recommend.getCategory();
       TravelType travelType = recommend.getMemberTravelType().getTravelType();
 

@@ -139,7 +139,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .leftJoin(nanaContent)
         .on(nanaContent.nanaTitle.eq(nanaTitle))
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(nanaContent.id)
+        .on(hashtag.post.id.eq(nanaContent.id)
             .and(hashtag.category.content.eq(CategoryContent.NANA_CONTENT))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))

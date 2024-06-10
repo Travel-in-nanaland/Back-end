@@ -144,7 +144,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .select(market.id)
         .from(market)
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(market.id)
+        .on(hashtag.post.id.eq(market.id)
             .and(hashtag.category.content.eq(CategoryContent.MARKET))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))

@@ -105,7 +105,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .select(experience.id)
         .from(experience)
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(experience.id)
+        .on(hashtag.post.id.eq(experience.id)
             .and(hashtag.category.content.eq(CategoryContent.EXPERIENCE))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))

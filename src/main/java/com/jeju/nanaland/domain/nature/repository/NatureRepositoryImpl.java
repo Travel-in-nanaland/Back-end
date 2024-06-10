@@ -158,7 +158,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .select(nature.id)
         .from(nature)
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(nature.id)
+        .on(hashtag.post.id.eq(nature.id)
             .and(hashtag.category.content.eq(CategoryContent.NATURE))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
