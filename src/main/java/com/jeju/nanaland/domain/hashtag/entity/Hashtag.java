@@ -3,7 +3,7 @@ package com.jeju.nanaland.domain.hashtag.entity;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Language;
-import jakarta.persistence.Column;
+import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -49,6 +49,7 @@ public class Hashtag extends BaseEntity {
   private Category category;
 
   @NotNull
-  @Column(nullable = false)
-  private Long postId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "post_id", nullable = false)
+  private Post post;
 }
