@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.nana.controller;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -14,12 +15,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @RestController
 @RequestMapping("/nana")
 @RequiredArgsConstructor
@@ -67,5 +74,21 @@ public class NanaController {
       @PathVariable(name = "id") Long id, @RequestParam(defaultValue = "false") boolean isSearch) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
         nanaService.getNanaDetail(memberInfoDto, id, isSearch));
+  }
+
+  @GetMapping("/upload")
+  public ModelAndView getUploadNana() {
+    ModelAndView modelAndView = new ModelAndView("upload-nana.html");
+    modelAndView.addObject("nanaInfo", nanaService.getExistNanaListInfo());
+    return modelAndView;
+  }
+
+  @PostMapping("/upload")
+  public ModelAndView uploadNana(@ModelAttribute NanaRequest.NanaUploadDto nanaUploadDto,
+      RedirectAttributes redirectAttributes) {
+    String result = nanaService.createNanaPick(nanaUploadDto);
+
+    redirectAttributes.addFlashAttribute("result", result);
+    return new ModelAndView("redirect:/nana/upload");
   }
 }
