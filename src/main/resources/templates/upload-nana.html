@@ -89,8 +89,9 @@
                             <button type="button" onclick="addAdditionalInfo(this, ${contentCount})">+</button>
                         </div>
                         <div>
-                          <label class="textarea-label" for="nanaContents[${contentCount}].hashtag">Hashtag(띄어쓰기로 구분하기):</label>
-                          <textarea name="nanaContents[${contentCount}].hashtag" required></textarea>
+                          <label class="textarea-label" for="nanaContents[${contentCount}].hashtag[0]">Hashtag:</label>
+                          <textarea name="nanaContents[${contentCount}].hashtag[0]" required></textarea>
+                          <button onclick="addHashtag(this, ${contentCount})" type="button">+</button>
                         </div>
                     </div>
             `;
@@ -121,6 +122,19 @@
             </select>
             <label class="textarea-label" for="nanaContents[${contentIndex}].infoDesc[${count}]">desc:</label>
             <textarea name="nanaContents[${contentIndex}].infoDesc[${count}]" required></textarea>
+            `;
+
+      container.appendChild(section);
+    }
+
+    function addHashtag(button, contentIndex) {
+      const container = button.parentElement;
+      const count = container.querySelectorAll('textarea').length;
+
+      const section = document.createElement('div');
+      section.innerHTML = `
+            <label class="textarea-label" for="nanaContents[${contentIndex}].hashtag[${count}]">Hashtag(띄어쓰기로 구분하기):</label>
+            <textarea name="nanaContents[${contentIndex}].hashtag[${count}]" required></textarea>
             `;
 
       container.appendChild(section);
@@ -221,8 +235,9 @@
             <button onclick="addAdditionalInfo(this, 0)" type="button">+</button>
           </div>
           <div>
-            <label class="textarea-label" for="nanaContents[0].hashtag">Hashtag(띄어쓰기로 구분하기):</label>
-            <textarea name="nanaContents[0].hashtag" required></textarea>
+            <label class="textarea-label" for="nanaContents[0].hashtag[0]">Hashtag:</label>
+            <textarea name="nanaContents[0].hashtag[0]" required></textarea>
+            <button onclick="addHashtag(this, 0)" type="button">+</button>
           </div>
         </div>
       </div>
