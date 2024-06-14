@@ -28,7 +28,7 @@ public class NanaRequest {
       private String content;
       private List<String> additionalInfo;
       private List<String> infoDesc;
-      private String hashtag;
+      private List<String> hashtag;
     }
   }
 
