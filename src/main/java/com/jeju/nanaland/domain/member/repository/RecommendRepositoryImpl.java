@@ -37,7 +37,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.postId,
             recommend.category.content,
-            imageFile.thumbnailUrl,
+            imageFile.originUrl,
             natureTrans.title,
             recommendTrans.introduction
         ))
@@ -61,7 +61,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.postId,
             recommend.category.content,
-            imageFile.thumbnailUrl,
+            imageFile.originUrl,
             experienceTrans.title,
             recommendTrans.introduction
         ))
@@ -91,7 +91,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.postId,
             recommend.category.content,
-            imageFile.thumbnailUrl,
+            imageFile.originUrl,
             marketTrans.title,
             recommendTrans.introduction
         ))
@@ -120,7 +120,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.postId,
             recommend.category.content,
-            imageFile.thumbnailUrl,
+            imageFile.originUrl,
             festivalTrans.title,
             recommendTrans.introduction
         ))
@@ -149,7 +149,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.postId,
             recommend.category.content,
-            imageFile.thumbnailUrl,
+            imageFile.originUrl,
             nanaTitle.heading,
             recommendTrans.introduction
         ))
