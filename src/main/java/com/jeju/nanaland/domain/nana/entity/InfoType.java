@@ -17,7 +17,8 @@ public enum InfoType {
   TIME("이용시간", "Operating Hours", "viTime", "Waktu Operasi", "利用时间"),
   FEE("이용요금", "Pricing", "viFee", "Harga", "使用费用"),
   DATE("이용날짜", "Available Dates", "viDate", "Tarikh Tersedia", "使用日期"),
-  DESCRIPTION("소개", "Overview", "viDesc", "Pengenalan", "介绍");
+  DESCRIPTION("소개", "Overview", "viDesc", "Pengenalan", "介绍"),
+  CALL("문의사항", "Inquiries", "viCall", "Pertanyaan", "咨询事项");
 
 
   private final String kr;
