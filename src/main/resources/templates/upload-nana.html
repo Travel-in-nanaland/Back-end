@@ -133,7 +133,7 @@
 
       const section = document.createElement('div');
       section.innerHTML = `
-            <label class="textarea-label" for="nanaContents[${contentIndex}].hashtag[${count}]">Hashtag(띄어쓰기로 구분하기):</label>
+            <label class="textarea-label" for="nanaContents[${contentIndex}].hashtag[${count}]">Hashtag:</label>
             <textarea name="nanaContents[${contentIndex}].hashtag[${count}]" required></textarea>
             `;
 
@@ -168,6 +168,10 @@
        th:if="${result}"
        th:text="${result}"></div>
   <form enctype="multipart/form-data" method="post" th:action="@{/nana/upload}">
+    <input type="submit" value="Submit"/>
+    <br>
+    <br>
+    <hr>
     <div>
       <label for="postId">NANA ID:</label>
       <input id="postId" name="postId" required type="number"/>
@@ -229,6 +233,7 @@
               <option value="FEE">fee</option>
               <option value="DATE">date</option>
               <option value="DESCRIPTION">description</option>
+              <option value="CALL">CALL</option>
             </select>
             <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
             <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
@@ -245,7 +250,7 @@
     <br>
     <button onclick="addNanaContent()" type="button">Add Nana Content</button>
     <br><br>
-    <input type="submit" value="Submit"/>
+
   </form>
 </div>
 </body>
