@@ -35,7 +35,6 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -267,7 +266,7 @@ public class NanaService {
             }
 
             //해시태그 생성
-            hashtagService.registerHashtag(splitHashtagContentFromString(nanaContentDto.getHashtag()),
+            hashtagService.registerHashtag(nanaContentDto.getHashtag(),
                 language, category, nanaContent.getId());
           }
       );
@@ -351,13 +350,5 @@ public class NanaService {
       );
     }
     return nanaAdditionalInfoSet;
-  }
-
-  private List<String> splitHashtagContentFromString(String content) {
-    List<String> strings = new ArrayList<>(Arrays.asList(content.split("\\s+")));
-    for (String string : strings) {
-      System.out.println("string = " + string);
-    }
-    return strings;
   }
 }
