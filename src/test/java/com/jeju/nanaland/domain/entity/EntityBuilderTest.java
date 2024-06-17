@@ -59,9 +59,12 @@ class EntityBuilderTest {
 
   @Test
   void NanaBuilderTest() {
+    // TODO: nanaTitleImageFile 삭제 후 수정 필요
     Nana nana1 = Nana.builder()
         .version("ver.1")
+        .firstImageFile(imageFile)
         .nanaTitleImageFile(imageFile)
+        .priority(0L)
         .build();
 
     em.persist(nana1);
@@ -99,9 +102,10 @@ class EntityBuilderTest {
   @Test
   void marketBuilderTest() {
     Market market1 = Market.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .contact("01023244124")
         .homepage("homepageUrl")
+        .priority(0L)
         .build();
     em.persist(market1);
 
@@ -120,9 +124,10 @@ class EntityBuilderTest {
   @Test
   void festivalBuilderTest() {
     Festival festival1 = Festival.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .contact("contact")
         .homepage("homepage")
+        .priority(0L)
         .build();
     em.persist(festival1);
 
@@ -141,8 +146,9 @@ class EntityBuilderTest {
   @Test
   void natureBuilderTest() {
     Nature nature1 = Nature.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .contact("contact")
+        .priority(0L)
         .build();
     em.persist(nature1);
 
@@ -163,10 +169,11 @@ class EntityBuilderTest {
   @Test
   void experienceBuilderTest() {
     Experience experience1 = Experience.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .contact("contact")
         .type("type")
         .ratingAvg(4.24f)
+        .priority(0L)
         .build();
     em.persist(experience1);
 

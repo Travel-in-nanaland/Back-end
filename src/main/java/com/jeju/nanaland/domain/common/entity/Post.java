@@ -8,6 +8,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,11 @@ public abstract class Post extends BaseEntity {
   @JoinColumn(name = "image_file_id", nullable = false)
   private ImageFile firstImageFile;
 
-  public Post(ImageFile firstImageFile) {
+  @NotNull
+  private Long priority;
+
+  public Post(ImageFile firstImageFile, Long priority) {
     this.firstImageFile = firstImageFile;
+    this.priority = priority;
   }
 }

@@ -90,31 +90,41 @@ class NanaRepositoryImplTest {
 
     nana1 = Nana.builder()
         .version("ver1")
+        .firstImageFile(imageFile1)
         .nanaTitleImageFile(imageFile1)
+        .priority(0L)
         .build();
     nanaRepository.save(nana1);
 
     nana2 = Nana.builder()
         .version("ver2")
+        .firstImageFile(imageFile2)
         .nanaTitleImageFile(imageFile2)
+        .priority(0L)
         .build();
     nanaRepository.save(nana2);
 
     nana3 = Nana.builder()
         .version("ver3")
+        .firstImageFile(imageFile3)
         .nanaTitleImageFile(imageFile3)
+        .priority(0L)
         .build();
     nanaRepository.save(nana3);
 
     nana4 = Nana.builder()
         .version("ver4")
+        .firstImageFile(imageFile4)
         .nanaTitleImageFile(imageFile4)
+        .priority(0L)
         .build();
     nanaRepository.save(nana4);
 
     nana5 = Nana.builder()
         .version("ver5")
+        .firstImageFile(imageFile5)
         .nanaTitleImageFile(imageFile5)
+        .priority(0L)
         .build();
     nanaRepository.save(nana5);
 

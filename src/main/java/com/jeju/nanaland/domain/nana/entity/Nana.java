@@ -34,9 +34,9 @@ public class Nana extends Post {
   private List<NanaContentImage> nanaContentImageList;
 
   @Builder
-  public Nana(ImageFile firstImageFile, String version, ImageFile nanaTitleImageFile,
+  public Nana(ImageFile firstImageFile, Long priority, String version, ImageFile nanaTitleImageFile,
       List<NanaContentImage> nanaContentImageList) {
-    super(firstImageFile);
+    super(firstImageFile, priority);
     this.version = version;
     this.nanaTitleImageFile = nanaTitleImageFile;
     this.nanaContentImageList = nanaContentImageList;

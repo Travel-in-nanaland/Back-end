@@ -178,7 +178,8 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Nature nature = Nature.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(nature);
     NatureTrans natureTrans = NatureTrans.builder()
@@ -217,7 +218,8 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Market market = Market.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(market);
     MarketTrans marketTrans = MarketTrans.builder()
@@ -256,7 +258,8 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Festival festival = Festival.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(festival);
     FestivalTrans festivalTrans = FestivalTrans.builder()
@@ -295,7 +298,8 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Experience experience = Experience.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(experience);
     ExperienceTrans experienceTrans = ExperienceTrans.builder()
@@ -335,7 +339,9 @@ public class RecommendRepositoryTest {
 
     Nana nana = Nana.builder()
         .version("1")
+        .firstImageFile(imageFile)
         .nanaTitleImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(nana);
     NanaTitle nanaTitle = NanaTitle.builder()

@@ -84,7 +84,8 @@ class ExperienceServiceTest {
         .build();
 
     experience = Experience.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(experience);
 

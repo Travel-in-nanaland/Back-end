@@ -168,47 +168,52 @@ class FestivalRepositoryTest {
     em.persist(language);
 
     festival1 = Festival.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
         .onGoing(true)
         .startDate(LocalDate.of(2024, 3, 10))
         .endDate(LocalDate.of(2028, 3, 1))
         .season("봄,여름,가을,겨울")
+        .priority(0L)
         .build();
     em.persist(festival1);
 
     festival2 = Festival.builder()
-        .imageFile(imageFile2)
+        .firstImageFile(imageFile2)
         .onGoing(true)
         .startDate(LocalDate.of(2024, 3, 10))
         .endDate(LocalDate.of(2028, 3, 2))
         .season("가을")
+        .priority(0L)
         .build();
     em.persist(festival2);
 
     festival3 = Festival.builder()
-        .imageFile(imageFile3)
+        .firstImageFile(imageFile3)
         .onGoing(true)
         .startDate(LocalDate.of(2024, 3, 10))
         .endDate(LocalDate.of(2026, 3, 3))
         .season("겨울")
+        .priority(0L)
         .build();
     em.persist(festival3);
 
     festival4 = Festival.builder()
-        .imageFile(imageFile4)
+        .firstImageFile(imageFile4)
         .onGoing(false)
         .startDate(LocalDate.of(2022, 3, 10))
         .endDate(LocalDate.of(2023, 3, 4))
         .season("봄,여름")
+        .priority(0L)
         .build();
     em.persist(festival4);
 
     festival5 = Festival.builder()
-        .imageFile(imageFile5)
+        .firstImageFile(imageFile5)
         .onGoing(false)
         .startDate(LocalDate.of(2000, 4, 10))
         .endDate(LocalDate.of(2002, 3, 5))
         .season("봄,겨울")
+        .priority(0L)
         .build();
     em.persist(festival5);
 

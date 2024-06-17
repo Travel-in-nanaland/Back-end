@@ -98,7 +98,9 @@ class ReportServiceTest {
      */
     Nana nana = Nana.builder()
         .version("1")
+        .firstImageFile(imageFile1)
         .nanaTitleImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(nana);
 

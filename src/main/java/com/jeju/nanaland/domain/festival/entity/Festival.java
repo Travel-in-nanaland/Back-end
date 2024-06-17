@@ -52,9 +52,9 @@ public class Festival extends Post {
   private boolean onGoing;
 
   @Builder
-  public Festival(ImageFile imageFile, String contentId, String contact, LocalDate startDate,
-      LocalDate endDate, String season, String homepage, boolean onGoing) {
-    super(imageFile);
+  public Festival(ImageFile firstImageFile, Long priority, String contentId, String contact,
+      LocalDate startDate, LocalDate endDate, String season, String homepage, boolean onGoing) {
+    super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
     this.startDate = startDate;

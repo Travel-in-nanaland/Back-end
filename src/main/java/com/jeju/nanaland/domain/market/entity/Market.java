@@ -31,8 +31,9 @@ public class Market extends Post {
   private List<MarketTrans> marketTrans;
 
   @Builder
-  public Market(ImageFile imageFile, String contentId, String contact, String homepage) {
-    super(imageFile);
+  public Market(ImageFile firstImageFile, Long priority, String contentId, String contact,
+      String homepage) {
+    super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
     this.homepage = homepage;

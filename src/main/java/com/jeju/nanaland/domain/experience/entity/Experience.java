@@ -31,9 +31,9 @@ public class Experience extends Post {
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
-  public Experience(ImageFile imageFile, String contentId, String contact, String type,
-      Float ratingAvg) {
-    super(imageFile);
+  public Experience(ImageFile firstImageFile, Long priority, String contentId, String contact,
+      String type, Float ratingAvg) {
+    super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
     this.type = type;

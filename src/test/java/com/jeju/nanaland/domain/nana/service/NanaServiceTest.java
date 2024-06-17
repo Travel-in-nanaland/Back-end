@@ -186,6 +186,7 @@ public class NanaServiceTest {
     return Nana.builder()
         .version("ver" + idx)
         .nanaTitleImageFile(imageFile)
+        .priority(0L)
         .build();
   }
 

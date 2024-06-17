@@ -85,7 +85,8 @@ class MarketServiceTest {
         .build();
 
     market = Market.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(market);
 

@@ -110,14 +110,17 @@ class FavoriteServiceTest {
      * festival, nana 생성
      */
     Festival festival = Festival.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(festival);
 
+    // post 엔티티에서 firstImageFile가 OneToOne으로 묶여있어서 위의 imageFile1과 다른 이미지를 넣어야 합니다.
     Nana nana = Nana.builder()
-        .version("1")
-        .firstImageFile(imageFile1)
+        .version("3")
+        .firstImageFile(imageFile2)
         .nanaTitleImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(nana);
 
@@ -162,8 +165,9 @@ class FavoriteServiceTest {
      * festival, nana 생성
      */
     Festival festival1 = Festival.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
         .season("봄")
+        .priority(0L)
         .build();
     em.persist(festival1);
     FestivalTrans festivalTrans1 = FestivalTrans.builder()
@@ -173,8 +177,9 @@ class FavoriteServiceTest {
         .build();
     em.persist(festivalTrans1);
     Festival festival2 = Festival.builder()
-        .imageFile(imageFile2)
+        .firstImageFile(imageFile2)
         .season("여름")
+        .priority(0L)
         .build();
     em.persist(festival2);
     FestivalTrans festivalTrans2 = FestivalTrans.builder()
@@ -186,8 +191,9 @@ class FavoriteServiceTest {
 
     Nana nana = Nana.builder()
         .version("1")
+        .firstImageFile(imageFile3)
         .nanaTitleImageFile(imageFile1)
-        .firstImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(nana);
     NanaTitle nanaTitle = NanaTitle.builder()

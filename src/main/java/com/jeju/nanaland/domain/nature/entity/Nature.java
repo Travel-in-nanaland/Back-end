@@ -27,8 +27,8 @@ public class Nature extends Post {
   private List<NatureTrans> natureTrans;
 
   @Builder
-  public Nature(ImageFile imageFile, String contentId, String contact) {
-    super(imageFile);
+  public Nature(ImageFile firstImageFile, Long priority, String contentId, String contact) {
+    super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
     this.natureTrans = new ArrayList<>();

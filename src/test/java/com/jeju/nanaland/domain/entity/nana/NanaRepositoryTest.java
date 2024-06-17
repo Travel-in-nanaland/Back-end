@@ -73,19 +73,25 @@ public class NanaRepositoryTest {
   void nanaQueryDslTest() {
     Nana nana1 = Nana.builder()
         .version("ver1")
+        .firstImageFile(imageFile)
         .nanaTitleImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(nana1);
 
     Nana nana2 = Nana.builder()
         .version("ver1")
+        .firstImageFile(imageFile2)
         .nanaTitleImageFile(imageFile2)
+        .priority(0L)
         .build();
     em.persist(nana2);
 
     Nana nana3 = Nana.builder()
         .version("ver1")
+        .firstImageFile(imageFile3)
         .nanaTitleImageFile(imageFile3)
+        .priority(0L)
         .build();
     em.persist(nana3);
 

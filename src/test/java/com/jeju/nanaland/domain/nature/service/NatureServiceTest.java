@@ -85,7 +85,8 @@ class NatureServiceTest {
         .build();
 
     nature = Nature.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
+        .priority(0L)
         .build();
     em.persist(nature);
 
