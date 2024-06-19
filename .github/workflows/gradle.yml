@@ -25,7 +25,7 @@ jobs:
     steps:
       # 1) 기본 체크아웃
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 2) JDK 17 셋팅
       - name: Set up JDK 17
@@ -40,7 +40,6 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
           find src  
-
       # 2.5) secret설정한 test yml 등록
       - name: Set Test YML
         run: |
@@ -57,7 +56,6 @@ jobs:
           #     mysql user: 'root'
           #     mysql password: ${{ secrets.DATABASE_KEY }}
           #     # mysql root password: ${{ secrets.RootPassword }} # Required if "mysql user" is empty, default is empty. The root superuser password
-
       # 3) gradlew 권한 설정
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -76,26 +74,25 @@ jobs:
       
       # AWS 인증
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       # AWS S3에 업로드
-      - name: Upload to AWS S3
-        run: |
-          aws deploy push \
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-            --ignore-hidden-files \
-            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-            --source .
-
-      # AWS EC2에 Deploy
-      - name: Deploy to AWS EC2 from S3
-        run: |
-          aws deploy create-deployment \
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
+      # - name: Upload to AWS S3
+      #   run: |
+      #     aws deploy push \
+      #       --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+      #       --ignore-hidden-files \
+      #       --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+      #       --source .
+      # # AWS EC2에 Deploy
+      # - name: Deploy to AWS EC2 from S3
+      #   run: |
+      #     aws deploy create-deployment \
+      #       --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+      #       --deployment-config-name CodeDeployDefault.AllAtOnce \
+      #       --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+      #       --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
