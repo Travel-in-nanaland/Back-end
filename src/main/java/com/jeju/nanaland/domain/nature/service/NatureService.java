@@ -40,12 +40,12 @@ public class NatureService {
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(
         memberInfoDto.getMember(), NATURE);
 
+    // TODO: 이미지 추가 필요
     List<NatureThumbnail> data = natureCompositeDtoPage.getContent()
         .stream().map(natureCompositeDto ->
             NatureThumbnail.builder()
                 .id(natureCompositeDto.getId())
                 .title(natureCompositeDto.getTitle())
-                .thumbnailUrl(natureCompositeDto.getThumbnailUrl())
                 .addressTag(natureCompositeDto.getAddressTag())
                 .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
                 .build()).toList();
@@ -71,9 +71,9 @@ public class NatureService {
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
         id);
 
+    // TODO: 이미지 추가 필요
     return NatureDetailDto.builder()
         .id(natureCompositeDto.getId())
-        .originUrl(natureCompositeDto.getOriginUrl())
         .addressTag(natureCompositeDto.getAddressTag())
         .title(natureCompositeDto.getTitle())
         .content(natureCompositeDto.getContent())

@@ -7,16 +7,14 @@ import static org.mockito.Mockito.doReturn;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnailDto;
-import com.jeju.nanaland.domain.market.entity.Market;
-import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -78,10 +76,8 @@ class MarketServiceTest {
     // given
     Locale locale = Locale.KOREAN;
     MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
-    MarketDetailDto marketDetailDto = MarketDetailDto.builder()
-        .firstImage(
-            new ImageFileDto("first origin url", "first thumbnail url"))
-        .images(new ArrayList<>()) // 빈 리스트
+    MarketCompositeDto marketDetailDto = MarketCompositeDto.builder()
+        .firstImage(new ImageFileDto("first origin url", "first thumbnail url"))
         .build();
     List<ImageFileDto> additionalImages = Arrays.asList(
         new ImageFileDto("origin url 1", "thumbnail url 1"),
@@ -100,31 +96,6 @@ class MarketServiceTest {
     // then
     assertThat(result.getFirstImage().getOriginUrl()).isEqualTo("first origin url");
     assertThat(result.getImages().size()).isEqualTo(2);
-  }
-
-  private Market initMarketDetail() {
-    ImageFile firstImage = ImageFile.builder()
-        .originUrl("first origin url")
-        .thumbnailUrl("first thumbnail url")
-        .build();
-    ImageFile additionalImage1 = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    ImageFile additionalImage2 = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-
-    Market market = Market.builder()
-        .firstImageFile(firstImage)
-        .priority(0L)
-        .build();
-    MarketTrans marketTrans = MarketTrans.builder()
-        .market(market)
-        .build();
-
-    return market;
   }
 
   // totalElement: 10, MarketThumbnail 데이터가 2개인 Page 생성

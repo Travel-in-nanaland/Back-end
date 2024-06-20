@@ -112,9 +112,9 @@ public class FestivalService {
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL,
         id);
 
+    // TODO: 이미지 추가 필요
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())
-        .originUrl(compositeDtoById.getOriginUrl())
         .addressTag(compositeDtoById.getAddressTag())
         .title(compositeDtoById.getTitle())
         .content(compositeDtoById.getContent())
@@ -164,11 +164,11 @@ public class FestivalService {
       // LocalDate 타입의 startDate, endDate를 24. 04. 01 ~ 24. 05. 13형태로 formatting
       String period = formatLocalDateToStringWithoutDayOfWeek(memberInfoDto, dto.getStartDate(),
           dto.getEndDate());
+      // TODO: 이미지 추가 필요
       thumbnails.add(
           FestivalThumbnail.builder()
               .id(dto.getId())
               .title(dto.getTitle())
-              .thumbnailUrl(dto.getThumbnailUrl())
               .period(period)
               .addressTag(dto.getAddressTag())
               .isFavorite(favoriteIds.contains(dto.getId()))

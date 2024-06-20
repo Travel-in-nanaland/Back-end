@@ -94,11 +94,11 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
+      // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(NATURE.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -127,11 +127,11 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
+      // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(FESTIVAL.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -160,11 +160,11 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
+      // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(EXPERIENCE.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -193,11 +193,11 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (MarketCompositeDto dto : resultPage) {
+      // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(MARKET.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -378,10 +378,10 @@ public class SearchService {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
+    // TODO: 이미지 추가 필요
     return SearchVolumeDto.builder()
         .id(compositeDto.getId())
         .title(compositeDto.getTitle())
-        .thumbnailUrl(compositeDto.getThumbnailUrl())
         .category(categoryContent.name())
         .isFavorite(
             favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
