@@ -73,7 +73,7 @@ public class MarketResponse {
 
     @NotBlank
     @Schema(description = "전통시장 게시물 썸네일 사진")
-    private ImageFileDto image;
+    private ImageFileDto firstImage;
 
     @Schema(description = "전통시장 게시물 제목")
     private String title;
@@ -90,7 +90,7 @@ public class MarketResponse {
     public MarketThumbnail(Long id, String originUrl, String thumbnailUrl, String title,
         String addressTag) {
       this.id = id;
-      this.image = new ImageFileDto(originUrl, thumbnailUrl);
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.title = title;
       this.addressTag = addressTag;
     }
