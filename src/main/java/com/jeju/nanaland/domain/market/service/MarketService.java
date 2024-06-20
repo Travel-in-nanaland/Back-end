@@ -39,7 +39,7 @@ public class MarketService {
     Page<MarketThumbnail> marketThumbnailPage = marketRepository.findMarketThumbnails(locale,
         addressFilterList, pageable);
 
-    //
+    // TODO: postId가 중복되지 않기 때문에 카테고리 정보와 함께 가져올 필요가 없음. 나중에 리팩토링 필요
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(
         memberInfoDto.getMember(), MARKET);
 
