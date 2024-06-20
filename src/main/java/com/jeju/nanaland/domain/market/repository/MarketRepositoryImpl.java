@@ -68,7 +68,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .innerJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList)))
-        .orderBy(market.createdAt.desc())
+        .orderBy(market.priority.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

@@ -21,7 +21,7 @@ public class ImageFileRepositoryImpl implements ImageFileRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl))
         .from(imageFile)
-        .innerJoin(postImageFile.imageFile, imageFile)
+        .innerJoin(postImageFile).on(postImageFile.imageFile.eq(imageFile))
         .where(postImageFile.post.id.eq(postId))
         .orderBy(imageFile.id.asc())
         .fetch();
