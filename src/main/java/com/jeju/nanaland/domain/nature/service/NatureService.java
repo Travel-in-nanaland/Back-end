@@ -37,7 +37,7 @@ public class NatureService {
     Page<NatureCompositeDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
         memberInfoDto.getLanguage().getLocale(), addressFilterList, keyword, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(
         memberInfoDto.getMember(), NATURE);
 
     List<NatureThumbnail> data = natureCompositeDtoPage.getContent()

@@ -1,8 +1,11 @@
 package com.jeju.nanaland.domain.market.dto;
 
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -61,18 +64,19 @@ public class MarketResponse {
 
   @Data
   @Builder
+  @AllArgsConstructor
   @Schema(description = "전통시장 게시물 정보")
   public static class MarketThumbnail {
 
     @Schema(description = "전통시장 게시물 id")
     private Long id;
 
+    @NotBlank
+    @Schema(description = "전통시장 게시물 썸네일 사진")
+    private ImageFile image;
+
     @Schema(description = "전통시장 게시물 제목")
     private String title;
-
-    @NotBlank
-    @Schema(description = "전통시장 게시물 썸네일 url")
-    private String thumbnailUrl;
 
     @NotBlank
     @Schema(description = "위치 정보 태그")
@@ -81,5 +85,14 @@ public class MarketResponse {
     @NotBlank
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
+
+    @QueryProjection
+    public MarketThumbnail(Long id, String originUrl, String thumbnailUrl, String title,
+        String addressTag) {
+      this.id = id;
+      this.image = new ImageFile(originUrl, thumbnailUrl);
+      this.title = title;
+      this.addressTag = addressTag;
+    }
   }
 }

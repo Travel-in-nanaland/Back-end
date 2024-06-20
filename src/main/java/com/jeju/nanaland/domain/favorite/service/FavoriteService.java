@@ -257,7 +257,8 @@ public class FavoriteService {
     }
   }
 
-  public List<Long> getMemberFavoritePostIds(Member member, CategoryContent categoryContent) {
+  public List<Long> getFavoritePostIdsWithMemberAndCategory(Member member,
+      CategoryContent categoryContent) {
 
     Category category = getCategoryFromCategoryContent(categoryContent);
     List<Favorite> favorites = favoriteRepository.findAllByMemberAndCategory(member, category);

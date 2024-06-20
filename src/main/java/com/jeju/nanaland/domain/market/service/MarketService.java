@@ -31,30 +31,26 @@ public class MarketService {
   private final SearchService searchService;
 
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
-      List<String> addressFilterList,
-      int page, int size) {
+      List<String> addressFilterList, int page, int size) {
 
     // default : page = 0, size = 12
     Pageable pageable = PageRequest.of(page, size);
     Locale locale = memberInfoDto.getLanguage().getLocale();
-    Page<MarketCompositeDto> marketCompositeDtoPage = marketRepository.findMarketThumbnails(locale,
+    Page<MarketThumbnail> marketThumbnailPage = marketRepository.findMarketThumbnails(locale,
         addressFilterList, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(
+    //
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(
         memberInfoDto.getMember(), MARKET);
 
-    List<MarketThumbnail> data = marketCompositeDtoPage.getContent()
-        .stream().map(marketCompositeDto ->
-            MarketThumbnail.builder()
-                .id(marketCompositeDto.getId())
-                .title(marketCompositeDto.getTitle())
-                .thumbnailUrl(marketCompositeDto.getThumbnailUrl())
-                .addressTag(marketCompositeDto.getAddressTag())
-                .isFavorite(favoriteIds.contains(marketCompositeDto.getId()))
-                .build()).toList();
+    List<MarketThumbnail> data = marketThumbnailPage.getContent();
+    // favorite에 해당 id가 존재하면 isFavorite 필드 true, 아니라면 false
+    for (MarketThumbnail marketThumbnail : data) {
+      marketThumbnail.setFavorite(favoriteIds.contains(marketThumbnail.getId()));
+    }
 
     return MarketThumbnailDto.builder()
-        .totalElements(marketCompositeDtoPage.getTotalElements())
+        .totalElements(marketThumbnailPage.getTotalElements())
         .data(data)
         .build();
   }

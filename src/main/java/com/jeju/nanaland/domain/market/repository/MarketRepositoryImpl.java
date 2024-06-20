@@ -9,7 +9,9 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.QMarketResponse_MarketThumbnail;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -51,28 +53,19 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public Page<MarketCompositeDto> findMarketThumbnails(Locale locale,
-      List<String> addressFilterList,
+  public Page<MarketThumbnail> findMarketThumbnails(Locale locale, List<String> addressFilterList,
       Pageable pageable) {
-    List<MarketCompositeDto> resultDto = queryFactory
-        .select(new QMarketCompositeDto(
+    List<MarketThumbnail> resultDto = queryFactory
+        .select(new QMarketResponse_MarketThumbnail(
             market.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            market.contact,
-            market.homepage,
-            language.locale,
             marketTrans.title,
-            marketTrans.content,
-            marketTrans.address,
-            marketTrans.addressTag,
-            marketTrans.time,
-            marketTrans.intro,
-            marketTrans.amenity
+            marketTrans.addressTag
         ))
         .from(market)
-        .leftJoin(market.firstImageFile, imageFile)
-        .leftJoin(market.marketTrans, marketTrans)
+        .innerJoin(market.firstImageFile, imageFile)
+        .innerJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList)))
         .orderBy(market.createdAt.desc())
@@ -83,7 +76,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(market.count())
         .from(market)
-        .leftJoin(market.marketTrans, marketTrans)
+        .innerJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList)));
 

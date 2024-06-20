@@ -226,7 +226,8 @@ public class FestivalService {
   }
 
   private List<Long> getMemberFavoriteFestivalIds(MemberInfoDto memberInfoDto) {
-    return favoriteService.getMemberFavoritePostIds(memberInfoDto.getMember(), FESTIVAL);
+    return favoriteService.getFavoritePostIdsWithMemberAndCategory(memberInfoDto.getMember(),
+        FESTIVAL);
   }
 
   private DayOfWeek getIntDayOfWeek(LocalDate date) {
