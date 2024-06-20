@@ -2,14 +2,21 @@ package com.jeju.nanaland.domain.market.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnailDto;
+import com.jeju.nanaland.domain.market.entity.Market;
+import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -39,6 +46,8 @@ class MarketServiceTest {
   MarketRepository marketRepository;
   @Mock
   FavoriteService favoriteService;
+  @Mock
+  ImageFileRepository imageFileRepository;
 
   @Test
   @DisplayName("전통시장 썸네일 페이징")
@@ -63,8 +72,63 @@ class MarketServiceTest {
     assertThat(result.getData().get(0).getTitle()).isEqualTo("market title 1");
   }
 
+  @Test
+  @DisplayName("전통시장 상세조회")
+  void marketDetailTest() {
+    // given
+    Locale locale = Locale.KOREAN;
+    MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
+    MarketDetailDto marketDetailDto = MarketDetailDto.builder()
+        .firstImage(
+            new ImageFileDto("first origin url", "first thumbnail url"))
+        .images(new ArrayList<>()) // 빈 리스트
+        .build();
+    List<ImageFileDto> additionalImages = Arrays.asList(
+        new ImageFileDto("origin url 1", "thumbnail url 1"),
+        new ImageFileDto("origin url 2", "thumbnail url 2"));
+
+    doReturn(marketDetailDto).when(marketRepository)
+        .findCompositeDtoById(any(Long.class), eq(locale));
+    doReturn(false).when(favoriteService)
+        .isPostInFavorite(any(Member.class), any(CategoryContent.class), any(Long.class));
+    doReturn(additionalImages).when(imageFileRepository)
+        .findPostImageFiles(any(Long.class));
+
+    // when
+    MarketDetailDto result = marketService.getMarketDetail(memberInfoDto, 1L, false);
+
+    // then
+    assertThat(result.getFirstImage().getOriginUrl()).isEqualTo("first origin url");
+    assertThat(result.getImages().size()).isEqualTo(2);
+  }
+
+  private Market initMarketDetail() {
+    ImageFile firstImage = ImageFile.builder()
+        .originUrl("first origin url")
+        .thumbnailUrl("first thumbnail url")
+        .build();
+    ImageFile additionalImage1 = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    ImageFile additionalImage2 = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+
+    Market market = Market.builder()
+        .firstImageFile(firstImage)
+        .priority(0L)
+        .build();
+    MarketTrans marketTrans = MarketTrans.builder()
+        .market(market)
+        .build();
+
+    return market;
+  }
+
   // totalElement: 10, MarketThumbnail 데이터가 2개인 Page 생성
-  Page<MarketThumbnail> getMarketThumbnailList() {
+  private Page<MarketThumbnail> getMarketThumbnailList() {
     List<MarketThumbnail> marketThumbnailList = new ArrayList<>();
     for (int i = 1; i < 3; i++) {
       marketThumbnailList.add(
@@ -77,7 +141,7 @@ class MarketServiceTest {
     return new PageImpl<>(marketThumbnailList, PageRequest.of(0, 2), 10);
   }
 
-  MemberInfoDto createMemberInfoDto(Locale locale, TravelType travelType) {
+  private MemberInfoDto createMemberInfoDto(Locale locale, TravelType travelType) {
     Language language = Language.builder()
         .locale(locale)
         .build();
