@@ -23,6 +23,7 @@ public class ImageFileRepositoryImpl implements ImageFileRepositoryCustom {
         .from(imageFile)
         .innerJoin(postImageFile.imageFile, imageFile)
         .where(postImageFile.post.id.eq(postId))
+        .orderBy(imageFile.id.asc())
         .fetch();
   }
 }
