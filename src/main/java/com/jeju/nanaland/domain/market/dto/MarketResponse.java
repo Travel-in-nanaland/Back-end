@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.market.dto;
 
-import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -73,7 +73,7 @@ public class MarketResponse {
 
     @NotBlank
     @Schema(description = "전통시장 게시물 썸네일 사진")
-    private ImageFile image;
+    private ImageFileDto image;
 
     @Schema(description = "전통시장 게시물 제목")
     private String title;
@@ -90,7 +90,7 @@ public class MarketResponse {
     public MarketThumbnail(Long id, String originUrl, String thumbnailUrl, String title,
         String addressTag) {
       this.id = id;
-      this.image = new ImageFile(originUrl, thumbnailUrl);
+      this.image = new ImageFileDto(originUrl, thumbnailUrl);
       this.title = title;
       this.addressTag = addressTag;
     }
