@@ -34,9 +34,6 @@ public class MarketResponse {
     @Schema(description = "제목")
     private String title;
 
-    @Schema(description = "원본 이미지 url")
-    private String originUrl;
-
     @Schema(description = "본문")
     private String content;
 
@@ -60,6 +57,12 @@ public class MarketResponse {
 
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
+
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
+
+    @Schema(description = "추가 이미지")
+    private List<ImageFileDto> images;
   }
 
   @Data
@@ -72,7 +75,7 @@ public class MarketResponse {
     private Long id;
 
     @NotBlank
-    @Schema(description = "전통시장 게시물 썸네일 사진")
+    @Schema(description = "게시물 썸네일 이미지")
     private ImageFileDto firstImage;
 
     @Schema(description = "전통시장 게시물 제목")

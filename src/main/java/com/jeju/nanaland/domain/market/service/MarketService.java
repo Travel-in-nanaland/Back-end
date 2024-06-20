@@ -2,7 +2,9 @@ package com.jeju.nanaland.domain.market.service;
 
 import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
@@ -29,6 +31,7 @@ public class MarketService {
   private final MarketRepository marketRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
+  private final ImageFileRepository imageFileRepository;
 
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList, int page, int size) {
@@ -65,17 +68,21 @@ public class MarketService {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
 
+    // 검색을 통해 요청되었다면 count
     if (isSearch) {
       searchService.updateSearchVolumeV1(MARKET, id);
     }
-
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET,
-        id);
+    // TODO: category 없애는 리팩토링 필요
+    // 좋아요 여부 확인
+    boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
+    // 추가 이미지 조회
+    List<ImageFileDto> additionalImages = imageFileRepository.findPostImageFiles(id);
 
     return MarketResponse.MarketDetailDto.builder()
         .id(marketCompositeDto.getId())
+        .firstImage(marketCompositeDto.getFirstImage())
+        .images(additionalImages)
         .title(marketCompositeDto.getTitle())
-        .originUrl(marketCompositeDto.getOriginUrl())
         .content(marketCompositeDto.getContent())
         .address(marketCompositeDto.getAddress())
         .addressTag(marketCompositeDto.getAddressTag())
@@ -83,7 +90,7 @@ public class MarketService {
         .homepage(marketCompositeDto.getHomepage())
         .time(marketCompositeDto.getTime())
         .amenity(marketCompositeDto.getAmenity())
-        .isFavorite(isPostInFavorite)
+        .isFavorite(isFavorite)
         .build();
   }
 }
