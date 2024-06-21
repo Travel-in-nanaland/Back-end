@@ -36,9 +36,9 @@ import org.springframework.data.domain.Pageable;
 @Import(TestConfig.class)
 public class FavoriteRepositoryTest {
 
+  final int size = 5;
   @Autowired
   TestEntityManager em;
-
   @Autowired
   FavoriteRepository favoriteRepository;
 
@@ -51,16 +51,41 @@ public class FavoriteRepositoryTest {
     Locale locale = Locale.KOREAN;
     Category category = initCategory(CategoryContent.NATURE);
     Pageable pageable = PageRequest.of(0, 12);
-    List<Nature> natureList = getNatureList(korean);
+
+    // nature 포스트 size개 생성
+    List<Nature> natureList = getNatureList(korean, size);
+    // favorite에 등록
     initFavorites(natureList, member, category);
 
     // when
     Page<ThumbnailDto> result = favoriteRepository.findNatureThumbnails(member, locale, pageable);
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(10);
+    assertThat(result.getTotalElements()).isEqualTo(size);
     assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("nature title 10");
+        .extracting("title").isEqualTo("nature title " + size);
+  }
+
+  @Test
+  @DisplayName("postId로 7대자연 썸네일 조회")
+  void findNatureThumbnailByPostIdTest() {
+    // given
+    Language korean = initKoreanLanguage();
+    Member member = initMember(korean);
+    Locale locale = Locale.KOREAN;
+    Category category = initCategory(CategoryContent.NATURE);
+
+    // nature 포스트 1개 생성
+    List<Nature> natureList = getNatureList(korean, 1);
+    // favorite에 등록
+    initFavorites(natureList, member, category);
+    Long postId = natureList.get(0).getId();
+
+    // when
+    ThumbnailDto result = favoriteRepository.findNatureThumbnailByPostId(member, postId, locale);
+
+    // then
+    assertThat(result).extracting("title").isEqualTo("nature title 1");
   }
 
   @Test
@@ -72,16 +97,41 @@ public class FavoriteRepositoryTest {
     Locale locale = Locale.KOREAN;
     Category category = initCategory(CategoryContent.FESTIVAL);
     Pageable pageable = PageRequest.of(0, 12);
-    List<Festival> festivalList = getFestivalList(korean);
+
+    // festival 포스트 size개 생성
+    List<Festival> festivalList = getFestivalList(korean, size);
+    // favorite에 등록
     initFavorites(festivalList, member, category);
 
     // when
     Page<ThumbnailDto> result = favoriteRepository.findFestivalThumbnails(member, locale, pageable);
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(10);
+    assertThat(result.getTotalElements()).isEqualTo(size);
     assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("festival title 10");
+        .extracting("title").isEqualTo("festival title " + size);
+  }
+
+  @Test
+  @DisplayName("postId로 축제 썸네일 조회")
+  void findFestivalThumbnailByPostIdTest() {
+    // given
+    Language korean = initKoreanLanguage();
+    Member member = initMember(korean);
+    Locale locale = Locale.KOREAN;
+    Category category = initCategory(CategoryContent.FESTIVAL);
+
+    // festival 포스트 1개 생성
+    List<Festival> festivalList = getFestivalList(korean, 1);
+    // favorite에 등록
+    initFavorites(festivalList, member, category);
+    Long postId = festivalList.get(0).getId();
+
+    // when
+    ThumbnailDto result = favoriteRepository.findFestivalThumbnailByPostId(member, postId, locale);
+
+    // then
+    assertThat(result).extracting("title").isEqualTo("festival title 1");
   }
 
   @Test
@@ -93,16 +143,41 @@ public class FavoriteRepositoryTest {
     Locale locale = Locale.KOREAN;
     Category category = initCategory(CategoryContent.MARKET);
     Pageable pageable = PageRequest.of(0, 12);
-    List<Market> marketList = getMarketList(korean);
+
+    // market 포스트 size개 생성
+    List<Market> marketList = getMarketList(korean, size);
+    // favorite에 등록
     initFavorites(marketList, member, category);
 
     // when
     Page<ThumbnailDto> result = favoriteRepository.findMarketThumbnails(member, locale, pageable);
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(10);
+    assertThat(result.getTotalElements()).isEqualTo(size);
     assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("market title 10");
+        .extracting("title").isEqualTo("market title " + size);
+  }
+
+  @Test
+  @DisplayName("postId로 전통시장 썸네일 조회")
+  void findMarketThumbnailByPostIdTest() {
+    // given
+    Language korean = initKoreanLanguage();
+    Member member = initMember(korean);
+    Locale locale = Locale.KOREAN;
+    Category category = initCategory(CategoryContent.MARKET);
+
+    // market 포스트 1개 생성
+    List<Market> marketList = getMarketList(korean, 1);
+    // favorite에 등록
+    initFavorites(marketList, member, category);
+    Long postId = marketList.get(0).getId();
+
+    // when
+    ThumbnailDto result = favoriteRepository.findMarketThumbnailByPostId(member, postId, locale);
+
+    // then
+    assertThat(result).extracting("title").isEqualTo("market title 1");
   }
 
   // TODO: 나나스픽 찜리스트 테스트
@@ -160,10 +235,10 @@ public class FavoriteRepositoryTest {
     }
   }
 
-  List<Nature> getNatureList(Language language) {
+  List<Nature> getNatureList(Language language, int size) {
     List<Nature> natureList = new ArrayList<>();
 
-    for (int i = 1; i < 11; i++) {
+    for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
           .originUrl("origin url " + i)
           .thumbnailUrl("thumbnail url " + i)
@@ -189,10 +264,10 @@ public class FavoriteRepositoryTest {
     return natureList;
   }
 
-  List<Festival> getFestivalList(Language language) {
+  List<Festival> getFestivalList(Language language, int size) {
     List<Festival> festivalList = new ArrayList<>();
 
-    for (int i = 1; i < 11; i++) {
+    for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
           .originUrl("origin url " + i)
           .thumbnailUrl("thumbnail url " + i)
@@ -218,10 +293,10 @@ public class FavoriteRepositoryTest {
     return festivalList;
   }
 
-  List<Market> getMarketList(Language language) {
+  List<Market> getMarketList(Language language, int size) {
     List<Market> marketList = new ArrayList<>();
 
-    for (int i = 1; i < 11; i++) {
+    for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
           .originUrl("origin url " + i)
           .thumbnailUrl("thumbnail url " + i)
