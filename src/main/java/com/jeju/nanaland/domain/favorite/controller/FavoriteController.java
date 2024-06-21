@@ -1,9 +1,15 @@
 package com.jeju.nanaland.domain.favorite.controller;
 
+import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
+import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteThumbnailDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -41,13 +47,12 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/all/list")
-  public BaseResponse<FavoriteResponse.AllCategoryDto> getAllFavoriteList(
+  public BaseResponse<FavoriteThumbnailDto> getAllFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.AllCategoryDto resultDto =
-        favoriteService.getAllFavoriteList(memberInfoDto, page, size);
+    FavoriteThumbnailDto resultDto = favoriteService.getAllFavoriteList(memberInfoDto, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
@@ -58,13 +63,13 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/experience/list")
-  public BaseResponse<FavoriteResponse.ExperienceDto> getExperienceFavoriteList(
+  public BaseResponse<FavoriteThumbnailDto> getExperienceFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.ExperienceDto resultDto =
-        favoriteService.getExperienceFavoriteList(memberInfoDto, page, size);
+    FavoriteThumbnailDto resultDto =
+        favoriteService.getCategoryFavoriteList(memberInfoDto, EXPERIENCE, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
@@ -75,13 +80,13 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/nature/list")
-  public BaseResponse<FavoriteResponse.NatureDto> getNatureFavoriteList(
+  public BaseResponse<FavoriteThumbnailDto> getNatureFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.NatureDto resultDto =
-        favoriteService.getNatureFavoriteList(memberInfoDto, page, size);
+    FavoriteThumbnailDto resultDto =
+        favoriteService.getCategoryFavoriteList(memberInfoDto, NATURE, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
@@ -92,13 +97,13 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/festival/list")
-  public BaseResponse<FavoriteResponse.FestivalDto> getFestivalFavoriteList(
+  public BaseResponse<FavoriteThumbnailDto> getFestivalFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FestivalDto resultDto =
-        favoriteService.getFestivalFavoriteList(memberInfoDto, page, size);
+    FavoriteThumbnailDto resultDto =
+        favoriteService.getCategoryFavoriteList(memberInfoDto, FESTIVAL, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
@@ -109,13 +114,13 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/market/list")
-  public BaseResponse<FavoriteResponse.MarketDto> getMarketFavoriteList(
+  public BaseResponse<FavoriteThumbnailDto> getMarketFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.MarketDto resultDto =
-        favoriteService.getMarketFavoriteList(memberInfoDto, page, size);
+    FavoriteThumbnailDto resultDto =
+        favoriteService.getCategoryFavoriteList(memberInfoDto, MARKET, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 
@@ -126,13 +131,13 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/nana/list")
-  public BaseResponse<FavoriteResponse.NanaDto> getNanaFavoriteList(
+  public BaseResponse<FavoriteThumbnailDto> getNanaFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.NanaDto resultDto =
-        favoriteService.getNanaFavoriteList(memberInfoDto, page, size);
+    FavoriteThumbnailDto resultDto =
+        favoriteService.getCategoryFavoriteList(memberInfoDto, NANA, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 

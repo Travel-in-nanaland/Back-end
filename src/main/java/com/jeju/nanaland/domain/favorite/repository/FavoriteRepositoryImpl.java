@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.favorite.repository;
 
+import static com.jeju.nanaland.domain.common.entity.QCategory.category;
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
@@ -38,6 +39,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nature.id,
             natureTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(nature)
@@ -73,6 +76,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nature.id,
             natureTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(nature)
@@ -94,6 +99,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             experience.id,
             experienceTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(experience)
@@ -129,6 +136,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             experience.id,
             experienceTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(experience)
@@ -150,6 +159,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             festival.id,
             festivalTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(festival)
@@ -185,6 +196,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             festival.id,
             festivalTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(festival)
@@ -206,6 +219,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             market.id,
             marketTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(market)
@@ -241,6 +256,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             market.id,
             marketTrans.title,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(market)
@@ -262,6 +279,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nana.id,
             nanaTitle.heading,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(nana)
@@ -298,6 +317,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nana.id,
             nanaTitle.heading,
+            category.content.stringValue(),
+            imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
         .from(nana)

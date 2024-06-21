@@ -89,8 +89,7 @@ public class SearchService {
     Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(member,
-        NATURE);
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
@@ -122,8 +121,7 @@ public class SearchService {
     Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(member,
-        FESTIVAL);
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
@@ -155,8 +153,7 @@ public class SearchService {
     Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(member,
-        EXPERIENCE);
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
@@ -188,8 +185,7 @@ public class SearchService {
     Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(member,
-        MARKET);
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (MarketCompositeDto dto : resultPage) {
@@ -221,7 +217,7 @@ public class SearchService {
     Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(member, NANA);
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NanaThumbnail thumbnail : resultPage) {
