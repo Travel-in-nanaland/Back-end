@@ -24,15 +24,6 @@ public class FavoriteResponse {
 
   @Data
   @Builder
-  @Schema(description = "좋아요 상태 결과")
-  public static class StatusDto {
-
-    @Schema(description = "좋아요 상태")
-    private boolean isFavorite;
-  }
-
-  @Data
-  @Builder
   @AllArgsConstructor
   public static class ThumbnailDto {
 
@@ -56,5 +47,14 @@ public class FavoriteResponse {
       this.category = category;
       this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
     }
+  }
+
+  @Data
+  @Builder
+  @Schema(description = "좋아요 상태 결과")
+  public static class StatusDto {
+
+    @Schema(description = "좋아요 상태")
+    private boolean isFavorite;
   }
 }
