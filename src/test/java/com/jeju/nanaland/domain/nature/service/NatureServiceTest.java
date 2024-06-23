@@ -89,9 +89,9 @@ class NatureServiceTest {
         .build();
     em.persist(nature);
 
-    category = Category.builder()
-        .content(CategoryContent.NATURE)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.NATURE)
+        .getSingleResult();
   }
 }

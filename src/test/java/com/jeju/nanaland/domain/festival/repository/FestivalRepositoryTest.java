@@ -16,6 +16,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(TestConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class FestivalRepositoryTest {
 
   @Autowired
@@ -161,11 +163,10 @@ class FestivalRepositoryTest {
         .build();
     em.persist(imageFile5);
 
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-MM-dd")
-        .build();
-    em.persist(language);
+    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
+    language = em.createQuery(jpql, Language.class)
+        .setParameter("locale", Locale.KOREAN)
+        .getSingleResult();
 
     festival1 = Festival.builder()
         .imageFile(imageFile1)

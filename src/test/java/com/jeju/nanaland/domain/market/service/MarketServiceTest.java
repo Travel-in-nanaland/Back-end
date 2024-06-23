@@ -89,9 +89,9 @@ class MarketServiceTest {
         .build();
     em.persist(market);
 
-    category = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.MARKET)
+        .getSingleResult();
   }
 }

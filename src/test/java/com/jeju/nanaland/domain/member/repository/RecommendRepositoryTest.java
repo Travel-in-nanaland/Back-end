@@ -27,11 +27,13 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @Import(TestConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class RecommendRepositoryTest {
 
   @Autowired
@@ -147,29 +149,25 @@ public class RecommendRepositoryTest {
   }
 
   Language initLanguageKorean() {
-    Language language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(language);
-
-    return language;
+    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
+    return em.createQuery(jpql, Language.class)
+        .setParameter("locale", Locale.KOREAN)
+        .getSingleResult();
   }
 
   MemberTravelType initMemberTravelType(TravelType travelType) {
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(travelType)
-        .build();
-    em.persist(memberTravelType);
+    String jpql = "SELECT t FROM MemberTravelType t WHERE t.travelType = :travelType";
+    return em.createQuery(jpql, MemberTravelType.class)
+        .setParameter("travelType", travelType)
+        .getSingleResult();
 
-    return memberTravelType;
   }
 
   Recommend initNatureRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.NATURE)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    Category category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.NATURE)
+        .getSingleResult();
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -205,10 +203,10 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initMarketRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    Category category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.MARKET)
+        .getSingleResult();
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -244,10 +242,10 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initFestivalRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.FESTIVAL)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    Category category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.FESTIVAL)
+        .getSingleResult();
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -283,10 +281,10 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initExperienceRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    Category category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.EXPERIENCE)
+        .getSingleResult();
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -322,10 +320,10 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initNanaRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.NANA)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    Category category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.NANA)
+        .getSingleResult();
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")

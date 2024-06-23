@@ -37,26 +37,19 @@ class NanaRepositoryImplTest {
   private EntityManager em;
   @Autowired
   private NanaRepositoryImpl nanarepositoryImpl;
-  @Autowired
-  private NanaRepository nanaRepository;
-  @Autowired
-  private NanaTitleRepository nanaTitleRepository;
-  @Autowired
-  private NanaContentRepository nanaContentRepository;
+
 
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
   private void setNana() {
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
+    language = em.createQuery(jpql, Language.class)
+        .setParameter("locale", Locale.KOREAN)
+        .getSingleResult();
 
-    language2 = Language.builder()
-        .locale(Locale.CHINESE)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language2);
+    String jpql2 = "SELECT l FROM Language l WHERE l.locale = :locale";
+    language2 = em.createQuery(jpql2, Language.class)
+        .setParameter("locale", Locale.CHINESE)
+        .getSingleResult();
 
     imageFile1 = ImageFile.builder()
         .originUrl("originUrl1")
@@ -92,31 +85,31 @@ class NanaRepositoryImplTest {
         .version("ver1")
         .nanaTitleImageFile(imageFile1)
         .build();
-    nanaRepository.save(nana1);
+    em.persist(nana1);
 
     nana2 = Nana.builder()
         .version("ver2")
         .nanaTitleImageFile(imageFile2)
         .build();
-    nanaRepository.save(nana2);
+    em.persist(nana2);
 
     nana3 = Nana.builder()
         .version("ver3")
         .nanaTitleImageFile(imageFile3)
         .build();
-    nanaRepository.save(nana3);
+    em.persist(nana3);
 
     nana4 = Nana.builder()
         .version("ver4")
         .nanaTitleImageFile(imageFile4)
         .build();
-    nanaRepository.save(nana4);
+    em.persist(nana4);
 
     nana5 = Nana.builder()
         .version("ver5")
         .nanaTitleImageFile(imageFile5)
         .build();
-    nanaRepository.save(nana5);
+    em.persist(nana5);
 
     nanaTitle1 = NanaTitle.builder()
         .notice("notice1")
@@ -124,7 +117,7 @@ class NanaRepositoryImplTest {
         .language(language)
         .nana(nana1)
         .build();
-    nanaTitleRepository.save(nanaTitle1);
+    em.persist(nanaTitle1);
 
     //nana3=> active = true / language2=> chinese
     nanaTitle2 = NanaTitle.builder()
@@ -133,27 +126,28 @@ class NanaRepositoryImplTest {
         .language(language)
         .nana(nana2)
         .build();
-    nanaTitleRepository.save(nanaTitle2);
+    em.persist(nanaTitle2);
 
     nanaTitle3 = NanaTitle.builder()
         .notice("notice3")
         .language(language)
         .nana(nana3)
         .build();
-    nanaTitleRepository.save(nanaTitle3);
+    em.persist(nanaTitle3);
 
     nanaTitle4 = NanaTitle.builder()
         .notice("notice4")
         .language(language)
         .nana(nana4)
         .build();
-    nanaTitleRepository.save(nanaTitle4);
+    em.persist(nanaTitle4);
+
     nanaTitle5 = NanaTitle.builder()
         .notice("notice5")
         .language(language)
         .nana(nana5)
         .build();
-    nanaTitleRepository.save(nanaTitle5);
+    em.persist(nanaTitle5);
 
     nanaContent1 = NanaContent.builder()
         .subTitle("subtitle1")
@@ -162,7 +156,7 @@ class NanaRepositoryImplTest {
         .number(1)
         .title("title")
         .build();
-    nanaContentRepository.save(nanaContent1);
+    em.persist(nanaContent1);
 
     nanaContent2 = NanaContent.builder()
         .subTitle("subtitle2")
@@ -171,7 +165,7 @@ class NanaRepositoryImplTest {
         .number(2)
         .title("title2")
         .build();
-    nanaContentRepository.save(nanaContent2);
+    em.persist(nanaContent2);
 
     nanaContent3 = NanaContent.builder()
         .subTitle("subtitle3")
@@ -180,7 +174,7 @@ class NanaRepositoryImplTest {
         .number(2)
         .title("title3")
         .build();
-    nanaContentRepository.save(nanaContent3);
+    em.persist(nanaContent3);
 
     NanaContentImage nanaContentImage1 = NanaContentImage.builder()
         .imageFile(imageFile1)

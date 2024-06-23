@@ -88,9 +88,10 @@ class ExperienceServiceTest {
         .build();
     em.persist(experience);
 
-    category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    em.persist(category);
+    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
+    category = em.createQuery(jpql, Category.class)
+        .setParameter("content", CategoryContent.EXPERIENCE)
+        .getSingleResult();
+
   }
 }

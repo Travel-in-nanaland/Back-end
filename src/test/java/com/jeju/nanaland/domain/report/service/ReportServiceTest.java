@@ -46,11 +46,10 @@ class ReportServiceTest {
     em.persist(imageFile1);
 
     // language
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-mm-dd")
-        .build();
-    em.persist(language);
+    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
+    language = em.createQuery(jpql, Language.class)
+        .setParameter("locale", Locale.KOREAN)
+        .getSingleResult();
 
     // member
     member = Member.builder()

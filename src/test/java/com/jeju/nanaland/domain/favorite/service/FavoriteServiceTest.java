@@ -63,11 +63,10 @@ class FavoriteServiceTest {
     em.persist(imageFile3);
 
     // language
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    String languageJpql = "SELECT l FROM Language l WHERE l.locale = :locale";
+    language = em.createQuery(languageJpql, Language.class)
+        .setParameter("locale", Locale.KOREAN)
+        .getSingleResult();
 
     // member
     member = Member.builder()
@@ -87,19 +86,18 @@ class FavoriteServiceTest {
         .build();
 
     // category
-    Category festivalCategory = Category.builder()
-        .content(CategoryContent.FESTIVAL)
-        .build();
-    Category natureCategory = Category.builder()
-        .content(CategoryContent.NATURE)
-        .build();
-    Category nanaCategory = Category.builder()
-        .content(CategoryContent.NANA)
-        .build();
+    String categoryJpql = "SELECT c FROM Category c WHERE c.content = :content";
 
-    em.persist(natureCategory);
-    em.persist(festivalCategory);
-    em.persist(nanaCategory);
+    Category festivalCategory = em.createQuery(categoryJpql, Category.class)
+        .setParameter("content", CategoryContent.FESTIVAL)
+        .getSingleResult();
+    Category natureCategory = em.createQuery(categoryJpql, Category.class)
+        .setParameter("content", CategoryContent.NATURE)
+        .getSingleResult();
+    Category nanaCategory = em.createQuery(categoryJpql, Category.class)
+        .setParameter("content", CategoryContent.NANA_CONTENT)
+        .getSingleResult();
+
   }
 
   @Test
