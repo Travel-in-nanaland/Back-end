@@ -47,7 +47,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Test with Gradle
-        run: ./gradlew test
+        run: ./gradlew test -i
 
   build:
     runs-on: ubuntu-latest
@@ -78,6 +78,10 @@ jobs:
       #   # run: ./gradlew clean build -i
       #   # working-directory: ${{ env.working-directory }}
 
+      # 3) gradlew 권한 설정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
       # 4) gradle 빌드
       - name: Build with Gradle
         run: ./gradlew clean build -x test -i
