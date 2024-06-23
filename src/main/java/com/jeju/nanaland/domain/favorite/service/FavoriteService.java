@@ -58,7 +58,8 @@ public class FavoriteService {
     Pageable pageable = PageRequest.of(page, size);
 
     // Favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
-    Page<Favorite> favorites = favoriteRepository.findAllCategoryFavorite(member, pageable);
+    Page<Favorite> favorites = favoriteRepository.findAllByMemberOrderByCreatedAtDesc(member,
+        pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
 
     // Favorite의 postId, 카테고리 정보를 통해 썸네일 정보 조회

@@ -2,7 +2,6 @@ package com.jeju.nanaland.domain.favorite.repository;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
-import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +27,4 @@ public interface FavoriteRepositoryCustom {
   Page<ThumbnailDto> findNanaThumbnails(Member member, Locale locale, Pageable pageable);
 
   ThumbnailDto findNanaThumbnailByPostId(Member member, Long postId, Locale locale);
-
-  Page<Favorite> findAllCategoryFavorite(Member member, Pageable pageable);
 }

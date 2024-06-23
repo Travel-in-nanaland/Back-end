@@ -18,7 +18,6 @@ import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.dto.QFavoriteResponse_ThumbnailDto;
-import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -332,24 +331,5 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(nana.nanaTitleImageFile, imageFile)
         .where(favorite.post.id.eq(postId))
         .fetchOne();
-  }
-
-  @Override
-  public Page<Favorite> findAllCategoryFavorite(Member member, Pageable pageable) {
-    List<Favorite> result = queryFactory
-        .selectFrom(favorite)
-        .where(favorite.member.eq(member))
-        .orderBy(favorite.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize())
-        .fetch();
-
-    JPAQuery<Long> countQuery = queryFactory
-        .select(favorite.count())
-        .from(favorite)
-        .where(favorite.member.eq(member))
-        .orderBy(favorite.createdAt.desc());
-
-    return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
   }
 }
