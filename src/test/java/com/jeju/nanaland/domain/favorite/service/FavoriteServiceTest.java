@@ -70,24 +70,11 @@ class FavoriteServiceTest {
      *
      * festival, nana 생성
      */
-    Festival festival = Festival.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(festival);
+    Festival festival = TestUtil.findFestivalByStringSeason(em, "봄,여름,가을,겨울");
 
-    Nana nana = Nana.builder()
-        .version("1")
-        .nanaTitleImageFile(imageFile1)
-        .build();
-    em.persist(nana);
+    Nana nana = TestUtil.findNana(em, 1);
 
-    NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("heading")
-        .subHeading("subHeading")
-        .language(language)
-        .nana(nana)
-        .build();
-    em.persist(nanaTitle);
+    NanaTitle nanaTitle = TestUtil.findNanaTitleByNana(em, nana);
 
     LikeToggleDto festivalLikeToggleDto = new LikeToggleDto();
     festivalLikeToggleDto.setCategory(CategoryContent.FESTIVAL.name());
@@ -121,41 +108,13 @@ class FavoriteServiceTest {
      *
      * festival, nana 생성
      */
-    Festival festival1 = Festival.builder()
-        .imageFile(imageFile1)
-        .season("봄")
-        .build();
-    em.persist(festival1);
-    FestivalTrans festivalTrans1 = FestivalTrans.builder()
-        .festival(festival1)
-        .language(language)
-        .title("축제1")
-        .build();
-    em.persist(festivalTrans1);
-    Festival festival2 = Festival.builder()
-        .imageFile(imageFile2)
-        .season("여름")
-        .build();
-    em.persist(festival2);
-    FestivalTrans festivalTrans2 = FestivalTrans.builder()
-        .festival(festival2)
-        .language(language)
-        .title("축제2")
-        .build();
-    em.persist(festivalTrans2);
+    Festival festival1 = TestUtil.findFestivalByStringSeason(em, "봄,여름,가을,겨울");
+    FestivalTrans festivalTrans1 = TestUtil.findFestivalTransByFestival(em, festival1);
+    Festival festival2 = TestUtil.findFestivalByStringSeason(em, "가을");
+    FestivalTrans festivalTrans2 = TestUtil.findFestivalTransByFestival(em, festival2);
 
-    Nana nana = Nana.builder()
-        .version("1")
-        .nanaTitleImageFile(imageFile1)
-        .build();
-    em.persist(nana);
-    NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("heading")
-        .subHeading("subHeading")
-        .language(language)
-        .nana(nana)
-        .build();
-    em.persist(nanaTitle);
+    Nana nana = TestUtil.findNana(em, 1);
+    NanaTitle nanaTitle = TestUtil.findNanaTitleByNana(em, nana);
 
     /**
      * WHEN

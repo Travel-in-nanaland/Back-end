@@ -80,19 +80,9 @@ class ReportServiceTest {
     /**
      * GIVEN
      */
-    Nana nana = Nana.builder()
-        .version("1")
-        .nanaTitleImageFile(imageFile1)
-        .build();
-    em.persist(nana);
+    Nana nana = TestUtil.findNana(em, 1);
 
-    NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("heading")
-        .subHeading("subHeading")
-        .language(language)
-        .nana(nana)
-        .build();
-    em.persist(nanaTitle);
+    NanaTitle nanaTitle = TestUtil.findNanaTitleByNana(em, nana);
 
     InfoFixDto infoFixDto = new InfoFixDto();
     infoFixDto.setFixType(FixType.CONTACT_OR_HOMEPAGE.name());

@@ -149,10 +149,12 @@ public class TestUtil {
         .getSingleResult();
   }
 
-  public static NanaContent findNanaContentByNanaTitle(EntityManager em, NanaTitle nanaTitle) {
-    String jpql = "SELECT n FROM NanaContent n WHERE n.nanaTitle = :nanaTitle";
+  public static NanaContent findNanaContentByNanaTitleAndNumber(EntityManager em,
+      NanaTitle nanaTitle, int number) {
+    String jpql = "SELECT n FROM NanaContent n WHERE n.nanaTitle = :nanaTitle AND n.number = :number";
     return em.createQuery(jpql, NanaContent.class)
         .setParameter("nanaTitle", nanaTitle)
+        .setParameter("number", number)
         .getSingleResult();
   }
 

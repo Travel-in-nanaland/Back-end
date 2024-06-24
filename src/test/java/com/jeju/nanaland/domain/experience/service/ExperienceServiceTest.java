@@ -56,10 +56,7 @@ class ExperienceServiceTest {
         .member(member2)
         .build();
 
-    experience = Experience.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(experience);
+    experience = TestUtil.findExperienceList(em, 1).get(0);
 
     category = TestUtil.findCategory(em, CategoryContent.EXPERIENCE);
 

@@ -35,10 +35,10 @@ public class InitTestData {
   EntityManager em;
 
   /**
-   * 테스트 디비에 넣을 데이터들 입니다. 나중에 ignore해서 지울 예정입니다. 처음 사용하실 때 테스트 데이터 베이스 ddl-auto : update로 변경후 테스트
-   * 돌리기 전에 이 메서드만 단일로 사용해주세요!
+   * 테스트 디비에 넣을 데이터들 입니다. 나중에 ignore해서 지울 예정입니다. -test.yml -> ddl-auto : update로 변경후 테스트 돌리기 전에 이
+   * 메서드만 단일로 사용해주세요!
    */
-  //  @Test
+//  @Test
   @Rollback(false)
   // 롤백을 하지 않도록 설정
   void init() {
@@ -296,6 +296,7 @@ public class InitTestData {
     FestivalTrans festivalTrans1 = FestivalTrans.builder()
         .festival(festival1)
         .language(language1)
+        .title("축제1")
         .address("제주특별자치도 제주시 조함해안로 525함덕해수욕장 일원")
         .addressTag("제주시")
         .build();
@@ -304,6 +305,7 @@ public class InitTestData {
     FestivalTrans festivalTrans2 = FestivalTrans.builder()
         .festival(festival2)
         .language(language1)
+        .title("축제2")
         .address("제주특별자치도 서귀포시 중정로 22")
         .addressTag("서귀포시")
         .build();
@@ -312,6 +314,7 @@ public class InitTestData {
     FestivalTrans festivalTrans3 = FestivalTrans.builder()
         .festival(festival3)
         .language(language1)
+        .title("축제3")
         .address("제주특별자치도 제주시 동광로 90(이도이동)")
         .addressTag("제주시")
         .build();
@@ -320,6 +323,7 @@ public class InitTestData {
     FestivalTrans festivalTrans4 = FestivalTrans.builder()
         .festival(festival4)
         .language(language1)
+        .title("축제4")
         .address("제주특별자치도 서귀포시 표선면 녹산로 381-17")
         .addressTag("표선")
         .build();
@@ -328,6 +332,7 @@ public class InitTestData {
     FestivalTrans festivalTrans5 = FestivalTrans.builder()
         .festival(festival5)
         .language(language1)
+        .title("축제5")
         .address("제주특별자치도 제주시 한림읍 한림로 300(한림읍)")
         .addressTag("한림")
         .build();
@@ -448,7 +453,7 @@ public class InitTestData {
         .subTitle("subtitle3")
         .nanaTitle(nanaTitle1)
         .content("content3")
-        .number(2)
+        .number(3)
         .title("title3")
         .build();
     em.persist(nanaContent3);

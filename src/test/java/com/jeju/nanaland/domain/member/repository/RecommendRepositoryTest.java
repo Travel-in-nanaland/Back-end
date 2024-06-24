@@ -162,16 +162,8 @@ public class RecommendRepositoryTest {
 
     ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
-    Nature nature = Nature.builder()
-        .imageFile(imageFile)
-        .build();
-    em.persist(nature);
-    NatureTrans natureTrans = NatureTrans.builder()
-        .title("7대자연 제목")
-        .nature(nature)
-        .language(language)
-        .build();
-    em.persist(natureTrans);
+    Nature nature = TestUtil.findNatureList(em, 1).get(0);
+    NatureTrans natureTrans = TestUtil.findNatureTransByNature(em, nature);
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
@@ -194,16 +186,8 @@ public class RecommendRepositoryTest {
 
     ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
-    Market market = Market.builder()
-        .imageFile(imageFile)
-        .build();
-    em.persist(market);
-    MarketTrans marketTrans = MarketTrans.builder()
-        .title("전통시장 제목")
-        .market(market)
-        .language(language)
-        .build();
-    em.persist(marketTrans);
+    Market market = TestUtil.findMarketList(em, 1).get(0);
+    MarketTrans marketTrans = TestUtil.findMarketTransByMarket(em, market);
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
@@ -226,16 +210,8 @@ public class RecommendRepositoryTest {
 
     ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
-    Festival festival = Festival.builder()
-        .imageFile(imageFile)
-        .build();
-    em.persist(festival);
-    FestivalTrans festivalTrans = FestivalTrans.builder()
-        .title("축제 제목")
-        .festival(festival)
-        .language(language)
-        .build();
-    em.persist(festivalTrans);
+    Festival festival = TestUtil.findFestivalByStringSeason(em, "겨울");
+    FestivalTrans festivalTrans = TestUtil.findFestivalTransByFestival(em, festival);
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
@@ -258,16 +234,8 @@ public class RecommendRepositoryTest {
 
     ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
-    Experience experience = Experience.builder()
-        .imageFile(imageFile)
-        .build();
-    em.persist(experience);
-    ExperienceTrans experienceTrans = ExperienceTrans.builder()
-        .title("이색체험 제목")
-        .experience(experience)
-        .language(language)
-        .build();
-    em.persist(experienceTrans);
+    Experience experience = TestUtil.findExperienceList(em, 1).get(0);
+    ExperienceTrans experienceTrans = TestUtil.findExperienceTransByExperience(em, experience);
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
@@ -290,17 +258,8 @@ public class RecommendRepositoryTest {
 
     ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
-    Nana nana = Nana.builder()
-        .version("1")
-        .nanaTitleImageFile(imageFile)
-        .build();
-    em.persist(nana);
-    NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("나나스픽 제목")
-        .nana(nana)
-        .language(language)
-        .build();
-    em.persist(nanaTitle);
+    Nana nana = TestUtil.findNana(em, 1);
+    NanaTitle nanaTitle = TestUtil.findNanaTitleByNana(em, nana);
 
     Recommend recommend = Recommend.builder()
         .memberTravelType(memberTravelType)
