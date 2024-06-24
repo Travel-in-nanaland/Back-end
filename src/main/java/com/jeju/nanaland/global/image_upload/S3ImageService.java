@@ -32,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class S3ImageService {
 
-  private final S3Config s3Config;
+
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.s3.bucket}")
   private String bucketName;
