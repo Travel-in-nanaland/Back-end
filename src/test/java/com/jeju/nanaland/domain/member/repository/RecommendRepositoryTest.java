@@ -160,11 +160,7 @@ public class RecommendRepositoryTest {
   Recommend initNatureRecommend(Language language, MemberTravelType memberTravelType) {
     Category category = TestUtil.findCategory(em, CategoryContent.NATURE);
 
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile);
+    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
     Nature nature = Nature.builder()
         .imageFile(imageFile)
@@ -196,11 +192,7 @@ public class RecommendRepositoryTest {
   Recommend initMarketRecommend(Language language, MemberTravelType memberTravelType) {
     Category category = TestUtil.findCategory(em, CategoryContent.MARKET);
 
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile);
+    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
     Market market = Market.builder()
         .imageFile(imageFile)
@@ -232,11 +224,7 @@ public class RecommendRepositoryTest {
   Recommend initFestivalRecommend(Language language, MemberTravelType memberTravelType) {
     Category category = TestUtil.findCategory(em, CategoryContent.FESTIVAL);
 
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile);
+    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
     Festival festival = Festival.builder()
         .imageFile(imageFile)
@@ -268,11 +256,7 @@ public class RecommendRepositoryTest {
   Recommend initExperienceRecommend(Language language, MemberTravelType memberTravelType) {
     Category category = TestUtil.findCategory(em, CategoryContent.EXPERIENCE);
 
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile);
+    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
     Experience experience = Experience.builder()
         .imageFile(imageFile)
@@ -304,11 +288,7 @@ public class RecommendRepositoryTest {
   Recommend initNanaRecommend(Language language, MemberTravelType memberTravelType) {
     Category category = TestUtil.findCategory(em, CategoryContent.NANA);
 
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile);
+    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
     Nana nana = Nana.builder()
         .version("1")

@@ -3,7 +3,6 @@ package com.jeju.nanaland.domain.favorite.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -17,7 +16,6 @@ import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.util.TestUtil;
@@ -47,47 +45,21 @@ class FavoriteServiceTest {
   @BeforeEach
   void init() {
     // imageFile
-    imageFile1 = ImageFile.builder()
-        .originUrl("origin1")
-        .thumbnailUrl("thumbnail1")
-        .build();
-    imageFile2 = ImageFile.builder()
-        .originUrl("origin2")
-        .thumbnailUrl("thumbnail2")
-        .build();
-    imageFile3 = ImageFile.builder()
-        .originUrl("origin3")
-        .thumbnailUrl("thumbnail3")
-        .build();
-    em.persist(imageFile1);
-    em.persist(imageFile2);
-    em.persist(imageFile3);
+    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
+    imageFile2 = TestUtil.findImageFileByNumber(em, 2);
+    imageFile3 = TestUtil.findImageFileByNumber(em, 3);
 
     // language
     language = TestUtil.findLanguage(em, Locale.KOREAN);
 
     // member
-    member = Member.builder()
-        .email("test@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("123456789")
-        .nickname("nickname1")
-        .language(language)
-        .profileImageFile(imageFile1)
-        .build();
-    em.persist(member);
+    member = TestUtil.findMemberByLanguage(em, language, 1);
 
     // memberInfoDto
     memberInfoDto = MemberInfoDto.builder()
         .language(language)
         .member(member)
         .build();
-
-    // category
-
-    Category festivalCategory = TestUtil.findCategory(em, CategoryContent.FESTIVAL);
-    Category natureCategory = TestUtil.findCategory(em, CategoryContent.NATURE);
-    Category nanaCategory = TestUtil.findCategory(em, CategoryContent.NANA_CONTENT);
 
   }
 

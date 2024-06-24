@@ -14,7 +14,6 @@ import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.util.TestUtil;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -63,36 +62,15 @@ class MemberRepositoryTest {
   }
 
   private MemberTravelType createMemberTravelType() {
-    memberTravelType = MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
-    entityManager.persist(memberTravelType);
-    return memberTravelType;
+    return memberTravelType = TestUtil.findMemberTravelType(entityManager, TravelType.NONE);
   }
 
   private ImageFile createImageFile() {
-    imageFile = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    entityManager.persist(imageFile);
-    return imageFile;
+    return TestUtil.findImageFileByNumber(entityManager, 1);
   }
 
   private Member createMember(Language language) {
-    Member member = Member.builder()
-        .language(language)
-        .email("test@example.com")
-        .profileImageFile(imageFile)
-        .nickname("testNickname")
-        .gender("male")
-        .birthDate(LocalDate.now())
-        .provider(Provider.GOOGLE)
-        .providerId("123")
-        .memberTravelType(memberTravelType)
-        .build();
-    entityManager.persist(member);
-    return member;
+    return TestUtil.findMemberByLanguage(entityManager, language, 1);
   }
 
   private void createMemberConsent(ConsentType consentType, boolean consent,

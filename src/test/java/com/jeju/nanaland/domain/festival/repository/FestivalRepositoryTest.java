@@ -134,35 +134,15 @@ class FestivalRepositoryTest {
    */
 
   private void setFestival() {
-    imageFile1 = ImageFile.builder()
-        .originUrl("originUrl1")
-        .thumbnailUrl("thumbnailUrl1")
-        .build();
-    em.persist(imageFile1);
+    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
 
-    imageFile2 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile2);
+    imageFile2 = TestUtil.findImageFileByNumber(em, 2);
 
-    imageFile3 = ImageFile.builder()
-        .originUrl("originUrl3")
-        .thumbnailUrl("thumbnailUrl3")
-        .build();
-    em.persist(imageFile3);
+    imageFile3 = TestUtil.findImageFileByNumber(em, 3);
 
-    imageFile4 = ImageFile.builder()
-        .originUrl("originUrl4")
-        .thumbnailUrl("thumbnailUrl4")
-        .build();
-    em.persist(imageFile4);
+    imageFile4 = TestUtil.findImageFileByNumber(em, 4);
 
-    imageFile5 = ImageFile.builder()
-        .originUrl("originUrl5")
-        .thumbnailUrl("thumbnailUrl5")
-        .build();
-    em.persist(imageFile5);
+    imageFile5 = TestUtil.findImageFileByNumber(em, 5);
 
     language = TestUtil.findLanguage(em, Locale.KOREAN);
 

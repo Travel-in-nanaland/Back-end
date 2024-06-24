@@ -9,7 +9,6 @@ import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -38,39 +37,15 @@ class MarketServiceTest {
 
   @BeforeEach
   void init() {
-    ImageFile imageFile1 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    em.persist(imageFile1);
+    ImageFile imageFile1 = TestUtil.findImageFileByNumber(em, 1);
 
-    ImageFile imageFile2 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
-        .build();
-    em.persist(imageFile2);
+    ImageFile imageFile2 = TestUtil.findImageFileByNumber(em, 2);
 
     language = TestUtil.findLanguage(em, Locale.KOREAN);
 
-    member1 = Member.builder()
-        .email("test@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("123456789")
-        .nickname("nickname1")
-        .language(language)
-        .profileImageFile(imageFile1)
-        .build();
-    em.persist(member1);
+    member1 = TestUtil.findMemberByLanguage(em, language, 1);
 
-    member2 = Member.builder()
-        .email("test2@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("1234567890")
-        .nickname("nickname2")
-        .language(language)
-        .profileImageFile(imageFile2)
-        .build();
-    em.persist(member2);
+    member2 = TestUtil.findMemberByLanguage(em, language, 2);
 
     memberInfoDto1 = MemberInfoDto.builder()
         .language(language)

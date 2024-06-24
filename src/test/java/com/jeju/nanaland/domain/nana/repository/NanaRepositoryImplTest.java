@@ -47,35 +47,15 @@ class NanaRepositoryImplTest {
 
     language2 = TestUtil.findLanguage(em, Locale.CHINESE);
 
-    imageFile1 = ImageFile.builder()
-        .originUrl("originUrl1")
-        .thumbnailUrl("thumbnailUrl1")
-        .build();
-    em.persist(imageFile1);
+    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
 
-    imageFile2 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile2);
+    imageFile2 = TestUtil.findImageFileByNumber(em, 2);
 
-    imageFile3 = ImageFile.builder()
-        .originUrl("originUrl3")
-        .thumbnailUrl("thumbnailUrl3")
-        .build();
-    em.persist(imageFile3);
+    imageFile3 = TestUtil.findImageFileByNumber(em, 3);
 
-    imageFile4 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile4);
+    imageFile4 = TestUtil.findImageFileByNumber(em, 4);
 
-    imageFile5 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile5);
+    imageFile5 = TestUtil.findImageFileByNumber(em, 5);
 
     nana1 = Nana.builder()
         .version("ver1")
@@ -256,7 +236,7 @@ class NanaRepositoryImplTest {
 
     // When
     NanaThumbnailPost nanaThumbnailPostDto = nanarepositoryImpl.findNanaThumbnailPostDto(
-        nanaTitle3.getId(), Locale.KOREAN);
+        nana3.getId(), Locale.KOREAN);
 
     // Then
     Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());

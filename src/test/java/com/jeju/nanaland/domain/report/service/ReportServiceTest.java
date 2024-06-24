@@ -8,7 +8,6 @@ import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
@@ -40,25 +39,13 @@ class ReportServiceTest {
   @BeforeEach
   void init() {
     // imageFile
-    imageFile1 = ImageFile.builder()
-        .originUrl("origin1")
-        .thumbnailUrl("thumbnail1")
-        .build();
-    em.persist(imageFile1);
+    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
 
     // language
     language = TestUtil.findLanguage(em, Locale.KOREAN);
 
     // member
-    member = Member.builder()
-        .email("test@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("123456789")
-        .nickname("nickname1")
-        .language(language)
-        .profileImageFile(imageFile1)
-        .build();
-    em.persist(member);
+    member = TestUtil.findMemberByLanguage(em, language, 1);
 
     // memberInfoDto
     memberInfoDto = MemberInfoDto.builder()
