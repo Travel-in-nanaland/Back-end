@@ -7,6 +7,7 @@ import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
@@ -163,10 +164,7 @@ class FestivalRepositoryTest {
         .build();
     em.persist(imageFile5);
 
-    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
-    language = em.createQuery(jpql, Language.class)
-        .setParameter("locale", Locale.KOREAN)
-        .getSingleResult();
+    language = TestUtil.findLanguage(em, Locale.KOREAN);
 
     festival1 = Festival.builder()
         .imageFile(imageFile1)

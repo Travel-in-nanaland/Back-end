@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ class ExperienceServiceTest {
   ExperienceService experienceService;
   @Autowired
   FavoriteRepository favoriteRepository;
+
 
   Language language;
   Member member1, member2;
@@ -88,10 +90,8 @@ class ExperienceServiceTest {
         .build();
     em.persist(experience);
 
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.EXPERIENCE)
-        .getSingleResult();
+    category = TestUtil.findCategory(em, CategoryContent.EXPERIENCE);
+
 
   }
 }

@@ -15,6 +15,7 @@ import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,10 +47,7 @@ class ReportServiceTest {
     em.persist(imageFile1);
 
     // language
-    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
-    language = em.createQuery(jpql, Language.class)
-        .setParameter("locale", Locale.KOREAN)
-        .getSingleResult();
+    language = TestUtil.findLanguage(em, Locale.KOREAN);
 
     // member
     member = Member.builder()

@@ -20,6 +20,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,10 +64,7 @@ class FavoriteServiceTest {
     em.persist(imageFile3);
 
     // language
-    String languageJpql = "SELECT l FROM Language l WHERE l.locale = :locale";
-    language = em.createQuery(languageJpql, Language.class)
-        .setParameter("locale", Locale.KOREAN)
-        .getSingleResult();
+    language = TestUtil.findLanguage(em, Locale.KOREAN);
 
     // member
     member = Member.builder()
@@ -86,17 +84,10 @@ class FavoriteServiceTest {
         .build();
 
     // category
-    String categoryJpql = "SELECT c FROM Category c WHERE c.content = :content";
 
-    Category festivalCategory = em.createQuery(categoryJpql, Category.class)
-        .setParameter("content", CategoryContent.FESTIVAL)
-        .getSingleResult();
-    Category natureCategory = em.createQuery(categoryJpql, Category.class)
-        .setParameter("content", CategoryContent.NATURE)
-        .getSingleResult();
-    Category nanaCategory = em.createQuery(categoryJpql, Category.class)
-        .setParameter("content", CategoryContent.NANA_CONTENT)
-        .getSingleResult();
+    Category festivalCategory = TestUtil.findCategory(em, CategoryContent.FESTIVAL);
+    Category natureCategory = TestUtil.findCategory(em, CategoryContent.NATURE);
+    Category nanaCategory = TestUtil.findCategory(em, CategoryContent.NANA_CONTENT);
 
   }
 

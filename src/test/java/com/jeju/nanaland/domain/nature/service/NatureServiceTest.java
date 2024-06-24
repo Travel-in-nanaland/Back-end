@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.nature.entity.Nature;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,9 +90,6 @@ class NatureServiceTest {
         .build();
     em.persist(nature);
 
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.NATURE)
-        .getSingleResult();
+    category = TestUtil.findCategory(em, CategoryContent.NATURE);
   }
 }

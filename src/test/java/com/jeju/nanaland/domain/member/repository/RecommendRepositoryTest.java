@@ -21,6 +21,7 @@ import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -149,25 +150,15 @@ public class RecommendRepositoryTest {
   }
 
   Language initLanguageKorean() {
-    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
-    return em.createQuery(jpql, Language.class)
-        .setParameter("locale", Locale.KOREAN)
-        .getSingleResult();
+    return TestUtil.findLanguage(em, Locale.KOREAN);
   }
 
   MemberTravelType initMemberTravelType(TravelType travelType) {
-    String jpql = "SELECT t FROM MemberTravelType t WHERE t.travelType = :travelType";
-    return em.createQuery(jpql, MemberTravelType.class)
-        .setParameter("travelType", travelType)
-        .getSingleResult();
-
+    return TestUtil.findMemberTravelType(em, travelType);
   }
 
   Recommend initNatureRecommend(Language language, MemberTravelType memberTravelType) {
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    Category category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.NATURE)
-        .getSingleResult();
+    Category category = TestUtil.findCategory(em, CategoryContent.NATURE);
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -203,10 +194,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initMarketRecommend(Language language, MemberTravelType memberTravelType) {
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    Category category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.MARKET)
-        .getSingleResult();
+    Category category = TestUtil.findCategory(em, CategoryContent.MARKET);
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -242,10 +230,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initFestivalRecommend(Language language, MemberTravelType memberTravelType) {
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    Category category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.FESTIVAL)
-        .getSingleResult();
+    Category category = TestUtil.findCategory(em, CategoryContent.FESTIVAL);
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -281,10 +266,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initExperienceRecommend(Language language, MemberTravelType memberTravelType) {
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    Category category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.EXPERIENCE)
-        .getSingleResult();
+    Category category = TestUtil.findCategory(em, CategoryContent.EXPERIENCE);
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -320,10 +302,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initNanaRecommend(Language language, MemberTravelType memberTravelType) {
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    Category category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.NANA)
-        .getSingleResult();
+    Category category = TestUtil.findCategory(em, CategoryContent.NANA);
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")

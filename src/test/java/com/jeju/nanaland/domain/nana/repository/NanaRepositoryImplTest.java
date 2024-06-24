@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -41,15 +42,10 @@ class NanaRepositoryImplTest {
 
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
   private void setNana() {
-    String jpql = "SELECT l FROM Language l WHERE l.locale = :locale";
-    language = em.createQuery(jpql, Language.class)
-        .setParameter("locale", Locale.KOREAN)
-        .getSingleResult();
 
-    String jpql2 = "SELECT l FROM Language l WHERE l.locale = :locale";
-    language2 = em.createQuery(jpql2, Language.class)
-        .setParameter("locale", Locale.CHINESE)
-        .getSingleResult();
+    language = TestUtil.findLanguage(em, Locale.KOREAN);
+
+    language2 = TestUtil.findLanguage(em, Locale.CHINESE);
 
     imageFile1 = ImageFile.builder()
         .originUrl("originUrl1")

@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,11 +49,7 @@ class MarketServiceTest {
         .build();
     em.persist(imageFile2);
 
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-mm-dd")
-        .build();
-    em.persist(language);
+    language = TestUtil.findLanguage(em, Locale.KOREAN);
 
     member1 = Member.builder()
         .email("test@naver.com")
@@ -89,9 +86,6 @@ class MarketServiceTest {
         .build();
     em.persist(market);
 
-    String jpql = "SELECT c FROM Category c WHERE c.content = :content";
-    category = em.createQuery(jpql, Category.class)
-        .setParameter("content", CategoryContent.MARKET)
-        .getSingleResult();
+    category = TestUtil.findCategory(em, CategoryContent.MARKET);
   }
 }
