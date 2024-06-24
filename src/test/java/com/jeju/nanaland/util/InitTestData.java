@@ -76,15 +76,33 @@ public class InitTestData {
     // language
     Language language1 = Language.builder()
         .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
+        .dateFormat("yy-MM-dd")
         .build();
     em.persist(language1);
 
     Language language2 = Language.builder()
         .locale(Locale.CHINESE)
-        .dateFormat("yyyy-MM-dd")
+        .dateFormat("yy-MM-dd")
         .build();
     em.persist(language2);
+
+    Language language3 = Language.builder()
+        .locale(Locale.ENGLISH)
+        .dateFormat("MM-dd-yy")
+        .build();
+    em.persist(language2);
+
+    Language language4 = Language.builder()
+        .locale(Locale.MALAYSIA)
+        .dateFormat("dd-MM-yy")
+        .build();
+    em.persist(language4);
+
+    Language language5 = Language.builder()
+        .locale(Locale.VIETNAMESE)
+        .dateFormat("dd-MM-yy")
+        .build();
+    em.persist(language5);
 
     // member -> nickname으로 구분해 조회하므로 언어+숫자 Ex) chinese3
     Member member1 = Member.builder()
