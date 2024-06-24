@@ -116,6 +116,6 @@ jobs:
     steps:
       # 1) 기본 체크아웃
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: result
         run: echo "SUCCESS"
