@@ -54,9 +54,9 @@ jobs:
     environment: production
 
     steps:
-      #      # 1) 기본 체크아웃
-      #      - name: Checkout
-      #        uses: actions/checkout@v3
+      # 1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
 
       # 2) JDK 17 셋팅
       - name: Set up JDK 17
@@ -91,8 +91,8 @@ jobs:
     environment: production
 
     steps:
-      #      # 1) 기본 체크아웃
-      #      - name: Checkout
-      #        uses: actions/checkout@v3
+      # 1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: result
         run: echo "SUCCESS"
