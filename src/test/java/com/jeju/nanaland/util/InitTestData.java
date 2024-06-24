@@ -5,12 +5,24 @@ import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.experience.entity.Experience;
+import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
+import com.jeju.nanaland.domain.festival.entity.Festival;
+import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
+import com.jeju.nanaland.domain.market.entity.Market;
+import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.nana.entity.Nana;
+import com.jeju.nanaland.domain.nana.entity.NanaContent;
+import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.domain.nature.entity.Nature;
+import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +34,15 @@ public class InitTestData {
   @PersistenceContext
   EntityManager em;
 
+  /**
+   * 테스트 디비에 넣을 데이터들 입니다. 나중에 ignore해서 지울 예정입니다. 처음 사용하실 때 테스트 데이터 베이스 ddl-auto : update로 변경후 테스트
+   * 돌리기 전에 이 메서드만 단일로 사용해주세요!
+   */
   //  @Test
   @Rollback(false)
   // 롤백을 하지 않도록 설정
   void init() {
-    // imageFile
+    // imageFile -> originUrl로 구분하여 조회해오므로 originUrl은 origin+숫자
     ImageFile imageFile1 = ImageFile.builder()
         .originUrl("origin1")
         .thumbnailUrl("thumbnail1")
@@ -70,7 +86,7 @@ public class InitTestData {
         .build();
     em.persist(language2);
 
-    // member
+    // member -> nickname으로 구분해 조회하므로 언어+숫자 Ex) chinese3
     Member member1 = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
@@ -218,6 +234,223 @@ public class InitTestData {
         .build();
     em.persist(memberTravelType17);
 
+    // experience
+    Experience experience1 = Experience.builder()
+        .imageFile(imageFile1)
+        .build();
+    em.persist(experience1);
 
+    ExperienceTrans experienceTrans1 = ExperienceTrans.builder()
+        .title("이색체험 제목")
+        .experience(experience1)
+        .language(language1)
+        .build();
+    em.persist(experienceTrans1);
+
+    // festival -> season으로 값 가져오므로 띄어쓰기 없이 데이터 입력 ex) 가을,겨울 / 봄
+    Festival festival1 = Festival.builder()
+        .imageFile(imageFile1)
+        .onGoing(true)
+        .startDate(LocalDate.of(2024, 3, 10))
+        .endDate(LocalDate.of(2028, 3, 1))
+        .season("봄,여름,가을,겨울")
+        .build();
+    em.persist(festival1);
+
+    Festival festival2 = Festival.builder()
+        .imageFile(imageFile2)
+        .onGoing(true)
+        .startDate(LocalDate.of(2024, 3, 10))
+        .endDate(LocalDate.of(2028, 3, 2))
+        .season("가을")
+        .build();
+    em.persist(festival2);
+
+    Festival festival3 = Festival.builder()
+        .imageFile(imageFile3)
+        .onGoing(true)
+        .startDate(LocalDate.of(2024, 3, 10))
+        .endDate(LocalDate.of(2026, 3, 3))
+        .season("겨울")
+        .build();
+    em.persist(festival3);
+
+    Festival festival4 = Festival.builder()
+        .imageFile(imageFile4)
+        .onGoing(false)
+        .startDate(LocalDate.of(2022, 3, 10))
+        .endDate(LocalDate.of(2023, 3, 4))
+        .season("봄,여름")
+        .build();
+    em.persist(festival4);
+
+    Festival festival5 = Festival.builder()
+        .imageFile(imageFile5)
+        .onGoing(false)
+        .startDate(LocalDate.of(2000, 4, 10))
+        .endDate(LocalDate.of(2002, 3, 5))
+        .season("봄,겨울")
+        .build();
+    em.persist(festival5);
+
+    FestivalTrans festivalTrans1 = FestivalTrans.builder()
+        .festival(festival1)
+        .language(language1)
+        .address("제주특별자치도 제주시 조함해안로 525함덕해수욕장 일원")
+        .addressTag("제주시")
+        .build();
+    em.persist(festivalTrans1);
+
+    FestivalTrans festivalTrans2 = FestivalTrans.builder()
+        .festival(festival2)
+        .language(language1)
+        .address("제주특별자치도 서귀포시 중정로 22")
+        .addressTag("서귀포시")
+        .build();
+    em.persist(festivalTrans2);
+
+    FestivalTrans festivalTrans3 = FestivalTrans.builder()
+        .festival(festival3)
+        .language(language1)
+        .address("제주특별자치도 제주시 동광로 90(이도이동)")
+        .addressTag("제주시")
+        .build();
+    em.persist(festivalTrans3);
+
+    FestivalTrans festivalTrans4 = FestivalTrans.builder()
+        .festival(festival4)
+        .language(language1)
+        .address("제주특별자치도 서귀포시 표선면 녹산로 381-17")
+        .addressTag("표선")
+        .build();
+    em.persist(festivalTrans4);
+
+    FestivalTrans festivalTrans5 = FestivalTrans.builder()
+        .festival(festival5)
+        .language(language1)
+        .address("제주특별자치도 제주시 한림읍 한림로 300(한림읍)")
+        .addressTag("한림")
+        .build();
+    em.persist(festivalTrans5);
+
+    // market
+    Market market1 = Market.builder()
+        .imageFile(imageFile1)
+        .build();
+    em.persist(market1);
+    MarketTrans marketTrans1 = MarketTrans.builder()
+        .title("전통시장 제목")
+        .market(market1)
+        .language(language1)
+        .build();
+    em.persist(marketTrans1);
+
+    // nature
+    Nature nature1 = Nature.builder()
+        .imageFile(imageFile1)
+        .build();
+    em.persist(nature1);
+
+    NatureTrans natureTrans1 = NatureTrans.builder()
+        .title("7대자연 제목")
+        .nature(nature1)
+        .language(language1)
+        .build();
+    em.persist(natureTrans1);
+
+    // nana -> ver으로 구분하여 조회하므로 ver+숫
+    Nana nana1 = Nana.builder()
+        .version("ver1")
+        .nanaTitleImageFile(imageFile1)
+        .build();
+    em.persist(nana1);
+
+    Nana nana2 = Nana.builder()
+        .version("ver2")
+        .nanaTitleImageFile(imageFile2)
+        .build();
+    em.persist(nana2);
+
+    Nana nana3 = Nana.builder()
+        .version("ver3")
+        .nanaTitleImageFile(imageFile3)
+        .build();
+    em.persist(nana3);
+
+    Nana nana4 = Nana.builder()
+        .version("ver4")
+        .nanaTitleImageFile(imageFile4)
+        .build();
+    em.persist(nana4);
+
+    Nana nana5 = Nana.builder()
+        .version("ver5")
+        .nanaTitleImageFile(imageFile5)
+        .build();
+    em.persist(nana5);
+
+    NanaTitle nanaTitle1 = NanaTitle.builder()
+        .notice("notice1")
+
+        .language(language1)
+        .nana(nana1)
+        .build();
+    em.persist(nanaTitle1);
+
+    NanaTitle nanaTitle2 = NanaTitle.builder()
+        .notice("notice2")
+        .heading("keyword")
+        .language(language1)
+        .nana(nana2)
+        .build();
+    em.persist(nanaTitle2);
+
+    NanaTitle nanaTitle3 = NanaTitle.builder()
+        .notice("notice3")
+        .language(language1)
+        .nana(nana3)
+        .build();
+    em.persist(nanaTitle3);
+
+    NanaTitle nanaTitle4 = NanaTitle.builder()
+        .notice("notice4")
+        .language(language1)
+        .nana(nana4)
+        .build();
+    em.persist(nanaTitle4);
+
+    NanaTitle nanaTitle5 = NanaTitle.builder()
+        .notice("notice5")
+        .language(language1)
+        .nana(nana5)
+        .build();
+    em.persist(nanaTitle5);
+
+    NanaContent nanaContent1 = NanaContent.builder()
+        .subTitle("subtitle1")
+        .nanaTitle(nanaTitle1)
+        .content("content")
+        .number(1)
+        .title("title")
+        .build();
+    em.persist(nanaContent1);
+
+    NanaContent nanaContent2 = NanaContent.builder()
+        .subTitle("subtitle2")
+        .nanaTitle(nanaTitle1)
+        .content("content2")
+        .number(2)
+        .title("title2")
+        .build();
+    em.persist(nanaContent2);
+
+    NanaContent nanaContent3 = NanaContent.builder()
+        .subTitle("subtitle3")
+        .nanaTitle(nanaTitle1)
+        .content("content3")
+        .number(2)
+        .title("title3")
+        .build();
+    em.persist(nanaContent3);
   }
 }
