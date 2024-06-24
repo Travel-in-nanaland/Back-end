@@ -1,4 +1,4 @@
-name: Java CI with Gradle & Deploy to EC2
+name: parallel build test
 
 # develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
 on:
