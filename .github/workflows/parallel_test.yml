@@ -13,8 +13,7 @@ env:
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: nanaland-codedeploy-deployment-group
 
 
-permissions:
-  contents: read
+permissions: write-all
 
 jobs:
   test:
@@ -43,7 +42,7 @@ jobs:
 
       # 2.7) caching을 사용한 속도 향상
       - name: Cache Gradle packages
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
