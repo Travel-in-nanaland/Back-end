@@ -20,14 +20,12 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
-import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
@@ -58,8 +56,6 @@ class MemberLoginServiceTest {
   @Mock
   private LanguageRepository languageRepository;
   @Mock
-  private MemberTravelTypeRepository memberTravelTypeRepository;
-  @Mock
   private MemberConsentRepository memberConsentRepository;
   @Mock
   private MemberWithdrawalRepository memberWithdrawalRepository;
@@ -73,14 +69,12 @@ class MemberLoginServiceTest {
   private MemberLoginService memberLoginService;
 
   private JoinDto joinDto;
-  private MemberTravelType memberTravelType;
   private ImageFile imageFile;
 
 
   @BeforeEach
   void setUp() {
     joinDto = createJoinDto();
-    memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
   }
 
@@ -104,12 +98,6 @@ class MemberLoginServiceTest {
         .build();
   }
 
-  private MemberTravelType createMemberTravelType() {
-    return MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
-  }
-
   private ImageFile createImageFile() {
     return ImageFile.builder()
         .originUrl("origin")
@@ -127,7 +115,7 @@ class MemberLoginServiceTest {
         .birthDate(joinDto.getBirthDate())
         .provider(Provider.valueOf(joinDto.getProvider()))
         .providerId(joinDto.getProviderId())
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.NONE)
         .build());
   }
 
@@ -210,8 +198,6 @@ class MemberLoginServiceTest {
     doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
     doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean());
     doReturn(language).when(languageRepository).findByLocale(any(Locale.class));
-    doReturn(memberTravelType)
-        .when(memberTravelTypeRepository).findByTravelType(any(TravelType.class));
     doReturn(member).when(memberRepository).save(any());
     doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
     doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
@@ -235,7 +221,6 @@ class MemberLoginServiceTest {
     verify(imageFileService, times(1)).getRandomProfileImageFile();
     verify(imageFileService, times(1)).uploadAndSaveImageFile(any(), anyBoolean());
     verify(languageRepository, times(2)).findByLocale(any(Locale.class));
-    verify(memberTravelTypeRepository, times(2)).findByTravelType(any(TravelType.class));
     verify(memberRepository, times(2)).save(any());
     verify(jwtUtil, times(2)).getAccessToken(any(), any());
     verify(jwtUtil, times(2)).getRefreshToken(any(), any());

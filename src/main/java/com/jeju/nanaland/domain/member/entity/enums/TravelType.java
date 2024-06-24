@@ -1,13 +1,13 @@
 package com.jeju.nanaland.domain.member.entity.enums;
 
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.GOOD_VALUE;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.LOCAL_SPOT;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.LUXURY;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.NATURE;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.SENSIBILITY;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.THEME_PARK;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.TOURIST_SPOT;
-import static com.jeju.nanaland.domain.member.entity.enums.MemberTypeHashtag.TRADITION;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.GOOD_VALUE;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.LOCAL_SPOT;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.LUXURY;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.NATURE;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.SENSIBILITY;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.THEME_PARK;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.TOURIST_SPOT;
+import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.TRADITION;
 
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -81,10 +81,10 @@ public enum TravelType {
   private final String ms; //말레이시아어
   private final String zh; //중국어
   private final String vi; //베트남어
-  private final List<MemberTypeHashtag> hashtags;
+  private final List<TravelTypeHashtag> hashtags;
 
   TravelType(String kr, String en, String ms, String zh, String vi,
-      List<MemberTypeHashtag> hashtags) {
+      List<TravelTypeHashtag> hashtags) {
     this.kr = kr;
     this.en = en;
     this.ms = ms;
@@ -114,27 +114,27 @@ public enum TravelType {
 
     switch (locale) {
       case KOREAN -> {
-        for (MemberTypeHashtag hashtag : hashtags) {
+        for (TravelTypeHashtag hashtag : hashtags) {
           result.add(hashtag.getKr());
         }
       }
       case ENGLISH -> {
-        for (MemberTypeHashtag hashtag : hashtags) {
+        for (TravelTypeHashtag hashtag : hashtags) {
           result.add(hashtag.getEn());
         }
       }
       case CHINESE -> {
-        for (MemberTypeHashtag hashtag : hashtags) {
+        for (TravelTypeHashtag hashtag : hashtags) {
           result.add(hashtag.getZh());
         }
       }
       case MALAYSIA -> {
-        for (MemberTypeHashtag hashtag : hashtags) {
+        for (TravelTypeHashtag hashtag : hashtags) {
           result.add(hashtag.getMs());
         }
       }
       case VIETNAMESE -> {
-        for (MemberTypeHashtag hashtag : hashtags) {
+        for (TravelTypeHashtag hashtag : hashtags) {
           result.add(hashtag.getVi());
         }
       }

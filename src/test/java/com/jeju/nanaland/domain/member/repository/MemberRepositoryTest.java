@@ -10,7 +10,6 @@ import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
@@ -43,14 +42,12 @@ class MemberRepositoryTest {
   @InjectMocks
   private MemberRepositoryImpl memberRepository;
 
-  private MemberTravelType memberTravelType;
   private ImageFile imageFile;
   private Language language;
 
   @BeforeEach
   public void setUp() {
     memberRepository = new MemberRepositoryImpl(queryFactory);
-    memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
     language = createLanguage();
   }
@@ -62,14 +59,6 @@ class MemberRepositoryTest {
         .build();
     entityManager.persist(language);
     return language;
-  }
-
-  private MemberTravelType createMemberTravelType() {
-    memberTravelType = MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
-    entityManager.persist(memberTravelType);
-    return memberTravelType;
   }
 
   private ImageFile createImageFile() {
@@ -91,7 +80,7 @@ class MemberRepositoryTest {
         .birthDate(LocalDate.now())
         .provider(Provider.GOOGLE)
         .providerId("123")
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.NONE)
         .build();
     entityManager.persist(member);
     return member;

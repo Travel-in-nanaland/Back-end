@@ -3,7 +3,10 @@ package com.jeju.nanaland.domain.member.entity;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,9 +24,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Recommend extends BaseEntity {
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "member_travel_type_id")
-  private MemberTravelType memberTravelType;
+  @NotNull
+  @Enumerated(value = EnumType.STRING)
+  private TravelType travelType;
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)

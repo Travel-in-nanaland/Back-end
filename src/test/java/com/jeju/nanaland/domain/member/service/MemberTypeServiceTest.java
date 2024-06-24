@@ -1,21 +1,14 @@
 package com.jeju.nanaland.domain.member.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.domain.member.repository.RecommendRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,9 +22,6 @@ class MemberTypeServiceTest {
 
   @InjectMocks
   MemberTypeService memberTypeService;
-
-  @Mock
-  MemberTravelTypeRepository memberTravelTypeRepository;
 
   @Mock
   RecommendRepository recommendRepository;
@@ -49,21 +39,12 @@ class MemberTypeServiceTest {
     UpdateTypeDto updateTypeDto = new UpdateTypeDto();
     updateTypeDto.setType(travelType.name());
 
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(travelType)
-        .build();
-
-    doReturn(memberTravelType).when(memberTravelTypeRepository)
-        .findByTravelType(any(TravelType.class));
-
     // when
     memberTypeService.updateMemberType(memberInfoDto, updateTypeDto);
 
     // then
-    assertThat(memberInfoDto.getMember().getMemberTravelType())
-        .isEqualTo(memberTravelType);
-    verify(memberTravelTypeRepository, times(1))
-        .findByTravelType(any(TravelType.class));
+    Assertions.assertThat(memberInfoDto.getMember().getTravelType())
+        .isEqualTo(travelType);
   }
 
   //
@@ -193,12 +174,9 @@ class MemberTypeServiceTest {
     Language language = Language.builder()
         .locale(locale)
         .build();
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(travelType)
-        .build();
     Member member = Member.builder()
         .language(language)
-        .memberTravelType(memberTravelType)
+        .travelType(travelType)
         .build();
 
     return MemberInfoDto.builder()

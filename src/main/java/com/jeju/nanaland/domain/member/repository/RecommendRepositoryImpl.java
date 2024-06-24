@@ -49,7 +49,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .innerJoin(nature.firstImageFile, imageFile)
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NATURE))
-            .and(recommend.memberTravelType.travelType.eq(travelType)))
+            .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
@@ -79,7 +79,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
 
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.EXPERIENCE))
-            .and(recommend.memberTravelType.travelType.eq(travelType)))
+            .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
@@ -108,7 +108,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
 
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.MARKET))
-            .and(recommend.memberTravelType.travelType.eq(travelType)))
+            .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
@@ -138,7 +138,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
 
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.FESTIVAL))
-            .and(recommend.memberTravelType.travelType.eq(travelType)))
+            .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
@@ -168,7 +168,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
 
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NANA))
-            .and(recommend.memberTravelType.travelType.eq(travelType)))
+            .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 

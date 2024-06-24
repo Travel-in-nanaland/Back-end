@@ -18,7 +18,6 @@ import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnailDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,12 +115,9 @@ class MarketServiceTest {
     Language language = Language.builder()
         .locale(locale)
         .build();
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(travelType)
-        .build();
     Member member = Member.builder()
         .language(language)
-        .memberTravelType(memberTravelType)
+        .travelType(travelType)
         .build();
 
     return MemberInfoDto.builder()

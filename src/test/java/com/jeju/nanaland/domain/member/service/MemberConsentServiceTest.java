@@ -16,7 +16,6 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -53,7 +52,6 @@ class MemberConsentServiceTest {
 
   private Language language;
   private ImageFile imageFile;
-  private MemberTravelType memberTravelType;
   private Member member;
   private MemberInfoDto memberInfoDto;
   @Captor
@@ -63,7 +61,6 @@ class MemberConsentServiceTest {
   void setUp() {
     language = createLanguage();
     imageFile = createImageFile();
-    memberTravelType = createMemberTravelType();
     member = createMember();
     memberInfoDto = createMemberInfoDto();
   }
@@ -81,12 +78,6 @@ class MemberConsentServiceTest {
         .build();
   }
 
-  private MemberTravelType createMemberTravelType() {
-    return MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
-  }
-
   private Member createMember() {
     return spy(Member.builder()
         .language(language)
@@ -97,7 +88,7 @@ class MemberConsentServiceTest {
         .birthDate(LocalDate.now())
         .provider(Provider.valueOf("GOOGLE"))
         .providerId("123")
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.NONE)
         .build());
   }
 

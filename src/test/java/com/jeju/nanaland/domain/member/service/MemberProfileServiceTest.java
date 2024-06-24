@@ -18,7 +18,6 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -54,13 +53,11 @@ class MemberProfileServiceTest {
   private MemberProfileService memberProfileService;
 
   private ProfileUpdateDto profileUpdateDto;
-  private MemberTravelType memberTravelType;
   private ImageFile imageFile;
 
   @BeforeEach
   void setUp() {
     profileUpdateDto = createProfileUpdateDto();
-    memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
   }
 
@@ -68,12 +65,6 @@ class MemberProfileServiceTest {
     return Language.builder()
         .locale(locale)
         .dateFormat("yy-MM-dd")
-        .build();
-  }
-
-  private MemberTravelType createMemberTravelType() {
-    return MemberTravelType.builder()
-        .travelType(TravelType.GAMGYUL)
         .build();
   }
 
@@ -94,7 +85,7 @@ class MemberProfileServiceTest {
         .birthDate(LocalDate.now())
         .provider(Provider.GOOGLE)
         .providerId("123")
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.GAMGYUL)
         .build());
   }
 
@@ -198,7 +189,7 @@ class MemberProfileServiceTest {
     assertThat(profileDto.getDescription()).isEqualTo(member.getDescription());
     assertThat(profileDto.getLevel()).isEqualTo(member.getLevel());
     assertThat(profileDto.getTravelType()).isEqualTo(
-        member.getMemberTravelType().getTravelType().getTypeNameWithLocale(language.getLocale()));
+        member.getTravelType().getTypeNameWithLocale(language.getLocale()));
     assertThat(profileDto.getHashtags()).hasSize(3);
 
     verify(memberRepository, times(1)).findMemberConsentByMember(any());
