@@ -37,16 +37,21 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
             recommend.category.content,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             natureTrans.title,
             recommendTrans.introduction
         ))
         .from(recommend)
+        .innerJoin(imageFile)
+        .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-        .innerJoin(nature).on(nature.id.eq(recommend.post.id))
-        .innerJoin(nature.natureTrans, natureTrans).on(natureTrans.language.locale.eq(locale))
-        .innerJoin(nature.firstImageFile, imageFile)
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(nature)
+        .on(nature.id.eq(recommend.post.id))
+        .innerJoin(nature.natureTrans, natureTrans)
+        .on(natureTrans.language.locale.eq(locale))
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NATURE))
             .and(recommend.travelType.eq(travelType)))
@@ -61,22 +66,21 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
             recommend.category.content,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             experienceTrans.title,
             recommendTrans.introduction
         ))
         .from(recommend)
-
+        .innerJoin(imageFile)
+        .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
-        .innerJoin(experience).on(experience.id.eq(recommend.post.id))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(experience)
+        .on(experience.id.eq(recommend.post.id))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
-
-        .innerJoin(experience.firstImageFile, imageFile)
-
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.EXPERIENCE))
             .and(recommend.travelType.eq(travelType)))
@@ -91,21 +95,21 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
             recommend.category.content,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             marketTrans.title,
             recommendTrans.introduction
         ))
         .from(recommend)
-
+        .innerJoin(imageFile)
+        .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
-        .innerJoin(market).on(market.id.eq(recommend.post.id))
-
-        .innerJoin(market.marketTrans, marketTrans).on(marketTrans.language.locale.eq(locale))
-
-        .innerJoin(market.firstImageFile, imageFile)
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(market)
+        .on(market.id.eq(recommend.post.id))
+        .innerJoin(market.marketTrans, marketTrans)
+        .on(marketTrans.language.locale.eq(locale))
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.MARKET))
             .and(recommend.travelType.eq(travelType)))
@@ -120,22 +124,21 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
             recommend.category.content,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             festivalTrans.title,
             recommendTrans.introduction
         ))
         .from(recommend)
-
+        .innerJoin(imageFile)
+        .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
-        .innerJoin(festival).on(festival.id.eq(recommend.post.id))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(festival)
+        .on(festival.id.eq(recommend.post.id))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
-
-        .innerJoin(festival.firstImageFile, imageFile)
-
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.FESTIVAL))
             .and(recommend.travelType.eq(travelType)))
@@ -149,23 +152,22 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
             recommend.category.content,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nanaTitle.heading,
             recommendTrans.introduction
         ))
         .from(recommend)
-
+        .innerJoin(imageFile)
+        .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
         .innerJoin(nana)
         .on(nana.id.eq(recommend.post.id))
-
         .innerJoin(nanaTitle)
-        .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
-
-        .innerJoin(nana.nanaTitleImageFile, imageFile)
-
+        .on(nanaTitle.nana.eq(nana)
+            .and(nanaTitle.language.locale.eq(locale)))
         .where(recommend.post.id.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NANA))
             .and(recommend.travelType.eq(travelType)))
