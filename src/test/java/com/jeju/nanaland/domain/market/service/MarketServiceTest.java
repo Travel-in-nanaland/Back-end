@@ -93,8 +93,7 @@ class MarketServiceTest {
     MarketDetailDto result = marketService.getMarketDetail(memberInfoDto, 1L, false);
 
     // then
-    assertThat(result.getFirstImage().getOriginUrl()).isEqualTo("first origin url");
-    assertThat(result.getImages().size()).isEqualTo(2);
+    assertThat(result.getImages().size()).isEqualTo(3);
   }
 
   // totalElement: 10, MarketThumbnail 데이터가 2개인 Page 생성

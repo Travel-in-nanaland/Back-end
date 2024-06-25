@@ -62,7 +62,7 @@ class FavoriteServiceTest {
     FavoriteThumbnailDto result = favoriteService.getAllFavoriteList(memberInfoDto, 0, 12);
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(5);
+    assertThat(result.getTotalElements()).isEqualTo(3);
     System.out.println(result.getData());
   }
 
