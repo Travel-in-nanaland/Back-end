@@ -183,6 +183,7 @@ public class RecommendRepositoryTest {
         .travelType(travelType)
         .post(nature)
         .category(category)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -223,6 +224,7 @@ public class RecommendRepositoryTest {
         .travelType(travelType)
         .post(market)
         .category(category)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -263,6 +265,7 @@ public class RecommendRepositoryTest {
         .travelType(travelType)
         .post(festival)
         .category(category)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -303,6 +306,7 @@ public class RecommendRepositoryTest {
         .travelType(travelType)
         .post(experience)
         .category(category)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -345,6 +349,7 @@ public class RecommendRepositoryTest {
         .travelType(travelType)
         .post(nana)
         .category(category)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
