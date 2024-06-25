@@ -58,10 +58,7 @@ public class MarketResponse {
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
 
-    @Schema(description = "게시물 썸네일 이미지")
-    private ImageFileDto firstImage;
-
-    @Schema(description = "추가 이미지")
+    @Schema(description = "이미지 리스트")
     private List<ImageFileDto> images;
   }
 
