@@ -86,7 +86,9 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
-  private TravelType travelType;
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private TravelType travelType = TravelType.NONE;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
