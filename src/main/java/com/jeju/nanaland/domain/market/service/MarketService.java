@@ -15,6 +15,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,13 +76,14 @@ public class MarketService {
     // TODO: category 없애는 리팩토링 필요
     // 좋아요 여부 확인
     boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
-    // 추가 이미지 조회
-    List<ImageFileDto> additionalImages = imageFileRepository.findPostImageFiles(id);
+    // 이미지 리스트
+    List<ImageFileDto> images = new ArrayList<>();
+    images.add(marketCompositeDto.getFirstImage());
+    images.addAll(imageFileRepository.findPostImageFiles(id));
 
     return MarketResponse.MarketDetailDto.builder()
         .id(marketCompositeDto.getId())
-        .firstImage(marketCompositeDto.getFirstImage())
-        .images(additionalImages)
+        .images(images)
         .title(marketCompositeDto.getTitle())
         .content(marketCompositeDto.getContent())
         .address(marketCompositeDto.getAddress())
