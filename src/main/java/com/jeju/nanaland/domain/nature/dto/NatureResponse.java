@@ -62,9 +62,6 @@ public class NatureResponse {
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
 
-    @Schema(description = "원본 이미지 url")
-    private String originUrl;
-
     @Schema(description = "주소 태그")
     private String addressTag;
 
@@ -97,5 +94,8 @@ public class NatureResponse {
 
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
+
+    @Schema(description = "이미지 리스트")
+    private List<ImageFileDto> images;
   }
 }
