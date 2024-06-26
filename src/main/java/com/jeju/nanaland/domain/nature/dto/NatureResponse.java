@@ -1,9 +1,12 @@
 package com.jeju.nanaland.domain.nature.dto;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
 public class NatureResponse {
@@ -21,9 +24,9 @@ public class NatureResponse {
 
   }
 
-  @Getter
+  @Data
   @Builder
-
+  @AllArgsConstructor
   public static class NatureThumbnail {
 
     @Schema(description = "7대 자연 게시물 id")
@@ -32,8 +35,8 @@ public class NatureResponse {
     @Schema(description = "제목")
     private String title;
 
-    @Schema(description = "썸네일 이미지 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto imageFileDto;
 
     @Schema(description = "주소 태그")
     private String addressTag;
@@ -42,13 +45,12 @@ public class NatureResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public NatureThumbnail(Long id, String title, String thumbnailUrl, String addressTag,
-        boolean isFavorite) {
+    public NatureThumbnail(Long id, String title, String originUrl, String thumbnailUrl,
+        String addressTag) {
       this.id = id;
       this.title = title;
-      this.thumbnailUrl = thumbnailUrl;
+      this.imageFileDto = new ImageFileDto(originUrl, thumbnailUrl);
       this.addressTag = addressTag;
-      this.isFavorite = isFavorite;
     }
   }
 

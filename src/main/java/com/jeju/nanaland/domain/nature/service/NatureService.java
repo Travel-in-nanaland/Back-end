@@ -34,21 +34,16 @@ public class NatureService {
       List<String> addressFilterList, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureCompositeDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
+    Page<NatureThumbnail> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
         memberInfoDto.getLanguage().getLocale(), addressFilterList, keyword, pageable);
 
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMemberAndCategory(
         memberInfoDto.getMember(), NATURE);
 
-    // TODO: 이미지 추가 필요
-    List<NatureThumbnail> data = natureCompositeDtoPage.getContent()
-        .stream().map(natureCompositeDto ->
-            NatureThumbnail.builder()
-                .id(natureCompositeDto.getId())
-                .title(natureCompositeDto.getTitle())
-                .addressTag(natureCompositeDto.getAddressTag())
-                .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
-                .build()).toList();
+    List<NatureThumbnail> data = natureCompositeDtoPage.getContent();
+    for (NatureThumbnail natureThumbnail : data) {
+      natureThumbnail.setFavorite(favoriteIds.contains(natureThumbnail.getId()));
+    }
 
     return NatureThumbnailDto.builder()
         .totalElements(natureCompositeDtoPage.getTotalElements())

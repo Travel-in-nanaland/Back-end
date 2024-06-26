@@ -9,7 +9,9 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.QNatureResponse_NatureThumbnail;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -104,28 +106,20 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureCompositeDto> findNatureThumbnails(Locale locale,
+  public Page<NatureThumbnail> findNatureThumbnails(Locale locale,
       List<String> addressFilterList, String keyword, Pageable pageable) {
-    List<NatureCompositeDto> resultDto = queryFactory
-        .select(new QNatureCompositeDto(
-            nature.id,
-            imageFile.originUrl,
-            imageFile.thumbnailUrl,
-            nature.contact,
-            language.locale,
-            natureTrans.title,
-            natureTrans.content,
-            natureTrans.address,
-            natureTrans.addressTag,
-            natureTrans.intro,
-            natureTrans.details,
-            natureTrans.time,
-            natureTrans.amenity,
-            natureTrans.fee
-        ))
+    List<NatureThumbnail> resultDto = queryFactory
+        .select(new QNatureResponse_NatureThumbnail(
+                nature.id,
+                natureTrans.title,
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                natureTrans.addressTag
+            )
+        )
         .from(nature)
-        .leftJoin(nature.natureTrans, natureTrans)
-        .leftJoin(nature.firstImageFile, imageFile)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
         .where(natureTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList))
             .and(natureTrans.title.contains(keyword)))
@@ -137,7 +131,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(nature.count())
         .from(nature)
-        .leftJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.natureTrans, natureTrans)
         .where(natureTrans.language.locale.eq(locale)
             .and(addressTagCondition(addressFilterList))
             .and(natureTrans.title.contains(keyword)));
