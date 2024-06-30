@@ -45,17 +45,9 @@ class NanaRepositoryImplTest {
 
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
   private void setNana() {
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
-    language2 = Language.builder()
-        .locale(Language.CHINESE)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language2);
+    language2 = Language.CHINESE;
 
     imageFile1 = ImageFile.builder()
         .originUrl("originUrl1")

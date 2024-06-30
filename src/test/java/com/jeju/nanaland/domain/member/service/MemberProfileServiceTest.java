@@ -44,8 +44,6 @@ class MemberProfileServiceTest {
   @Mock
   private MemberRepository memberRepository;
   @Mock
-  private LanguageRepository languageRepository;
-  @Mock
   private S3ImageService s3ImageService;
   @InjectMocks
   private MemberProfileService memberProfileService;
@@ -57,13 +55,6 @@ class MemberProfileServiceTest {
   void setUp() {
     profileUpdateDto = createProfileUpdateDto();
     imageFile = createImageFile();
-  }
-
-  private Language createLanguage(Language locale) {
-    return Language.builder()
-        .locale(locale)
-        .dateFormat("yy-MM-dd")
-        .build();
   }
 
   private ImageFile createImageFile() {
@@ -113,7 +104,7 @@ class MemberProfileServiceTest {
   @DisplayName("프로필 수정 실패 - 닉네임이 중복되는 경우")
   void updateProfileFail() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     Member member2 = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
@@ -135,7 +126,7 @@ class MemberProfileServiceTest {
   @DisplayName("프로필 수정 성공")
   void updateProfileSuccess() throws IOException {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
@@ -165,7 +156,7 @@ class MemberProfileServiceTest {
   @DisplayName("프로필 조회")
   void getMemberProfile() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     List<MemberConsent> memberConsents = List.of(
@@ -187,7 +178,7 @@ class MemberProfileServiceTest {
     assertThat(profileDto.getDescription()).isEqualTo(member.getDescription());
     assertThat(profileDto.getLevel()).isEqualTo(member.getLevel());
     assertThat(profileDto.getTravelType()).isEqualTo(
-        member.getTravelType().getTypeNameWithLocale(language.getLocale()));
+        member.getTravelType().getTypeNameWithLocale(language));
     assertThat(profileDto.getHashtags()).hasSize(3);
 
     verify(memberRepository, times(1)).findMemberConsentByMember(any());
@@ -197,21 +188,17 @@ class MemberProfileServiceTest {
   @DisplayName("언어 변경")
   void updateLanguage() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-    Language language2 = createLanguage(Language.ENGLISH);
+    Language language2 = Language.ENGLISH;
     LanguageUpdateDto languageUpdateDto = new LanguageUpdateDto();
     languageUpdateDto.setLocale(Language.ENGLISH.name());
-
-    doReturn(language2).when(languageRepository).findByLocale(any());
 
     // when
     memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
 
     // then
     assertThat(member.getLanguage()).isEqualTo(language2);
-
-    verify(languageRepository, times(1)).findByLocale(any());
   }
 }

@@ -109,10 +109,7 @@ class MarketServiceTest {
     return new PageImpl<>(marketThumbnailList, PageRequest.of(0, 2), 10);
   }
 
-  private MemberInfoDto createMemberInfoDto(Language locale, TravelType travelType) {
-    Language language = Language.builder()
-        .locale(locale)
-        .build();
+  private MemberInfoDto createMemberInfoDto(Language language, TravelType travelType) {
     Member member = Member.builder()
         .language(language)
         .travelType(travelType)

@@ -45,11 +45,7 @@ class ExperienceServiceTest {
         .build();
     em.persist(imageFile2);
 
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
     member1 = Member.builder()
         .email("test@naver.com")

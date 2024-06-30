@@ -59,7 +59,7 @@ public class NanaServiceTest {
   @Test
   void getNanaThumbnails() {
     // Given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     ImageFile imageFile = createImageFile(1);
     Member member = createMember(language, imageFile);
     MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
@@ -107,7 +107,7 @@ public class NanaServiceTest {
   @Test
   void getNanaDetail() {
     // Given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     ImageFile imageFile = createImageFile(1);
     Member member = createMember(language, imageFile);
     MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
@@ -135,13 +135,6 @@ public class NanaServiceTest {
     int[] numberList = {nanaDetails.get(0).number, nanaDetails.get(1).number,
         nanaDetails.get(2).number};
     Assertions.assertThat(numberList).containsSequence(1, 2, 3);
-  }
-
-  Language createLanguage(Language locale) {
-    return Language.builder()
-        .locale(locale)
-        .dateFormat("yyyy-MM-dd")
-        .build();
   }
 
   ImageFile createImageFile(int idx) {

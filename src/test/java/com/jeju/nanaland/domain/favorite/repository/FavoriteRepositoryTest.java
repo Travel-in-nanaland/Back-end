@@ -187,12 +187,7 @@ public class FavoriteRepositoryTest {
 //  }
 
   Language initKoreanLanguage() {
-    Language korean = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(korean);
-    return korean;
+    return Language.KOREAN;
   }
 
   Member initMember(Language language) {

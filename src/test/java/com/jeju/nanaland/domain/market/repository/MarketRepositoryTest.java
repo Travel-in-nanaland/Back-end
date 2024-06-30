@@ -65,11 +65,7 @@ class MarketRepositoryTest {
 
   // KOREAN 언어 정보 초기 설정
   Language initKoreanLanguage() {
-    Language korean = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(korean);
+    Language korean = Language.KOREAN;
     return korean;
   }
 

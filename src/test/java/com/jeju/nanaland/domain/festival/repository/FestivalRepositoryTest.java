@@ -160,11 +160,7 @@ class FestivalRepositoryTest {
         .build();
     em.persist(imageFile5);
 
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
     festival1 = Festival.builder()
         .firstImageFile(imageFile1)

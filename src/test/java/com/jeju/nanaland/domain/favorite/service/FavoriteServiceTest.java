@@ -64,10 +64,7 @@ class FavoriteServiceTest {
     System.out.println(result.getData());
   }
 
-  private MemberInfoDto initMemberInfoDto(Language locale, TravelType travelType) {
-    Language language = Language.builder()
-        .locale(locale)
-        .build();
+  private MemberInfoDto initMemberInfoDto(Language language, TravelType travelType) {
     Member member = Member.builder()
         .language(language)
         .travelType(travelType)

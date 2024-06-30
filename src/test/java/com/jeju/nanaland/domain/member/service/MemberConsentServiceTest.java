@@ -65,9 +65,7 @@ class MemberConsentServiceTest {
   }
 
   private Language createLanguage() {
-    return Language.builder()
-        .locale(Language.KOREAN)
-        .build();
+    return Language.KOREAN;
   }
 
   private ImageFile createImageFile() {

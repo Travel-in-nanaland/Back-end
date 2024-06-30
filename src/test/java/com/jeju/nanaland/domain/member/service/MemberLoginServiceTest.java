@@ -52,8 +52,6 @@ class MemberLoginServiceTest {
   @Mock
   private MemberRepository memberRepository;
   @Mock
-  private LanguageRepository languageRepository;
-  @Mock
   private MemberConsentRepository memberConsentRepository;
   @Mock
   private MemberWithdrawalRepository memberWithdrawalRepository;
@@ -87,13 +85,6 @@ class MemberLoginServiceTest {
     joinDto.setBirthDate(LocalDate.now());
     joinDto.setConsentItems(Collections.emptyList());
     return joinDto;
-  }
-
-  private Language createLanguage(Language locale) {
-    return Language.builder()
-        .locale(locale)
-        .dateFormat("yy-MM-dd")
-        .build();
   }
 
   private ImageFile createImageFile() {
@@ -143,7 +134,7 @@ class MemberLoginServiceTest {
   @DisplayName("회원 가입 실패 - 이미 회원 가입된 경우")
   void joinFail() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
 
     doReturn(Optional.of(member))
@@ -163,7 +154,7 @@ class MemberLoginServiceTest {
   @DisplayName("회원 가입 실패 - 닉네임 중복")
   void joinFail2() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
 
     doReturn(Optional.empty())
@@ -187,7 +178,7 @@ class MemberLoginServiceTest {
     // given
     MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
         new byte[0]);
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
 
     doReturn(Optional.empty())
@@ -195,7 +186,6 @@ class MemberLoginServiceTest {
     doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
     doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
     doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean());
-    doReturn(language).when(languageRepository).findByLocale(any(Language.class));
     doReturn(member).when(memberRepository).save(any());
     doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
     doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
@@ -218,7 +208,6 @@ class MemberLoginServiceTest {
     verify(memberRepository, times(2)).findByNickname(any());
     verify(imageFileService, times(1)).getRandomProfileImageFile();
     verify(imageFileService, times(1)).uploadAndSaveImageFile(any(), anyBoolean());
-    verify(languageRepository, times(2)).findByLocale(any(Language.class));
     verify(memberRepository, times(2)).save(any());
     verify(jwtUtil, times(2)).getAccessToken(any(), any());
     verify(jwtUtil, times(2)).getRefreshToken(any(), any());
@@ -248,7 +237,7 @@ class MemberLoginServiceTest {
   @DisplayName("로그인 성공")
   void loginSuccess() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     LoginDto loginDto = createLoginDto(Language.KOREAN.name());
 
@@ -276,7 +265,7 @@ class MemberLoginServiceTest {
   @DisplayName("탈퇴 후 재로그인 실패 - memberWithdrawal를 찾을 수 없는 경우")
   void updateMemberActiveFail() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     member.updateStatus(Status.INACTIVE);
     doReturn(Optional.empty()).when(memberWithdrawalRepository).findByMember(member);
@@ -294,7 +283,7 @@ class MemberLoginServiceTest {
   @DisplayName("탈퇴 후 재로그인 성공")
   void updateMemberActiveSuccess() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     member.updateStatus(Status.INACTIVE);
     MemberWithdrawal memberWithdrawal = createMemberWithdrawal(member);
@@ -311,20 +300,16 @@ class MemberLoginServiceTest {
   @DisplayName("언어가 다르면 업데이트")
   void updateLanguageDifferent() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     LoginDto loginDto = createLoginDto(Language.ENGLISH.name());
-    Language languageEnglish = createLanguage(Language.ENGLISH);
-
-    doReturn(languageEnglish).when(languageRepository).findByLocale(any(Language.class));
+    Language languageEnglish = Language.ENGLISH;
 
     // when
     memberLoginService.updateLanguageDifferent(loginDto, member);
 
     // then
-    assertThat(member.getLanguage().getLocale()).isEqualTo(Language.ENGLISH);
-
-    verify(languageRepository, times(1)).findByLocale(any(Language.class));
+    assertThat(member.getLanguage()).isEqualTo(Language.ENGLISH);
   }
 
   @Test
@@ -372,7 +357,7 @@ class MemberLoginServiceTest {
   @DisplayName("토큰 재발행 성공")
   void reissueSuccess() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
 
     doReturn("refreshToken").when(jwtUtil).resolveToken(any());
@@ -406,7 +391,7 @@ class MemberLoginServiceTest {
   @DisplayName("로그아웃 성공")
   void logoutSuccess() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
 
@@ -427,7 +412,7 @@ class MemberLoginServiceTest {
   @DisplayName("회원 탈퇴 성공")
   void withdrawal() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     WithdrawalDto withdrawalDto = new WithdrawalDto();
@@ -445,7 +430,7 @@ class MemberLoginServiceTest {
   @DisplayName("탈퇴된 회원 개인정보 삭제")
   void deleteWithdrawalMemberInfo() {
     // given
-    Language language = createLanguage(Language.KOREAN);
+    Language language = Language.KOREAN;
     Member member = createMember(language);
 
     doReturn(List.of(member)).when(memberRepository).findInactiveMembersForWithdrawalDate();

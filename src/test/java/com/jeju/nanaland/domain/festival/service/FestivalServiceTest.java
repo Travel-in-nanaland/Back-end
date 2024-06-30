@@ -41,15 +41,9 @@ class FestivalServiceTest {
   @DisplayName("festival 상세 조회에서 기간 국가별 요일")
   void getFestivalDetail() {
     // Given
-    Language language1 = Language.builder()
-        .dateFormat("yy-MM-dd")
-        .locale(Language.KOREAN)
-        .build();
+    Language language1 = Language.KOREAN;
 
-    Language language2 = Language.builder()
-        .dateFormat("dd-MM-yy")
-        .locale(Language.MALAYSIA)
-        .build();
+    Language language2 = Language.MALAYSIA;
 
     // 각각 일요일 / 월요일 -> 말레이시아어로 CN / T2
     LocalDate startDate = LocalDate.of(2024, 3, 10);
@@ -68,9 +62,9 @@ class FestivalServiceTest {
         startDate, endDate);
 
     when(festivalRepository.findCompositeDtoById(1L,
-        krMemberInfoDto.getLanguage().getLocale())).thenReturn(krFestivalCompositeDto);
+        krMemberInfoDto.getLanguage())).thenReturn(krFestivalCompositeDto);
     when(festivalRepository.findCompositeDtoById(1L,
-        msMemberInfoDto.getLanguage().getLocale())).thenReturn(msFestivalCompositeDto);
+        msMemberInfoDto.getLanguage())).thenReturn(msFestivalCompositeDto);
     when(favoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong())).thenReturn(false);
 
     // When

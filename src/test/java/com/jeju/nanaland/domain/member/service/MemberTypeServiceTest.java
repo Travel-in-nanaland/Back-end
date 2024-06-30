@@ -71,7 +71,7 @@ class MemberTypeServiceTest {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, travelType);
     Member member = memberInfoDto.getMember();
-    Language locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     List<Recommend> recommends = recommendList(travelType);
 
     when(
@@ -110,7 +110,7 @@ class MemberTypeServiceTest {
     TravelType travelType = TravelType.NONE;
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, travelType);
     Member member = memberInfoDto.getMember();
-    Language locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     List<Recommend> recommends = recommendList(TravelType.GAMGYUL_ICECREAM); // 랜덤으로 선택된 타입
 
     when(
@@ -164,10 +164,7 @@ class MemberTypeServiceTest {
         .isEqualTo(travelType.name() + "에 해당하는 추천 게시물이 없거나 너무 적습니다.");
   }
 
-  private MemberInfoDto createMemberInfoDto(Language locale, TravelType travelType) {
-    Language language = Language.builder()
-        .locale(locale)
-        .build();
+  private MemberInfoDto createMemberInfoDto(Language language, TravelType travelType) {
     Member member = Member.builder()
         .language(language)
         .travelType(travelType)

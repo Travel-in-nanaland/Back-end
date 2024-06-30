@@ -34,11 +34,7 @@ class EntityImageFileMappingTest {
 
   @BeforeEach
   void init() {
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
     imageFile1 = ImageFile.builder()
         .thumbnailUrl("thumbnail_url")

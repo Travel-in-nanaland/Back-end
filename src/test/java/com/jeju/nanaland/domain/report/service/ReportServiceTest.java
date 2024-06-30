@@ -45,20 +45,13 @@ class ReportServiceTest {
         .build();
     em.persist(imageFile1);
 
-    // language
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yy-mm-dd")
-        .build();
-    em.persist(language);
-
     // member
     member = Member.builder()
         .email("test@naver.com")
         .provider(Provider.KAKAO)
         .providerId("123456789")
         .nickname("nickname1")
-        .language(language)
+        .language(Language.KOREAN)
         .profileImageFile(imageFile1)
         .travelType(TravelType.NONE)
         .build();
@@ -66,7 +59,7 @@ class ReportServiceTest {
 
     // memberInfoDto
     memberInfoDto = MemberInfoDto.builder()
-        .language(language)
+        .language(Language.KOREAN)
         .member(member)
         .build();
   }
@@ -108,7 +101,7 @@ class ReportServiceTest {
     NanaTitle nanaTitle = NanaTitle.builder()
         .heading("heading")
         .subHeading("subHeading")
-        .language(language)
+        .language(Language.KOREAN)
         .nana(nana)
         .build();
     em.persist(nanaTitle);

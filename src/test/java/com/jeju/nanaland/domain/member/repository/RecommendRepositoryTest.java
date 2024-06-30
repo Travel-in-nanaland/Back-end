@@ -144,12 +144,7 @@ public class RecommendRepositoryTest {
   }
 
   Language initLanguageKorean() {
-    Language language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(language);
-
+    Language language = Language.KOREAN;
     return language;
   }
 

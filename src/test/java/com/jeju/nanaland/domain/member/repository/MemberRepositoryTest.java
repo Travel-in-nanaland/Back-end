@@ -52,11 +52,7 @@ class MemberRepositoryTest {
   }
 
   private Language createLanguage() {
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yy-MM-dd")
-        .build();
-    entityManager.persist(language);
+    language = Language.KOREAN;
     return language;
   }
 

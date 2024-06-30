@@ -58,9 +58,7 @@ class NatureServiceTest {
   }
 
   private MemberInfoDto createMemberInfoDto() {
-    Language language = Language.builder()
-        .locale(Language.KOREAN)
-        .build();
+    Language language = Language.KOREAN;
     Member member = Member.builder()
         .language(language)
         .travelType(TravelType.NONE)

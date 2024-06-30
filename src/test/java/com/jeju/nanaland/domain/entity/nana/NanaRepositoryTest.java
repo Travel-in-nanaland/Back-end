@@ -36,17 +36,9 @@ public class NanaRepositoryTest {
 
   @BeforeEach
   void init() {
-    language = Language.builder()
-        .locale(Language.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
-    language2 = Language.builder()
-        .locale(Language.CHINESE)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language2);
+    language2 = Language.CHINESE;
 
     imageFile = ImageFile.builder()
         .originUrl("originUrl")
