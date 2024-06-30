@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.report.entity;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,7 +40,7 @@ public class InfoFixReport extends BaseEntity {
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  private Locale locale;
+  private Language locale;
 
   @NotNull
   private String title;

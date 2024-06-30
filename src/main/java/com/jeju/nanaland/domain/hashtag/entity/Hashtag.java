@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.hashtag.entity;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -36,8 +36,7 @@ import lombok.NoArgsConstructor;
 public class Hashtag extends BaseEntity {
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "language_id", nullable = false)
+  @Enumerated(EnumType.STRING)
   private Language language;
 
   @NotNull

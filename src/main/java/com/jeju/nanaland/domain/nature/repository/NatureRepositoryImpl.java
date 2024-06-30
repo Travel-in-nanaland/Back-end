@@ -1,13 +1,12 @@
 package com.jeju.nanaland.domain.nature.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
-import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
 import com.jeju.nanaland.domain.common.data.Category;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
@@ -28,14 +27,14 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public NatureCompositeDto findCompositeDtoById(Long id, Locale locale) {
+  public NatureCompositeDto findCompositeDtoById(Long id, Language language) {
     return queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nature.contact,
-            language.locale,
+            natureTrans.language,
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
@@ -50,16 +49,16 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
         .where(nature.id.eq(id)
-            .and(natureTrans.language.locale.eq(locale))
+            .and(natureTrans.language.eq(language))
         )
         .fetchOne();
   }
 
   @Override
-  public Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
+  public Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
 
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, locale);
+    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
 
     List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
@@ -67,7 +66,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nature.contact,
-            natureTrans.language.locale,
+            natureTrans.language,
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
@@ -81,7 +80,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .on(natureTrans.language.locale.eq(locale))
+        .on(natureTrans.language.eq(language))
         .where(natureTrans.title.contains(keyword)
             .or(natureTrans.addressTag.contains(keyword))
             .or(natureTrans.content.contains(keyword))
@@ -96,7 +95,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .on(natureTrans.language.locale.eq(locale))
+        .on(natureTrans.language.eq(language))
         .where(natureTrans.title.contains(keyword)
             .or(natureTrans.addressTag.contains(keyword))
             .or(natureTrans.content.contains(keyword))
@@ -106,7 +105,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureThumbnail> findNatureThumbnails(Locale locale,
+  public Page<NatureThumbnail> findNatureThumbnails(Language language,
       List<String> addressFilterList, String keyword, Pageable pageable) {
     List<NatureThumbnail> resultDto = queryFactory
         .select(new QNatureResponse_NatureThumbnail(
@@ -120,7 +119,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .innerJoin(nature.natureTrans, natureTrans)
         .innerJoin(nature.firstImageFile, imageFile)
-        .where(natureTrans.language.locale.eq(locale)
+        .where(natureTrans.language.eq(language)
             .and(addressTagCondition(addressFilterList))
             .and(natureTrans.title.contains(keyword)))
         .orderBy(nature.createdAt.desc())
@@ -132,7 +131,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .select(nature.count())
         .from(nature)
         .innerJoin(nature.natureTrans, natureTrans)
-        .where(natureTrans.language.locale.eq(locale)
+        .where(natureTrans.language.eq(language)
             .and(addressTagCondition(addressFilterList))
             .and(natureTrans.title.contains(keyword)));
 
@@ -147,14 +146,14 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
     }
   }
 
-  private List<Long> getIdListContainAllHashtags(String keyword, Locale locale) {
+  private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(nature.id)
         .from(nature)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(nature.id)
             .and(hashtag.category.eq(Category.NATURE))
-            .and(hashtag.language.locale.eq(locale)))
+            .and(hashtag.language.eq(language)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(nature.id)
         .having(nature.id.count().eq(splitKeyword(keyword).stream().count()))

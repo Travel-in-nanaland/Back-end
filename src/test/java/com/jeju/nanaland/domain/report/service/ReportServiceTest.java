@@ -3,9 +3,8 @@ package com.jeju.nanaland.domain.report.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -48,7 +47,7 @@ class ReportServiceTest {
 
     // language
     language = Language.builder()
-        .locale(Locale.KOREAN)
+        .locale(Language.KOREAN)
         .dateFormat("yy-mm-dd")
         .build();
     em.persist(language);

@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.report.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -63,7 +63,7 @@ public class ReportService {
     }
 
     Long postId = reqDto.getPostId();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     String title = null;
     switch (Category.valueOf(reqDto.getCategory())) {
       case NATURE -> {
@@ -117,7 +117,7 @@ public class ReportService {
         .category(categoryContent)
         .fixType(fixType)
         .title(title)
-        .locale(memberInfoDto.getLanguage().getLocale())
+        .locale(memberInfoDto.getLanguage())
         .content(reqDto.getContent())
         .email(reqDto.getEmail())
         .imageUrl(imageUrl)

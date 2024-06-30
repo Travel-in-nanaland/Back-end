@@ -3,9 +3,8 @@ package com.jeju.nanaland.domain.market.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
@@ -36,7 +35,7 @@ class MarketRepositoryTest {
   @DisplayName("전통시장 검색")
   void searchMarketTest() {
     Pageable pageable = PageRequest.of(0, 12);
-    marketRepository.searchCompositeDtoByKeyword("쇼핑", Locale.KOREAN, pageable);
+    marketRepository.searchCompositeDtoByKeyword("쇼핑", Language.KOREAN, pageable);
   }
 
   @Test
@@ -49,7 +48,7 @@ class MarketRepositoryTest {
       System.out.println(market.getCreatedAt());
     }
 
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     List<String> addressFilter = Arrays.asList("제주시");
     Pageable pageable = PageRequest.of(0, 2);
 
@@ -67,7 +66,7 @@ class MarketRepositoryTest {
   // KOREAN 언어 정보 초기 설정
   Language initKoreanLanguage() {
     Language korean = Language.builder()
-        .locale(Locale.KOREAN)
+        .locale(Language.KOREAN)
         .dateFormat("yyyy-mm-dd")
         .build();
     em.persist(korean);

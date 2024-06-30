@@ -3,8 +3,7 @@ package com.jeju.nanaland.domain.nana.service;
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
 
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
@@ -47,12 +46,12 @@ public class NanaService {
   private final SearchService searchService;
 
   //메인페이지에 보여지는 4개의 nana
-  public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
+  public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
 
   //나나 들어갔을 때 보여줄 모든 nana
-  public NanaThumbnailDto getNanaThumbnails(Locale locale, int page, int size) {
+  public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
@@ -126,7 +125,7 @@ public class NanaService {
               .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
               .additionalInfoList(
-                  getAdditionalInfoFromNanaContentEntity(language.getLocale(), nanaContent))
+                  getAdditionalInfoFromNanaContentEntity(language, nanaContent))
               .hashtags(stringKeywordList)
               .build());
       nanaContentImageIdx++;
@@ -146,7 +145,7 @@ public class NanaService {
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
-      Locale locale, NanaContent nanaContent) {
+      Language locale, NanaContent nanaContent) {
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
     // 순서 보장 위해 List 형으로 바꾸고

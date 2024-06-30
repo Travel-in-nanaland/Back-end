@@ -4,9 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
@@ -48,7 +47,7 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     Category category = Category.NATURE;
     Pageable pageable = PageRequest.of(0, 12);
 
@@ -72,7 +71,7 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     Category category = Category.NATURE;
 
     // nature 포스트 1개 생성
@@ -94,7 +93,7 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     Category category = Category.FESTIVAL;
     Pageable pageable = PageRequest.of(0, 12);
 
@@ -118,7 +117,7 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     Category category = Category.FESTIVAL;
 
     // festival 포스트 1개 생성
@@ -140,7 +139,7 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     Category category = Category.MARKET;
     Pageable pageable = PageRequest.of(0, 12);
 
@@ -164,7 +163,7 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     Category category = Category.MARKET;
 
     // market 포스트 1개 생성
@@ -189,7 +188,7 @@ public class FavoriteRepositoryTest {
 
   Language initKoreanLanguage() {
     Language korean = Language.builder()
-        .locale(Locale.KOREAN)
+        .locale(Language.KOREAN)
         .dateFormat("yyyy-mm-dd")
         .build();
     em.persist(korean);

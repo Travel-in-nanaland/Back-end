@@ -8,10 +8,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -61,7 +59,7 @@ class MemberProfileServiceTest {
     imageFile = createImageFile();
   }
 
-  private Language createLanguage(Locale locale) {
+  private Language createLanguage(Language locale) {
     return Language.builder()
         .locale(locale)
         .dateFormat("yy-MM-dd")
@@ -115,7 +113,7 @@ class MemberProfileServiceTest {
   @DisplayName("프로필 수정 실패 - 닉네임이 중복되는 경우")
   void updateProfileFail() {
     // given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = createLanguage(Language.KOREAN);
     Member member = createMember(language);
     Member member2 = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
@@ -137,7 +135,7 @@ class MemberProfileServiceTest {
   @DisplayName("프로필 수정 성공")
   void updateProfileSuccess() throws IOException {
     // given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = createLanguage(Language.KOREAN);
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
@@ -167,7 +165,7 @@ class MemberProfileServiceTest {
   @DisplayName("프로필 조회")
   void getMemberProfile() {
     // given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = createLanguage(Language.KOREAN);
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     List<MemberConsent> memberConsents = List.of(
@@ -199,12 +197,12 @@ class MemberProfileServiceTest {
   @DisplayName("언어 변경")
   void updateLanguage() {
     // given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = createLanguage(Language.KOREAN);
     Member member = createMember(language);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-    Language language2 = createLanguage(Locale.ENGLISH);
+    Language language2 = createLanguage(Language.ENGLISH);
     LanguageUpdateDto languageUpdateDto = new LanguageUpdateDto();
-    languageUpdateDto.setLocale(Locale.ENGLISH.name());
+    languageUpdateDto.setLocale(Language.ENGLISH.name());
 
     doReturn(language2).when(languageRepository).findByLocale(any());
 

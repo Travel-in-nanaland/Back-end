@@ -6,9 +6,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -44,12 +43,12 @@ class FestivalServiceTest {
     // Given
     Language language1 = Language.builder()
         .dateFormat("yy-MM-dd")
-        .locale(Locale.KOREAN)
+        .locale(Language.KOREAN)
         .build();
 
     Language language2 = Language.builder()
         .dateFormat("dd-MM-yy")
-        .locale(Locale.MALAYSIA)
+        .locale(Language.MALAYSIA)
         .build();
 
     // 각각 일요일 / 월요일 -> 말레이시아어로 CN / T2
@@ -63,9 +62,9 @@ class FestivalServiceTest {
     MemberInfoDto krMemberInfoDto = createMemberInfoDto(krMember, language1);
     MemberInfoDto msMemberInfoDto = createMemberInfoDto(msMember, language2);
 
-    FestivalCompositeDto krFestivalCompositeDto = createFestivalCompositeDto(Locale.KOREAN,
+    FestivalCompositeDto krFestivalCompositeDto = createFestivalCompositeDto(Language.KOREAN,
         startDate, endDate);
-    FestivalCompositeDto msFestivalCompositeDto = createFestivalCompositeDto(Locale.MALAYSIA,
+    FestivalCompositeDto msFestivalCompositeDto = createFestivalCompositeDto(Language.MALAYSIA,
         startDate, endDate);
 
     when(festivalRepository.findCompositeDtoById(1L,
@@ -111,7 +110,7 @@ class FestivalServiceTest {
         .build();
   }
 
-  FestivalCompositeDto createFestivalCompositeDto(Locale locale, LocalDate startDate,
+  FestivalCompositeDto createFestivalCompositeDto(Language locale, LocalDate startDate,
       LocalDate endDate) {
     return new FestivalCompositeDto(1L, "url", "url", "contact", "home",
         locale, "title", "content", "address", "addressTag", "time", "intro", "fee", startDate,

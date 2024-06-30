@@ -1,9 +1,8 @@
 package com.jeju.nanaland.domain.nana.repository;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.entity.Nana;
@@ -47,13 +46,13 @@ class NanaRepositoryImplTest {
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
   private void setNana() {
     language = Language.builder()
-        .locale(Locale.KOREAN)
+        .locale(Language.KOREAN)
         .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language);
 
     language2 = Language.builder()
-        .locale(Locale.CHINESE)
+        .locale(Language.CHINESE)
         .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language2);
@@ -222,7 +221,7 @@ class NanaRepositoryImplTest {
 
     // When
     List<NanaThumbnail> recentNanaThumbnailDto = nanarepositoryImpl.findRecentNanaThumbnailDto(
-        Locale.KOREAN);
+        Language.KOREAN);
 
     // Then
     Assertions.assertThat(recentNanaThumbnailDto.get(0).getId())
@@ -237,7 +236,7 @@ class NanaRepositoryImplTest {
 
     // When
     Page<NanaThumbnail> allNanaThumbnailDto = nanarepositoryImpl.findAllNanaThumbnailDto(
-        Locale.KOREAN,
+        Language.KOREAN,
         PageRequest.of(0, 12));
     List<NanaThumbnail> result = allNanaThumbnailDto.getContent();
 
@@ -253,7 +252,7 @@ class NanaRepositoryImplTest {
     System.out.println("nanaTitle2.getCreatedAt " + nanaTitle2.getCreatedAt());
     // When
     Page<NanaThumbnail> keyword = nanarepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
-        Locale.KOREAN, PageRequest.of(0, 12));
+        Language.KOREAN, PageRequest.of(0, 12));
     List<NanaThumbnail> content = keyword.getContent();
     for (NanaThumbnail nanaThumbnail : content) {
       System.out.println("nanaThumbnail = " + nanaThumbnail.toString());
@@ -276,7 +275,7 @@ class NanaRepositoryImplTest {
 
     // When
     NanaThumbnailPost nanaThumbnailPostDto = nanarepositoryImpl.findNanaThumbnailPostDto(
-        nanaTitle3.getId(), Locale.KOREAN);
+        nanaTitle3.getId(), Language.KOREAN);
 
     // Then
     Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());

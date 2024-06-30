@@ -1,9 +1,8 @@
 package com.jeju.nanaland.domain.entity;
 
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -36,7 +35,7 @@ class EntityImageFileMappingTest {
   @BeforeEach
   void init() {
     language = Language.builder()
-        .locale(Locale.KOREAN)
+        .locale(Language.KOREAN)
         .dateFormat("yyyy-MM-dd")
         .build();
     em.persist(language);

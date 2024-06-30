@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.festival.entity;
 
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.common.entity.Status;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;

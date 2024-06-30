@@ -4,9 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
@@ -44,7 +43,7 @@ class FavoriteServiceTest {
   @DisplayName("찜리스트 전체 조회")
   void getAllFavoriteListTest() {
     // given
-    MemberInfoDto memberInfoDto = initMemberInfoDto(Locale.KOREAN, TravelType.NONE);
+    MemberInfoDto memberInfoDto = initMemberInfoDto(Language.KOREAN, TravelType.NONE);
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(0, 12);
     List<Favorite> favoriteList = Arrays.asList(
@@ -65,7 +64,7 @@ class FavoriteServiceTest {
     System.out.println(result.getData());
   }
 
-  private MemberInfoDto initMemberInfoDto(Locale locale, TravelType travelType) {
+  private MemberInfoDto initMemberInfoDto(Language locale, TravelType travelType) {
     Language language = Language.builder()
         .locale(locale)
         .build();

@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.nana.entity;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import lombok.Getter;
 
 @Getter
@@ -32,7 +32,7 @@ public enum InfoType {
     this.zh = zh;
   }
 
-  public String getValueByLocale(Locale locale) {
+  public String getValueByLocale(Language locale) {
     return switch (locale) {
       case KOREAN -> this.getKr();
       case ENGLISH -> this.getEn();

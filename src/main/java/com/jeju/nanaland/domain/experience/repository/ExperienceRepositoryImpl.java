@@ -1,13 +1,12 @@
 package com.jeju.nanaland.domain.experience.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
-import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
 import com.jeju.nanaland.domain.common.data.Category;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -25,7 +24,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public ExperienceCompositeDto findCompositeDtoById(Long id, Locale locale) {
+  public ExperienceCompositeDto findCompositeDtoById(Long id, Language language) {
     return queryFactory
         .select(new QExperienceCompositeDto(
             experience.id,
@@ -33,7 +32,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             imageFile.thumbnailUrl,
             experience.contact,
             experience.ratingAvg,
-            language.locale,
+            experienceTrans.language,
             experienceTrans.title,
             experienceTrans.content,
             experienceTrans.address,
@@ -46,15 +45,15 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .where(experience.id.eq(id).and(experienceTrans.language.locale.eq(locale)))
+        .where(experience.id.eq(id).and(experienceTrans.language.eq(language)))
         .fetchOne();
   }
 
   @Override
-  public Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
+  public Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
 
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, locale);
+    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
 
     List<ExperienceCompositeDto> resultDto = queryFactory
         .select(new QExperienceCompositeDto(
@@ -63,7 +62,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             imageFile.thumbnailUrl,
             experience.contact,
             experience.ratingAvg,
-            experienceTrans.language.locale,
+            experienceTrans.language,
             experienceTrans.title,
             experienceTrans.content,
             experienceTrans.address,
@@ -76,7 +75,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .on(experienceTrans.language.locale.eq(locale))
+        .on(experienceTrans.language.eq(language))
         .where(experienceTrans.title.contains(keyword)
             .or(experienceTrans.addressTag.contains(keyword))
             .or(experienceTrans.content.contains(keyword))
@@ -91,7 +90,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .on(experienceTrans.language.locale.eq(locale))
+        .on(experienceTrans.language.eq(language))
         .where(experienceTrans.title.contains(keyword)
             .or(experienceTrans.addressTag.contains(keyword))
             .or(experienceTrans.content.contains(keyword))
@@ -100,14 +99,14 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
-  private List<Long> getIdListContainAllHashtags(String keyword, Locale locale) {
+  private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(experience.id)
         .from(experience)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(experience.id)
             .and(hashtag.category.eq(Category.EXPERIENCE))
-            .and(hashtag.language.locale.eq(locale)))
+            .and(hashtag.language.eq(language)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(experience.id)
         .having(experience.id.count().eq(splitKeyword(keyword).stream().count()))

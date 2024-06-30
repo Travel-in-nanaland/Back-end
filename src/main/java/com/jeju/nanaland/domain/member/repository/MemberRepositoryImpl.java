@@ -4,7 +4,7 @@ import static com.jeju.nanaland.domain.member.entity.QMember.member;
 import static com.jeju.nanaland.domain.member.entity.QMemberConsent.memberConsent;
 import static com.jeju.nanaland.domain.member.entity.QMemberWithdrawal.memberWithdrawal;
 
-import com.jeju.nanaland.domain.common.entity.Status;
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -28,7 +28,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
             member, member.language
         ))
         .from(member)
-        .leftJoin(member.language)
         .where(member.id.eq(memberId).and(member.status.eq(Status.ACTIVE)))
         .fetchOne();
   }

@@ -6,9 +6,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
@@ -50,7 +49,7 @@ class MarketServiceTest {
   @DisplayName("전통시장 썸네일 페이징")
   void marketThumbnailPagingTest() {
     // given
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     List<String> filterList = Arrays.asList("제주시");
     MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
     Pageable pageable = PageRequest.of(0, 2);
@@ -73,7 +72,7 @@ class MarketServiceTest {
   @DisplayName("전통시장 상세조회")
   void marketDetailTest() {
     // given
-    Locale locale = Locale.KOREAN;
+    Language locale = Language.KOREAN;
     MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
     MarketCompositeDto marketDetailDto = MarketCompositeDto.builder()
         .firstImage(new ImageFileDto("first origin url", "first thumbnail url"))
@@ -110,7 +109,7 @@ class MarketServiceTest {
     return new PageImpl<>(marketThumbnailList, PageRequest.of(0, 2), 10);
   }
 
-  private MemberInfoDto createMemberInfoDto(Locale locale, TravelType travelType) {
+  private MemberInfoDto createMemberInfoDto(Language locale, TravelType travelType) {
     Language language = Language.builder()
         .locale(locale)
         .build();

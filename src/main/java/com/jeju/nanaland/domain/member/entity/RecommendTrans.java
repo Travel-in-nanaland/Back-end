@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.member.entity;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Language;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;

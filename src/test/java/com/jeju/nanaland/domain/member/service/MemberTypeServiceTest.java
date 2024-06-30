@@ -10,9 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
@@ -53,7 +52,7 @@ class MemberTypeServiceTest {
   @EnumSource(value = TravelType.class, names = "NONE", mode = EnumSource.Mode.EXCLUDE)
   void updateTypeToNotNone(TravelType travelType) {
     // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, TravelType.NONE);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
     UpdateTypeDto updateTypeDto = new UpdateTypeDto();
     updateTypeDto.setType(travelType.name());
 
@@ -70,9 +69,9 @@ class MemberTypeServiceTest {
   @EnumSource(value = TravelType.class, names = "NONE", mode = EnumSource.Mode.EXCLUDE)
   void getRecommendPostsWithNotNone(TravelType travelType) {
     // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, travelType);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, travelType);
     Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage().getLocale();
     List<Recommend> recommends = recommendList(travelType);
 
     when(
@@ -109,9 +108,9 @@ class MemberTypeServiceTest {
   void getRecommendPostsWithNoneType() {
     // given
     TravelType travelType = TravelType.NONE;
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, travelType);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, travelType);
     Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage().getLocale();
     List<Recommend> recommends = recommendList(TravelType.GAMGYUL_ICECREAM); // 랜덤으로 선택된 타입
 
     when(
@@ -150,7 +149,7 @@ class MemberTypeServiceTest {
   @EnumSource(value = TravelType.class, names = "NONE", mode = Mode.EXCLUDE)
   void getRecommendPostsWithNoRecommend(TravelType travelType) {
     // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Locale.KOREAN, travelType);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, travelType);
 
     doReturn(null)
         .when(recommendRepository)
@@ -165,7 +164,7 @@ class MemberTypeServiceTest {
         .isEqualTo(travelType.name() + "에 해당하는 추천 게시물이 없거나 너무 적습니다.");
   }
 
-  private MemberInfoDto createMemberInfoDto(Locale locale, TravelType travelType) {
+  private MemberInfoDto createMemberInfoDto(Language locale, TravelType travelType) {
     Language language = Language.builder()
         .locale(locale)
         .build();

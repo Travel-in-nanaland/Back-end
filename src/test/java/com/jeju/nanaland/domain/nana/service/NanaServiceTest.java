@@ -4,9 +4,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -60,7 +59,7 @@ public class NanaServiceTest {
   @Test
   void getNanaThumbnails() {
     // Given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = createLanguage(Language.KOREAN);
     ImageFile imageFile = createImageFile(1);
     Member member = createMember(language, imageFile);
     MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
@@ -95,11 +94,11 @@ public class NanaServiceTest {
     Page<NanaThumbnail> nanaThumbnails = new PageImpl<>(nanaThumbnailList, pageable,
         nanaThumbnailList.size());
 
-    when(nanaRepository.findAllNanaThumbnailDto(language.getLocale(), pageable)).thenReturn(
+    when(nanaRepository.findAllNanaThumbnailDto(language, pageable)).thenReturn(
         nanaThumbnails);
 
     // When
-    NanaThumbnailDto nanaThumbnails1 = nanaService.getNanaThumbnails(Locale.KOREAN, 0, 10);
+    NanaThumbnailDto nanaThumbnails1 = nanaService.getNanaThumbnails(Language.KOREAN, 0, 10);
 
     // Then
     Assertions.assertThat(nanaThumbnails1.getTotalElements()).isEqualTo(3L);
@@ -108,7 +107,7 @@ public class NanaServiceTest {
   @Test
   void getNanaDetail() {
     // Given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = createLanguage(Language.KOREAN);
     ImageFile imageFile = createImageFile(1);
     Member member = createMember(language, imageFile);
     MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
@@ -138,7 +137,7 @@ public class NanaServiceTest {
     Assertions.assertThat(numberList).containsSequence(1, 2, 3);
   }
 
-  Language createLanguage(Locale locale) {
+  Language createLanguage(Language locale) {
     return Language.builder()
         .locale(locale)
         .dateFormat("yyyy-MM-dd")
