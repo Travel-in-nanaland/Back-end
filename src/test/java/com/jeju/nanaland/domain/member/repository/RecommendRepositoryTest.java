@@ -1,8 +1,7 @@
 package com.jeju.nanaland.domain.member.repository;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -157,7 +156,7 @@ public class RecommendRepositoryTest {
 
   Recommend initNatureRecommend(Language language, TravelType travelType) {
     Category category = Category.builder()
-        .content(CategoryContent.NATURE)
+        .content(Category.NATURE)
         .build();
     em.persist(category);
 
@@ -198,7 +197,7 @@ public class RecommendRepositoryTest {
 
   Recommend initMarketRecommend(Language language, TravelType travelType) {
     Category category = Category.builder()
-        .content(CategoryContent.MARKET)
+        .content(Category.MARKET)
         .build();
     em.persist(category);
 
@@ -239,7 +238,7 @@ public class RecommendRepositoryTest {
 
   Recommend initFestivalRecommend(Language language, TravelType travelType) {
     Category category = Category.builder()
-        .content(CategoryContent.FESTIVAL)
+        .content(Category.FESTIVAL)
         .build();
     em.persist(category);
 
@@ -280,7 +279,7 @@ public class RecommendRepositoryTest {
 
   Recommend initExperienceRecommend(Language language, TravelType travelType) {
     Category category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
+        .content(Category.EXPERIENCE)
         .build();
     em.persist(category);
 
@@ -321,7 +320,7 @@ public class RecommendRepositoryTest {
 
   Recommend initNanaRecommend(Language language, TravelType travelType) {
     Category category = Category.builder()
-        .content(CategoryContent.NANA)
+        .content(Category.NANA)
         .build();
     em.persist(category);
 

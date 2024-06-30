@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.experience.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -90,7 +89,7 @@ class ExperienceServiceTest {
     em.persist(experience);
 
     category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
+        .content(Category.EXPERIENCE)
         .build();
     em.persist(category);
   }

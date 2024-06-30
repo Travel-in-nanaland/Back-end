@@ -3,12 +3,10 @@ package com.jeju.nanaland.domain.nana.service;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -122,16 +120,16 @@ public class NanaServiceTest {
     List<NanaContentImage> nanaContentImage = createNanaContentImage(
         List.of(createImageFile(1), createImageFile(2), createImageFile(3)), nana);
     nana.updateNanaContentImageList(nanaContentImage);
-    Category category = createCategory(CategoryContent.NANA);
+    Category category = createCategory(Category.NANA);
 
     when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
     when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
         Optional.of(nanaTitle));
     when(nanaContentRepository.findAllByNanaTitleOrderByNumber(nanaTitle)).thenReturn(
         nanaContentList);
-    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), CategoryContent.NANA,
+    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);
-    when(categoryRepository.findByContent(CategoryContent.NANA_CONTENT)).thenReturn(
+    when(categoryRepository.findByContent(Category.NANA_CONTENT)).thenReturn(
         Optional.of(category));
 
     // When
@@ -151,7 +149,7 @@ public class NanaServiceTest {
         .build();
   }
 
-  Category createCategory(CategoryContent categoryContent) {
+  Category createCategory(Category categoryContent) {
     return Category.builder()
         .content(categoryContent)
         .build();

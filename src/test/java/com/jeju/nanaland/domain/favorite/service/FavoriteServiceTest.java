@@ -3,8 +3,7 @@ package com.jeju.nanaland.domain.favorite.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -87,7 +86,7 @@ class FavoriteServiceTest {
         .firstImageFile(new ImageFile("nature origin", "nature thumbnail"))
         .build();
     Category natureCategory = Category.builder()
-        .content(CategoryContent.NATURE)
+        .content(Category.NATURE)
         .build();
 
     return Favorite.builder()
@@ -103,7 +102,7 @@ class FavoriteServiceTest {
         .firstImageFile(new ImageFile("festival origin", "festival thumbnail"))
         .build();
     Category festivalCategory = Category.builder()
-        .content(CategoryContent.FESTIVAL)
+        .content(Category.FESTIVAL)
         .build();
 
     return Favorite.builder()
@@ -119,7 +118,7 @@ class FavoriteServiceTest {
         .firstImageFile(new ImageFile("market origin", "market thumbnail"))
         .build();
     Category marketCategory = Category.builder()
-        .content(CategoryContent.MARKET)
+        .content(Category.MARKET)
         .build();
 
     return Favorite.builder()
@@ -135,7 +134,7 @@ class FavoriteServiceTest {
         .firstImageFile(new ImageFile("experience origin", "experience thumbnail"))
         .build();
     Category experienceCategory = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
+        .content(Category.EXPERIENCE)
         .build();
 
     return Favorite.builder()
@@ -151,7 +150,7 @@ class FavoriteServiceTest {
         .firstImageFile(new ImageFile("nana origin", "nana thumbnail"))
         .build();
     Category nanaCategory = Category.builder()
-        .content(CategoryContent.NANA)
+        .content(Category.NANA)
         .build();
 
     return Favorite.builder()

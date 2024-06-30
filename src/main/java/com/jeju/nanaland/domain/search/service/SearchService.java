@@ -1,12 +1,12 @@
 package com.jeju.nanaland.domain.search.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.MARKET;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
@@ -303,7 +303,7 @@ public class SearchService {
     }
   }
 
-  public void updateSearchVolumeV1(CategoryContent categoryContent, Long id) {
+  public void updateSearchVolumeV1(Category categoryContent, Long id) {
     String value = categoryContent + SEARCH_VOLUME_REGEX + id;
     redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
   }
@@ -314,7 +314,7 @@ public class SearchService {
     List<SearchVolumeDto> searchVolumeDtoList = new ArrayList<>();
     for (String element : topSearchVolumeList) {
       String[] parts = element.split(SEARCH_VOLUME_REGEX);
-      CategoryContent categoryContent = CategoryContent.valueOf(parts[0]);
+      Category categoryContent = Category.valueOf(parts[0]);
       Long postId = Long.valueOf(parts[1]);
 
       switch (categoryContent) {
@@ -370,7 +370,7 @@ public class SearchService {
   }
 
   private SearchVolumeDto getSearchVolumeDto(MemberInfoDto memberInfoDto,
-      CategoryContent categoryContent, CompositeDto compositeDto) {
+      Category categoryContent, CompositeDto compositeDto) {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }

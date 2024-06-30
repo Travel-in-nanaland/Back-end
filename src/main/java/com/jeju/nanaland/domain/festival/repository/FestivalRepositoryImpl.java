@@ -6,7 +6,7 @@ import static com.jeju.nanaland.domain.festival.entity.QFestival.festival;
 import static com.jeju.nanaland.domain.festival.entity.QFestivalTrans.festivalTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -117,7 +117,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(festival.id)
-            .and(hashtag.category.content.eq(CategoryContent.FESTIVAL))
+            .and(hashtag.category.eq(Category.FESTIVAL))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword))
             .and(festival.status.eq(Status.ACTIVE)))

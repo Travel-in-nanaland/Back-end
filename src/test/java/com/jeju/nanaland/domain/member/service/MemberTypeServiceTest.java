@@ -9,8 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -183,10 +182,10 @@ class MemberTypeServiceTest {
 
   private List<Recommend> recommendList(TravelType travelType) {
     Category natureCategory = Category.builder()
-        .content(CategoryContent.NATURE)
+        .content(Category.NATURE)
         .build();
     Category experienceCategory = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
+        .content(Category.EXPERIENCE)
         .build();
     ImageFile imageFile1 = ImageFile.builder()
         .originUrl("origin")

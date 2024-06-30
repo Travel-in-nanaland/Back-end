@@ -3,8 +3,7 @@ package com.jeju.nanaland.domain.favorite.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -49,7 +48,7 @@ public class FavoriteRepositoryTest {
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
     Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.NATURE);
+    Category category = initCategory(Category.NATURE);
     Pageable pageable = PageRequest.of(0, 12);
 
     // nature 포스트 size개 생성
@@ -73,7 +72,7 @@ public class FavoriteRepositoryTest {
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
     Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.NATURE);
+    Category category = initCategory(Category.NATURE);
 
     // nature 포스트 1개 생성
     List<Nature> natureList = getNatureList(korean, 1);
@@ -95,7 +94,7 @@ public class FavoriteRepositoryTest {
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
     Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.FESTIVAL);
+    Category category = initCategory(Category.FESTIVAL);
     Pageable pageable = PageRequest.of(0, 12);
 
     // festival 포스트 size개 생성
@@ -119,7 +118,7 @@ public class FavoriteRepositoryTest {
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
     Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.FESTIVAL);
+    Category category = initCategory(Category.FESTIVAL);
 
     // festival 포스트 1개 생성
     List<Festival> festivalList = getFestivalList(korean, 1);
@@ -141,7 +140,7 @@ public class FavoriteRepositoryTest {
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
     Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.MARKET);
+    Category category = initCategory(Category.MARKET);
     Pageable pageable = PageRequest.of(0, 12);
 
     // market 포스트 size개 생성
@@ -165,7 +164,7 @@ public class FavoriteRepositoryTest {
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
     Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.MARKET);
+    Category category = initCategory(Category.MARKET);
 
     // market 포스트 1개 생성
     List<Market> marketList = getMarketList(korean, 1);
@@ -196,7 +195,7 @@ public class FavoriteRepositoryTest {
     return korean;
   }
 
-  Category initCategory(CategoryContent categoryContent) {
+  Category initCategory(Category categoryContent) {
     Category category = Category.builder()
         .content(categoryContent)
         .build();

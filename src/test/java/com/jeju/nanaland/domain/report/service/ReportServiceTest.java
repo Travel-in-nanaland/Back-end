@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.report.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -78,7 +78,7 @@ class ReportServiceTest {
     InfoFixDto infoFixDto = new InfoFixDto();
     infoFixDto.setFixType(FixType.TIME.name());
     infoFixDto.setPostId(-1L);
-    infoFixDto.setCategory(CategoryContent.FESTIVAL.name());
+    infoFixDto.setCategory(Category.FESTIVAL.name());
     infoFixDto.setContent("content");
     infoFixDto.setEmail("test@naver.com");
 
@@ -115,7 +115,7 @@ class ReportServiceTest {
     InfoFixDto infoFixDto = new InfoFixDto();
     infoFixDto.setFixType(FixType.CONTACT_OR_HOMEPAGE.name());
     infoFixDto.setPostId(nana.getId());
-    infoFixDto.setCategory(CategoryContent.NANA.name());
+    infoFixDto.setCategory(Category.NANA.name());
     infoFixDto.setContent("content");
     infoFixDto.setEmail("test@naver.com");
 

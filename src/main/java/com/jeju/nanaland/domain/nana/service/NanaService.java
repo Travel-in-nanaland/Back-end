@@ -1,12 +1,10 @@
 package com.jeju.nanaland.domain.nana.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA_CONTENT;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
 
-import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
@@ -41,7 +39,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NanaService {
 
-  private final CategoryRepository categoryRepository;
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
@@ -111,15 +108,12 @@ public class NanaService {
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
         nanaTitle.getNana().getId());
 
-    Category category = categoryRepository.findByContent(NANA_CONTENT)
-        .orElseThrow(() -> new ServerErrorException("NANA_CONTENT에 해당하는 카테고리가 없습니다."));
-
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
     int nanaContentImageIdx = 0;
     for (NanaContent nanaContent : nanaContentList) {
 
       List<Hashtag> hashtagList = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
-          language, category, nanaContent.getId());
+          language, NANA_CONTENT, nanaContent.getId());
 
       // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
       List<String> stringKeywordList = getStringKeywordListFromHashtagList(hashtagList);

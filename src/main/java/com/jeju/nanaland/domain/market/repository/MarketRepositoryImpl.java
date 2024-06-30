@@ -6,7 +6,7 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.market.entity.QMarket.market;
 import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -138,7 +138,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .from(market)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(market.id)
-            .and(hashtag.category.content.eq(CategoryContent.MARKET))
+            .and(hashtag.category.eq(Category.MARKET))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(market.id)

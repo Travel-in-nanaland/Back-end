@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -85,7 +85,7 @@ class MarketServiceTest {
     doReturn(marketDetailDto).when(marketRepository)
         .findCompositeDtoById(any(Long.class), eq(locale));
     doReturn(false).when(favoriteService)
-        .isPostInFavorite(any(Member.class), any(CategoryContent.class), any(Long.class));
+        .isPostInFavorite(any(Member.class), any(Category.class), any(Long.class));
     doReturn(additionalImages).when(imageFileRepository)
         .findPostImageFiles(any(Long.class));
 

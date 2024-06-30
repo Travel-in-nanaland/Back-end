@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 
 import com.jeju.nanaland.domain.common.entity.DayOfWeek;
 import com.jeju.nanaland.domain.common.entity.Locale;

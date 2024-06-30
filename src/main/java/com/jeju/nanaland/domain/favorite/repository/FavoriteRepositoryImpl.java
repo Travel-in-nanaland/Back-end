@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.favorite.repository;
 
-import static com.jeju.nanaland.domain.common.entity.QCategory.category;
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
@@ -14,7 +13,7 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.dto.QFavoriteResponse_ThumbnailDto;
@@ -38,7 +37,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nature.id,
             natureTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -46,7 +45,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(nature.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.NATURE)))
+            .and(favorite.category.eq(Category.NATURE)))
         .innerJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
         .innerJoin(nature.firstImageFile, imageFile)
@@ -61,7 +60,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(nature.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.NATURE)))
+            .and(favorite.category.eq(Category.NATURE)))
         .innerJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
         .innerJoin(nature.firstImageFile, imageFile);
@@ -75,7 +74,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nature.id,
             natureTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -83,7 +82,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(nature.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.NATURE)))
+            .and(favorite.category.eq(Category.NATURE)))
         .innerJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.locale.eq(locale))
         .innerJoin(nature.firstImageFile, imageFile)
@@ -98,7 +97,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             experience.id,
             experienceTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -106,7 +105,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(experience.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
+            .and(favorite.category.eq(Category.EXPERIENCE)))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
         .innerJoin(experience.firstImageFile, imageFile)
@@ -121,7 +120,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(experience.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
+            .and(favorite.category.eq(Category.EXPERIENCE)))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
         .innerJoin(experience.firstImageFile, imageFile);
@@ -135,7 +134,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             experience.id,
             experienceTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -143,7 +142,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(experience.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.EXPERIENCE)))
+            .and(favorite.category.eq(Category.EXPERIENCE)))
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
         .innerJoin(experience.firstImageFile, imageFile)
@@ -158,7 +157,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             festival.id,
             festivalTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -166,7 +165,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(festival.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
+            .and(favorite.category.eq(Category.FESTIVAL)))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
         .innerJoin(festival.firstImageFile, imageFile)
@@ -181,7 +180,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(festival.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
+            .and(favorite.category.eq(Category.FESTIVAL)))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
         .innerJoin(festival.firstImageFile, imageFile);
@@ -195,7 +194,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             festival.id,
             festivalTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -203,7 +202,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(festival.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.FESTIVAL)))
+            .and(favorite.category.eq(Category.FESTIVAL)))
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
         .innerJoin(festival.firstImageFile, imageFile)
@@ -218,7 +217,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             market.id,
             marketTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -226,7 +225,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(market.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.MARKET)))
+            .and(favorite.category.eq(Category.MARKET)))
         .innerJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
         .innerJoin(market.firstImageFile, imageFile)
@@ -241,7 +240,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(market.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.MARKET)))
+            .and(favorite.category.eq(Category.MARKET)))
         .innerJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
         .innerJoin(market.firstImageFile, imageFile);
@@ -255,7 +254,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             market.id,
             marketTrans.title,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -263,7 +262,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(market.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.MARKET)))
+            .and(favorite.category.eq(Category.MARKET)))
         .innerJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.locale.eq(locale))
         .innerJoin(market.firstImageFile, imageFile)
@@ -278,7 +277,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nana.id,
             nanaTitle.heading,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -286,7 +285,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(nana.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.NANA)))
+            .and(favorite.category.eq(Category.NANA)))
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana)
             .and(nanaTitle.language.locale.eq(locale)))
@@ -302,7 +301,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(nana.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.NANA)))
+            .and(favorite.category.eq(Category.NANA)))
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
         .innerJoin(nana.nanaTitleImageFile, imageFile);
@@ -316,7 +315,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .select(new QFavoriteResponse_ThumbnailDto(
             nana.id,
             nanaTitle.heading,
-            category.content.stringValue(),
+            favorite.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
@@ -324,7 +323,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(favorite)
         .on(favorite.post.id.eq(nana.id)
             .and(favorite.member.eq(member))
-            .and(favorite.category.content.eq(CategoryContent.NANA)))
+            .and(favorite.category.eq(Category.NANA)))
         .innerJoin(nanaTitle)
         .on(nana.eq(nanaTitle.nana)
             .and(nanaTitle.language.locale.eq(locale)))

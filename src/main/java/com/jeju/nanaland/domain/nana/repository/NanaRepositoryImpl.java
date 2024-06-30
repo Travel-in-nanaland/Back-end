@@ -6,7 +6,7 @@ import static com.jeju.nanaland.domain.nana.entity.QNana.nana;
 import static com.jeju.nanaland.domain.nana.entity.QNanaContent.nanaContent;
 import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
@@ -140,7 +140,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .on(nanaContent.nanaTitle.eq(nanaTitle))
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(nanaContent.id)
-            .and(hashtag.category.content.eq(CategoryContent.NANA_CONTENT))
+            .and(hashtag.category.eq(Category.NANA_CONTENT))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(nana.id)

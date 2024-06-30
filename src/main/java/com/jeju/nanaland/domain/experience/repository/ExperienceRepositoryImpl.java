@@ -6,7 +6,7 @@ import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
@@ -106,7 +106,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(experience.id)
-            .and(hashtag.category.content.eq(CategoryContent.EXPERIENCE))
+            .and(hashtag.category.eq(Category.EXPERIENCE))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(experience.id)

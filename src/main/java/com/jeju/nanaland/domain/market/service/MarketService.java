@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.market.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
+import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Locale;

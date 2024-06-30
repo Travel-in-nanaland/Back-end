@@ -1,8 +1,7 @@
 package com.jeju.nanaland.domain.entity;
 
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -95,7 +94,7 @@ class EntityImageFileMappingTest {
     em.persist(keyword);
 
     Category category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
+        .content(Category.EXPERIENCE)
         .build();
     em.persist(category);
 

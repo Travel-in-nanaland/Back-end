@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,7 +37,7 @@ class FestivalServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private SearchService searchService;
-  
+
   @Test
   @DisplayName("festival 상세 조회에서 기간 국가별 요일")
   void getFestivalDetail() {

@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.nature.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;

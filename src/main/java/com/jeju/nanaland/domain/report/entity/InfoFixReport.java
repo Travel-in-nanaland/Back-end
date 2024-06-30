@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.report.entity;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -36,7 +36,7 @@ public class InfoFixReport extends BaseEntity {
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  private CategoryContent category;
+  private Category category;
 
   @NotNull
   @Enumerated(EnumType.STRING)

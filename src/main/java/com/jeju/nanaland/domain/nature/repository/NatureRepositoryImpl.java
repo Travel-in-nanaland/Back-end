@@ -6,7 +6,7 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
@@ -153,7 +153,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(nature.id)
-            .and(hashtag.category.content.eq(CategoryContent.NATURE))
+            .and(hashtag.category.eq(Category.NATURE))
             .and(hashtag.language.locale.eq(locale)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(nature.id)

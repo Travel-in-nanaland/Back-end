@@ -1,16 +1,8 @@
 package com.jeju.nanaland.domain.favorite.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
-
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
@@ -42,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class FavoriteService {
 
-  private final CategoryRepository categoryRepository;
   private final FavoriteRepository favoriteRepository;
 
   private final NanaRepository nanaRepository;
@@ -64,7 +55,7 @@ public class FavoriteService {
 
     // Favorite의 postId, 카테고리 정보를 통해 썸네일 정보 조회
     for (Favorite favorite : favorites) {
-      CategoryContent category = favorite.getCategory().getContent();
+      Category category = favorite.getCategory();
       Long postId = favorite.getPost().getId();
 
       thumbnailDtoList.add(getThumbnailDto(member, postId, locale, category));
@@ -77,7 +68,7 @@ public class FavoriteService {
   }
 
   public FavoriteThumbnailDto getCategoryFavoriteList(MemberInfoDto memberInfoDto,
-      CategoryContent categoryContent, int page, int size) {
+      Category categoryContent, int page, int size) {
 
     Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
@@ -98,8 +89,7 @@ public class FavoriteService {
       FavoriteRequest.LikeToggleDto likeToggleDto) {
 
     Long postId = likeToggleDto.getId();
-    CategoryContent categoryContent = CategoryContent.valueOf(likeToggleDto.getCategory());
-    Category category = getCategoryFromCategoryContent(categoryContent);
+    Category category = Category.valueOf(likeToggleDto.getCategory());
 
     Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
         memberInfoDto.getMember(), category, postId);
@@ -118,7 +108,7 @@ public class FavoriteService {
     // 좋아요 상태가 아닐 때
     else {
       // 해당 카테고리에 해당하는 id의 게시물이 없다면 NotFoundException
-      Post post = findPostIfExist(postId, categoryContent);
+      Post post = findPostIfExist(postId, category);
 
       Favorite favorite = Favorite.builder()
           .member(memberInfoDto.getMember())
@@ -141,37 +131,15 @@ public class FavoriteService {
     return favorites.stream().map(favorite -> favorite.getPost().getId()).toList();
   }
 
-  public boolean isPostInFavorite(Member member, CategoryContent categoryContent, Long id) {
-    Category category = getCategoryFromCategoryContent(categoryContent);
+  public boolean isPostInFavorite(Member member, Category category, Long id) {
     Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
         member, category, id);
 
     return favoriteOptional.isPresent();
   }
 
-  private Category getCategoryFromCategoryContent(CategoryContent categoryContent) {
-    return switch (categoryContent) {
-      case NANA -> categoryRepository.findByContent(NANA)
-          .orElseThrow(() -> new ServerErrorException("NANA에 해당하는 카테고리가 없습니다."));
-
-      case EXPERIENCE -> categoryRepository.findByContent(EXPERIENCE)
-          .orElseThrow(() -> new ServerErrorException("EXPERIENCE에 해당하는 카테고리가 없습니다."));
-
-      case NATURE -> categoryRepository.findByContent(NATURE)
-          .orElseThrow(() -> new ServerErrorException("NATURE에 해당하는 카테고리가 없습니다."));
-
-      case MARKET -> categoryRepository.findByContent(MARKET)
-          .orElseThrow(() -> new ServerErrorException("MARKET에 해당하는 카테고리가 없습니다."));
-
-      case FESTIVAL -> categoryRepository.findByContent(FESTIVAL)
-          .orElseThrow(() -> new ServerErrorException("FESTIVAL에 해당하는 카테고리가 없습니다."));
-
-      default -> throw new ServerErrorException("해당하는 카테고리가 없습니다.");
-    };
-  }
-
   private ThumbnailDto getThumbnailDto(Member member, Long postId, Locale locale,
-      CategoryContent category) {
+      Category category) {
     return switch (category) {
       case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, locale);
       case NATURE -> favoriteRepository.findNatureThumbnailByPostId(member, postId, locale);
@@ -183,7 +151,7 @@ public class FavoriteService {
   }
 
   private Page<ThumbnailDto> getThumbnailDtoPage(Member member, Locale locale, Pageable pageable,
-      CategoryContent categoryContent) {
+      Category categoryContent) {
     return switch (categoryContent) {
       case NANA -> favoriteRepository.findNanaThumbnails(member, locale, pageable);
       case EXPERIENCE -> favoriteRepository.findExperienceThumbnails(member, locale, pageable);
@@ -194,8 +162,8 @@ public class FavoriteService {
     };
   }
 
-  private Post findPostIfExist(Long postId, CategoryContent categoryContent) {
-    return switch (categoryContent) {
+  private Post findPostIfExist(Long postId, Category category) {
+    return switch (category) {
       case NANA -> nanaRepository.findById(postId)
           .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
 
