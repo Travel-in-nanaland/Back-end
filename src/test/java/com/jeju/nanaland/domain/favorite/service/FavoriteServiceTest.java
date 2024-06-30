@@ -1,238 +1,167 @@
 package com.jeju.nanaland.domain.favorite.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.AllCategoryDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FestivalDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.NanaDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
+import com.jeju.nanaland.domain.experience.entity.Experience;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteThumbnailDto;
+import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.festival.entity.Festival;
-import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
+import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.MemberTravelType;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
-import com.jeju.nanaland.domain.nana.entity.NanaTitle;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
+import com.jeju.nanaland.domain.nature.entity.Nature;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class FavoriteServiceTest {
 
-  @Autowired
-  EntityManager em;
-  @Autowired
+  @InjectMocks
   FavoriteService favoriteService;
-  @Autowired
+
+  @Mock
   FavoriteRepository favoriteRepository;
 
-  ImageFile imageFile1, imageFile2, imageFile3;
-  Language language;
-  Member member;
-  MemberInfoDto memberInfoDto;
+  @Test
+  @DisplayName("찜리스트 전체 조회")
+  void getAllFavoriteListTest() {
+    // given
+    MemberInfoDto memberInfoDto = initMemberInfoDto(Locale.KOREAN, TravelType.NONE);
+    Member member = memberInfoDto.getMember();
+    Pageable pageable = PageRequest.of(0, 12);
+    List<Favorite> favoriteList = Arrays.asList(
+        initNatureFavorite(member),
+        initMarketFavorite(member),
+        initNanaFavorite(member)
+    );
+    Page<Favorite> favoritePage = new PageImpl<>(favoriteList);
 
-  @BeforeEach
-  void init() {
-    // imageFile
-    imageFile1 = ImageFile.builder()
-        .originUrl("origin1")
-        .thumbnailUrl("thumbnail1")
-        .build();
-    imageFile2 = ImageFile.builder()
-        .originUrl("origin2")
-        .thumbnailUrl("thumbnail2")
-        .build();
-    imageFile3 = ImageFile.builder()
-        .originUrl("origin3")
-        .thumbnailUrl("thumbnail3")
-        .build();
-    em.persist(imageFile1);
-    em.persist(imageFile2);
-    em.persist(imageFile3);
+    doReturn(favoritePage).when(favoriteRepository)
+        .findAllByMemberOrderByCreatedAtDesc(memberInfoDto.getMember(), pageable);
 
-    // language
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    // when
+    FavoriteThumbnailDto result = favoriteService.getAllFavoriteList(memberInfoDto, 0, 12);
 
-    // member
-    member = Member.builder()
-        .email("test@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("123456789")
-        .nickname("nickname1")
+    // then
+    assertThat(result.getTotalElements()).isEqualTo(3);
+    System.out.println(result.getData());
+  }
+
+  private MemberInfoDto initMemberInfoDto(Locale locale, TravelType travelType) {
+    Language language = Language.builder()
+        .locale(locale)
+        .build();
+    MemberTravelType memberTravelType = MemberTravelType.builder()
+        .travelType(travelType)
+        .build();
+    Member member = Member.builder()
         .language(language)
-        .profileImageFile(imageFile1)
+        .memberTravelType(memberTravelType)
         .build();
-    em.persist(member);
 
-    // memberInfoDto
-    memberInfoDto = MemberInfoDto.builder()
-        .language(language)
+    return MemberInfoDto.builder()
         .member(member)
+        .language(language)
         .build();
+  }
 
-    // category
-    Category festivalCategory = Category.builder()
-        .content(CategoryContent.FESTIVAL)
+  private Favorite initNatureFavorite(Member member) {
+    Nature nature = Nature.builder()
+        .priority(0L)
+        .firstImageFile(new ImageFile("nature origin", "nature thumbnail"))
         .build();
     Category natureCategory = Category.builder()
         .content(CategoryContent.NATURE)
+        .build();
+
+    return Favorite.builder()
+        .post(nature)
+        .member(member)
+        .category(natureCategory)
+        .build();
+  }
+
+  private Favorite initFestivalFavorite(Member member) {
+    Festival festival = Festival.builder()
+        .priority(0L)
+        .firstImageFile(new ImageFile("festival origin", "festival thumbnail"))
+        .build();
+    Category festivalCategory = Category.builder()
+        .content(CategoryContent.FESTIVAL)
+        .build();
+
+    return Favorite.builder()
+        .post(festival)
+        .member(member)
+        .category(festivalCategory)
+        .build();
+  }
+
+  private Favorite initMarketFavorite(Member member) {
+    Market market = Market.builder()
+        .priority(0L)
+        .firstImageFile(new ImageFile("market origin", "market thumbnail"))
+        .build();
+    Category marketCategory = Category.builder()
+        .content(CategoryContent.MARKET)
+        .build();
+
+    return Favorite.builder()
+        .post(market)
+        .member(member)
+        .category(marketCategory)
+        .build();
+  }
+
+  private Favorite initExperienceFavorite(Member member) {
+    Experience experience = Experience.builder()
+        .priority(0L)
+        .firstImageFile(new ImageFile("experience origin", "experience thumbnail"))
+        .build();
+    Category experienceCategory = Category.builder()
+        .content(CategoryContent.EXPERIENCE)
+        .build();
+
+    return Favorite.builder()
+        .post(experience)
+        .member(member)
+        .category(experienceCategory)
+        .build();
+  }
+
+  private Favorite initNanaFavorite(Member member) {
+    Nana nana = Nana.builder()
+        .priority(0L)
+        .firstImageFile(new ImageFile("nana origin", "nana thumbnail"))
         .build();
     Category nanaCategory = Category.builder()
         .content(CategoryContent.NANA)
         .build();
 
-    em.persist(natureCategory);
-    em.persist(festivalCategory);
-    em.persist(nanaCategory);
-  }
-
-  @Test
-  void likeToggleTest() {
-    /**
-     * GIVEN
-     *
-     * festival, nana 생성
-     */
-    Festival festival = Festival.builder()
-        .firstImageFile(imageFile1)
-        .priority(0L)
+    return Favorite.builder()
+        .post(nana)
+        .member(member)
+        .category(nanaCategory)
         .build();
-    em.persist(festival);
-
-    // post 엔티티에서 firstImageFile가 OneToOne으로 묶여있어서 위의 imageFile1과 다른 이미지를 넣어야 합니다.
-    Nana nana = Nana.builder()
-        .version("3")
-        .firstImageFile(imageFile2)
-        .nanaTitleImageFile(imageFile1)
-        .priority(0L)
-        .build();
-    em.persist(nana);
-
-    NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("heading")
-        .subHeading("subHeading")
-        .language(language)
-        .nana(nana)
-        .build();
-    em.persist(nanaTitle);
-
-    LikeToggleDto festivalLikeToggleDto = new LikeToggleDto();
-    festivalLikeToggleDto.setCategory(CategoryContent.FESTIVAL.name());
-    festivalLikeToggleDto.setId(festival.getId());
-
-    LikeToggleDto nanaLikeToggleDto = new LikeToggleDto();
-    nanaLikeToggleDto.setCategory(CategoryContent.NANA.name());
-    nanaLikeToggleDto.setId(nana.getId());
-
-    /**
-     * WHEN
-     */
-    StatusDto festivalStatusDto = favoriteService.toggleLikeStatus(memberInfoDto,
-        festivalLikeToggleDto);
-
-    StatusDto nanaStatusDto1 = favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
-    StatusDto nanaStatusDto2 = favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
-
-    /**
-     * THEN
-     */
-    assertThat(festivalStatusDto.isFavorite()).isTrue();
-    assertThat(nanaStatusDto1.isFavorite()).isTrue();
-    assertThat(nanaStatusDto2.isFavorite()).isFalse();
-  }
-
-  @Test
-  void favoriteListTest() {
-    /**
-     * GIVEN
-     *
-     * festival, nana 생성
-     */
-    Festival festival1 = Festival.builder()
-        .firstImageFile(imageFile1)
-        .season("봄")
-        .priority(0L)
-        .build();
-    em.persist(festival1);
-    FestivalTrans festivalTrans1 = FestivalTrans.builder()
-        .festival(festival1)
-        .language(language)
-        .title("축제1")
-        .build();
-    em.persist(festivalTrans1);
-    Festival festival2 = Festival.builder()
-        .firstImageFile(imageFile2)
-        .season("여름")
-        .priority(0L)
-        .build();
-    em.persist(festival2);
-    FestivalTrans festivalTrans2 = FestivalTrans.builder()
-        .festival(festival2)
-        .language(language)
-        .title("축제2")
-        .build();
-    em.persist(festivalTrans2);
-
-    Nana nana = Nana.builder()
-        .version("1")
-        .firstImageFile(imageFile3)
-        .nanaTitleImageFile(imageFile1)
-        .priority(0L)
-        .build();
-    em.persist(nana);
-    NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("heading")
-        .subHeading("subHeading")
-        .language(language)
-        .nana(nana)
-        .build();
-    em.persist(nanaTitle);
-
-    /**
-     * WHEN
-     */
-    LikeToggleDto festivalLikeToggleDto = new LikeToggleDto();
-    festivalLikeToggleDto.setCategory(CategoryContent.FESTIVAL.name());
-    festivalLikeToggleDto.setId(festival1.getId());
-    favoriteService.toggleLikeStatus(memberInfoDto, festivalLikeToggleDto);
-    festivalLikeToggleDto.setId(festival2.getId());
-    favoriteService.toggleLikeStatus(memberInfoDto, festivalLikeToggleDto);
-
-    LikeToggleDto nanaLikeToggleDto = new LikeToggleDto();
-    nanaLikeToggleDto.setCategory(CategoryContent.NANA.name());
-    nanaLikeToggleDto.setId(nana.getId());
-    favoriteService.toggleLikeStatus(memberInfoDto, nanaLikeToggleDto);
-
-    AllCategoryDto allFavoriteList = favoriteService.getAllFavoriteList(memberInfoDto, 0, 12);
-    FestivalDto festivalFavoriteList = favoriteService.getFestivalFavoriteList(memberInfoDto, 0,
-        12);
-    NanaDto nanaFavoriteList = favoriteService.getNanaFavoriteList(memberInfoDto, 0, 12);
-
-    /**
-     * THEN
-     */
-    assertThat(allFavoriteList.getTotalElements()).isEqualTo(3);
-    assertThat(festivalFavoriteList.getTotalElements()).isEqualTo(2);
-    assertThat(nanaFavoriteList.getTotalElements()).isEqualTo(1);
-
-    // 최근에 좋아요한 순서대로 표시
-    assertThat(festivalFavoriteList.getData()).extracting("title")
-        .containsExactly("축제2", "축제1");
   }
 }

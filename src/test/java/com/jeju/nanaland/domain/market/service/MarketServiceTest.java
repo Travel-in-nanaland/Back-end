@@ -59,7 +59,7 @@ class MarketServiceTest {
     doReturn(getMarketThumbnailList()).when(marketRepository)
         .findMarketThumbnails(locale, filterList, pageable);
     doReturn(new ArrayList<>()).when(favoriteService)
-        .getFavoritePostIdsWithMemberAndCategory(any(Member.class), any(CategoryContent.class));
+        .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
     MarketThumbnailDto result = marketService.getMarketList(memberInfoDto, filterList, 0, 2);

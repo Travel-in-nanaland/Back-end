@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteThumbnailDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
@@ -50,166 +51,43 @@ public class FavoriteService {
   private final FestivalRepository festivalRepository;
   private final MarketRepository marketRepository;
 
-  public FavoriteResponse.AllCategoryDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page,
-      int size) {
+  public FavoriteThumbnailDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page, int size) {
 
     Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    // Favorite 테이블에서 유저 id에 해당하는 튜플 모두 조회
-    Page<Favorite> favorites = favoriteRepository.findAllCategoryFavorite(member, pageable);
+    // Favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
+    Page<Favorite> favorites = favoriteRepository.findAllByMemberOrderByCreatedAtDesc(member,
+        pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
 
-    // Favorite의 postId, 카테고리 정보를 통해 튜플 하나하나 조회
+    // Favorite의 postId, 카테고리 정보를 통해 썸네일 정보 조회
     for (Favorite favorite : favorites) {
       CategoryContent category = favorite.getCategory().getContent();
       Long postId = favorite.getPost().getId();
-      log.info("postId: {}", postId);
 
-      switch (category) {
-        case NANA -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findNanaThumbnailByPostId(member, postId,
-              locale);
-          thumbnailDto.setCategory(NANA.name());
-          thumbnailDtoList.add(thumbnailDto);
-        }
-        case NATURE -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findNatureThumbnailByPostId(member, postId,
-              locale);
-          thumbnailDto.setCategory(NATURE.name());
-          thumbnailDtoList.add(thumbnailDto);
-        }
-        case MARKET -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findMarketThumbnailByPostId(member, postId,
-              locale);
-          thumbnailDto.setCategory(MARKET.name());
-          thumbnailDtoList.add(thumbnailDto);
-        }
-        case EXPERIENCE -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findExperienceThumbnailByPostId(member,
-              postId,
-              locale);
-          thumbnailDto.setCategory(EXPERIENCE.name());
-          thumbnailDtoList.add(thumbnailDto);
-        }
-        case FESTIVAL -> {
-          ThumbnailDto thumbnailDto = favoriteRepository.findFestivalThumbnailByPostId(member,
-              postId,
-              locale);
-          thumbnailDto.setCategory(FESTIVAL.name());
-          thumbnailDtoList.add(thumbnailDto);
-        }
-      }
+      thumbnailDtoList.add(getThumbnailDto(member, postId, locale, category));
     }
 
-    return FavoriteResponse.AllCategoryDto.builder()
+    return FavoriteThumbnailDto.builder()
         .totalElements(favorites.getTotalElements())
         .data(thumbnailDtoList)
         .build();
   }
 
-  public FavoriteResponse.NatureDto getNatureFavoriteList(MemberInfoDto memberInfoDto, int page,
-      int size) {
+  public FavoriteThumbnailDto getCategoryFavoriteList(MemberInfoDto memberInfoDto,
+      CategoryContent categoryContent, int page, int size) {
 
     Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
     Pageable pageable = PageRequest.of(page, size);
 
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findNatureThumbnails(member, locale,
-        pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
-    for (ThumbnailDto thumbnailDto : thumbnails) {
-      thumbnailDto.setCategory(NATURE.name());
-      thumbnailDtoList.add(thumbnailDto);
-    }
+    // 해당 카테고리의 찜리스트 조회
+    Page<ThumbnailDto> thumbnails = getThumbnailDtoPage(member, locale, pageable, categoryContent);
+    List<ThumbnailDto> thumbnailDtoList = thumbnails.getContent();
 
-    return FavoriteResponse.NatureDto.builder()
-        .totalElements(thumbnails.getTotalElements())
-        .data(thumbnailDtoList)
-        .build();
-  }
-
-  public FavoriteResponse.FestivalDto getFestivalFavoriteList(MemberInfoDto memberInfoDto, int page,
-      int size) {
-
-    Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-    Pageable pageable = PageRequest.of(page, size);
-
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findFestivalThumbnails(member, locale,
-        pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
-    for (ThumbnailDto thumbnailDto : thumbnails) {
-      thumbnailDto.setCategory(FESTIVAL.name());
-      thumbnailDtoList.add(thumbnailDto);
-    }
-
-    return FavoriteResponse.FestivalDto.builder()
-        .totalElements(thumbnails.getTotalElements())
-        .data(thumbnailDtoList)
-        .build();
-  }
-
-  public FavoriteResponse.ExperienceDto getExperienceFavoriteList(MemberInfoDto memberInfoDto,
-      int page,
-      int size) {
-
-    Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-    Pageable pageable = PageRequest.of(page, size);
-
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findExperienceThumbnails(member, locale,
-        pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
-    for (ThumbnailDto thumbnailDto : thumbnails) {
-      thumbnailDto.setCategory(EXPERIENCE.name());
-      thumbnailDtoList.add(thumbnailDto);
-    }
-
-    return FavoriteResponse.ExperienceDto.builder()
-        .totalElements(thumbnails.getTotalElements())
-        .data(thumbnailDtoList)
-        .build();
-  }
-
-  public FavoriteResponse.MarketDto getMarketFavoriteList(MemberInfoDto memberInfoDto, int page,
-      int size) {
-
-    Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-    Pageable pageable = PageRequest.of(page, size);
-
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findMarketThumbnails(member, locale,
-        pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
-    for (ThumbnailDto thumbnailDto : thumbnails) {
-      thumbnailDto.setCategory(MARKET.name());
-      thumbnailDtoList.add(thumbnailDto);
-    }
-
-    return FavoriteResponse.MarketDto.builder()
-        .totalElements(thumbnails.getTotalElements())
-        .data(thumbnailDtoList)
-        .build();
-  }
-
-  public FavoriteResponse.NanaDto getNanaFavoriteList(MemberInfoDto memberInfoDto, int page,
-      int size) {
-
-    Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-    Pageable pageable = PageRequest.of(page, size);
-
-    Page<ThumbnailDto> thumbnails = favoriteRepository.findNanaThumbnails(member, locale,
-        pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
-    for (ThumbnailDto thumbnailDto : thumbnails) {
-      thumbnailDto.setCategory(NANA.name());
-      thumbnailDtoList.add(thumbnailDto);
-    }
-
-    return FavoriteResponse.NanaDto.builder()
+    return FavoriteThumbnailDto.builder()
         .totalElements(thumbnails.getTotalElements())
         .data(thumbnailDtoList)
         .build();
@@ -257,17 +135,18 @@ public class FavoriteService {
     }
   }
 
-  public List<Long> getFavoritePostIdsWithMemberAndCategory(Member member,
-      CategoryContent categoryContent) {
+  // 해당 유저의 찜리스트에 있는 postId 리스트 반환
+  public List<Long> getFavoritePostIdsWithMember(Member member) {
+    List<Favorite> favorites = favoriteRepository.findAllByMember(member);
+    return favorites.stream().map(favorite -> favorite.getPost().getId()).toList();
+  }
 
+  public boolean isPostInFavorite(Member member, CategoryContent categoryContent, Long id) {
     Category category = getCategoryFromCategoryContent(categoryContent);
-    List<Favorite> favorites = favoriteRepository.findAllByMemberAndCategory(member, category);
+    Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
+        member, category, id);
 
-    List<Long> postIds = new ArrayList<>();
-    for (Favorite favorite : favorites) {
-      postIds.add(favorite.getPost().getId());
-    }
-    return postIds;
+    return favoriteOptional.isPresent();
   }
 
   private Category getCategoryFromCategoryContent(CategoryContent categoryContent) {
@@ -291,12 +170,28 @@ public class FavoriteService {
     };
   }
 
-  public boolean isPostInFavorite(Member member, CategoryContent categoryContent, Long id) {
-    Category category = getCategoryFromCategoryContent(categoryContent);
-    Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
-        member, category, id);
+  private ThumbnailDto getThumbnailDto(Member member, Long postId, Locale locale,
+      CategoryContent category) {
+    return switch (category) {
+      case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, locale);
+      case NATURE -> favoriteRepository.findNatureThumbnailByPostId(member, postId, locale);
+      case MARKET -> favoriteRepository.findMarketThumbnailByPostId(member, postId, locale);
+      case EXPERIENCE -> favoriteRepository.findExperienceThumbnailByPostId(member, postId, locale);
+      case FESTIVAL -> favoriteRepository.findFestivalThumbnailByPostId(member, postId, locale);
+      default -> null;
+    };
+  }
 
-    return favoriteOptional.isPresent();
+  private Page<ThumbnailDto> getThumbnailDtoPage(Member member, Locale locale, Pageable pageable,
+      CategoryContent categoryContent) {
+    return switch (categoryContent) {
+      case NANA -> favoriteRepository.findNanaThumbnails(member, locale, pageable);
+      case EXPERIENCE -> favoriteRepository.findExperienceThumbnails(member, locale, pageable);
+      case NATURE -> favoriteRepository.findNatureThumbnails(member, locale, pageable);
+      case MARKET -> favoriteRepository.findMarketThumbnails(member, locale, pageable);
+      case FESTIVAL -> favoriteRepository.findFestivalThumbnails(member, locale, pageable);
+      default -> throw new ServerErrorException("해당하는 카테고리가 없습니다.");
+    };
   }
 
   private Post findPostIfExist(Long postId, CategoryContent categoryContent) {
