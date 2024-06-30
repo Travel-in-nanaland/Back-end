@@ -2,6 +2,8 @@ package com.jeju.nanaland.domain.nature.service;
 
 import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
@@ -12,6 +14,7 @@ import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,27 +31,23 @@ public class NatureService {
   private final NatureRepository natureRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
+  private final ImageFileRepository imageFileRepository;
 
 
   public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureCompositeDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
+    Page<NatureThumbnail> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
         memberInfoDto.getLanguage().getLocale(), addressFilterList, keyword, pageable);
 
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    // TODO: 이미지 추가 필요
-    List<NatureThumbnail> data = natureCompositeDtoPage.getContent()
-        .stream().map(natureCompositeDto ->
-            NatureThumbnail.builder()
-                .id(natureCompositeDto.getId())
-                .title(natureCompositeDto.getTitle())
-                .addressTag(natureCompositeDto.getAddressTag())
-                .isFavorite(favoriteIds.contains(natureCompositeDto.getId()))
-                .build()).toList();
+    List<NatureThumbnail> data = natureCompositeDtoPage.getContent();
+    for (NatureThumbnail natureThumbnail : data) {
+      natureThumbnail.setFavorite(favoriteIds.contains(natureThumbnail.getId()));
+    }
 
     return NatureThumbnailDto.builder()
         .totalElements(natureCompositeDtoPage.getTotalElements())
@@ -68,10 +67,15 @@ public class NatureService {
       searchService.updateSearchVolumeV1(NATURE, id);
     }
 
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
+    // TODO: category 없애는 리팩토링 필요
+    boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
         id);
 
-    // TODO: 이미지 추가 필요
+    // 이미지 리스트
+    List<ImageFileDto> images = new ArrayList<>();
+    images.add(natureCompositeDto.getFirstImage());
+    images.addAll(imageFileRepository.findPostImageFiles(id));
+
     return NatureDetailDto.builder()
         .id(natureCompositeDto.getId())
         .addressTag(natureCompositeDto.getAddressTag())
@@ -84,7 +88,8 @@ public class NatureService {
         .fee(natureCompositeDto.getFee())
         .details(natureCompositeDto.getDetails())
         .amenity(natureCompositeDto.getAmenity())
-        .isFavorite(isPostInFavorite)
+        .isFavorite(isFavorite)
+        .images(images)
         .build();
   }
 }
