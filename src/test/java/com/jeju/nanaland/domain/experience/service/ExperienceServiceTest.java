@@ -87,10 +87,5 @@ class ExperienceServiceTest {
         .priority(0L)
         .build();
     em.persist(experience);
-
-    category = Category.builder()
-        .content(Category.EXPERIENCE)
-        .build();
-    em.persist(category);
   }
 }

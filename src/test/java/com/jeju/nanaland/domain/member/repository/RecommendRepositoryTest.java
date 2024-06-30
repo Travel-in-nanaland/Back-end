@@ -155,10 +155,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initNatureRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(Category.NATURE)
-        .build();
-    em.persist(category);
+    Category category = Category.NATURE;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -196,10 +193,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initMarketRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(Category.MARKET)
-        .build();
-    em.persist(category);
+    Category category = Category.MARKET;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -237,10 +231,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initFestivalRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(Category.FESTIVAL)
-        .build();
-    em.persist(category);
+    Category category = Category.FESTIVAL;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -278,10 +269,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initExperienceRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(Category.EXPERIENCE)
-        .build();
-    em.persist(category);
+    Category category = Category.EXPERIENCE;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -319,10 +307,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initNanaRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(Category.NANA)
-        .build();
-    em.persist(category);
+    Category category = Category.NANA;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")

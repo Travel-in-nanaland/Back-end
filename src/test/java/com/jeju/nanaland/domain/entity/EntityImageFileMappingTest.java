@@ -1,13 +1,13 @@
 package com.jeju.nanaland.domain.entity;
 
 
-import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.story.entity.Story;
 import com.jeju.nanaland.domain.story.entity.StoryCategory;
 import com.jeju.nanaland.domain.story.entity.StoryImageFile;
@@ -59,6 +59,7 @@ class EntityImageFileMappingTest {
         .nickname("nickname")
         .provider(Provider.KAKAO)
         .providerId("1")
+        .travelType(TravelType.NONE)
         .build();
     em.persist(member);
   }
@@ -92,11 +93,6 @@ class EntityImageFileMappingTest {
         .content("content")
         .build();
     em.persist(keyword);
-
-    Category category = Category.builder()
-        .content(Category.EXPERIENCE)
-        .build();
-    em.persist(category);
 
 //    Stay stay = Stay.builder()
 //        .imageFile(imageFile1)

@@ -181,12 +181,8 @@ class MemberTypeServiceTest {
   }
 
   private List<Recommend> recommendList(TravelType travelType) {
-    Category natureCategory = Category.builder()
-        .content(Category.NATURE)
-        .build();
-    Category experienceCategory = Category.builder()
-        .content(Category.EXPERIENCE)
-        .build();
+    Category natureCategory = Category.NATURE;
+    Category experienceCategory = Category.EXPERIENCE;
     ImageFile imageFile1 = ImageFile.builder()
         .originUrl("origin")
         .thumbnailUrl("thumbnail")

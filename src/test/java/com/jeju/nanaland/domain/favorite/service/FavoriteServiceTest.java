@@ -85,14 +85,11 @@ class FavoriteServiceTest {
         .priority(0L)
         .firstImageFile(new ImageFile("nature origin", "nature thumbnail"))
         .build();
-    Category natureCategory = Category.builder()
-        .content(Category.NATURE)
-        .build();
 
     return Favorite.builder()
         .post(nature)
         .member(member)
-        .category(natureCategory)
+        .category(Category.NATURE)
         .build();
   }
 
@@ -101,14 +98,11 @@ class FavoriteServiceTest {
         .priority(0L)
         .firstImageFile(new ImageFile("festival origin", "festival thumbnail"))
         .build();
-    Category festivalCategory = Category.builder()
-        .content(Category.FESTIVAL)
-        .build();
 
     return Favorite.builder()
         .post(festival)
         .member(member)
-        .category(festivalCategory)
+        .category(Category.FESTIVAL)
         .build();
   }
 
@@ -117,14 +111,11 @@ class FavoriteServiceTest {
         .priority(0L)
         .firstImageFile(new ImageFile("market origin", "market thumbnail"))
         .build();
-    Category marketCategory = Category.builder()
-        .content(Category.MARKET)
-        .build();
 
     return Favorite.builder()
         .post(market)
         .member(member)
-        .category(marketCategory)
+        .category(Category.MARKET)
         .build();
   }
 
@@ -133,14 +124,11 @@ class FavoriteServiceTest {
         .priority(0L)
         .firstImageFile(new ImageFile("experience origin", "experience thumbnail"))
         .build();
-    Category experienceCategory = Category.builder()
-        .content(Category.EXPERIENCE)
-        .build();
 
     return Favorite.builder()
         .post(experience)
         .member(member)
-        .category(experienceCategory)
+        .category(Category.EXPERIENCE)
         .build();
   }
 
@@ -149,14 +137,11 @@ class FavoriteServiceTest {
         .priority(0L)
         .firstImageFile(new ImageFile("nana origin", "nana thumbnail"))
         .build();
-    Category nanaCategory = Category.builder()
-        .content(Category.NANA)
-        .build();
 
     return Favorite.builder()
         .post(nana)
         .member(member)
-        .category(nanaCategory)
+        .category(Category.NANA)
         .build();
   }
 }

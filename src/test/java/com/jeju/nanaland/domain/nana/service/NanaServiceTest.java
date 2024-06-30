@@ -53,8 +53,6 @@ public class NanaServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private HashtagRepository hashtagRepository;
-  @Mock
-  private CategoryRepository categoryRepository;
   @InjectMocks
   private NanaService nanaService;
 
@@ -120,7 +118,7 @@ public class NanaServiceTest {
     List<NanaContentImage> nanaContentImage = createNanaContentImage(
         List.of(createImageFile(1), createImageFile(2), createImageFile(3)), nana);
     nana.updateNanaContentImageList(nanaContentImage);
-    Category category = createCategory(Category.NANA);
+    Category category = Category.NANA;
 
     when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
     when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
@@ -129,8 +127,6 @@ public class NanaServiceTest {
         nanaContentList);
     when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);
-    when(categoryRepository.findByContent(Category.NANA_CONTENT)).thenReturn(
-        Optional.of(category));
 
     // When
     NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
@@ -146,12 +142,6 @@ public class NanaServiceTest {
     return Language.builder()
         .locale(locale)
         .dateFormat("yyyy-MM-dd")
-        .build();
-  }
-
-  Category createCategory(Category categoryContent) {
-    return Category.builder()
-        .content(categoryContent)
         .build();
   }
 
