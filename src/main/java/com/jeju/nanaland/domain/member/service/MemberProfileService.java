@@ -72,7 +72,7 @@ public class MemberProfileService {
   public MemberResponse.ProfileDto getMemberProfile(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
-    TravelType travelType = member.getMemberTravelType().getTravelType();
+    TravelType travelType = member.getTravelType();
     Locale locale = member.getLanguage().getLocale();
     String typeName = travelType.getTypeNameWithLocale(locale);
     List<String> hashtags = new ArrayList<>();

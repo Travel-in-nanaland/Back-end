@@ -16,7 +16,6 @@ import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nature.entity.Nature;
@@ -71,12 +70,9 @@ class FavoriteServiceTest {
     Language language = Language.builder()
         .locale(locale)
         .build();
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(travelType)
-        .build();
     Member member = Member.builder()
         .language(language)
-        .memberTravelType(memberTravelType)
+        .travelType(travelType)
         .build();
 
     return MemberInfoDto.builder()

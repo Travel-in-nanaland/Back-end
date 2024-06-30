@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.Role;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -85,9 +86,9 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Set<Role> roleSet;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "member_travel_type_id", nullable = true)
-  private MemberTravelType memberTravelType;
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private TravelType travelType = TravelType.NONE;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
   private List<Favorite> favorites;
@@ -95,7 +96,7 @@ public class Member extends BaseEntity {
   @Builder
   public Member(Language language, String email, ImageFile profileImageFile,
       String nickname, String description, String gender, LocalDate birthDate,
-      Provider provider, String providerId, MemberTravelType memberTravelType) {
+      Provider provider, String providerId, TravelType travelType) {
     this.language = language;
     this.email = email;
     this.profileImageFile = profileImageFile;
@@ -108,13 +109,13 @@ public class Member extends BaseEntity {
     this.providerId = providerId;
     this.roleSet = (provider == Provider.GUEST) ? new HashSet<>(List.of(Role.ROLE_GUEST))
         : new HashSet<>(List.of(Role.ROLE_MEMBER));
-    this.memberTravelType = memberTravelType;
+    this.travelType = travelType;
     this.favorites = new ArrayList<>();
   }
 
-  public void updateMemberTravelType(MemberTravelType memberTravelType) {
+  public void updateTravelType(TravelType travelType) {
 
-    this.memberTravelType = memberTravelType;
+    this.travelType = travelType;
   }
 
   public void updateProfile(ProfileUpdateDto profileUpdateDto) {

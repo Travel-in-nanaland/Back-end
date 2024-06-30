@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.querydsl.core.annotations.QueryProjection;
@@ -43,8 +44,8 @@ public class MemberResponse {
         })
     private String category;
 
-    @Schema(description = "게시물 썸네일 이미지 URL")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @Schema(description = "제목", example = "성산일출봉")
     private String title;
@@ -56,12 +57,11 @@ public class MemberResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public RecommendPostDto(Long id, CategoryContent categoryContent, String thumbnailUrl,
-        String title,
-        String introduction) {
+    public RecommendPostDto(Long id, CategoryContent categoryContent, String originUrl,
+        String thumbnailUrl, String title, String introduction) {
       this.id = id;
       this.category = categoryContent.name();
-      this.thumbnailUrl = thumbnailUrl;
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.title = title;
       this.introduction = introduction;
       this.isFavorite = false;

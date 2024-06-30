@@ -3,7 +3,7 @@ package com.jeju.nanaland.domain.member.entity.enums;
 import lombok.Getter;
 
 @Getter
-public enum MemberTypeHashtag {
+public enum TravelTypeHashtag {
 
   TOURIST_SPOT("관광장소", "Tourist spot", "Tempat pelancongan", "景点", "Điểm du lịch"),
   LOCAL_SPOT("로컬장소", "local spot", "Tempat lokal", "静谧景点", "Địa phương yêu thích"),
@@ -20,7 +20,7 @@ public enum MemberTypeHashtag {
   private final String zh; //중국어
   private final String vi; //베트남어
 
-  MemberTypeHashtag(String kr, String en, String ms, String zh, String vi) {
+  TravelTypeHashtag(String kr, String en, String ms, String zh, String vi) {
     this.kr = kr;
     this.en = en;
     this.ms = ms;
