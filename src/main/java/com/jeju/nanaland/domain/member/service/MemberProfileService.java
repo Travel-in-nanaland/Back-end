@@ -2,10 +2,8 @@ package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
@@ -33,8 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Slf4j
 public class MemberProfileService {
-
-  private final LanguageRepository languageRepository;
 
   private final S3ImageService s3ImageService;
   private final MemberRepository memberRepository;
@@ -73,11 +69,11 @@ public class MemberProfileService {
 
     Member member = memberInfoDto.getMember();
     TravelType travelType = member.getTravelType();
-    Locale locale = member.getLanguage().getLocale();
-    String typeName = travelType.getTypeNameWithLocale(locale);
+    Language language = member.getLanguage();
+    String typeName = travelType.getTypeNameWithLocale(language);
     List<String> hashtags = new ArrayList<>();
     if (travelType != TravelType.NONE) {
-      hashtags = travelType.getHashtagsWithLocale(locale);
+      hashtags = travelType.getHashtagsWithLanguage(language);
     }
 
     List<ConsentItemResponse> consentItemResponses = memberRepository.findMemberConsentByMember(
@@ -101,9 +97,8 @@ public class MemberProfileService {
 
   @Transactional
   public void updateLanguage(MemberInfoDto memberInfoDto, LanguageUpdateDto languageUpdateDto) {
-    Language locale = languageRepository.findByLocale(
-        Locale.valueOf(languageUpdateDto.getLocale()));
+    Language language = Language.valueOf(languageUpdateDto.getLocale());
 
-    memberInfoDto.getMember().updateLanguage(locale);
+    memberInfoDto.getMember().updateLanguage(language);
   }
 }

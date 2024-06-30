@@ -9,7 +9,7 @@ import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.THE
 import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.TOURIST_SPOT;
 import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.TRADITION;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,7 +93,7 @@ public enum TravelType {
     this.hashtags = hashtags;
   }
 
-  public String getTypeNameWithLocale(Locale locale) {
+  public String getTypeNameWithLocale(Language locale) {
     return switch (locale) {
       case KOREAN -> this.kr;
       case ENGLISH -> this.en;
@@ -108,11 +108,11 @@ public enum TravelType {
     };
   }
 
-  public List<String> getHashtagsWithLocale(Locale locale) {
+  public List<String> getHashtagsWithLanguage(Language language) {
 
     List<String> result = new ArrayList<>();
 
-    switch (locale) {
+    switch (language) {
       case KOREAN -> {
         for (TravelTypeHashtag hashtag : hashtags) {
           result.add(hashtag.getKr());
@@ -139,7 +139,7 @@ public enum TravelType {
         }
       }
       default -> {
-        String errorMessage = locale.name() + "에 해당하는 언어 정보가 없습니다.";
+        String errorMessage = language.name() + "에 해당하는 언어 정보가 없습니다.";
         log.error(errorMessage);
         throw new ServerErrorException(errorMessage);
       }

@@ -1,8 +1,8 @@
 package com.jeju.nanaland.domain.member.dto;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -57,7 +57,7 @@ public class MemberResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public RecommendPostDto(Long id, CategoryContent categoryContent, String originUrl,
+    public RecommendPostDto(Long id, Category categoryContent, String originUrl,
         String thumbnailUrl, String title, String introduction) {
       this.id = id;
       this.category = categoryContent.name();

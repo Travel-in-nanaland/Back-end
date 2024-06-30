@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -49,7 +49,7 @@ public class MemberRequest {
         allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
     @NotNull
     @EnumValid(
-        enumClass = Locale.class,
+        enumClass = Language.class,
         message = "Locale이 유효하지 않습니다."
     )
     private String locale;
@@ -74,7 +74,7 @@ public class MemberRequest {
         allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
     @NotNull
     @EnumValid(
-        enumClass = Locale.class,
+        enumClass = Language.class,
         message = "Locale이 유효하지 않습니다."
     )
     private String locale;
@@ -187,7 +187,7 @@ public class MemberRequest {
         allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
     @NotNull
     @EnumValid(
-        enumClass = Locale.class,
+        enumClass = Language.class,
         message = "Locale이 유효하지 않습니다."
     )
     private String locale;

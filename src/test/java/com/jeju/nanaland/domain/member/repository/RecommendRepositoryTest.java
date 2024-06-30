@@ -1,11 +1,9 @@
 package com.jeju.nanaland.domain.member.repository;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.festival.entity.Festival;
@@ -70,7 +68,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findNatureRecommendPostDto(
-        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -87,7 +85,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findMarketRecommendPostDto(
-        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -104,7 +102,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findFestivalRecommendPostDto(
-        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -121,7 +119,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findExperienceRecommendPostDto(
-        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -138,7 +136,7 @@ public class RecommendRepositoryTest {
 
     // when
     RecommendPostDto recommendPostDto = recommendRepository.findNanaRecommendPostDto(
-        recommend.getPost().getId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
     Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
@@ -146,20 +144,12 @@ public class RecommendRepositoryTest {
   }
 
   Language initLanguageKorean() {
-    Language language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(language);
-
+    Language language = Language.KOREAN;
     return language;
   }
 
   Recommend initNatureRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.NATURE)
-        .build();
-    em.persist(category);
+    Category category = Category.NATURE;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -197,10 +187,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initMarketRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    em.persist(category);
+    Category category = Category.MARKET;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -238,10 +225,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initFestivalRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.FESTIVAL)
-        .build();
-    em.persist(category);
+    Category category = Category.FESTIVAL;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -279,10 +263,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initExperienceRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    em.persist(category);
+    Category category = Category.EXPERIENCE;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -320,10 +301,7 @@ public class RecommendRepositoryTest {
   }
 
   Recommend initNanaRecommend(Language language, TravelType travelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.NANA)
-        .build();
-    em.persist(category);
+    Category category = Category.NANA;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")

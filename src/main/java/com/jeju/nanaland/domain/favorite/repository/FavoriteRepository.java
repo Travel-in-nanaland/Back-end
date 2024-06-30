@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.favorite.repository;
 
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
 import java.util.List;

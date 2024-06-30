@@ -8,15 +8,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
@@ -61,15 +58,10 @@ class NatureServiceTest {
   }
 
   private MemberInfoDto createMemberInfoDto() {
-    Language language = Language.builder()
-        .locale(Locale.KOREAN)
-        .build();
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
+    Language language = Language.KOREAN;
     Member member = Member.builder()
         .language(language)
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.NONE)
         .build();
 
     return MemberInfoDto.builder()
@@ -106,9 +98,9 @@ class NatureServiceTest {
     Page<NatureThumbnail> natureThumbnailList = createNatureThumbnailList();
 
     doReturn(natureThumbnailList).when(natureRepository)
-        .findNatureThumbnails(any(Locale.class), anyList(), any(), any());
+        .findNatureThumbnails(any(Language.class), anyList(), any(), any());
     doReturn(new ArrayList<>()).when(favoriteService)
-        .getFavoritePostIdsWithMemberAndCategory(any(), any(CategoryContent.class));
+        .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
     NatureThumbnailDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
@@ -119,10 +111,10 @@ class NatureServiceTest {
     assertThat(result.getData()).hasSize(2);
     assertThat(result.getData().get(0).getTitle()).isEqualTo("nature title 1");
 
-    verify(natureRepository, times(1)).findNatureThumbnails(any(Locale.class), anyList(), any(),
+    verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
         any());
-    verify(favoriteService, times(1)).getFavoritePostIdsWithMemberAndCategory(any(),
-        any(CategoryContent.class));
+    verify(favoriteService, times(1)).getFavoritePostIdsWithMember(
+        any(Member.class));
   }
 
   @Test
@@ -135,9 +127,9 @@ class NatureServiceTest {
         PageRequest.of(pageNumber, pageSize), 0);
 
     doReturn(emptyNatureThumbnailList).when(natureRepository)
-        .findNatureThumbnails(any(Locale.class), anyList(), any(), any());
+        .findNatureThumbnails(any(Language.class), anyList(), any(), any());
     doReturn(new ArrayList<>()).when(favoriteService)
-        .getFavoritePostIdsWithMemberAndCategory(any(), any(CategoryContent.class));
+        .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
     NatureThumbnailDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
@@ -147,10 +139,10 @@ class NatureServiceTest {
     assertThat(result.getTotalElements()).isZero();
     assertThat(result.getData()).isEmpty();
 
-    verify(natureRepository, times(1)).findNatureThumbnails(any(Locale.class), anyList(), any(),
+    verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
         any());
-    verify(favoriteService, times(1)).getFavoritePostIdsWithMemberAndCategory(any(),
-        any(CategoryContent.class));
+    verify(favoriteService, times(1)).getFavoritePostIdsWithMember(
+        any(Member.class));
   }
 
   @Test
@@ -161,9 +153,9 @@ class NatureServiceTest {
     List<Long> favoriteIds = List.of(1L);
 
     doReturn(natureThumbnailList).when(natureRepository)
-        .findNatureThumbnails(any(Locale.class), anyList(), any(), any());
+        .findNatureThumbnails(any(Language.class), anyList(), any(), any());
     doReturn(favoriteIds).when(favoriteService)
-        .getFavoritePostIdsWithMemberAndCategory(any(), any(CategoryContent.class));
+        .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
     NatureThumbnailDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
@@ -175,10 +167,10 @@ class NatureServiceTest {
     assertThat(result.getData().get(0).isFavorite()).isTrue();
     assertThat(result.getData().get(1).isFavorite()).isFalse();
 
-    verify(natureRepository, times(1)).findNatureThumbnails(any(Locale.class), anyList(), any(),
+    verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
         any());
-    verify(favoriteService, times(1)).getFavoritePostIdsWithMemberAndCategory(any(),
-        any(CategoryContent.class));
+    verify(favoriteService, times(1)).getFavoritePostIdsWithMember(
+        any(Member.class));
   }
 
   @Test

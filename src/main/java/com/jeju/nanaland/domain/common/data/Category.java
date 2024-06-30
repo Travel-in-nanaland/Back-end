@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.common.data;
 
-public enum CategoryContent {
+public enum Category {
   NANA,
   NANA_CONTENT,
   EXPERIENCE,

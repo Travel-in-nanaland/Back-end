@@ -150,7 +150,7 @@ public class SearchController {
   @GetMapping("/popular")
   public BaseResponse<List<String>> getPopularSearch(@AuthMember MemberInfoDto memberInfoDto) {
 
-    List<String> result = searchService.getPopularSearch(memberInfoDto.getLanguage().getLocale());
+    List<String> result = searchService.getPopularSearch(memberInfoDto.getLanguage());
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 

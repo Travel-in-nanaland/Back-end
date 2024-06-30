@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.common.dto;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -24,7 +24,7 @@ public class CompositeDto {
 
   @QueryProjection
   public CompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
-      Locale locale, String title, String content, String address,
+      Language locale, String title, String content, String address,
       String addressTag, String time) {
     this.id = id;
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);

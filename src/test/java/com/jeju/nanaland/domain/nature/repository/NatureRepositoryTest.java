@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.nature.repository;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class NatureRepositoryTest {
   void searchNatureTest() {
     Pageable pageable = PageRequest.of(0, 12);
     Page<NatureCompositeDto> result = natureRepository.searchCompositeDtoByKeyword("자연경관",
-        Locale.KOREAN,
+        Language.KOREAN,
         pageable);
   }
 }

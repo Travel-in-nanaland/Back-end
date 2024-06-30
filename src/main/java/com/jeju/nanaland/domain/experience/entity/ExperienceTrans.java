@@ -1,12 +1,15 @@
 package com.jeju.nanaland.domain.experience.entity;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,8 +24,8 @@ public class ExperienceTrans extends BaseEntity {
   @JoinColumn(name = "experience_id", nullable = false)
   private Experience experience;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "language_id", nullable = false)
+  @NotNull
+  @Enumerated(EnumType.STRING)
   private Language language;
 
   private String title;

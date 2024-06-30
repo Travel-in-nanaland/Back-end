@@ -1,14 +1,14 @@
 package com.jeju.nanaland.domain.search.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.MARKET;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
@@ -59,7 +59,7 @@ public class SearchService {
   public SearchResponse.AllCategoryDto searchAllResultDto(MemberInfoDto memberInfoDto,
       String keyword) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
 
     // Redis에 해당 검색어 count + 1
@@ -83,7 +83,7 @@ public class SearchService {
       int page,
       int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByKeyword(
@@ -115,7 +115,7 @@ public class SearchService {
       int page,
       int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByKeyword(
@@ -147,7 +147,7 @@ public class SearchService {
       int page,
       int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByKeyword(
@@ -179,7 +179,7 @@ public class SearchService {
       int page,
       int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
@@ -211,7 +211,7 @@ public class SearchService {
       int page,
       int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
@@ -237,7 +237,7 @@ public class SearchService {
         .build();
   }
 
-  public List<String> getPopularSearch(Locale locale) {
+  public List<String> getPopularSearch(Language locale) {
     String language = locale.name();
 
     // version 1
@@ -259,7 +259,7 @@ public class SearchService {
   }
 
   // version1 : 인기검색어 정보 삭제하지 않고 계속 누적됨
-  private void updateSearchCountV1(String title, Locale locale) {
+  private void updateSearchCountV1(String title, Language locale) {
     String language = locale.name();
     String key = "ranking_" + language;
 
@@ -267,7 +267,7 @@ public class SearchService {
   }
 
   // version2 : 인기검색어 정보 1시간마다 갱신됨
-  private void updateSearchCountV2(String title, Locale locale) {
+  private void updateSearchCountV2(String title, Language locale) {
     String language = locale.name();
     String key0 = "ranking_" + language + "_0";
     String key1 = "ranking_" + language + "_1";
@@ -303,7 +303,7 @@ public class SearchService {
     }
   }
 
-  public void updateSearchVolumeV1(CategoryContent categoryContent, Long id) {
+  public void updateSearchVolumeV1(Category categoryContent, Long id) {
     String value = categoryContent + SEARCH_VOLUME_REGEX + id;
     redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
   }
@@ -314,13 +314,13 @@ public class SearchService {
     List<SearchVolumeDto> searchVolumeDtoList = new ArrayList<>();
     for (String element : topSearchVolumeList) {
       String[] parts = element.split(SEARCH_VOLUME_REGEX);
-      CategoryContent categoryContent = CategoryContent.valueOf(parts[0]);
+      Category categoryContent = Category.valueOf(parts[0]);
       Long postId = Long.valueOf(parts[1]);
 
       switch (categoryContent) {
         case NANA -> {
           NanaThumbnailPost nanaThumbnailPostDto = nanaRepository.findNanaThumbnailPostDto(
-              postId, memberInfoDto.getLanguage().getLocale()
+              postId, memberInfoDto.getLanguage()
           );
           if (nanaThumbnailPostDto == null) {
             throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
@@ -337,28 +337,28 @@ public class SearchService {
         }
         case FESTIVAL -> {
           CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
-              postId, memberInfoDto.getLanguage().getLocale());
+              postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, festivalCompositeDto));
         }
         case NATURE -> {
           CompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
-              memberInfoDto.getLanguage().getLocale());
+              memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, natureCompositeDto));
         }
         case MARKET -> {
           CompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
-              memberInfoDto.getLanguage().getLocale());
+              memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
         }
         case EXPERIENCE -> {
           CompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
-              postId, memberInfoDto.getLanguage().getLocale());
+              postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, experienceCompositeDto));
@@ -370,7 +370,7 @@ public class SearchService {
   }
 
   private SearchVolumeDto getSearchVolumeDto(MemberInfoDto memberInfoDto,
-      CategoryContent categoryContent, CompositeDto compositeDto) {
+      Category categoryContent, CompositeDto compositeDto) {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }

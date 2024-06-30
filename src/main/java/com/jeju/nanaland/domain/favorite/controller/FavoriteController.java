@@ -1,10 +1,10 @@
 package com.jeju.nanaland.domain.favorite.controller;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.MARKET;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;

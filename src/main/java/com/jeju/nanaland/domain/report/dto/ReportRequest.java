@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.report.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -32,7 +32,7 @@ public class ReportRequest {
     private String fixType;
 
     @EnumValid(
-        enumClass = CategoryContent.class,
+        enumClass = Category.class,
         message = "게시물 카테고리 값이 유효하지 않습니다."
     )
     @Schema(

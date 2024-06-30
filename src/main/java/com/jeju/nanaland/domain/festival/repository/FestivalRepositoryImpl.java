@@ -1,14 +1,13 @@
 package com.jeju.nanaland.domain.festival.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
-import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.festival.entity.QFestival.festival;
 import static com.jeju.nanaland.domain.festival.entity.QFestivalTrans.festivalTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.entity.Status;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -28,7 +27,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public FestivalCompositeDto findCompositeDtoById(Long id, Locale locale) {
+  public FestivalCompositeDto findCompositeDtoById(Long id, Language language) {
     return queryFactory
         .select(new QFestivalCompositeDto(
             festival.id,
@@ -36,7 +35,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             imageFile.thumbnailUrl,
             festival.contact,
             festival.homepage,
-            language.locale,
+            festivalTrans.language,
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
@@ -51,17 +50,17 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .where(festival.id.eq(id).and(festivalTrans.language.locale.eq(locale))
+        .where(festival.id.eq(id).and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
         )
         .fetchOne();
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
+  public Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
 
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, locale);
+    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
 
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
@@ -70,7 +69,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             imageFile.thumbnailUrl,
             festival.contact,
             festival.homepage,
-            festivalTrans.language.locale,
+            festivalTrans.language,
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
@@ -85,7 +84,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .on(festivalTrans.language.locale.eq(locale))
+        .on(festivalTrans.language.eq(language))
         .where(festivalTrans.title.contains(keyword)
             .or(festivalTrans.addressTag.contains(keyword))
             .or(festivalTrans.content.contains(keyword))
@@ -101,7 +100,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .from(festival)
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
-        .on(festivalTrans.language.locale.eq(locale))
+        .on(festivalTrans.language.eq(language))
         .where(festivalTrans.title.contains(keyword)
             .or(festivalTrans.addressTag.contains(keyword))
             .or(festivalTrans.content.contains(keyword))
@@ -111,14 +110,14 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
-  private List<Long> getIdListContainAllHashtags(String keyword, Locale locale) {
+  private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(festival.id)
         .from(festival)
         .leftJoin(hashtag)
         .on(hashtag.post.id.eq(festival.id)
-            .and(hashtag.category.content.eq(CategoryContent.FESTIVAL))
-            .and(hashtag.language.locale.eq(locale)))
+            .and(hashtag.category.eq(Category.FESTIVAL))
+            .and(hashtag.language.eq(language)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword))
             .and(festival.status.eq(Status.ACTIVE)))
         .groupBy(festival.id)
@@ -137,7 +136,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Locale locale, Pageable pageable,
+  public Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Language language,
+      Pageable pageable,
       boolean onGoing, List<String> addressFilterList) {
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
@@ -146,7 +146,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             imageFile.thumbnailUrl,
             festival.contact,
             festival.homepage,
-            language.locale,
+            festivalTrans.language,
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
@@ -162,9 +162,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
-            .and(festivalTrans.language.locale.eq(locale))
+            .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
-            .and(festivalTrans.language.locale.eq(locale))
+            .and(festivalTrans.language.eq(language))
             .and(addressTagCondition(addressFilterList))
         )
         .orderBy(festival.endDate.desc()) // 최근에 끝난 순
@@ -178,7 +178,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.onGoing.eq(onGoing)
-            .and(festivalTrans.language.locale.eq(locale))
+            .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
             .and(addressTagCondition(addressFilterList)));
 
@@ -186,7 +186,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoBySeason(Locale locale, Pageable pageable,
+  public Page<FestivalCompositeDto> searchCompositeDtoBySeason(Language language, Pageable pageable,
       String season) {
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
@@ -195,7 +195,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             imageFile.thumbnailUrl,
             festival.contact,
             festival.homepage,
-            language.locale,
+            festivalTrans.language,
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
@@ -211,8 +211,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
-            .and(festivalTrans.language.locale.eq(locale))
-            .and(festivalTrans.language.locale.eq(locale))
+            .and(festivalTrans.language.eq(language))
+            .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE)))
         .orderBy(festival.endDate.asc())// 종료일 오름차 순 (곧 종료되는)
         .offset(pageable.getOffset())
@@ -225,7 +225,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .where(festival.season.like("%" + season + "%")
-            .and(festivalTrans.language.locale.eq(locale))
+            .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
         );
 
@@ -233,7 +233,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByMonth(Locale locale, Pageable pageable,
+  public Page<FestivalCompositeDto> searchCompositeDtoByMonth(Language language, Pageable pageable,
       LocalDate startDate, LocalDate endDate, List<String> addressFilterList) {
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
@@ -242,7 +242,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             imageFile.thumbnailUrl,
             festival.contact,
             festival.homepage,
-            language.locale,
+            festivalTrans.language,
             festivalTrans.title,
             festivalTrans.content,
             festivalTrans.address,
@@ -266,7 +266,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                 .or((festival.startDate.loe(endDate))
                     .and(festival.endDate.goe(endDate))))
 
-                .and(festivalTrans.language.locale.eq(locale)
+                .and(festivalTrans.language.eq(language)
                     .and(addressTagCondition(addressFilterList)))
                 .and(festival.status.eq(Status.ACTIVE))
         )
@@ -289,7 +289,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                 .or((festival.startDate.loe(endDate))
                     .and(festival.endDate.goe(endDate))))
 
-                .and(festivalTrans.language.locale.eq(locale)
+                .and(festivalTrans.language.eq(language)
                     .and(addressTagCondition(addressFilterList)))
 
                 .and(festival.status.eq(Status.ACTIVE))

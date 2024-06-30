@@ -3,10 +3,9 @@ package com.jeju.nanaland.domain.member.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
@@ -53,11 +52,7 @@ class MemberRepositoryTest {
   }
 
   private Language createLanguage() {
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-MM-dd")
-        .build();
-    entityManager.persist(language);
+    language = Language.KOREAN;
     return language;
   }
 

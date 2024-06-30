@@ -4,11 +4,9 @@ import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WTIHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.entity.Status;
-import com.jeju.nanaland.domain.common.repository.LanguageRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
@@ -44,7 +42,6 @@ public class MemberLoginService {
 
   private final MemberRepository memberRepository;
   private final MemberWithdrawalRepository memberWithdrawalRepository;
-  private final LanguageRepository languageRepository;
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
@@ -90,15 +87,8 @@ public class MemberLoginService {
 
   private Member createMember(JoinDto joinDto, ImageFile imageFile, String nickname) {
 
-    Language language = languageRepository.findByLocale(Locale.valueOf(joinDto.getLocale()));
+    Language language = Language.valueOf(joinDto.getLocale());
     TravelType noneTravelType = TravelType.NONE;
-
-    // 언어 정보가 Enum에는 있지만 DB에는 없는 경우
-    if (language == null) {
-      String errorMessage = joinDto.getLocale() + "에 해당하는 언어 정보가 없습니다.";
-      log.error(errorMessage);
-      throw new NotFoundException(errorMessage);
-    }
 
     Member member = Member.builder()
         .language(language)
@@ -150,10 +140,8 @@ public class MemberLoginService {
 
   @Transactional
   public void updateLanguageDifferent(LoginDto loginDto, Member member) {
-    Locale locale = Locale.valueOf(loginDto.getLocale());
-    if (!member.getLanguage().getLocale().equals(locale)) {
-      Language language = languageRepository.findByLocale(locale);
-
+    Language language = Language.valueOf(loginDto.getLocale());
+    if (!member.getLanguage().equals(language)) {
       member.updateLanguage(language);
     }
   }
