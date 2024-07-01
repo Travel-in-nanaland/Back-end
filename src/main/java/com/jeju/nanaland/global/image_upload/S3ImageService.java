@@ -228,7 +228,10 @@ public class S3ImageService {
     int originalHeight = bufferedImage.getHeight();
     int originalWidth = bufferedImage.getWidth();
     int aspectRatio = originalHeight / originalWidth;
-
-    return 600 * aspectRatio;
+    if (aspectRatio == 0) {
+      return 450;
+    } else {
+      return 600 * aspectRatio;
+    }
   }
 }
