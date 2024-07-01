@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.nana.entity;
 
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import lombok.Getter;
 
@@ -44,7 +44,7 @@ public enum InfoType {
     throw new NotFoundException("일치하는 InfoType이 없습니다.");
   }
 
-  public String getValueByLocale(Locale locale) {
+  public String getValueByLocale(Language locale) {
     return switch (locale) {
       case KOREAN -> this.getKr();
       case ENGLISH -> this.getEn();

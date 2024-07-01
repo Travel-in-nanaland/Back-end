@@ -1,9 +1,9 @@
 package com.jeju.nanaland.domain.market.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
+import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
@@ -39,7 +39,7 @@ public class MarketService {
 
     // default : page = 0, size = 12
     Pageable pageable = PageRequest.of(page, size);
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Page<MarketThumbnail> marketThumbnailPage = marketRepository.findMarketThumbnails(locale,
         addressFilterList, pageable);
 
@@ -62,7 +62,7 @@ public class MarketService {
       boolean isSearch) {
 
     MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(id,
-        memberInfoDto.getLanguage().getLocale());
+        memberInfoDto.getLanguage());
 
     if (marketCompositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());

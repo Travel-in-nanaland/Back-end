@@ -1,14 +1,12 @@
 package com.jeju.nanaland.domain.entity;
 
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.story.entity.Story;
 import com.jeju.nanaland.domain.story.entity.StoryCategory;
 import com.jeju.nanaland.domain.story.entity.StoryImageFile;
@@ -36,11 +34,7 @@ class EntityImageFileMappingTest {
 
   @BeforeEach
   void init() {
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
     imageFile1 = ImageFile.builder()
         .thumbnailUrl("thumbnail_url")
@@ -60,6 +54,7 @@ class EntityImageFileMappingTest {
         .nickname("nickname")
         .provider(Provider.KAKAO)
         .providerId("1")
+        .travelType(TravelType.NONE)
         .build();
     em.persist(member);
   }
@@ -93,11 +88,6 @@ class EntityImageFileMappingTest {
         .content("content")
         .build();
     em.persist(keyword);
-
-    Category category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    em.persist(category);
 
 //    Stay stay = Stay.builder()
 //        .imageFile(imageFile1)

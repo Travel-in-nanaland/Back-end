@@ -1,10 +1,8 @@
 package com.jeju.nanaland.domain.experience.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -47,11 +45,7 @@ class ExperienceServiceTest {
         .build();
     em.persist(imageFile2);
 
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
     member1 = Member.builder()
         .email("test@naver.com")
@@ -88,10 +82,5 @@ class ExperienceServiceTest {
         .priority(0L)
         .build();
     em.persist(experience);
-
-    category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    em.persist(category);
   }
 }

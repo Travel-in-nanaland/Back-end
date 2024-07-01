@@ -8,9 +8,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentItem;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -66,9 +65,7 @@ class MemberConsentServiceTest {
   }
 
   private Language createLanguage() {
-    return Language.builder()
-        .locale(Locale.KOREAN)
-        .build();
+    return Language.KOREAN;
   }
 
   private ImageFile createImageFile() {

@@ -1,8 +1,9 @@
 package com.jeju.nanaland.domain.nana.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA_CONTENT;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
@@ -53,7 +54,6 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 @RequiredArgsConstructor
 public class NanaService {
 
-  private final CategoryRepository categoryRepository;
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
@@ -67,12 +67,12 @@ public class NanaService {
   private final HashtagService hashtagService;
 
   //메인페이지에 보여지는 4개의 nana
-  public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
+  public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
 
   //나나 들어갔을 때 보여줄 모든 nana
-  public NanaThumbnailDto getNanaThumbnails(Locale locale, int page, int size) {
+  public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
@@ -127,15 +127,12 @@ public class NanaService {
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
         nanaTitle.getNana().getId());
 
-    Category category = categoryRepository.findByContent(NANA_CONTENT)
-        .orElseThrow(() -> new ServerErrorException("NANA_CONTENT에 해당하는 카테고리가 없습니다."));
-
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
     int nanaContentImageIdx = 0;
     for (NanaContent nanaContent : nanaContentList) {
 
       List<Hashtag> hashtagList = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
-          language, category, nanaContent.getId());
+          language, NANA_CONTENT, nanaContent.getId());
 
       // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
       List<String> stringKeywordList = getStringKeywordListFromHashtagList(hashtagList);
@@ -148,7 +145,7 @@ public class NanaService {
               .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
               .additionalInfoList(
-                  getAdditionalInfoFromNanaContentEntity(language.getLocale(), nanaContent))
+                  getAdditionalInfoFromNanaContentEntity(language, nanaContent))
               .hashtags(stringKeywordList)
               .build());
       nanaContentImageIdx++;
@@ -281,7 +278,7 @@ public class NanaService {
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
-      Locale locale, NanaContent nanaContent) {
+      Language locale, NanaContent nanaContent) {
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
     // 순서 보장 위해 List 형으로 바꾸고

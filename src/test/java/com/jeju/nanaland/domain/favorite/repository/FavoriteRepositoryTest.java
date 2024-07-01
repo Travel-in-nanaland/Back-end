@@ -3,11 +3,9 @@ package com.jeju.nanaland.domain.favorite.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
@@ -17,6 +15,7 @@ import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import java.util.ArrayList;
@@ -48,8 +47,8 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.NATURE);
+    Language locale = Language.KOREAN;
+    Category category = Category.NATURE;
     Pageable pageable = PageRequest.of(0, 12);
 
     // nature 포스트 size개 생성
@@ -72,8 +71,8 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.NATURE);
+    Language locale = Language.KOREAN;
+    Category category = Category.NATURE;
 
     // nature 포스트 1개 생성
     List<Nature> natureList = getNatureList(korean, 1);
@@ -94,8 +93,8 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.FESTIVAL);
+    Language locale = Language.KOREAN;
+    Category category = Category.FESTIVAL;
     Pageable pageable = PageRequest.of(0, 12);
 
     // festival 포스트 size개 생성
@@ -118,8 +117,8 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.FESTIVAL);
+    Language locale = Language.KOREAN;
+    Category category = Category.FESTIVAL;
 
     // festival 포스트 1개 생성
     List<Festival> festivalList = getFestivalList(korean, 1);
@@ -140,8 +139,8 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.MARKET);
+    Language locale = Language.KOREAN;
+    Category category = Category.MARKET;
     Pageable pageable = PageRequest.of(0, 12);
 
     // market 포스트 size개 생성
@@ -164,8 +163,8 @@ public class FavoriteRepositoryTest {
     // given
     Language korean = initKoreanLanguage();
     Member member = initMember(korean);
-    Locale locale = Locale.KOREAN;
-    Category category = initCategory(CategoryContent.MARKET);
+    Language locale = Language.KOREAN;
+    Category category = Category.MARKET;
 
     // market 포스트 1개 생성
     List<Market> marketList = getMarketList(korean, 1);
@@ -188,20 +187,7 @@ public class FavoriteRepositoryTest {
 //  }
 
   Language initKoreanLanguage() {
-    Language korean = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(korean);
-    return korean;
-  }
-
-  Category initCategory(CategoryContent categoryContent) {
-    Category category = Category.builder()
-        .content(categoryContent)
-        .build();
-    em.persist(category);
-    return category;
+    return Language.KOREAN;
   }
 
   Member initMember(Language language) {
@@ -218,6 +204,7 @@ public class FavoriteRepositoryTest {
         .providerId(UUID.randomUUID().toString())
         .email("TEST@naver.com")
         .nickname(UUID.randomUUID().toString())
+        .travelType(TravelType.NONE)
         .build();
     em.persist(member);
 
