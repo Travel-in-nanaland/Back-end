@@ -7,27 +7,37 @@ import com.jeju.nanaland.domain.common.entity.Category;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.common.repository.CategoryRepository;
+import com.jeju.nanaland.domain.common.repository.LanguageRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
+import com.jeju.nanaland.domain.hashtag.service.HashtagService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
+import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.domain.nana.repository.NanaAdditionalInfoRepository;
+import com.jeju.nanaland.domain.nana.repository.NanaContentImageRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +46,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +60,11 @@ public class NanaService {
   private final HashtagRepository hashtagRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
+  private final ImageFileService imageFileService;
+  private final LanguageRepository languageRepository;
+  private final NanaContentImageRepository nanaContentImageRepository;
+  private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
+  private final HashtagService hashtagService;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
@@ -84,8 +101,7 @@ public class NanaService {
     Language language = memberInfoDto.getLanguage();
 
     // nana 찾아서
-    Nana nana = nanaRepository.findNanaById(nanaId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+    Nana nana = getNanaById(nanaId);
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
@@ -150,6 +166,119 @@ public class NanaService {
 
   }
 
+  public HashMap<Long, List<String>> getExistNanaListInfo() {
+    HashMap<Long, List<String>> result = new HashMap<>();
+    List<Nana> nanas = nanaRepository.findAll();
+    List<NanaTitle> nanaTitles = nanaTitleRepository.findAll();
+    for (NanaTitle nanaTitle : nanaTitles) {
+      Long id = nanaTitle.getNana().getId();
+      String language = nanaTitle.getLanguage().getLocale().toString();
+
+      if (result.containsKey(id)) {
+        result.get(id).add(language);
+      } else {
+        List<String> values = new ArrayList<>();
+        values.add(language);
+        result.put(id, values);
+      }
+    }
+    return result;
+  }
+
+  @Transactional
+  public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
+    try {
+      boolean existNanaContentImages = false;
+      Nana nana;
+      Long nanaId = nanaUploadDto.getPostId();
+      Language language = languageRepository.findByLocale(
+          Locale.contains(nanaUploadDto.getLanguage()));
+      Category category = categoryRepository.findByContent(NANA_CONTENT)
+          .orElseThrow(() -> new NotFoundException("존재하지 않는 카테고리입니다."));
+
+      // 없는 nana이면 nana 만들기
+      if (!existNanaById(nanaId)) {
+        // 처음 생성하는 nana인데 title image 없을 경우 에러
+        if (nanaUploadDto.getNanaTitleImage().isEmpty()) {
+          throw new BadRequestException("처음 생성하는 Nana's pick에는 title 이미지가 필수입니다.");
+        }
+        // nana 생성해서 저장하기
+        nana = createNanaByNanaUploadDto(nanaUploadDto);
+        nanaId = nanaRepository.save(nana).getId();
+      } else {// 이미 존재하는 nana인 경우
+        nana = getNanaById(nanaId);
+
+        //존재하는 nana일 경우 해당 post가 이미 작성된 language로 요청이 올 경우 에러
+        if (existNanaTitleByNanaAndLanguage(nana, language)) {
+          throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
+        }
+
+        // 이미 nanaTitle이 존재하면 nanaContentImage 추가 생성 필요 없음을 표시
+        if (existNanaTitleByNana(nana)) {
+          existNanaContentImages = true;
+        }
+
+        // 기존의 content 이미지의 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
+        if (nana.getNanaContentImageList().size() != nanaUploadDto.getNanaContents().size()) {
+          throw new BadRequestException(
+              "기존의 nana content 이미지 수와 현재 요청한 nana content의 수가 일치하지 않습니다.");
+        }
+      }
+
+      NanaTitle nanaTitle = NanaTitle.builder()
+          .nana(nana)
+          .language(language)
+          .subHeading(nanaUploadDto.getSubHeading())
+          .heading(nanaUploadDto.getHeading())
+          .notice(nanaUploadDto.getNotice())
+          .build();
+      nanaTitleRepository.save(nanaTitle);
+
+//      람다 안에서 외부 변수를 사용하기 위해서는 effectively final 변수를 사용해야하므로 선언
+//      존재할 경우 flag -> false / 존재하지 않을 경우 flag -> true
+      boolean createNanaContentsImageFlag = !existNanaContentImages;
+
+      //content 생성
+      nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
+            NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
+                .nanaTitle(nanaTitle)
+                .number(nanaContentDto.getNumber())
+                .subTitle(nanaContentDto.getSubTitle())
+                .title(nanaContentDto.getTitle())
+                .content(nanaContentDto.getContent())
+                .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
+                    nanaContentDto.getInfoDesc()))
+                .build());
+
+            if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
+              if (nanaContentDto.getNanaContentImage().isEmpty()) {
+                throw new BadRequestException("처음 생성하는 Nana's pick에는 content 이미지가 필수입니다. ");
+              }
+              nanaContentImageRepository.save(
+                  NanaContentImage.builder()
+                      .nana(nana)
+                      .imageFile(
+                          imageFileService.uploadAndSaveImageFile(nanaContentDto.getNanaContentImage(),
+                              false))
+                      .number(nanaContentDto.getNumber())
+                      .build()
+              );
+            }
+
+            //해시태그 생성
+            hashtagService.registerHashtag(nanaContentDto.getHashtag(),
+                language, category, nanaContent.getId());
+          }
+      );
+    } catch (Exception e) {
+      // 외부 메서드 호출 시 에러 터지면 롤백
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+      return e.getMessage();
+    }
+    return "성공~";
+
+  }
+
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
       Locale locale, NanaContent nanaContent) {
@@ -174,5 +303,52 @@ public class NanaService {
     return hashtagList.stream()
         .map(hashtag -> hashtag.getKeyword().getContent())
         .collect(Collectors.toList());
+  }
+
+  private boolean existNanaById(Long id) {
+    //id가 0(생성하는 경우) 또는 존재하지 않는 나나의 id일 경우 false
+    //id가 0이 아니고 존재하는 id일 경우 true
+    return id != 0 && nanaRepository.existsById(id);
+  }
+
+  private boolean existNanaTitleByNana(Nana nana) {
+    return nanaTitleRepository.existsByNana(nana);
+  }
+
+  private boolean existNanaTitleByNanaAndLanguage(Nana nana, Language language) {
+    return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
+  }
+
+  private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
+    return Nana.builder()
+        .version("Nana's Pick vol." + nanaUploadDto.getVersion())
+        .nanaTitleImageFile(
+            imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
+        .build();
+  }
+
+  private Nana getNanaById(Long id) {
+    return nanaRepository.findNanaById(id)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+
+  }
+
+  private Set<NanaAdditionalInfo> createNanaAdditionalInfo(List<String> infoTypeList,
+      List<String> descriptionList) {
+    if (infoTypeList.size() != descriptionList.size()) {
+      throw new BadRequestException("nana Upload 중 infoTye과 description의 수가 일치하지 않습니다.");
+    }
+    Set<NanaAdditionalInfo> nanaAdditionalInfoSet = new HashSet<>();
+
+    for (int i = 0; i < infoTypeList.size(); i++) {
+      nanaAdditionalInfoSet.add(
+          nanaAdditionalInfoRepository.save(
+              NanaAdditionalInfo.builder()
+                  .infoType(InfoType.contains(infoTypeList.get(i)))
+                  .description(descriptionList.get(i))
+                  .build())
+      );
+    }
+    return nanaAdditionalInfoSet;
   }
 }
