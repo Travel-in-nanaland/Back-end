@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.nana.dto;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -31,9 +32,8 @@ public class NanaResponse {
     @Schema(description = "게시물 id")
     private Long id;
 
-    @NotBlank
-    @Schema(description = "게시물 썸네일 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto imageFileDto;
 
     @Schema(description = "오른 쪽 위 버전 ex) nana's Pick vol.1")
     private String version;
@@ -46,10 +46,10 @@ public class NanaResponse {
 
 
     @QueryProjection
-    public NanaThumbnail(Long id, String thumbnailUrl, String version, String subHeading,
+    public NanaThumbnail(Long id, ImageFileDto imageFileDto, String version, String subHeading,
         String heading) {
       this.id = id;
-      this.thumbnailUrl = thumbnailUrl;
+      this.imageFileDto = imageFileDto;
       this.version = version;
       this.subHeading = subHeading;
       this.heading = heading;
@@ -70,9 +70,8 @@ public class NanaResponse {
     @Schema(description = "ex) nana's Pick vol.1")
     private String version;
 
-    @NotBlank
-    @Schema(description = "게시물 url")
-    private String originUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto imageFileDto;
 
     @NotBlank
     @Schema(description = "알아두면 좋아요! 내용")
@@ -101,18 +100,14 @@ public class NanaResponse {
     @NotBlank
     @Schema(description = "제목")
     public String title;
-
-    @NotBlank
-    @Schema(description = "이미지 원본 url")
-    public String imageUrl;
-
+    
     @NotBlank
     @Schema(description = "게시물 설명")
     public String content;
-
     public List<NanaAdditionalInfo> additionalInfoList;
-
     public List<String> hashtags;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto imageFileDto;
 
   }
 
@@ -141,18 +136,17 @@ public class NanaResponse {
     @Schema(description = "게시물 id")
     private Long id;
 
-    @NotBlank
-    @Schema(description = "게시물 썸네일 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto imageFileDto;
 
     @Schema(description = "제목 ex) TOP 10 야경 맛집")
     private String heading;
 
 
     @QueryProjection
-    public NanaThumbnailPost(Long id, String thumbnailUrl, String heading) {
+    public NanaThumbnailPost(Long id, ImageFileDto imageFileDto, String heading) {
       this.id = id;
-      this.thumbnailUrl = thumbnailUrl;
+      this.imageFileDto = imageFileDto;
       this.heading = heading;
     }
   }
