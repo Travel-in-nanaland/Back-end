@@ -2,9 +2,12 @@ package com.jeju.nanaland.domain.experience.entity;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,21 +26,22 @@ public class Experience extends Post {
 
   private String contact;
 
-  private String type;
+  @Enumerated(EnumType.STRING)
+  private ExperienceType experienceType;
 
-  private Float ratingAvg;
+  private String keywords;
 
   @OneToMany(mappedBy = "experience", cascade = CascadeType.REMOVE)
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
   public Experience(ImageFile firstImageFile, Long priority, String contentId, String contact,
-      String type, Float ratingAvg) {
+      ExperienceType experienceType, String keywords) {
     super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
-    this.type = type;
-    this.ratingAvg = ratingAvg;
+    this.experienceType = experienceType;
     this.experienceTrans = new ArrayList<>();
+    this.keywords = keywords;
   }
 }

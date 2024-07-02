@@ -58,7 +58,10 @@ public enum SuccessCode {
 
   // market
   MARKET_LIST_SUCCESS(OK, "전통시장 썸네일 리스트 조회 성공"),
-  MARKET_DETAIL_SUCCESS(OK, "전통시장 상세정보 조회 성공");
+  MARKET_DETAIL_SUCCESS(OK, "전통시장 상세정보 조회 성공"),
+
+  // experience
+  EXPERIENCE_LIST_SUCCESS(OK, "이색체험 썸네일 리스트 조회 성공");
 
   private final HttpStatus httpStatus;
   private final String message;

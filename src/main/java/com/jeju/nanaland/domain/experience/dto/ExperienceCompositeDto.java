@@ -13,17 +13,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExperienceCompositeDto extends CompositeDto {
 
-  private Float ratingAvg;
   private String intro;
   private String details;
   private String amenity;
 
   @QueryProjection
   public ExperienceCompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
-      Float ratingAvg, Language locale, String title, String content, String address,
+      Language locale, String title, String content, String address,
       String addressTag, String intro, String details, String time, String amenity) {
     super(id, originUrl, thumbnailUrl, contact, locale, title, content, address, addressTag, time);
-    this.ratingAvg = ratingAvg;
     this.intro = intro;
     this.details = details;
     this.amenity = amenity;

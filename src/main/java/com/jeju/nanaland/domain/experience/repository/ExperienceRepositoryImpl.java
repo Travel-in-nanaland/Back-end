@@ -8,7 +8,11 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
+import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -31,7 +35,6 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             experience.contact,
-            experience.ratingAvg,
             experienceTrans.language,
             experienceTrans.title,
             experienceTrans.content,
@@ -61,7 +64,6 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             experience.contact,
-            experience.ratingAvg,
             experienceTrans.language,
             experienceTrans.title,
             experienceTrans.content,
@@ -99,6 +101,43 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
+  @Override
+  public Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
+      ExperienceType experienceType, List<String> keywordFilterList, List<String> addressFilterList,
+      Pageable pageable) {
+
+    List<ExperienceThumbnail> resultDto = queryFactory
+        .select(new QExperienceResponse_ExperienceThumbnail(
+            experience.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            experienceTrans.title,
+            experienceTrans.addressTag
+        ))
+        .from(experience)
+        .innerJoin(experience.firstImageFile, imageFile)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experienceTrans.language.eq(language)
+            .and(experience.experienceType.eq(experienceType))  // 이색체험 타입(액티비티/문화예술)
+            .and(addressTagCondition(addressFilterList))  // 지역필터
+            .and(keywordCondition(keywordFilterList)))  // 키워드 필터
+        .orderBy(experience.priority.desc(),  // 우선순위 정렬
+            experience.createdAt.desc())  // 최신순 정렬
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(experience.count())
+        .from(experience)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experienceTrans.language.eq(language)
+            .and(addressTagCondition(addressFilterList))
+            .and(keywordCondition(keywordFilterList)));
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(experience.id)
@@ -121,5 +160,32 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
       tokenList.add(token.trim());
     }
     return tokenList;
+  }
+
+  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
+    if (addressFilterList.isEmpty()) {
+      return null;
+    } else {
+      return experienceTrans.addressTag.in(addressFilterList);
+    }
+  }
+
+  private BooleanExpression keywordCondition(List<String> keywordFilterList) {
+    if (keywordFilterList.isEmpty()) {
+      return null;
+    } else {
+      BooleanExpression result = null;
+      // keywordFilterList 의 요소 중 하나라도 포함하면 True
+      for (String keyword : keywordFilterList) {
+        BooleanExpression isContains = experience.keywords.contains(keyword);
+        if (result == null) {
+          result = isContains;
+        } else {
+          result = result.or(isContains);
+        }
+      }
+
+      return result;
+    }
   }
 }
