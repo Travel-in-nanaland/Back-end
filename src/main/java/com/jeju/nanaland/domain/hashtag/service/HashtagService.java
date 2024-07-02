@@ -1,7 +1,8 @@
 package com.jeju.nanaland.domain.hashtag.service;
 
-import com.jeju.nanaland.domain.common.entity.Category;
-import com.jeju.nanaland.domain.common.entity.Language;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
@@ -22,7 +23,7 @@ public class HashtagService {
 
   @Transactional
   public void registerHashtag(List<String> stringKeywordList, Language language, Category category,
-      Long postId) {
+      Post post) {
     List<Hashtag> hashtagList = new ArrayList<>();
 
     for (String stringKeyword : stringKeywordList) {
@@ -40,7 +41,7 @@ public class HashtagService {
       //Hashtag 생성
       hashtagList.add(Hashtag.builder()
           .category(category)
-          .postId(postId)
+          .post(post)
           .language(language)
           .keyword(keyword)
           .build());

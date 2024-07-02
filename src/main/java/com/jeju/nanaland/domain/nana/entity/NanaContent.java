@@ -1,7 +1,9 @@
 package com.jeju.nanaland.domain.nana.entity;
 
-import com.jeju.nanaland.domain.common.entity.BaseEntity;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -18,14 +20,18 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NanaContent extends BaseEntity {
+@DiscriminatorValue("NANA_CONTENT")
+public class NanaContent extends Post {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "nana_title_id", nullable = false)
   private NanaTitle nanaTitle;
 
-  @Column(nullable = false)
-  private int number;
+  /**
+   * Post의 priority로 대체
+   */
+//  @Column(nullable = false)
+//  private int number;
 
   @NotBlank
   @Column(nullable = false)
@@ -46,10 +52,10 @@ public class NanaContent extends BaseEntity {
   private Set<NanaAdditionalInfo> infoList;
 
   @Builder
-  public NanaContent(NanaTitle nanaTitle, int number, String subTitle,
+  public NanaContent(ImageFile firstImageFile, Long priority, NanaTitle nanaTitle, String subTitle,
       String title, String content, Set<NanaAdditionalInfo> infoList) {
+    super(firstImageFile, priority);
     this.nanaTitle = nanaTitle;
-    this.number = number;
     this.subTitle = subTitle;
     this.title = title;
     this.content = content;

@@ -5,6 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -26,6 +27,7 @@ public class NanaResponse {
 
   @Data
   @Builder
+  @AllArgsConstructor
   @Schema(description = "나나's pick 개별 썸네일 조회 DTO")
   public static class NanaThumbnail {
 
@@ -33,7 +35,7 @@ public class NanaResponse {
     private Long id;
 
     @Schema(description = "게시물 썸네일 이미지")
-    private ImageFileDto imageFileDto;
+    private ImageFileDto firstImage;
 
     @Schema(description = "오른 쪽 위 버전 ex) nana's Pick vol.1")
     private String version;
@@ -50,7 +52,7 @@ public class NanaResponse {
         String subHeading,
         String heading) {
       this.id = id;
-      this.imageFileDto = new ImageFileDto(originUrl, thumbnailUrl);
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.version = version;
       this.subHeading = subHeading;
       this.heading = heading;
@@ -72,7 +74,7 @@ public class NanaResponse {
     private String version;
 
     @Schema(description = "게시물 썸네일 이미지")
-    private ImageFileDto imageFileDto;
+    private ImageFileDto firstImage;
 
     @NotBlank
     @Schema(description = "알아두면 좋아요! 내용")
@@ -107,8 +109,8 @@ public class NanaResponse {
     public String content;
     public List<NanaAdditionalInfo> additionalInfoList;
     public List<String> hashtags;
-    @Schema(description = "게시물 썸네일 이미지")
-    private ImageFileDto imageFileDto;
+    @Schema(description = "게시물 이미지 리스트")
+    private List<ImageFileDto> images;
 
   }
 
@@ -131,6 +133,7 @@ public class NanaResponse {
 
   @Data
   @Builder
+  @AllArgsConstructor
   @Schema(description = "나나's pick 개별 게시글 썸네일 조회 DTO")
   public static class NanaThumbnailPost {
 
@@ -138,7 +141,7 @@ public class NanaResponse {
     private Long id;
 
     @Schema(description = "게시물 썸네일 이미지")
-    private ImageFileDto imageFileDto;
+    private ImageFileDto firstImage;
 
     @Schema(description = "제목 ex) TOP 10 야경 맛집")
     private String heading;
@@ -147,7 +150,7 @@ public class NanaResponse {
     @QueryProjection
     public NanaThumbnailPost(Long id, String originUrl, String thumbnailUrl, String heading) {
       this.id = id;
-      this.imageFileDto = new ImageFileDto(originUrl, thumbnailUrl);
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.heading = heading;
     }
   }

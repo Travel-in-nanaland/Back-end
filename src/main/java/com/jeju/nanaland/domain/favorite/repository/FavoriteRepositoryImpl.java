@@ -291,7 +291,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana)
             .and(nanaTitle.language.eq(language)))
-        .innerJoin(nana.nanaTitleImageFile, imageFile)
+        .innerJoin(nana.firstImageFile, imageFile)
         .orderBy(favorite.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -306,7 +306,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             .and(favorite.category.eq(Category.NANA)))
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
-        .innerJoin(nana.nanaTitleImageFile, imageFile);
+        .innerJoin(nana.firstImageFile, imageFile);
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -329,7 +329,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(nanaTitle)
         .on(nana.eq(nanaTitle.nana)
             .and(nanaTitle.language.eq(language)))
-        .innerJoin(nana.nanaTitleImageFile, imageFile)
+        .innerJoin(nana.firstImageFile, imageFile)
         .where(favorite.post.id.eq(postId))
         .fetchOne();
   }
