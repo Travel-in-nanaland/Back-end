@@ -25,55 +25,55 @@ public enum TravelType {
    */
   NONE(null, null, null, null, null, null),
   GAMGYUL_ICECREAM(
-      "감귤 아이스크림", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 아이스크림", "Tangerine Ice Cream", "Ais Krim  Mandarin", "柑橘冰淇淋", "vi",
       Arrays.asList(TOURIST_SPOT, GOOD_VALUE, SENSIBILITY)),
   GAMGYUL_RICECAKE(
-      "감귤 찹쌀떡", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 찹쌀떡", "Tangerine Rice Cake", "Mochi  Mandarin", "柑橘糯米糕", "vi",
       Arrays.asList(TOURIST_SPOT, GOOD_VALUE, TRADITION)),
   GAMGYUL(
-      "감귤", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤", "Tangerine", "Mandarin", "柑橘", "vi",
       Arrays.asList(TOURIST_SPOT, GOOD_VALUE, NATURE)),
   GAMGYUL_CIDER(
-      "감귤 사이다", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 사이다", "Tangerine Soda", "Sida  Mandarin", "柑橘雪碧", "vi",
       Arrays.asList(TOURIST_SPOT, GOOD_VALUE, THEME_PARK)),
 
   GAMGYUL_AFFOKATO(
-      "감귤 아포카토", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 아포카토", "Tangerine Affogato", "Jenis Affogato  Mandarin", "柑橘阿芙佳朵", "vi",
       Arrays.asList(TOURIST_SPOT, LUXURY, SENSIBILITY)),
   GAMGYUL_HANGWA(
-      "감귤 한과", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 한과", "Tangerine Traditional Sweets", "Kuih Tradisional  Mandarin", "柑橘油炸蜜果", "vi",
       Arrays.asList(TOURIST_SPOT, LUXURY, TRADITION)),
   GAMGYUL_JUICE(
-      "감귤 주스", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 주스", "Tangerine Juice", "Jus  Mandarin", "柑橘果汁", "vi",
       Arrays.asList(TOURIST_SPOT, LUXURY, NATURE)),
   GAMGYUL_CHOCOLATE(
-      "감귤 초콜릿", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 초콜릿", "Tangerine Chocolate", "Coklat  Mandarin", "柑橘巧克力", "vi",
       Arrays.asList(TOURIST_SPOT, LUXURY, THEME_PARK)),
 
   GAMGYUL_COCKTAIL(
-      "감귤 칵테일", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 칵테일", "Tangerine Cocktail", "Koktel  Mandarin", "柑橘鸡尾酒", "vi",
       Arrays.asList(LOCAL_SPOT, LUXURY, SENSIBILITY)),
   TANGERINE_PEEL_TEA(
-      "귤피차", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "귤피차", "Tangerine Peel Tea", "Teh Kulit  Mandarin", "橘皮茶", "vi",
       Arrays.asList(LOCAL_SPOT, LUXURY, TRADITION)),
   GAMGYUL_YOGURT(
-      "감귤 요거트", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 요거트", "Tangerine Yogurt", "Yogurt  Mandarin", "柑橘酸奶", "vi",
       Arrays.asList(LOCAL_SPOT, LUXURY, NATURE)),
   GAMGYUL_FLATCCINO(
-      "감귤 플랫치노", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 플랫치노", "Tangerine Frappuccino", "Frappuccino  Mandarin", "柑橘冰沙", "vi",
       Arrays.asList(LOCAL_SPOT, LUXURY, THEME_PARK)),
 
   GAMGYUL_LATTE(
-      "감귤 라떼", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 라떼", "Tangerine Latte", "Latte  Mandarin", "柑橘拿铁", "vi",
       Arrays.asList(LOCAL_SPOT, GOOD_VALUE, SENSIBILITY)),
   GAMGYUL_SIKHYE(
-      "감귤 식혜", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 식혜", "Tangerine Shikhye", "Sikhye  Mandarin", "柑橘甜米露", "vi",
       Arrays.asList(LOCAL_SPOT, GOOD_VALUE, TRADITION)),
   GAMGYUL_ADE(
-      "감귤 에이드", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 에이드", "Tangerine Ade", "Aid  Mandarin", "柑橘汽水", "vi",
       Arrays.asList(LOCAL_SPOT, GOOD_VALUE, NATURE)),
   GAMGYUL_BUBBLE_TEA(
-      "감귤 버블티", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
+      "감귤 버블티", "Tapioca Tangerine Tea", "Bubble Tea  Mandarin", "柑橘珍珠奶茶", "vi",
       Arrays.asList(LOCAL_SPOT, GOOD_VALUE, THEME_PARK));
 
   private final String kr;
