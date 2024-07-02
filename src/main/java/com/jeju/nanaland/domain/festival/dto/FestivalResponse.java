@@ -37,7 +37,7 @@ public class FestivalResponse {
 
     @NotBlank
     @Schema(description = "축제 썸네일 이미지")
-    private ImageFileDto thumbnailUrl;
+    private ImageFileDto imageFileDto;
 
     @Schema(description = "주소 태그")
     private String addressTag;
