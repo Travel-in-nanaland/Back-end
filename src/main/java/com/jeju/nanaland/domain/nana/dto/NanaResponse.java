@@ -46,10 +46,11 @@ public class NanaResponse {
 
 
     @QueryProjection
-    public NanaThumbnail(Long id, ImageFileDto imageFileDto, String version, String subHeading,
+    public NanaThumbnail(Long id, String originUrl, String thumbnailUrl, String version,
+        String subHeading,
         String heading) {
       this.id = id;
-      this.imageFileDto = imageFileDto;
+      this.imageFileDto = new ImageFileDto(originUrl, thumbnailUrl);
       this.version = version;
       this.subHeading = subHeading;
       this.heading = heading;
@@ -100,7 +101,7 @@ public class NanaResponse {
     @NotBlank
     @Schema(description = "제목")
     public String title;
-    
+
     @NotBlank
     @Schema(description = "게시물 설명")
     public String content;
@@ -144,9 +145,9 @@ public class NanaResponse {
 
 
     @QueryProjection
-    public NanaThumbnailPost(Long id, ImageFileDto imageFileDto, String heading) {
+    public NanaThumbnailPost(Long id, String originUrl, String thumbnailUrl, String heading) {
       this.id = id;
-      this.imageFileDto = imageFileDto;
+      this.imageFileDto = new ImageFileDto(originUrl, thumbnailUrl);
       this.heading = heading;
     }
   }

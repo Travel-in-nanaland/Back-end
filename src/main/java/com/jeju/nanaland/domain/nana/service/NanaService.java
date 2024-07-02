@@ -4,11 +4,8 @@ import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.entity.Category;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
-import com.jeju.nanaland.domain.common.repository.LanguageRepository;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
@@ -23,10 +20,8 @@ import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
-import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaAdditionalInfoRepository;
-import com.jeju.nanaland.domain.nana.repository.NanaContentImageRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
@@ -36,7 +31,6 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,10 +55,9 @@ public class NanaService {
   private final FavoriteService favoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
-  private final LanguageRepository languageRepository;
-  private final NanaContentImageRepository nanaContentImageRepository;
   private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
   private final HashtagService hashtagService;
+  private final ImageFileRepository imageFileRepository;
 
   //메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {
@@ -76,32 +69,33 @@ public class NanaService {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
+    List<NanaThumbnail> resultDtoContent = resultDto.getContent();
 
-    List<NanaThumbnail> thumbnails = new ArrayList<>();
-    for (NanaThumbnail dto : resultDto) {
-      thumbnails.add(
-          NanaThumbnail.builder()
-              .id(dto.getId())
-              .thumbnailUrl(dto.getThumbnailUrl())
-              .version(dto.getVersion())
-              .subHeading(dto.getSubHeading())
-              .heading(dto.getHeading())
-              .build());
-    }
+//    List<NanaThumbnail> thumbnails = new ArrayList<>();
+//    for (NanaThumbnail dto : resultDto) {
+//      thumbnails.add(
+//          NanaThumbnail.builder()
+//              .id(dto.getId())
+//              .thumbnailUrl(dto.getThumbnailUrl())
+//              .version(dto.getVersion())
+//              .subHeading(dto.getSubHeading())
+//              .heading(dto.getHeading())
+//              .build());
+//    }
     return NanaThumbnailDto.builder()
         .totalElements(resultDto.getTotalElements())
-        .data(thumbnails)
+        .data(resultDtoContent)
         .build();
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,
+  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
 
     // nana 찾아서
-    Nana nana = getNanaById(nanaId);
+    Nana nana = getNanaById(postId);
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
@@ -115,9 +109,10 @@ public class NanaService {
     // nanaTitle에 맞는 nanaContent게시물 조회, nanaContent에 맞는 image 정렬
     List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
         nanaTitle);
-    List<NanaContentImage> nanaContentImageList = nana.getNanaContentImageList().stream()
-        .sorted(Comparator.comparingInt(NanaContentImage::getNumber))
-        .toList();
+
+    // 이미지 리스트
+    List<ImageFileDto> nanaContentImageList = new ArrayList<>(
+        imageFileRepository.findPostImageFiles(postId));
 
     // 서버 오류 체크 (밑에 나오느 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
     if (nanaContentList.size() != nanaContentImageList.size()) {
@@ -142,7 +137,8 @@ public class NanaService {
               .number(nanaContent.getNumber())
               .subTitle(nanaContent.getSubTitle())
               .title(nanaContent.getTitle())
-              .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
+              .imageFileDto(nanaContentImageList.get(nanaContentImageIdx))
+//              .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
               .content(nanaContent.getContent())
               .additionalInfoList(
                   getAdditionalInfoFromNanaContentEntity(language, nanaContent))
@@ -152,7 +148,8 @@ public class NanaService {
     }
 
     return NanaResponse.NanaDetailDto.builder()
-        .originUrl(nana.getNanaTitleImageFile().getOriginUrl())
+        .imageFileDto(new ImageFileDto(nana.getFirstImageFile().getOriginUrl(),
+            nana.getFirstImageFile().getThumbnailUrl()))
         .subHeading(nanaTitle.getSubHeading())
         .heading(nanaTitle.getHeading())
         .version(nana.getVersion())
@@ -163,13 +160,17 @@ public class NanaService {
 
   }
 
+  // upload 하는 페이지에서 존재하는 나나스핔 id - 언어별 보여주기
   public HashMap<Long, List<String>> getExistNanaListInfo() {
+    // id - List<Language> 형태의 해쉬
     HashMap<Long, List<String>> result = new HashMap<>();
-    List<Nana> nanas = nanaRepository.findAll();
     List<NanaTitle> nanaTitles = nanaTitleRepository.findAll();
+
+    // 없는 key 값이면 (for 돌아가면서 처음나온 나나스핔이면) id 값과 langauge 새로추가
+    // 있는 key 면 해당 key에 List<Language> (value)에 Language 추가
     for (NanaTitle nanaTitle : nanaTitles) {
       Long id = nanaTitle.getNana().getId();
-      String language = nanaTitle.getLanguage().getLocale().toString();
+      String language = nanaTitle.getLanguage().toString();
 
       if (result.containsKey(id)) {
         result.get(id).add(language);
