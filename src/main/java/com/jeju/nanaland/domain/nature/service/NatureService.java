@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.nature.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
@@ -39,7 +39,7 @@ public class NatureService {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureThumbnail> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
-        memberInfoDto.getLanguage().getLocale(), addressFilterList, keyword, pageable);
+        memberInfoDto.getLanguage(), addressFilterList, keyword, pageable);
 
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
@@ -57,7 +57,7 @@ public class NatureService {
 
   public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
     NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
-        memberInfoDto.getLanguage().getLocale());
+        memberInfoDto.getLanguage());
 
     if (natureCompositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());

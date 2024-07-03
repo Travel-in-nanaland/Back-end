@@ -38,7 +38,7 @@ public class NanaController {
   public BaseResponse<List<NanaResponse.NanaThumbnail>> nanaMainPage(
       @AuthMember MemberInfoDto memberInfoDto) {
     return BaseResponse.success(SuccessCode.NANA_MAIN_SUCCESS,
-        nanaService.getMainNanaThumbnails(memberInfoDto.getLanguage().getLocale()));
+        nanaService.getMainNanaThumbnails(memberInfoDto.getLanguage()));
   }
 
   @Operation(
@@ -52,7 +52,7 @@ public class NanaController {
   public BaseResponse<NanaThumbnailDto> nanaAll(@AuthMember MemberInfoDto memberInfoDto, int page,
       int size) {
     return BaseResponse.success(SuccessCode.NANA_LIST_SUCCESS,
-        nanaService.getNanaThumbnails(memberInfoDto.getLanguage().getLocale(), page, size));
+        nanaService.getNanaThumbnails(memberInfoDto.getLanguage(), page, size));
   }
 
   @Operation(

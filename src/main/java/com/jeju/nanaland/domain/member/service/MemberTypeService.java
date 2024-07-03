@@ -1,8 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
@@ -42,7 +41,7 @@ public class MemberTypeService {
   public List<RecommendPostDto> getRecommendPostsByType(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     TravelType travelType = member.getTravelType();
 
     // 타입이 NONE이면 랜덤으로 NONE이 아닌 하나의 타입 선택
@@ -73,7 +72,7 @@ public class MemberTypeService {
   public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
 
     // 이색체험 제외하고 모두 조회
     List<Recommend> recommends = recommendRepository.findAllWithoutExperience();
@@ -96,11 +95,10 @@ public class MemberTypeService {
     return result;
   }
 
-  private RecommendPostDto getRecommendPostDto(Member member, Long postId, Locale locale,
+  private RecommendPostDto getRecommendPostDto(Member member, Long postId, Language locale,
       TravelType travelType, Category category) {
 
-    CategoryContent categoryContent = category.getContent();
-    RecommendPostDto recommendPostDto = switch (categoryContent) {
+    RecommendPostDto recommendPostDto = switch (category) {
       case NATURE -> recommendRepository.findNatureRecommendPostDto(postId, locale, travelType);
 
       case FESTIVAL -> recommendRepository.findFestivalRecommendPostDto(postId, locale, travelType);
@@ -116,7 +114,7 @@ public class MemberTypeService {
     };
 
     if (recommendPostDto == null) {
-      String errorMessage = postId + ", " + category.getContent().name() + "게시물이 없습니다.";
+      String errorMessage = postId + ", " + category.name() + "게시물이 없습니다.";
       log.error(errorMessage);
       throw new NotFoundException(errorMessage);
     }

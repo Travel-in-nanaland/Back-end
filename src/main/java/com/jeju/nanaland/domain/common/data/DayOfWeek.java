@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.common.entity;
+package com.jeju.nanaland.domain.common.data;
 
 import lombok.Getter;
 
@@ -27,7 +27,7 @@ public enum DayOfWeek {
     this.zh = zh;
   }
 
-  public String getValueByLocale(Locale locale) {
+  public String getValueByLocale(Language locale) {
     return switch (locale) {
       case KOREAN -> this.getKr();
       case ENGLISH -> this.getEn();
