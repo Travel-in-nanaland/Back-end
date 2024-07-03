@@ -132,12 +132,9 @@ public class NanaService {
     List<List<ImageFileDto>> nanaContentImageList = new ArrayList<>();
 
     for (NanaContent nanaContent : koreanNanaContentList) { // 각 korean nanaContent에 맞는 사진들 가져오기
-      List<ImageFileDto> contentImageFiles = new ArrayList<>();
 
-      // content의 첫번째 이미지는 nanaContent.firstImageFile, 나머지는 postImageFile에서 여러 개 찾아오기
-      contentImageFiles.add(new ImageFileDto(nanaContent.getFirstImageFile().getOriginUrl(),
-          nanaContent.getFirstImageFile().getThumbnailUrl()));
-      contentImageFiles.addAll(imageFileRepository.findPostImageFiles(
+      // content의  이미지 postImageFile에서 여러 개 찾아오기
+      List<ImageFileDto> contentImageFiles = new ArrayList<>(imageFileRepository.findPostImageFiles(
           nanaContent.getId()));
 
       if (contentImageFiles.isEmpty()) {// 사진 없으면 서버 에러
@@ -297,12 +294,7 @@ public class NanaService {
                 throw new BadRequestException("처음 생성하는 Nana's pick에는 content 이미지가 필수입니다. ");
               }
               // nanaContent 하나 당 여러 개의 이미지 처리
-              nanaContent.updateFirstImageFile(
-                  imageFileService.uploadAndSaveImageFile(nanaContentImages.get(0), false));
-
-              // 나머지 이미지 처리
               List<PostImageFile> postImageFiles = nanaContentImages.stream()
-                  .skip(1)
                   .map(image -> PostImageFile.builder()
                       .imageFile(imageFileService.uploadAndSaveImageFile(image, false))
                       .post(nanaContent)

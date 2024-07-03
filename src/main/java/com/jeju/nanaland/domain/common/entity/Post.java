@@ -22,7 +22,7 @@ public abstract class Post extends BaseEntity {
 
   // nanaContent 때문에 nullable 허용, 논의해보기..
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "image_file_id", nullable = false)
+  @JoinColumn(name = "image_file_id")
   private ImageFile firstImageFile;
 
   @NotNull
@@ -31,9 +31,5 @@ public abstract class Post extends BaseEntity {
   public Post(ImageFile firstImageFile, Long priority) {
     this.firstImageFile = firstImageFile;
     this.priority = priority;
-  }
-
-  public void updateFirstImageFile(ImageFile firstImageFile) {
-    this.firstImageFile = firstImageFile;
   }
 }
