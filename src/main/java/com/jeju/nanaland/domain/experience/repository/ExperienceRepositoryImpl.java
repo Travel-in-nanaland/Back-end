@@ -35,6 +35,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             experience.contact,
+            experience.homepage,
             experienceTrans.language,
             experienceTrans.title,
             experienceTrans.content,
@@ -43,7 +44,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.intro,
             experienceTrans.details,
             experienceTrans.time,
-            experienceTrans.amenity
+            experienceTrans.amenity,
+            experienceTrans.fee
         ))
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
@@ -64,6 +66,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             experience.contact,
+            experience.homepage,
             experienceTrans.language,
             experienceTrans.title,
             experienceTrans.content,
@@ -72,7 +75,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.intro,
             experienceTrans.details,
             experienceTrans.time,
-            experienceTrans.amenity
+            experienceTrans.amenity,
+            experienceTrans.fee
         ))
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)

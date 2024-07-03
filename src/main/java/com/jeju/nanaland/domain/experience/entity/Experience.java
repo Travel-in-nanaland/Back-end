@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,6 +27,9 @@ public class Experience extends Post {
 
   private String contact;
 
+  @Column(columnDefinition = "VARCHAR(2048)")
+  private String homepage;
+
   @Enumerated(EnumType.STRING)
   private ExperienceType experienceType;
 
@@ -36,10 +40,11 @@ public class Experience extends Post {
 
   @Builder
   public Experience(ImageFile firstImageFile, Long priority, String contentId, String contact,
-      ExperienceType experienceType, String keywords) {
+      String homepage, ExperienceType experienceType, String keywords) {
     super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
+    this.homepage = homepage;
     this.experienceType = experienceType;
     this.experienceTrans = new ArrayList<>();
     this.keywords = keywords;
