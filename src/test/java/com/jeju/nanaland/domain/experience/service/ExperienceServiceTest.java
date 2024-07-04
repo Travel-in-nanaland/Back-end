@@ -57,7 +57,7 @@ class ExperienceServiceTest {
     Language language = Language.KOREAN;
     MemberInfoDto memberInfoDto = getMemberInfoDto(language, TravelType.NONE);
     Long postId = 1L;
-    List<Experience> experienceList = getActivityList(language, "지상레저", "제주시", 1);
+    List<Experience> experienceList = getActivityList(language, "제주시", 1);
     ExperienceCompositeDto experienceCompositeDto = ExperienceCompositeDto.builder()
         .title("액티비티 테스트 제목1")
         .build();
@@ -86,8 +86,8 @@ class ExperienceServiceTest {
     MemberInfoDto memberInfoDto = getMemberInfoDto(language, TravelType.NONE);
     Pageable pageable = PageRequest.of(0, 12);
     List<Experience> experienceList = new ArrayList<>();
-    experienceList.addAll(getActivityList(language, "지상레저", "제주시", 2));
-    experienceList.addAll(getActivityList(language, "수상레저", "제주시", 3));
+    experienceList.addAll(getActivityList(language, "제주시", 2));
+    experienceList.addAll(getActivityList(language, "제주시", 3));
     List<ExperienceThumbnail> experienceThumbnailList = List.of(
         ExperienceThumbnail.builder()
             .title("title 1")
@@ -126,8 +126,7 @@ class ExperienceServiceTest {
         .build();
   }
 
-  private List<Experience> getActivityList(Language language, String keyword, String addressTag,
-      int size) {
+  private List<Experience> getActivityList(Language language, String addressTag, int size) {
     List<Experience> experienceList = new ArrayList<>();
     for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
@@ -152,8 +151,7 @@ class ExperienceServiceTest {
     return experienceList;
   }
 
-  private List<Experience> getCultureAndArtsList(Language language, String keyword,
-      String addressTag, int size) {
+  private List<Experience> getCultureAndArtsList(Language language, String addressTag, int size) {
     List<Experience> cultureAndArtsList = new ArrayList<>();
     for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()

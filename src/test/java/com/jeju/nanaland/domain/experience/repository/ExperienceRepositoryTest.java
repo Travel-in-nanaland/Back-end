@@ -66,8 +66,8 @@ class ExperienceRepositoryTest {
     List<Experience> experienceList = new ArrayList<>();
     experienceList.addAll(  // 액티비티 - 지상레저 2개
         getActivityList(language, List.of(keywordList.get(0)), "제주시", 2));
-    experienceList.addAll(  // 액티비티 - 수상레저 2개
-        getActivityList(language, List.of(keywordList.get(1)), "서귀포시", 2));
+    experienceList.addAll(  // 액티비티 - 수상레저 3개
+        getActivityList(language, List.of(keywordList.get(1)), "서귀포시", 3));
     experienceList.addAll(  // 문화예술 - 역사, 박물관 1개
         getCultureAndArtsList(language, List.of(keywordList.get(2), keywordList.get(3)), "제주시", 1));
 
