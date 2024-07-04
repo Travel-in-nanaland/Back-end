@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,7 +21,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewFavorite extends BaseEntity {
+@Table(
+    name = "reviewFavorite",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "memberReviewUnique",
+            columnNames = {"member_id", "review_id"}
+        )
+    }
+)
+public class ReviewHeart extends BaseEntity {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
