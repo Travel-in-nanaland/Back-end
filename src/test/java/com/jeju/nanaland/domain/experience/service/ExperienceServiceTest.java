@@ -138,7 +138,6 @@ class ExperienceServiceTest {
           .firstImageFile(imageFile)
           .priority(0L)
           .experienceType(ExperienceType.ACTIVITY)
-          .keywords(keyword)
           .build();
       ExperienceTrans experienceTrans = ExperienceTrans.builder()
           .experience(experience)
@@ -165,7 +164,6 @@ class ExperienceServiceTest {
           .firstImageFile(imageFile)
           .priority(0L)
           .experienceType(ExperienceType.CULTURE_AND_ARTS)
-          .keywords(keyword)
           .build();
       ExperienceTrans experienceTrans = ExperienceTrans.builder()
           .experience(experience)

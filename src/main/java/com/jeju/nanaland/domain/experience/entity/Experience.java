@@ -33,20 +33,17 @@ public class Experience extends Post {
   @Enumerated(EnumType.STRING)
   private ExperienceType experienceType;
 
-  private String keywords;
-
   @OneToMany(mappedBy = "experience", cascade = CascadeType.REMOVE)
   private List<ExperienceTrans> experienceTrans;
 
   @Builder
   public Experience(ImageFile firstImageFile, Long priority, String contentId, String contact,
-      String homepage, ExperienceType experienceType, String keywords) {
+      String homepage, ExperienceType experienceType) {
     super(firstImageFile, priority);
     this.contentId = contentId;
     this.contact = contact;
     this.homepage = homepage;
     this.experienceType = experienceType;
     this.experienceTrans = new ArrayList<>();
-    this.keywords = keywords;
   }
 }

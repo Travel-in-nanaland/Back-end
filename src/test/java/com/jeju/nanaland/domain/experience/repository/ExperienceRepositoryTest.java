@@ -109,7 +109,6 @@ class ExperienceRepositoryTest {
           .firstImageFile(imageFile)
           .priority(0L)
           .experienceType(ExperienceType.ACTIVITY)
-          .keywords(keyword)
           .build();
       em.persistAndFlush(experience);
       ExperienceTrans experienceTrans = ExperienceTrans.builder()
@@ -138,7 +137,6 @@ class ExperienceRepositoryTest {
           .firstImageFile(imageFile)
           .priority(0L)
           .experienceType(ExperienceType.CULTURE_AND_ARTS)
-          .keywords(keyword)
           .build();
       em.persistAndFlush(experience);
       ExperienceTrans experienceTrans = ExperienceTrans.builder()

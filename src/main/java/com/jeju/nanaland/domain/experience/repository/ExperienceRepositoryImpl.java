@@ -4,6 +4,7 @@ import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
+import static com.jeju.nanaland.domain.hashtag.entity.QKeyword.keyword;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -111,7 +112,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
       Pageable pageable) {
 
     List<ExperienceThumbnail> resultDto = queryFactory
-        .select(new QExperienceResponse_ExperienceThumbnail(
+        .selectDistinct(new QExperienceResponse_ExperienceThumbnail(
             experience.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
@@ -121,6 +122,11 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .innerJoin(experience.firstImageFile, imageFile)
         .innerJoin(experience.experienceTrans, experienceTrans)
+        .innerJoin(hashtag)
+        .on(hashtag.post.id.eq(experience.id)
+            .and(hashtag.language.eq(language)))
+        .innerJoin(keyword)
+        .on(keyword.id.eq(hashtag.keyword.id))
         .where(experienceTrans.language.eq(language)
             .and(experience.experienceType.eq(experienceType))  // 이색체험 타입(액티비티/문화예술)
             .and(addressTagCondition(addressFilterList))  // 지역필터
@@ -132,9 +138,14 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .select(experience.count())
+        .selectDistinct(experience.count())
         .from(experience)
         .innerJoin(experience.experienceTrans, experienceTrans)
+        .innerJoin(hashtag)
+        .on(hashtag.post.id.eq(experience.id)
+            .and(hashtag.language.eq(language)))
+        .innerJoin(keyword)
+        .on(keyword.id.eq(hashtag.keyword.id))
         .where(experienceTrans.language.eq(language)
             .and(addressTagCondition(addressFilterList))
             .and(keywordCondition(keywordFilterList)));
@@ -178,18 +189,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     if (keywordFilterList.isEmpty()) {
       return null;
     } else {
-      BooleanExpression result = null;
-      // keywordFilterList 의 요소 중 하나라도 포함하면 True
-      for (String keyword : keywordFilterList) {
-        BooleanExpression isContains = experience.keywords.contains(keyword);
-        if (result == null) {
-          result = isContains;
-        } else {
-          result = result.or(isContains);
-        }
-      }
-
-      return result;
+      return keyword.content.in(keywordFilterList);
     }
   }
 }
