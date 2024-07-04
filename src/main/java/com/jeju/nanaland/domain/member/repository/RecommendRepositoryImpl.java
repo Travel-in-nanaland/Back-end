@@ -43,10 +43,11 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         ))
         .from(recommend)
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(recommend.imageFile, imageFile)
         .innerJoin(nature).on(nature.id.eq(recommend.postId))
         .innerJoin(nature.natureTrans, natureTrans).on(natureTrans.language.locale.eq(locale))
-        .innerJoin(nature.imageFile, imageFile)
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NATURE))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
@@ -66,17 +67,13 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommendTrans.introduction
         ))
         .from(recommend)
-
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(recommend.imageFile, imageFile)
         .innerJoin(experience).on(experience.id.eq(recommend.postId))
-
         .innerJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.locale.eq(locale))
-
-        .innerJoin(experience.imageFile, imageFile)
-
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.EXPERIENCE))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
@@ -96,16 +93,12 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommendTrans.introduction
         ))
         .from(recommend)
-
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(recommend.imageFile, imageFile)
         .innerJoin(market).on(market.id.eq(recommend.postId))
-
         .innerJoin(market.marketTrans, marketTrans).on(marketTrans.language.locale.eq(locale))
-
-        .innerJoin(market.imageFile, imageFile)
-
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.MARKET))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
@@ -125,17 +118,13 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommendTrans.introduction
         ))
         .from(recommend)
-
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(recommend.imageFile, imageFile)
         .innerJoin(festival).on(festival.id.eq(recommend.postId))
-
         .innerJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.locale.eq(locale))
-
-        .innerJoin(festival.imageFile, imageFile)
-
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.FESTIVAL))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
@@ -154,18 +143,14 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommendTrans.introduction
         ))
         .from(recommend)
-
         .innerJoin(recommendTrans)
-        .on(recommendTrans.recommend.eq(recommend).and(recommendTrans.language.locale.eq(locale)))
-
+        .on(recommendTrans.recommend.eq(recommend)
+            .and(recommendTrans.language.locale.eq(locale)))
+        .innerJoin(recommend.imageFile, imageFile)
         .innerJoin(nana)
         .on(nana.id.eq(recommend.postId))
-
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
-
-        .innerJoin(nana.nanaTitleImageFile, imageFile)
-
         .where(recommend.postId.eq(postId)
             .and(recommend.category.content.eq(CategoryContent.NANA))
             .and(recommend.memberTravelType.travelType.eq(travelType)))
