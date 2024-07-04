@@ -4,7 +4,9 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.member.entity.Member;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +17,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,4 +65,9 @@ public class Review extends BaseEntity {
   @NotNull
   @Column(nullable = false)
   private Integer rating;
+
+  @ElementCollection(targetClass = ReviewKeyword.class)
+  @CollectionTable(name = "review_keywords", joinColumns = @JoinColumn(name = "review_id"))
+  @Enumerated(EnumType.STRING)
+  private Set<ReviewKeyword> reviewKeywords;
 }
