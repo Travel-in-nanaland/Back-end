@@ -104,13 +104,16 @@ public class NanaResponse {
     @Schema(description = "제목")
     public String title;
 
+    @Schema(description = "게시물 이미지 리스트")
+    private List<ImageFileDto> images;
+
     @NotBlank
     @Schema(description = "게시물 설명")
     public String content;
+
     public List<NanaAdditionalInfo> additionalInfoList;
+
     public List<String> hashtags;
-    @Schema(description = "게시물 이미지 리스트")
-    private List<ImageFileDto> images;
 
   }
 
