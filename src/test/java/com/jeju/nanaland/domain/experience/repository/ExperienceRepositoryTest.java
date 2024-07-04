@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.experience.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
@@ -10,11 +11,14 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThum
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
+import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
@@ -24,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(TestConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ExperienceRepositoryTest {
 
   @Autowired
@@ -37,8 +42,10 @@ class ExperienceRepositoryTest {
   void findCompositeDtoByIdTest() {
     // given
     Language language = Language.KOREAN;
-    List<Experience> experienceList = new ArrayList<>();
-    experienceList.addAll(getActivityList(language, "수상레저", "서귀포시", 1));
+    List<Keyword> keywordList = getKeywordList();
+    // 지상레저 이색체험 게시물 1개 생성
+    List<Experience> experienceList =
+        getActivityList(language, List.of(keywordList.get(0)), "서귀포시", 1);
 
     // when
     ExperienceCompositeDto result = experienceRepository.findCompositeDtoById(
@@ -55,13 +62,14 @@ class ExperienceRepositoryTest {
     ExperienceType experienceType = ExperienceType.ACTIVITY;
     Language language = Language.KOREAN;
     Pageable pageable = PageRequest.of(0, 12);
+    List<Keyword> keywordList = getKeywordList();
     List<Experience> experienceList = new ArrayList<>();
     experienceList.addAll(  // 액티비티 - 지상레저 2개
-        getActivityList(language, "지상레저", "제주시", 2));
+        getActivityList(language, List.of(keywordList.get(0)), "제주시", 2));
     experienceList.addAll(  // 액티비티 - 수상레저 2개
-        getActivityList(language, "수상레저", "서귀포시", 2));
-    experienceList.addAll(  // 문화예술 - 박물관 1개
-        getCultureAndArtsList(language, "박물관", "제주시", 1));
+        getActivityList(language, List.of(keywordList.get(1)), "서귀포시", 2));
+    experienceList.addAll(  // 문화예술 - 역사, 박물관 1개
+        getCultureAndArtsList(language, List.of(keywordList.get(2), keywordList.get(3)), "제주시", 1));
 
     // when
     Page<ExperienceThumbnail> result = experienceRepository.findExperienceThumbnails(language,
@@ -78,13 +86,14 @@ class ExperienceRepositoryTest {
     ExperienceType experienceType = ExperienceType.ACTIVITY;
     Language language = Language.KOREAN;
     Pageable pageable = PageRequest.of(0, 12);
+    List<Keyword> keywordList = getKeywordList();
     List<Experience> experienceList = new ArrayList<>();
     experienceList.addAll(  // 액티비티 - 지상레저 2개
-        getActivityList(language, "지상레저", "제주시", 2));
+        getActivityList(language, List.of(keywordList.get(0)), "제주시", 2));
     experienceList.addAll(  // 액티비티 - 수상레저 2개
-        getActivityList(language, "수상레저", "서귀포시", 2));
-    experienceList.addAll(  // 문화예술 - 박물관 1개
-        getCultureAndArtsList(language, "박물관", "제주시", 1));
+        getActivityList(language, List.of(keywordList.get(1)), "서귀포시", 2));
+    experienceList.addAll(  // 문화예술 - 역사, 박물관 1개
+        getCultureAndArtsList(language, List.of(keywordList.get(2), keywordList.get(3)), "제주시", 1));
 
     // when
     Page<ExperienceThumbnail> result = experienceRepository.findExperienceThumbnails(language,
@@ -96,8 +105,29 @@ class ExperienceRepositoryTest {
         .containsOnly("서귀포시");
   }
 
-  private List<Experience> getActivityList(Language language, String keyword, String addressTag,
-      int size) {
+  private List<Keyword> getKeywordList() {
+    List<String> keywordContentList = List.of(
+        "지상레저",
+        "수상레저",
+        "역사",
+        "박물관"
+    );
+
+    List<Keyword> keywordList = new ArrayList<>();
+    for (String keywordContent : keywordContentList) {
+      Keyword keyword = Keyword.builder()
+          .content(keywordContent)
+          .build();
+      em.persist(keyword);
+
+      keywordList.add(keyword);
+    }
+
+    return keywordList;
+  }
+
+  private List<Experience> getActivityList(Language language, List<Keyword> keywordList,
+      String addressTag, int size) {
     List<Experience> experienceList = new ArrayList<>();
     for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
@@ -118,13 +148,24 @@ class ExperienceRepositoryTest {
           .addressTag(addressTag)
           .build();
       em.persist(experienceTrans);
+
+      for (Keyword keyword : keywordList) {
+        Hashtag hashtag = Hashtag.builder()
+            .post(experience)
+            .category(Category.EXPERIENCE)
+            .keyword(keyword)
+            .language(language)
+            .build();
+        em.persist(hashtag);
+      }
+
       experienceList.add(experience);
     }
 
     return experienceList;
   }
 
-  private List<Experience> getCultureAndArtsList(Language language, String keyword,
+  private List<Experience> getCultureAndArtsList(Language language, List<Keyword> keywordList,
       String addressTag, int size) {
     List<Experience> cultureAndArtsList = new ArrayList<>();
     for (int i = 1; i <= size; i++) {
@@ -146,6 +187,17 @@ class ExperienceRepositoryTest {
           .addressTag(addressTag)
           .build();
       em.persist(experienceTrans);
+
+      for (Keyword keyword : keywordList) {
+        Hashtag hashtag = Hashtag.builder()
+            .post(experience)
+            .category(Category.EXPERIENCE)
+            .keyword(keyword)
+            .language(language)
+            .build();
+        em.persist(hashtag);
+      }
+
       cultureAndArtsList.add(experience);
     }
 
