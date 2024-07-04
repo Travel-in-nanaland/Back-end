@@ -56,10 +56,6 @@ public class Review extends BaseEntity {
 
   @NotBlank
   @Column(nullable = false)
-  private String title;
-
-  @NotBlank
-  @Column(nullable = false)
   private String content;
 
   @NotNull
