@@ -34,6 +34,7 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -323,8 +324,9 @@ public class NanaService {
       Language locale, NanaContent nanaContent) {
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
-    // 순서 보장 위해 List 형으로 바꾸고
+    // 순서 보장 위해 List 형으로 바꾸고 생성 순서로 정렬
     List<NanaAdditionalInfo> nanaAdditionalInfos = new ArrayList<>(eachInfoList);
+    nanaAdditionalInfos.sort(Comparator.comparing(NanaAdditionalInfo::getCreatedAt));
 
     //DTO 형태로 변환
     List<NanaResponse.NanaAdditionalInfo> result = new ArrayList<>();
@@ -361,6 +363,7 @@ public class NanaService {
   private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
     return Nana.builder()
         .version("Nana's Pick vol." + nanaUploadDto.getVersion())
+        .priority((long) nanaUploadDto.getVersion())
         .firstImageFile(imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(),
             false))
         .build();
