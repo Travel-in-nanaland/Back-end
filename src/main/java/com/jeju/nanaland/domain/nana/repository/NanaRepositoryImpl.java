@@ -99,7 +99,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
-            .or(nana.id.in(idListContainAllHashtags)))
+            .or(nanaContent.id.in(idListContainAllHashtags)))
         .orderBy(nanaTitle.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -114,7 +114,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
-            .or(nana.id.in(idListContainAllHashtags)));
+            .or(nanaContent.id.in(idListContainAllHashtags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
