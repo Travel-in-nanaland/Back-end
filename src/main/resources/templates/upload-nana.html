@@ -45,20 +45,23 @@
   <script>
     let contentCount = 1;
 
-    function addNanaContent() {
-      const container = document.getElementById('nana-contents');
+    function addNanaContent(button, countIndex) {
+      const container = button.parentElement;
       const section = document.createElement('div');
       section.id = `nana-content-${contentCount}`;
 
       section.innerHTML = `
                 <br>
-                <hr>
                 <br>
-                <div>
+                <hr>
+                <button type="button" onclick="removeNanaContent(this)">-</button>
                     <label for="nanaContents[${contentCount}].number">Number:</label>
                     <input name="nanaContents[${contentCount}].number" required type="number"/>
-                    <label for="nanaContents[${contentCount}].nanaContentImage">NanaContent Image:</label>
-                    <input accept="image/*" name="nanaContents[${contentCount}].nanaContentImage"  type="file"/>
+                    <div class="nana-content-images">
+                      <label for="nanaContents[${contentCount}].nanaContentImages[0]">NanaContent Image:</label>
+                      <input accept="image/*" name="nanaContents[${contentCount}].nanaContentImages[0]" type="file"/>
+                      <button type="button" onclick="addNanaContentImage(this, ${contentCount})">+</button>
+                    </div>
                     <div>
                           <label for="nanaContents[${contentCount}].subTitle">SubTitle:</label>
                           <input name="nanaContents[${contentCount}].subTitle" required type="text"/>
@@ -94,11 +97,48 @@
                           <textarea name="nanaContents[${contentCount}].hashtag[0]" required></textarea>
                           <button onclick="addHashtag(this, ${contentCount})" type="button">+</button>
                         </div>
-                    </div>
             `;
 
       container.appendChild(section);
       contentCount++;
+    }
+
+    function addNanaContentImage(button, contentIndex) {
+      const container = button.parentElement;
+      const count = container.querySelectorAll('input[type="file"]').length;
+
+      const section = document.createElement('div');
+      section.innerHTML = `
+            <label for="nanaContents[${contentIndex}].nanaContentImages[${count}]">NanaContent Image:</label>
+            <input accept="image/*" name="nanaContents[${contentIndex}].nanaContentImages[${count}]" type="file"/>
+            <button type="button" onclick="remove(this)">-</button>
+            `;
+
+      container.appendChild(section);
+    }
+
+    function remove(button) {
+      // 버튼의 부모 요소(div)에서 input 요소를 찾아 제거합니다.
+      const div = button.parentNode;
+      while (div.firstChild) {
+        div.removeChild(div.firstChild);
+      }
+      // 버튼을 포함한 div 요소를 제거합니다.
+      div.parentNode.removeChild(div);
+
+    }
+
+    function removeNanaContent(button) {
+      // 버튼의 부모 요소(div)에서 input 요소를 찾아 제거합니다.
+      const div = button.parentNode;
+
+      while (div.firstChild) {
+        div.removeChild(div.firstChild);
+      }
+      // 버튼을 포함한 div 요소를 제거합니다.
+      div.parentNode.removeChild(div);
+
+      contentCount--;
     }
 
     function addAdditionalInfo(button, contentIndex) {
@@ -124,6 +164,7 @@
             </select>
             <label class="textarea-label" for="nanaContents[${contentIndex}].infoDesc[${count}]">desc:</label>
             <textarea name="nanaContents[${contentIndex}].infoDesc[${count}]" required></textarea>
+            <button type="button" onclick="remove(this)">-</button>
             `;
 
       container.appendChild(section);
@@ -137,6 +178,7 @@
       section.innerHTML = `
             <label class="textarea-label" for="nanaContents[${contentIndex}].hashtag[${count}]">Hashtag:</label>
             <textarea name="nanaContents[${contentIndex}].hashtag[${count}]" required></textarea>
+            <button type="button" onclick="remove(this)">-</button>
             `;
 
       container.appendChild(section);
@@ -210,8 +252,11 @@
       <div id="nana-content-0">
         <label for="nanaContents[0].number">Number:</label>
         <input name="nanaContents[0].number" required type="number"/>
-        <label for="nanaContents[0].nanaContentImage">NanaContent Image:</label>
-        <input accept="image/*" name="nanaContents[0].nanaContentImage" type="file"/>
+        <div class="nana-content-images">
+          <label for="nanaContents[0].nanaContentImages[0]">NanaContent Image:</label>
+          <input accept="image/*" name="nanaContents[0].nanaContentImages[0]" type="file"/>
+          <button type="button" onclick="addNanaContentImage(this, 0)">+</button>
+        </div>
         <div>
           <label for="nanaContents[0].subTitle">SubTitle:</label>
           <input name="nanaContents[0].subTitle" required type="text"/>
@@ -248,9 +293,10 @@
           </div>
         </div>
       </div>
+      <button onclick="addNanaContent(this,0)" type="button">Add Nana Content</button>
     </div>
     <br>
-    <button onclick="addNanaContent()" type="button">Add Nana Content</button>
+
     <br><br>
 
   </form>
