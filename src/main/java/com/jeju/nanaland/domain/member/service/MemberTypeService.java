@@ -51,7 +51,7 @@ public class MemberTypeService {
     member.updateMemberTravelType(newType);
   }
 
-  public List<RecommendPostDto> getRecommendPostsByType(MemberInfoDto memberInfoDto) {
+  public List<RecommendPostDto> getRecommendResultPostsByType(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
     Locale locale = memberInfoDto.getLanguage().getLocale();
@@ -76,7 +76,8 @@ public class MemberTypeService {
       Long postId = recommend.getPostId();
       Category category = recommend.getCategory();
 
-      result.add(getRecommendPostDto(member, postId, locale, travelType, category));
+      // recommend 테이블의 이미지를 사용
+      result.add(getRecommendResultPostDto(member, postId, locale, travelType, category));
     }
 
     return result;
@@ -102,6 +103,7 @@ public class MemberTypeService {
       Category category = recommend.getCategory();
       TravelType travelType = recommend.getMemberTravelType().getTravelType();
 
+      // 해당 포스트의 이미지를 사용
       result.add(getRecommendPostDto(member, postId, locale, travelType, category));
     }
 
@@ -140,6 +142,43 @@ public class MemberTypeService {
     }
 
     return recommendPostDto;
+  }
+
+  private RecommendPostDto getRecommendResultPostDto(Member member, Long postId, Locale locale,
+      TravelType travelType, Category category) {
+
+    CategoryContent categoryContent = category.getContent();
+    RecommendPostDto recommendResultPostDto = switch (categoryContent) {
+      case NATURE ->
+          recommendRepository.findNatureRecommendResultPostDto(postId, locale, travelType);
+
+      case FESTIVAL ->
+          recommendRepository.findFestivalRecommendResultPostDto(postId, locale, travelType);
+
+      case EXPERIENCE ->
+          recommendRepository.findExperienceRecommendResultPostDto(postId, locale, travelType);
+
+      case MARKET ->
+          recommendRepository.findMarketRecommendResultPostDto(postId, locale, travelType);
+
+      case NANA -> recommendRepository.findNanaRecommendResultPostDto(postId, locale, travelType);
+
+      default -> throw new NotFoundException("해당 추천 게시물 정보가 존재하지 않습니다.");
+    };
+
+    if (recommendResultPostDto == null) {
+      String errorMessage = postId + ", " + category.getContent().name() + "게시물이 없습니다.";
+      log.error(errorMessage);
+      throw new NotFoundException(errorMessage);
+    }
+
+    Optional<Favorite> favorite = favoriteRepository.findByMemberAndCategoryAndPostId(member,
+        category, postId);
+    if (favorite.isPresent()) {
+      recommendResultPostDto.setFavorite(true);
+    }
+
+    return recommendResultPostDto;
   }
 
   private TravelType getRandomTravelType() {

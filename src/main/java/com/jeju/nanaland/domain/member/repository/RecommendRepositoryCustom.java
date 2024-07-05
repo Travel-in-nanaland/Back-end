@@ -10,14 +10,29 @@ public interface RecommendRepositoryCustom {
 
   RecommendPostDto findNatureRecommendPostDto(Long postId, Locale locale, TravelType travelType);
 
+  RecommendPostDto findNatureRecommendResultPostDto(Long postId, Locale locale,
+      TravelType travelType);
+
   RecommendPostDto findExperienceRecommendPostDto(Long postId, Locale locale,
+      TravelType travelType);
+
+  RecommendPostDto findExperienceRecommendResultPostDto(Long postId, Locale locale,
       TravelType travelType);
 
   RecommendPostDto findMarketRecommendPostDto(Long postId, Locale locale, TravelType travelType);
 
+  RecommendPostDto findMarketRecommendResultPostDto(Long postId, Locale locale,
+      TravelType travelType);
+
   RecommendPostDto findFestivalRecommendPostDto(Long postId, Locale locale, TravelType travelType);
 
+  RecommendPostDto findFestivalRecommendResultPostDto(Long postId, Locale locale,
+      TravelType travelType);
+
   RecommendPostDto findNanaRecommendPostDto(Long postId, Locale locale, TravelType travelType);
+
+  RecommendPostDto findNanaRecommendResultPostDto(Long postId, Locale locale,
+      TravelType travelType);
 
   List<Recommend> findAllWithoutExperience();
 }

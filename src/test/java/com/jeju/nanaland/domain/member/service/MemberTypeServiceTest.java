@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
@@ -115,9 +116,9 @@ class MemberTypeServiceTest {
     doReturn(recommendList(travelType)).when(recommendRepository)
         .findAllByMemberTravelType(any(MemberTravelType.class));
     doReturn(RecommendPostDto.builder().build()).when(recommendRepository)
-        .findNatureRecommendPostDto(1L, locale, travelType);
+        .findNatureRecommendResultPostDto(1L, locale, travelType);
     doReturn(RecommendPostDto.builder().build()).when(recommendRepository)
-        .findExperienceRecommendPostDto(2L, locale, travelType);
+        .findExperienceRecommendResultPostDto(2L, locale, travelType);
     doReturn(Optional.empty()).when(favoriteRepository)
         .findByMemberAndCategoryAndPostId(
             eq(memberInfoDto.getMember()),
@@ -125,7 +126,8 @@ class MemberTypeServiceTest {
             any(Long.class));
 
     // when
-    List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<RecommendPostDto> resultDto = memberTypeService.getRecommendResultPostsByType(
+        memberInfoDto);
 
     // then
     assertThat(resultDto.size()).isEqualTo(2);
@@ -134,9 +136,9 @@ class MemberTypeServiceTest {
     verify(recommendRepository, times(1))
         .findAllByMemberTravelType(any(MemberTravelType.class));
     verify(recommendRepository, times(1))
-        .findNatureRecommendPostDto(1L, locale, travelType);
+        .findNatureRecommendResultPostDto(1L, locale, travelType);
     verify(recommendRepository, times(1))
-        .findExperienceRecommendPostDto(2L, locale, travelType);
+        .findExperienceRecommendResultPostDto(2L, locale, travelType);
   }
 
   @DisplayName("추천 게시물 반환 - NONE 타입일 때")
@@ -154,9 +156,9 @@ class MemberTypeServiceTest {
     doReturn(recommendList(randomTravelType)).when(recommendRepository)
         .findAllByMemberTravelType(randomMemberTravelType);
     doReturn(RecommendPostDto.builder().build()).when(recommendRepository)
-        .findNatureRecommendPostDto(1L, locale, randomTravelType);
+        .findNatureRecommendResultPostDto(1L, locale, randomTravelType);
     doReturn(RecommendPostDto.builder().build()).when(recommendRepository)
-        .findExperienceRecommendPostDto(2L, locale, randomTravelType);
+        .findExperienceRecommendResultPostDto(2L, locale, randomTravelType);
     doReturn(Optional.empty()).when(favoriteRepository)
         .findByMemberAndCategoryAndPostId(
             eq(memberInfoDto.getMember()),
@@ -164,7 +166,8 @@ class MemberTypeServiceTest {
             any(Long.class));
 
     // when
-    List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<RecommendPostDto> resultDto = memberTypeService.getRecommendResultPostsByType(
+        memberInfoDto);
 
     // then
     assertThat(resultDto.size()).isEqualTo(2);
@@ -175,9 +178,9 @@ class MemberTypeServiceTest {
     verify(recommendRepository, times(1))
         .findAllByMemberTravelType(any(MemberTravelType.class));
     verify(recommendRepository, times(1))
-        .findNatureRecommendPostDto(1L, locale, randomTravelType);
+        .findNatureRecommendResultPostDto(1L, locale, randomTravelType);
     verify(recommendRepository, times(1))
-        .findExperienceRecommendPostDto(2L, locale, randomTravelType);
+        .findExperienceRecommendResultPostDto(2L, locale, randomTravelType);
   }
 
   @DisplayName("추천 게시물 반환 - 추천 게시물이 너무 적을 때")
@@ -192,7 +195,7 @@ class MemberTypeServiceTest {
 
     // when
     RuntimeException runtimeException = assertThrows(RuntimeException.class,
-        () -> memberTypeService.getRecommendPostsByType(memberInfoDto));
+        () -> memberTypeService.getRecommendResultPostsByType(memberInfoDto));
 
     // then
     assertThat(runtimeException.getMessage())
@@ -227,10 +230,18 @@ class MemberTypeServiceTest {
     MemberTravelType memberTravelType = MemberTravelType.builder()
         .travelType(travelType)
         .build();
+    ImageFile imageFile1 = ImageFile.builder()
+        .originUrl("origin1")
+        .thumbnailUrl("thumbnail1")
+        .build();
+    ImageFile imageFile2 = ImageFile.builder()
+        .originUrl("origin2")
+        .thumbnailUrl("thumbnail2")
+        .build();
 
     return Arrays.asList(
-        new Recommend(memberTravelType, 1L, nature),
-        new Recommend(memberTravelType, 2L, experience)
+        new Recommend(memberTravelType, imageFile1, 1L, nature),
+        new Recommend(memberTravelType, imageFile2, 2L, experience)
     );
   }
 

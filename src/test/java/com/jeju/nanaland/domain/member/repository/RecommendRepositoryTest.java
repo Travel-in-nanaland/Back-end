@@ -192,6 +192,7 @@ public class RecommendRepositoryTest {
         .memberTravelType(memberTravelType)
         .postId(nature.getId())
         .category(category)
+        .imageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -231,6 +232,7 @@ public class RecommendRepositoryTest {
         .memberTravelType(memberTravelType)
         .postId(market.getId())
         .category(category)
+        .imageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -270,6 +272,7 @@ public class RecommendRepositoryTest {
         .memberTravelType(memberTravelType)
         .postId(festival.getId())
         .category(category)
+        .imageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -309,6 +312,7 @@ public class RecommendRepositoryTest {
         .memberTravelType(memberTravelType)
         .postId(experience.getId())
         .category(category)
+        .imageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
@@ -349,6 +353,7 @@ public class RecommendRepositoryTest {
         .memberTravelType(memberTravelType)
         .postId(nana.getId())
         .category(category)
+        .imageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
