@@ -176,7 +176,7 @@ public class FestivalService {
       thumbnails.add(
           FestivalThumbnail.builder()
               .id(dto.getId())
-              .imageFileDto(dto.getFirstImage())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .period(period)
               .addressTag(dto.getAddressTag())
