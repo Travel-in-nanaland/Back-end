@@ -14,8 +14,8 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_RecommendPostDto;
 import com.jeju.nanaland.domain.member.entity.Recommend;
@@ -30,13 +30,13 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public RecommendPostDto findNatureRecommendPostDto(Long postId, Locale locale,
+  public RecommendPostDto findNatureRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category.content,
+            recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             natureTrans.title,
@@ -47,25 +47,25 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend)
-            .and(recommendTrans.language.locale.eq(locale)))
+            .and(recommendTrans.language.eq(language)))
         .innerJoin(nature)
         .on(nature.id.eq(recommend.post.id))
         .innerJoin(nature.natureTrans, natureTrans)
-        .on(natureTrans.language.locale.eq(locale))
+        .on(natureTrans.language.eq(language))
         .where(recommend.post.id.eq(postId)
-            .and(recommend.category.content.eq(CategoryContent.NATURE))
+            .and(recommend.category.eq(Category.NATURE))
             .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
   @Override
-  public RecommendPostDto findExperienceRecommendPostDto(Long postId, Locale locale,
+  public RecommendPostDto findExperienceRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category.content,
+            recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             experienceTrans.title,
@@ -76,25 +76,25 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend)
-            .and(recommendTrans.language.locale.eq(locale)))
+            .and(recommendTrans.language.eq(language)))
         .innerJoin(experience)
         .on(experience.id.eq(recommend.post.id))
         .innerJoin(experience.experienceTrans, experienceTrans)
-        .on(experienceTrans.language.locale.eq(locale))
+        .on(experienceTrans.language.eq(language))
         .where(recommend.post.id.eq(postId)
-            .and(recommend.category.content.eq(CategoryContent.EXPERIENCE))
+            .and(recommend.category.eq(Category.EXPERIENCE))
             .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
   @Override
-  public RecommendPostDto findMarketRecommendPostDto(Long postId, Locale locale,
+  public RecommendPostDto findMarketRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category.content,
+            recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             marketTrans.title,
@@ -105,25 +105,25 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend)
-            .and(recommendTrans.language.locale.eq(locale)))
+            .and(recommendTrans.language.eq(language)))
         .innerJoin(market)
         .on(market.id.eq(recommend.post.id))
         .innerJoin(market.marketTrans, marketTrans)
-        .on(marketTrans.language.locale.eq(locale))
+        .on(marketTrans.language.eq(language))
         .where(recommend.post.id.eq(postId)
-            .and(recommend.category.content.eq(CategoryContent.MARKET))
+            .and(recommend.category.eq(Category.MARKET))
             .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
   @Override
-  public RecommendPostDto findFestivalRecommendPostDto(Long postId, Locale locale,
+  public RecommendPostDto findFestivalRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category.content,
+            recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             festivalTrans.title,
@@ -134,24 +134,24 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend)
-            .and(recommendTrans.language.locale.eq(locale)))
+            .and(recommendTrans.language.eq(language)))
         .innerJoin(festival)
         .on(festival.id.eq(recommend.post.id))
         .innerJoin(festival.festivalTrans, festivalTrans)
-        .on(festivalTrans.language.locale.eq(locale))
+        .on(festivalTrans.language.eq(language))
         .where(recommend.post.id.eq(postId)
-            .and(recommend.category.content.eq(CategoryContent.FESTIVAL))
+            .and(recommend.category.eq(Category.FESTIVAL))
             .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
 
   @Override
-  public RecommendPostDto findNanaRecommendPostDto(Long postId, Locale locale,
+  public RecommendPostDto findNanaRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category.content,
+            recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nanaTitle.heading,
@@ -162,14 +162,14 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
         .on(recommend.firstImageFile.eq(imageFile))
         .innerJoin(recommendTrans)
         .on(recommendTrans.recommend.eq(recommend)
-            .and(recommendTrans.language.locale.eq(locale)))
+            .and(recommendTrans.language.eq(language)))
         .innerJoin(nana)
         .on(nana.id.eq(recommend.post.id))
         .innerJoin(nanaTitle)
         .on(nanaTitle.nana.eq(nana)
-            .and(nanaTitle.language.locale.eq(locale)))
+            .and(nanaTitle.language.eq(language)))
         .where(recommend.post.id.eq(postId)
-            .and(recommend.category.content.eq(CategoryContent.NANA))
+            .and(recommend.category.eq(Category.NANA))
             .and(recommend.travelType.eq(travelType)))
         .fetchOne();
   }
@@ -179,7 +179,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
     return queryFactory
         .select(recommend)
         .from(recommend)
-        .where(recommend.category.content.ne(CategoryContent.EXPERIENCE))
+        .where(recommend.category.ne(Category.EXPERIENCE))
         .fetch();
   }
 }

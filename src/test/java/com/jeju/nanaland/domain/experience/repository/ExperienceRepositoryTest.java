@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.experience.repository;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.Language;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,6 @@ class ExperienceRepositoryTest {
   @DisplayName("이색체험 검색")
   void searchExperienceTest() {
     Pageable pageable = PageRequest.of(0, 12);
-    experienceRepository.searchCompositeDtoByKeyword("쇼핑", Locale.KOREAN, pageable);
+    experienceRepository.searchCompositeDtoByKeyword("쇼핑", Language.KOREAN, pageable);
   }
 }

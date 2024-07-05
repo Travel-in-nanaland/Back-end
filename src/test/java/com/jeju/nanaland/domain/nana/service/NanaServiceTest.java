@@ -3,12 +3,9 @@ package com.jeju.nanaland.domain.nana.service;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -55,8 +52,6 @@ public class NanaServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private HashtagRepository hashtagRepository;
-  @Mock
-  private CategoryRepository categoryRepository;
   @InjectMocks
   private NanaService nanaService;
 
@@ -64,7 +59,7 @@ public class NanaServiceTest {
   @Test
   void getNanaThumbnails() {
     // Given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = Language.KOREAN;
     ImageFile imageFile = createImageFile(1);
     Member member = createMember(language, imageFile);
     MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
@@ -99,11 +94,11 @@ public class NanaServiceTest {
     Page<NanaThumbnail> nanaThumbnails = new PageImpl<>(nanaThumbnailList, pageable,
         nanaThumbnailList.size());
 
-    when(nanaRepository.findAllNanaThumbnailDto(language.getLocale(), pageable)).thenReturn(
+    when(nanaRepository.findAllNanaThumbnailDto(language, pageable)).thenReturn(
         nanaThumbnails);
 
     // When
-    NanaThumbnailDto nanaThumbnails1 = nanaService.getNanaThumbnails(Locale.KOREAN, 0, 10);
+    NanaThumbnailDto nanaThumbnails1 = nanaService.getNanaThumbnails(Language.KOREAN, 0, 10);
 
     // Then
     Assertions.assertThat(nanaThumbnails1.getTotalElements()).isEqualTo(3L);
@@ -112,7 +107,7 @@ public class NanaServiceTest {
   @Test
   void getNanaDetail() {
     // Given
-    Language language = createLanguage(Locale.KOREAN);
+    Language language = Language.KOREAN;
     ImageFile imageFile = createImageFile(1);
     Member member = createMember(language, imageFile);
     MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
@@ -122,17 +117,15 @@ public class NanaServiceTest {
     List<NanaContentImage> nanaContentImage = createNanaContentImage(
         List.of(createImageFile(1), createImageFile(2), createImageFile(3)), nana);
     nana.updateNanaContentImageList(nanaContentImage);
-    Category category = createCategory(CategoryContent.NANA);
+    Category category = Category.NANA;
 
     when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
     when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
         Optional.of(nanaTitle));
     when(nanaContentRepository.findAllByNanaTitleOrderByNumber(nanaTitle)).thenReturn(
         nanaContentList);
-    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), CategoryContent.NANA,
+    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);
-    when(categoryRepository.findByContent(CategoryContent.NANA_CONTENT)).thenReturn(
-        Optional.of(category));
 
     // When
     NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
@@ -142,19 +135,6 @@ public class NanaServiceTest {
     int[] numberList = {nanaDetails.get(0).number, nanaDetails.get(1).number,
         nanaDetails.get(2).number};
     Assertions.assertThat(numberList).containsSequence(1, 2, 3);
-  }
-
-  Language createLanguage(Locale locale) {
-    return Language.builder()
-        .locale(locale)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-  }
-
-  Category createCategory(CategoryContent categoryContent) {
-    return Category.builder()
-        .content(categoryContent)
-        .build();
   }
 
   ImageFile createImageFile(int idx) {
