@@ -2,8 +2,7 @@ package com.jeju.nanaland.domain.nature.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 
-import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
@@ -14,7 +13,6 @@ import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +29,7 @@ public class NatureService {
   private final NatureRepository natureRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
-  private final ImageFileRepository imageFileRepository;
+  private final ImageFileService imageFileService;
 
 
   public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
@@ -71,11 +69,6 @@ public class NatureService {
     boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
         id);
 
-    // 이미지 리스트
-    List<ImageFileDto> images = new ArrayList<>();
-    images.add(natureCompositeDto.getFirstImage());
-    images.addAll(imageFileRepository.findPostImageFiles(id));
-
     return NatureDetailDto.builder()
         .id(natureCompositeDto.getId())
         .addressTag(natureCompositeDto.getAddressTag())
@@ -89,7 +82,8 @@ public class NatureService {
         .details(natureCompositeDto.getDetails())
         .amenity(natureCompositeDto.getAmenity())
         .isFavorite(isFavorite)
-        .images(images)
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+            natureCompositeDto.getFirstImage()))
         .build();
   }
 }

@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.common.service;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -7,6 +8,7 @@ import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -47,5 +49,13 @@ public class ImageFileService {
     String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
     S3ImageDto s3ImageDto = s3ImageService.getS3Urls(selectedProfile);
     return saveS3ImageFile(s3ImageDto);
+  }
+
+  public List<ImageFileDto> getPostImageFilesByPostIdIncludeFirstImage(Long postId,
+      ImageFileDto firstImage) {
+    List<ImageFileDto> images = new ArrayList<>();
+    images.add(firstImage);
+    images.addAll(imageFileRepository.findPostImageFiles(postId));
+    return images;
   }
 }
