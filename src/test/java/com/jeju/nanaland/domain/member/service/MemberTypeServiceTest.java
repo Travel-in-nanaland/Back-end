@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.CategoryContent;
 import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Language;
 import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
@@ -227,10 +228,18 @@ class MemberTypeServiceTest {
     MemberTravelType memberTravelType = MemberTravelType.builder()
         .travelType(travelType)
         .build();
+    ImageFile imageFile1 = ImageFile.builder()
+        .originUrl("origin1")
+        .thumbnailUrl("thumbnail1")
+        .build();
+    ImageFile imageFile2 = ImageFile.builder()
+        .originUrl("origin2")
+        .thumbnailUrl("thumbnail2")
+        .build();
 
     return Arrays.asList(
-        new Recommend(memberTravelType, 1L, nature),
-        new Recommend(memberTravelType, 2L, experience)
+        new Recommend(memberTravelType, imageFile1, 1L, nature),
+        new Recommend(memberTravelType, imageFile2, 2L, experience)
     );
   }
 
