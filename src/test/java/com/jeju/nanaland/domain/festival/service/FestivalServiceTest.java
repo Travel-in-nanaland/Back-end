@@ -37,6 +37,10 @@ class FestivalServiceTest {
   @Mock
   private SearchService searchService;
 
+
+  @Mock
+  private ImageFileRepository imageFileRepository;
+ 
   @Test
   @DisplayName("festival 상세 조회에서 기간 국가별 요일")
   void getFestivalDetail() {

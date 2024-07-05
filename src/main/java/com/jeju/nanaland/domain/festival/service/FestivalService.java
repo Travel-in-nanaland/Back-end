@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.festival.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 
+
 import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
@@ -38,6 +39,7 @@ public class FestivalService {
   private final FestivalRepository festivalRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
+  private final ImageFileRepository imageFileRepository;
 
   public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
       List<String> addressFilterList) {
@@ -112,7 +114,11 @@ public class FestivalService {
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL,
         id);
 
-    // TODO: 이미지 추가 필요
+    // TODO: Image Service로 분리
+    List<ImageFileDto> images = new ArrayList<>();
+    images.add(compositeDtoById.getFirstImage());
+    images.addAll(imageFileRepository.findPostImageFiles(id));
+
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())
         .addressTag(compositeDtoById.getAddressTag())
@@ -127,6 +133,7 @@ public class FestivalService {
             compositeDtoById.getStartDate(),
             compositeDtoById.getEndDate()))
         .isFavorite(isPostInFavorite)
+        .images(images)
         .build();
 
 
@@ -164,10 +171,11 @@ public class FestivalService {
       // LocalDate 타입의 startDate, endDate를 24. 04. 01 ~ 24. 05. 13형태로 formatting
       String period = formatLocalDateToStringWithoutDayOfWeek(memberInfoDto, dto.getStartDate(),
           dto.getEndDate());
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           FestivalThumbnail.builder()
               .id(dto.getId())
+              .imageFileDto(dto.getFirstImage())
               .title(dto.getTitle())
               .period(period)
               .addressTag(dto.getAddressTag())
