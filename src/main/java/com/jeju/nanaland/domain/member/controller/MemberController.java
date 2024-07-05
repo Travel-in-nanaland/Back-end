@@ -155,7 +155,7 @@ public class MemberController {
   public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<RecommendPostDto> result = memberTypeService.getRecommendResultPostsByType(memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
