@@ -2,10 +2,11 @@ package com.jeju.nanaland.domain.festival.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 
-
 import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
