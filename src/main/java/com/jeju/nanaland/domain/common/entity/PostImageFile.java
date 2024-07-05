@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,4 +29,10 @@ public class PostImageFile {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "post_id")
   private Post post;
+
+  @Builder
+  public PostImageFile(ImageFile imageFile, Post post) {
+    this.imageFile = imageFile;
+    this.post = post;
+  }
 }

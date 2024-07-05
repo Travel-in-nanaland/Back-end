@@ -122,7 +122,7 @@ public class NanaServiceTest {
     when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
     when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
         Optional.of(nanaTitle));
-    when(nanaContentRepository.findAllByNanaTitleOrderByNumber(nanaTitle)).thenReturn(
+    when(nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle)).thenReturn(
         nanaContentList);
     when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);

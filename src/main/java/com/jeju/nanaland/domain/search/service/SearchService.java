@@ -225,7 +225,7 @@ public class SearchService {
           ThumbnailDto.builder()
               .id(thumbnail.getId())
               .category(NANA.name())
-              .thumbnailUrl(thumbnail.getThumbnailUrl())
+              .thumbnailUrl(thumbnail.getFirstImage().getThumbnailUrl())
               .title(thumbnail.getHeading())
               .isFavorite(favoriteIds.contains(thumbnail.getId()))
               .build());
@@ -328,7 +328,7 @@ public class SearchService {
           searchVolumeDtoList.add(SearchVolumeDto.builder()
               .id(nanaThumbnailPostDto.getId())
               .title(nanaThumbnailPostDto.getHeading())
-              .thumbnailUrl(nanaThumbnailPostDto.getThumbnailUrl())
+              .thumbnailUrl(nanaThumbnailPostDto.getFirstImage().getThumbnailUrl())
               .category(categoryContent.name())
               .isFavorite(
                   favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
