@@ -12,8 +12,6 @@ import com.jeju.nanaland.domain.member.entity.MemberConsent;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
 import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
-import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.util.TestUtil;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -57,14 +55,6 @@ class MemberRepositoryTest {
   private Language createLanguage() {
     language = Language.KOREAN;
     return language;
-  }
-
-  private MemberTravelType createMemberTravelType() {
-    memberTravelType = MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
-    entityManager.persist(memberTravelType);
-    return memberTravelType;
   }
 
   private ImageFile createImageFile() {

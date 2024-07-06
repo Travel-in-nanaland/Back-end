@@ -37,7 +37,7 @@ class ExperienceServiceTest {
 
     ImageFile imageFile2 = TestUtil.findImageFileByNumber(em, 2);
 
-    language = TestUtil.findLanguage(em, Locale.KOREAN);
+    language = Language.KOREAN;
 
     member1 = TestUtil.findMemberByLanguage(em, language, 1);
 
@@ -55,7 +55,7 @@ class ExperienceServiceTest {
 
     experience = TestUtil.findExperienceList(em, 1).get(0);
 
-    category = TestUtil.findCategory(em, CategoryContent.EXPERIENCE);
+    category = Category.EXPERIENCE;
 
 
   }

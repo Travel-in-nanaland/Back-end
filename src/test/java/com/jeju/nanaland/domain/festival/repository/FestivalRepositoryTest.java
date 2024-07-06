@@ -143,7 +143,7 @@ class FestivalRepositoryTest {
 
     imageFile5 = TestUtil.findImageFileByNumber(em, 5);
 
-    language = TestUtil.findLanguage(em, Locale.KOREAN);
+    language = Language.KOREAN;
 
     festival1 = TestUtil.findFestivalByStringSeason(em, "봄,여름,가을,겨울");
 
