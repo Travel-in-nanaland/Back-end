@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.util.TestUtil;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -25,11 +26,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @Import(TestConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class MemberRepositoryTest {
 
   @Autowired
@@ -56,29 +59,20 @@ class MemberRepositoryTest {
     return language;
   }
 
-  private ImageFile createImageFile() {
-    imageFile = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
+  private MemberTravelType createMemberTravelType() {
+    memberTravelType = MemberTravelType.builder()
+        .travelType(TravelType.NONE)
         .build();
-    entityManager.persist(imageFile);
-    return imageFile;
+    entityManager.persist(memberTravelType);
+    return memberTravelType;
+  }
+
+  private ImageFile createImageFile() {
+    return TestUtil.findImageFileByNumber(entityManager, 1);
   }
 
   private Member createMember(Language language) {
-    Member member = Member.builder()
-        .language(language)
-        .email("test@example.com")
-        .profileImageFile(imageFile)
-        .nickname("testNickname")
-        .gender("male")
-        .birthDate(LocalDate.now())
-        .provider(Provider.GOOGLE)
-        .providerId("123")
-        .travelType(TravelType.NONE)
-        .build();
-    entityManager.persist(member);
-    return member;
+    return TestUtil.findMemberByLanguage(entityManager, language, 1);
   }
 
   private void createMemberConsent(ConsentType consentType, boolean consent,

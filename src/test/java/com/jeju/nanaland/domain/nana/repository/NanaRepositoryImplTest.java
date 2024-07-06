@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
+import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -36,12 +37,7 @@ class NanaRepositoryImplTest {
   private EntityManager em;
   @Autowired
   private NanaRepositoryImpl nanarepositoryImpl;
-  @Autowired
-  private NanaRepository nanaRepository;
-  @Autowired
-  private NanaTitleRepository nanaTitleRepository;
-  @Autowired
-  private NanaContentRepository nanaContentRepository;
+
 
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
   private void setNana() {
@@ -55,133 +51,42 @@ class NanaRepositoryImplTest {
         .build();
     em.persist(imageFile1);
 
-    imageFile2 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile2);
+    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
 
-    imageFile3 = ImageFile.builder()
-        .originUrl("originUrl3")
-        .thumbnailUrl("thumbnailUrl3")
-        .build();
-    em.persist(imageFile3);
+    imageFile2 = TestUtil.findImageFileByNumber(em, 2);
 
-    imageFile4 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile4);
+    imageFile3 = TestUtil.findImageFileByNumber(em, 3);
 
-    imageFile5 = ImageFile.builder()
-        .originUrl("originUrl2")
-        .thumbnailUrl("thumbnailUrl2")
-        .build();
-    em.persist(imageFile5);
+    imageFile4 = TestUtil.findImageFileByNumber(em, 4);
 
-    nana1 = Nana.builder()
-        .version("ver1")
-        .firstImageFile(imageFile1)
-        .nanaTitleImageFile(imageFile1)
-        .priority(0L)
-        .build();
-    nanaRepository.save(nana1);
+    imageFile5 = TestUtil.findImageFileByNumber(em, 5);
 
-    nana2 = Nana.builder()
-        .version("ver2")
-        .firstImageFile(imageFile2)
-        .nanaTitleImageFile(imageFile2)
-        .priority(0L)
-        .build();
-    nanaRepository.save(nana2);
+    nana1 = TestUtil.findNana(em, 1);
 
-    nana3 = Nana.builder()
-        .version("ver3")
-        .firstImageFile(imageFile3)
-        .nanaTitleImageFile(imageFile3)
-        .priority(0L)
-        .build();
-    nanaRepository.save(nana3);
+    nana2 = TestUtil.findNana(em, 2);
 
-    nana4 = Nana.builder()
-        .version("ver4")
-        .firstImageFile(imageFile4)
-        .nanaTitleImageFile(imageFile4)
-        .priority(0L)
-        .build();
-    nanaRepository.save(nana4);
+    nana3 = TestUtil.findNana(em, 3);
 
-    nana5 = Nana.builder()
-        .version("ver5")
-        .firstImageFile(imageFile5)
-        .nanaTitleImageFile(imageFile5)
-        .priority(0L)
-        .build();
-    nanaRepository.save(nana5);
+    nana4 = TestUtil.findNana(em, 4);
 
-    nanaTitle1 = NanaTitle.builder()
-        .notice("notice1")
+    nana5 = TestUtil.findNana(em, 5);
 
-        .language(language)
-        .nana(nana1)
-        .build();
-    nanaTitleRepository.save(nanaTitle1);
+    nanaTitle1 = TestUtil.findNanaTitleByNana(em, nana1);
 
     //nana3=> active = true / language2=> chinese
-    nanaTitle2 = NanaTitle.builder()
-        .notice("notice2")
-        .heading("keyword")
-        .language(language)
-        .nana(nana2)
-        .build();
-    nanaTitleRepository.save(nanaTitle2);
+    nanaTitle2 = TestUtil.findNanaTitleByNana(em, nana2);
 
-    nanaTitle3 = NanaTitle.builder()
-        .notice("notice3")
-        .language(language)
-        .nana(nana3)
-        .build();
-    nanaTitleRepository.save(nanaTitle3);
+    nanaTitle3 = TestUtil.findNanaTitleByNana(em, nana3);
 
-    nanaTitle4 = NanaTitle.builder()
-        .notice("notice4")
-        .language(language)
-        .nana(nana4)
-        .build();
-    nanaTitleRepository.save(nanaTitle4);
-    nanaTitle5 = NanaTitle.builder()
-        .notice("notice5")
-        .language(language)
-        .nana(nana5)
-        .build();
-    nanaTitleRepository.save(nanaTitle5);
+    nanaTitle4 = TestUtil.findNanaTitleByNana(em, nana4);
 
-    nanaContent1 = NanaContent.builder()
-        .subTitle("subtitle1")
-        .nanaTitle(nanaTitle1)
-        .content("content")
-        .number(1)
-        .title("title")
-        .build();
-    nanaContentRepository.save(nanaContent1);
+    nanaTitle5 = TestUtil.findNanaTitleByNana(em, nana5);
 
-    nanaContent2 = NanaContent.builder()
-        .subTitle("subtitle2")
-        .nanaTitle(nanaTitle1)
-        .content("content2")
-        .number(2)
-        .title("title2")
-        .build();
-    nanaContentRepository.save(nanaContent2);
+    nanaContent1 = TestUtil.findNanaContentByNanaTitleAndNumber(em, nanaTitle1, 1);
 
-    nanaContent3 = NanaContent.builder()
-        .subTitle("subtitle3")
-        .nanaTitle(nanaTitle1)
-        .content("content3")
-        .number(2)
-        .title("title3")
-        .build();
-    nanaContentRepository.save(nanaContent3);
+    nanaContent2 = TestUtil.findNanaContentByNanaTitleAndNumber(em, nanaTitle1, 2);
+
+    nanaContent3 = TestUtil.findNanaContentByNanaTitleAndNumber(em, nanaTitle1, 3);
 
     NanaContentImage nanaContentImage1 = NanaContentImage.builder()
         .imageFile(imageFile1)
