@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-    name = "reviewFavorite",
+    name = "review_heart",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "memberReviewUnique",
