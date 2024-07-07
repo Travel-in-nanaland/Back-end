@@ -6,29 +6,24 @@ import lombok.Getter;
 @Getter
 public enum ReviewKeyword {
 
-  HISTORY(Type.CULTURE_ARTS, "역사", "enHi", "zhHi", "msHi", "viHi"),
-  EXHIBITION(Type.CULTURE_ARTS, "전시회", "enEx", "zhEx", "msEx", "viEx"),
-  ATELIER(Type.CULTURE_ARTS, "공방", "enAt", "zhAt", "msAt", "viAt"),
-  ART_GALLERY(Type.CULTURE_ARTS, "미술관", "enAr", "zhAr", "msAr", "viAr"),
-  MUSEUM(Type.CULTURE_ARTS, "박물관", "enMu", "zhMu", "msMu", "viMu"),
-  PARK(Type.CULTURE_ARTS, "공원", "enPa", "zhPa", "msPa", "viPa"),
-  MEMORIAL_HALL(Type.CULTURE_ARTS, "기념관", "enMe", "zhMe", "msMe", "viMe"),
-  RELIGION(Type.CULTURE_ARTS, "종교 시설", "enRe", "zhRe", "msRe", "viRe"),
-  THEME_PARK(Type.CULTURE_ARTS, "테마파크", "enTh", "zhTh", "msTh", "viTh"),
+  ANNIVERSARY(Type.MOOD, "기념일에 가면 좋아요", "enAn", "zhAn", "msAn", "viAn"),
+  CUTE(Type.MOOD, "아기자기해요", "enCu", "zhCu", "msCu", "viCu"),
+  LUXURY(Type.MOOD, "고급스러워요", "enLu", "zhLu", "msLu", "viLu"),
+  SCENERY(Type.MOOD, "풍경이 예뻐요", "enSc", "zhSc", "msSc", "viSc"),
+  KIND(Type.MOOD, "친절해요", "enKi", "zhKi", "msKi", "viKi"),
 
-  TRACK_FIELD(Type.ACTIVITIES, "육상 스포츠", "enTr", "zhTr", "msTr", "viTr"),
-  GROUND_LEISURE(Type.ACTIVITIES, "지상 레저", "enGr", "zhGr", "msGr", "viGr"),
-  WATER_LEISURE(Type.ACTIVITIES, "수상 레저", "enWa", "zhWa", "msWa", "viWa"),
-  AIR_SPORTS(Type.ACTIVITIES, "항공 스포츠", "enAr", "zhAr", "msAr", "viAr"),
-  MARINE_SPORTS(Type.ACTIVITIES, "해상 체험", "enMr", "zhMr", "msMr", "viMr"),
-
-  PARENTS(Type.COMPANION, "부모님", "enPa", "zhPa", "msPa", "viPa"),
-  FRIEND(Type.COMPANION, "친구", "enFr", "zhFr", "msFr", "viFr"),
   CHILDREN(Type.COMPANION, "자녀", "enCh", "zhCh", "msCh", "viCh"),
+  FRIEND(Type.COMPANION, "친구", "enFr", "zhFr", "msFr", "viFr"),
+  PARENTS(Type.COMPANION, "부모님", "enPa", "zhPa", "msPa", "viPa"),
   ALONE(Type.COMPANION, "혼자", "enAl", "zhAl", "msAl", "viAl"),
   HALF(Type.COMPANION, "연인, 배우자", "enHa", "zhHa", "msHa", "viHa"),
-  RELATIVE(Type.COMPANION, "형제, 친척", "enRe", "zhRe", "msRe", "viRe"),
-  PET(Type.COMPANION, "반려동물", "enPe", "zhPe", "msPe", "viPe");
+  RELATIVE(Type.COMPANION, "친척/형제", "enRe", "zhRe", "msRe", "viRe"),
+  PET(Type.COMPANION, "반려동물", "enPe", "zhPe", "msPe", "viPe"),
+
+  OUTLET(Type.AMENITIES, "콘센트 사용 가능", "enOu", "zhOu", "msOu", "viOu"),
+  LARGE(Type.AMENITIES, "넓은 장소", "enLa", "zhLa", "msLa", "viLa"),
+  PARK(Type.AMENITIES, "주차장", "enPa", "zhPa", "msPa", "viPa"),
+  BATHROOM(Type.AMENITIES, "깨끗한 화장실", "enBa", "zhBa", "msBa", "viBa");
 
   private final Type type;
   private final String kr;
@@ -57,6 +52,6 @@ public enum ReviewKeyword {
   }
 
   public enum Type {
-    CULTURE_ARTS, ACTIVITIES, COMPANION
+    MOOD, COMPANION, AMENITIES
   }
 }
