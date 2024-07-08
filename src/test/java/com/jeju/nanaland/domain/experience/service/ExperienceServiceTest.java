@@ -7,7 +7,7 @@ import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.util.TestUtil;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,30 +33,54 @@ class ExperienceServiceTest {
 
   @BeforeEach
   void init() {
-    ImageFile imageFile1 = TestUtil.findImageFileByNumber(em, 1);
+    ImageFile imageFile1 = ImageFile.builder()
+        .originUrl("origin")
+        .thumbnailUrl("thumbnail")
+        .build();
+    em.persist(imageFile1);
 
-    ImageFile imageFile2 = TestUtil.findImageFileByNumber(em, 2);
+    ImageFile imageFile2 = ImageFile.builder()
+        .originUrl("origin")
+        .thumbnailUrl("thumbnail")
+        .build();
+    em.persist(imageFile2);
 
-    language = TestUtil.findLanguage(em, Locale.KOREAN);
+    language = Language.KOREAN;
 
-    member1 = TestUtil.findMemberByLanguage(em, language, 1);
+    member1 = Member.builder()
+        .email("test@naver.com")
+        .provider(Provider.KAKAO)
+        .providerId("123456789")
+        .nickname("nickname1")
+        .language(language)
+        .profileImageFile(imageFile1)
+        .build();
+    em.persist(member1);
 
     memberInfoDto1 = MemberInfoDto.builder()
         .language(language)
         .member(member1)
         .build();
 
-    member2 = TestUtil.findMemberByLanguage(em, language, 2);
+    member2 = Member.builder()
+        .email("test2@naver.com")
+        .provider(Provider.KAKAO)
+        .providerId("1234567890")
+        .nickname("nickname2")
+        .language(language)
+        .profileImageFile(imageFile2)
+        .build();
+    em.persist(member2);
 
     memberInfoDto2 = MemberInfoDto.builder()
         .language(language)
         .member(member2)
         .build();
 
-    experience = TestUtil.findExperienceList(em, 1).get(0);
-
-    category = TestUtil.findCategory(em, CategoryContent.EXPERIENCE);
-
-
+    experience = Experience.builder()
+        .firstImageFile(imageFile1)
+        .priority(0L)
+        .build();
+    em.persist(experience);
   }
 }

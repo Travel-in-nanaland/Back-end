@@ -18,7 +18,6 @@ import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
-import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -154,7 +153,11 @@ public class RecommendRepositoryTest {
   Recommend initNatureRecommend(Language language, TravelType travelType) {
     Category category = Category.NATURE;
 
-    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
 
     Nature nature = Nature.builder()
         .firstImageFile(imageFile)
@@ -167,8 +170,6 @@ public class RecommendRepositoryTest {
         .language(language)
         .build();
     em.persist(natureTrans);
-    Nature nature = TestUtil.findNatureList(em, 1).get(0);
-    NatureTrans natureTrans = TestUtil.findNatureTransByNature(em, nature);
 
     Recommend recommend = Recommend.builder()
         .travelType(travelType)
@@ -190,10 +191,23 @@ public class RecommendRepositoryTest {
   Recommend initMarketRecommend(Language language, TravelType travelType) {
     Category category = Category.MARKET;
 
-    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
 
-    Market market = TestUtil.findMarketList(em, 1).get(0);
-    MarketTrans marketTrans = TestUtil.findMarketTransByMarket(em, market);
+    Market market = Market.builder()
+        .firstImageFile(imageFile)
+        .priority(0L)
+        .build();
+    em.persist(market);
+    MarketTrans marketTrans = MarketTrans.builder()
+        .title("전통시장 제목")
+        .market(market)
+        .language(language)
+        .build();
+    em.persist(marketTrans);
 
     Recommend recommend = Recommend.builder()
         .travelType(travelType)
@@ -215,10 +229,23 @@ public class RecommendRepositoryTest {
   Recommend initFestivalRecommend(Language language, TravelType travelType) {
     Category category = Category.FESTIVAL;
 
-    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
 
-    Festival festival = TestUtil.findFestivalByStringSeason(em, "겨울");
-    FestivalTrans festivalTrans = TestUtil.findFestivalTransByFestival(em, festival);
+    Festival festival = Festival.builder()
+        .firstImageFile(imageFile)
+        .priority(0L)
+        .build();
+    em.persist(festival);
+    FestivalTrans festivalTrans = FestivalTrans.builder()
+        .title("축제 제목")
+        .festival(festival)
+        .language(language)
+        .build();
+    em.persist(festivalTrans);
 
     Recommend recommend = Recommend.builder()
         .travelType(travelType)
@@ -240,10 +267,23 @@ public class RecommendRepositoryTest {
   Recommend initExperienceRecommend(Language language, TravelType travelType) {
     Category category = Category.EXPERIENCE;
 
-    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
 
-    Experience experience = TestUtil.findExperienceList(em, 1).get(0);
-    ExperienceTrans experienceTrans = TestUtil.findExperienceTransByExperience(em, experience);
+    Experience experience = Experience.builder()
+        .firstImageFile(imageFile)
+        .priority(0L)
+        .build();
+    em.persist(experience);
+    ExperienceTrans experienceTrans = ExperienceTrans.builder()
+        .title("이색체험 제목")
+        .experience(experience)
+        .language(language)
+        .build();
+    em.persist(experienceTrans);
 
     Recommend recommend = Recommend.builder()
         .travelType(travelType)
@@ -265,10 +305,24 @@ public class RecommendRepositoryTest {
   Recommend initNanaRecommend(Language language, TravelType travelType) {
     Category category = Category.NANA;
 
-    ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin url")
+        .thumbnailUrl("thumbnail url")
+        .build();
+    em.persist(imageFile);
 
-    Nana nana = TestUtil.findNana(em, 1);
-    NanaTitle nanaTitle = TestUtil.findNanaTitleByNana(em, nana);
+    Nana nana = Nana.builder()
+        .version("1")
+        .firstImageFile(imageFile)
+        .priority(0L)
+        .build();
+    em.persist(nana);
+    NanaTitle nanaTitle = NanaTitle.builder()
+        .heading("나나스픽 제목")
+        .nana(nana)
+        .language(language)
+        .build();
+    em.persist(nanaTitle);
 
     Recommend recommend = Recommend.builder()
         .travelType(travelType)

@@ -6,7 +6,6 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
-import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
@@ -133,38 +132,127 @@ class FestivalRepositoryTest {
    */
 
   private void setFestival() {
-    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
+    imageFile1 = ImageFile.builder()
+        .originUrl("originUrl1")
+        .thumbnailUrl("thumbnailUrl1")
+        .build();
+    em.persist(imageFile1);
 
-    imageFile2 = TestUtil.findImageFileByNumber(em, 2);
+    imageFile2 = ImageFile.builder()
+        .originUrl("originUrl2")
+        .thumbnailUrl("thumbnailUrl2")
+        .build();
+    em.persist(imageFile2);
 
-    imageFile3 = TestUtil.findImageFileByNumber(em, 3);
+    imageFile3 = ImageFile.builder()
+        .originUrl("originUrl3")
+        .thumbnailUrl("thumbnailUrl3")
+        .build();
+    em.persist(imageFile3);
 
-    imageFile4 = TestUtil.findImageFileByNumber(em, 4);
+    imageFile4 = ImageFile.builder()
+        .originUrl("originUrl4")
+        .thumbnailUrl("thumbnailUrl4")
+        .build();
+    em.persist(imageFile4);
 
-    imageFile5 = TestUtil.findImageFileByNumber(em, 5);
+    imageFile5 = ImageFile.builder()
+        .originUrl("originUrl5")
+        .thumbnailUrl("thumbnailUrl5")
+        .build();
+    em.persist(imageFile5);
 
-    language = TestUtil.findLanguage(em, Locale.KOREAN);
+    language = Language.KOREAN;
 
-    festival1 = TestUtil.findFestivalByStringSeason(em, "봄,여름,가을,겨울");
+    festival1 = Festival.builder()
+        .firstImageFile(imageFile1)
+        .onGoing(true)
+        .startDate(LocalDate.of(2024, 3, 10))
+        .endDate(LocalDate.of(2028, 3, 1))
+        .season("봄,여름,가을,겨울")
+        .priority(0L)
+        .build();
+    em.persist(festival1);
 
-    festival2 = TestUtil.findFestivalByStringSeason(em, "가을");
+    festival2 = Festival.builder()
+        .firstImageFile(imageFile2)
+        .onGoing(true)
+        .startDate(LocalDate.of(2024, 3, 10))
+        .endDate(LocalDate.of(2028, 3, 2))
+        .season("가을")
+        .priority(0L)
+        .build();
+    em.persist(festival2);
 
-    festival3 = TestUtil.findFestivalByStringSeason(em, "겨울");
+    festival3 = Festival.builder()
+        .firstImageFile(imageFile3)
+        .onGoing(true)
+        .startDate(LocalDate.of(2024, 3, 10))
+        .endDate(LocalDate.of(2026, 3, 3))
+        .season("겨울")
+        .priority(0L)
+        .build();
+    em.persist(festival3);
 
-    festival4 = TestUtil.findFestivalByStringSeason(em, "봄,여름");
+    festival4 = Festival.builder()
+        .firstImageFile(imageFile4)
+        .onGoing(false)
+        .startDate(LocalDate.of(2022, 3, 10))
+        .endDate(LocalDate.of(2023, 3, 4))
+        .season("봄,여름")
+        .priority(0L)
+        .build();
+    em.persist(festival4);
 
-    festival5 = TestUtil.findFestivalByStringSeason(em, "봄,겨울");
+    festival5 = Festival.builder()
+        .firstImageFile(imageFile5)
+        .onGoing(false)
+        .startDate(LocalDate.of(2000, 4, 10))
+        .endDate(LocalDate.of(2002, 3, 5))
+        .season("봄,겨울")
+        .priority(0L)
+        .build();
+    em.persist(festival5);
 
-    festivalTrans1 = TestUtil.findFestivalTransByFestival(em, festival1);
+    festivalTrans1 = FestivalTrans.builder()
+        .festival(festival1)
+        .language(language)
+        .address("제주특별자치도 제주시 조함해안로 525함덕해수욕장 일원")
+        .addressTag("제주시")
+        .build();
+    em.persist(festivalTrans1);
 
-    festivalTrans2 = TestUtil.findFestivalTransByFestival(em, festival2);
+    festivalTrans2 = FestivalTrans.builder()
+        .festival(festival2)
+        .language(language)
+        .address("제주특별자치도 서귀포시 중정로 22")
+        .addressTag("서귀포시")
+        .build();
+    em.persist(festivalTrans2);
 
-    festivalTrans3 = TestUtil.findFestivalTransByFestival(em, festival3);
+    festivalTrans3 = FestivalTrans.builder()
+        .festival(festival3)
+        .language(language)
+        .address("제주특별자치도 제주시 동광로 90(이도이동)")
+        .addressTag("제주시")
+        .build();
+    em.persist(festivalTrans3);
 
-    festivalTrans4 = TestUtil.findFestivalTransByFestival(em, festival4);
+    festivalTrans4 = FestivalTrans.builder()
+        .festival(festival4)
+        .language(language)
+        .address("제주특별자치도 서귀포시 표선면 녹산로 381-17")
+        .addressTag("표선")
+        .build();
+    em.persist(festivalTrans4);
 
-    festivalTrans5 = TestUtil.findFestivalTransByFestival(em, festival5);
-
+    festivalTrans5 = FestivalTrans.builder()
+        .festival(festival5)
+        .language(language)
+        .address("제주특별자치도 제주시 한림읍 한림로 300(한림읍)")
+        .addressTag("한림")
+        .build();
+    em.persist(festivalTrans5);
 
   }
 }

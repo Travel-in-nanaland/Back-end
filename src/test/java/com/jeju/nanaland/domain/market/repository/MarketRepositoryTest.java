@@ -82,7 +82,7 @@ class MarketRepositoryTest {
       em.persist(imageFile);
       Market market = Market.builder()
           .firstImageFile(imageFile)
-          .priority(0L)
+          .priority((long) i)
           .build();
       em.persistAndFlush(market);
       MarketTrans marketTrans1 = MarketTrans.builder()

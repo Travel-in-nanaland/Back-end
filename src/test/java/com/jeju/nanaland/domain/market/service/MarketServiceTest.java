@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
@@ -44,6 +45,8 @@ class MarketServiceTest {
   FavoriteService favoriteService;
   @Mock
   ImageFileRepository imageFileRepository;
+  @Mock
+  private ImageFileService imageFileService;
 
   @Test
   @DisplayName("전통시장 썸네일 페이징")
@@ -77,16 +80,18 @@ class MarketServiceTest {
     MarketCompositeDto marketDetailDto = MarketCompositeDto.builder()
         .firstImage(new ImageFileDto("first origin url", "first thumbnail url"))
         .build();
-    List<ImageFileDto> additionalImages = Arrays.asList(
+    List<ImageFileDto> images = List.of(
+        marketDetailDto.getFirstImage(),
         new ImageFileDto("origin url 1", "thumbnail url 1"),
-        new ImageFileDto("origin url 2", "thumbnail url 2"));
+        new ImageFileDto("origin url 2", "thumbnail url 2")
+    );
 
     doReturn(marketDetailDto).when(marketRepository)
         .findCompositeDtoById(any(Long.class), eq(locale));
     doReturn(false).when(favoriteService)
         .isPostInFavorite(any(Member.class), any(Category.class), any(Long.class));
-    doReturn(additionalImages).when(imageFileRepository)
-        .findPostImageFiles(any(Long.class));
+    doReturn(images).when(imageFileService)
+        .getPostImageFilesByPostIdIncludeFirstImage(1L, marketDetailDto.getFirstImage());
 
     // when
     MarketDetailDto result = marketService.getMarketDetail(memberInfoDto, 1L, false);

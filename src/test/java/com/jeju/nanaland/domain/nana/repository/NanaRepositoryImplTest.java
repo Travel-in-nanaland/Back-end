@@ -3,13 +3,12 @@ package com.jeju.nanaland.domain.nana.repository;
 import com.jeju.nanaland.config.TestConfig;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.PostImageFile;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
-import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
-import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -36,7 +35,7 @@ class NanaRepositoryImplTest {
   @PersistenceContext
   private EntityManager em;
   @Autowired
-  private NanaRepositoryImpl nanarepositoryImpl;
+  private NanaRepositoryImpl nanaRepositoryImpl;
 
 
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
@@ -51,63 +50,146 @@ class NanaRepositoryImplTest {
         .build();
     em.persist(imageFile1);
 
-    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
+    imageFile2 = ImageFile.builder()
+        .originUrl("originUrl2")
+        .thumbnailUrl("thumbnailUrl2")
+        .build();
+    em.persist(imageFile2);
 
-    imageFile2 = TestUtil.findImageFileByNumber(em, 2);
+    imageFile3 = ImageFile.builder()
+        .originUrl("originUrl3")
+        .thumbnailUrl("thumbnailUrl3")
+        .build();
+    em.persist(imageFile3);
 
-    imageFile3 = TestUtil.findImageFileByNumber(em, 3);
+    imageFile4 = ImageFile.builder()
+        .originUrl("originUrl2")
+        .thumbnailUrl("thumbnailUrl2")
+        .build();
+    em.persist(imageFile4);
 
-    imageFile4 = TestUtil.findImageFileByNumber(em, 4);
+    imageFile5 = ImageFile.builder()
+        .originUrl("originUrl2")
+        .thumbnailUrl("thumbnailUrl2")
+        .build();
+    em.persist(imageFile5);
 
-    imageFile5 = TestUtil.findImageFileByNumber(em, 5);
+    nana1 = Nana.builder()
+        .version("ver1")
+        .firstImageFile(imageFile1)
+        .priority(0L)
+        .build();
+    em.persist(nana1);
 
-    nana1 = TestUtil.findNana(em, 1);
+    nana2 = Nana.builder()
+        .version("ver2")
+        .firstImageFile(imageFile2)
+        .priority(0L)
+        .build();
+    em.persist(nana2);
 
-    nana2 = TestUtil.findNana(em, 2);
+    nana3 = Nana.builder()
+        .version("ver3")
+        .firstImageFile(imageFile3)
+        .priority(0L)
+        .build();
+    em.persist(nana3);
 
-    nana3 = TestUtil.findNana(em, 3);
+    nana4 = Nana.builder()
+        .version("ver4")
+        .firstImageFile(imageFile4)
+        .priority(0L)
+        .build();
+    em.persist(nana4);
 
-    nana4 = TestUtil.findNana(em, 4);
+    nana5 = Nana.builder()
+        .version("ver5")
+        .firstImageFile(imageFile5)
+        .priority(0L)
+        .build();
+    em.persist(nana5);
 
-    nana5 = TestUtil.findNana(em, 5);
-
-    nanaTitle1 = TestUtil.findNanaTitleByNana(em, nana1);
+    nanaTitle1 = NanaTitle.builder()
+        .notice("notice1")
+        .language(language)
+        .nana(nana1)
+        .build();
+    em.persist(nanaTitle1);
 
     //nana3=> active = true / language2=> chinese
-    nanaTitle2 = TestUtil.findNanaTitleByNana(em, nana2);
+    nanaTitle2 = NanaTitle.builder()
+        .notice("notice2")
+        .heading("keyword")
+        .language(language)
+        .nana(nana2)
+        .build();
+    em.persist(nanaTitle2);
 
-    nanaTitle3 = TestUtil.findNanaTitleByNana(em, nana3);
+    nanaTitle3 = NanaTitle.builder()
+        .notice("notice3")
+        .language(language)
+        .nana(nana3)
+        .build();
+    em.persist(nanaTitle3);
 
-    nanaTitle4 = TestUtil.findNanaTitleByNana(em, nana4);
+    nanaTitle4 = NanaTitle.builder()
+        .notice("notice4")
+        .language(language)
+        .nana(nana4)
+        .build();
+    em.persist(nanaTitle4);
+    nanaTitle5 = NanaTitle.builder()
+        .notice("notice5")
+        .language(language)
+        .nana(nana5)
+        .build();
+    em.persist(nanaTitle5);
 
-    nanaTitle5 = TestUtil.findNanaTitleByNana(em, nana5);
+    nanaContent1 = NanaContent.builder()
+        .subTitle("subtitle1")
+        .nanaTitle(nanaTitle1)
+        .content("content")
+        .priority(1L)
+        .title("title")
+        .build();
+    em.persist(nanaContent1);
 
-    nanaContent1 = TestUtil.findNanaContentByNanaTitleAndNumber(em, nanaTitle1, 1);
+    nanaContent2 = NanaContent.builder()
+        .subTitle("subtitle2")
+        .nanaTitle(nanaTitle1)
+        .content("content2")
+        .priority(2L)
+        .title("title2")
+        .build();
+    em.persist(nanaContent2);
 
-    nanaContent2 = TestUtil.findNanaContentByNanaTitleAndNumber(em, nanaTitle1, 2);
+    nanaContent3 = NanaContent.builder()
+        .subTitle("subtitle3")
+        .nanaTitle(nanaTitle1)
+        .content("content3")
+        .priority(3L)
+        .title("title3")
+        .build();
+    em.persist(nanaContent3);
 
-    nanaContent3 = TestUtil.findNanaContentByNanaTitleAndNumber(em, nanaTitle1, 3);
-
-    NanaContentImage nanaContentImage1 = NanaContentImage.builder()
+    PostImageFile postImageFile1 = PostImageFile.builder()
+        .post(nanaContent1)
         .imageFile(imageFile1)
-        .nana(nana1)
-        .number(1)
         .build();
+    em.persist(postImageFile1);
 
-    NanaContentImage nanaContentImage2 = NanaContentImage.builder()
+    PostImageFile postImageFile2 = PostImageFile.builder()
+        .post(nanaContent1)
         .imageFile(imageFile2)
-        .nana(nana1)
-        .number(2)
         .build();
+    em.persist(postImageFile2);
 
-    NanaContentImage nanaContentImage3 = NanaContentImage.builder()
+    PostImageFile postImageFile3 = PostImageFile.builder()
+        .post(nanaContent1)
         .imageFile(imageFile3)
-        .nana(nana1)
-        .number(3)
         .build();
+    em.persist(postImageFile3);
 
-    nana1.updateNanaContentImageList(
-        List.of(nanaContentImage1, nanaContentImage2, nanaContentImage3));
   }
 
   @Test
@@ -117,7 +199,7 @@ class NanaRepositoryImplTest {
     setNana();
 
     // When
-    List<NanaThumbnail> recentNanaThumbnailDto = nanarepositoryImpl.findRecentNanaThumbnailDto(
+    List<NanaThumbnail> recentNanaThumbnailDto = nanaRepositoryImpl.findRecentNanaThumbnailDto(
         Language.KOREAN);
 
     // Then
@@ -132,7 +214,7 @@ class NanaRepositoryImplTest {
     setNana();
 
     // When
-    Page<NanaThumbnail> allNanaThumbnailDto = nanarepositoryImpl.findAllNanaThumbnailDto(
+    Page<NanaThumbnail> allNanaThumbnailDto = nanaRepositoryImpl.findAllNanaThumbnailDto(
         Language.KOREAN,
         PageRequest.of(0, 12));
     List<NanaThumbnail> result = allNanaThumbnailDto.getContent();
@@ -148,7 +230,7 @@ class NanaRepositoryImplTest {
     setNana();
     System.out.println("nanaTitle2.getCreatedAt " + nanaTitle2.getCreatedAt());
     // When
-    Page<NanaThumbnail> keyword = nanarepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
+    Page<NanaThumbnail> keyword = nanaRepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
         Language.KOREAN, PageRequest.of(0, 12));
     List<NanaThumbnail> content = keyword.getContent();
     for (NanaThumbnail nanaThumbnail : content) {
@@ -171,8 +253,10 @@ class NanaRepositoryImplTest {
     setNana();
 
     // When
-    NanaThumbnailPost nanaThumbnailPostDto = nanarepositoryImpl.findNanaThumbnailPostDto(
+    NanaThumbnailPost nanaThumbnailPostDto = nanaRepositoryImpl.findNanaThumbnailPostDto(
         nanaTitle3.getId(), Language.KOREAN);
+    System.out.println("nanaTitle3 = " + nanaTitle3.getId());
+    System.out.println("nanaThumbnailPostDto.toString() = " + nanaThumbnailPostDto.toString());
 
     // Then
     Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());

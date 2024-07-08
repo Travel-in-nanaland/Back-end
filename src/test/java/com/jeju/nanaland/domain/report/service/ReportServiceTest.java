@@ -15,7 +15,6 @@ import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.util.TestUtil;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,13 +39,23 @@ class ReportServiceTest {
   @BeforeEach
   void init() {
     // imageFile
-    imageFile1 = TestUtil.findImageFileByNumber(em, 1);
-
-    // language
-    language = TestUtil.findLanguage(em, Locale.KOREAN);
+    imageFile1 = ImageFile.builder()
+        .originUrl("origin1")
+        .thumbnailUrl("thumbnail1")
+        .build();
+    em.persist(imageFile1);
 
     // member
-    member = TestUtil.findMemberByLanguage(em, language, 1);
+    member = Member.builder()
+        .email("test@naver.com")
+        .provider(Provider.KAKAO)
+        .providerId("123456789")
+        .nickname("nickname1")
+        .language(Language.KOREAN)
+        .profileImageFile(imageFile1)
+        .travelType(TravelType.NONE)
+        .build();
+    em.persist(member);
 
     // memberInfoDto
     memberInfoDto = MemberInfoDto.builder()
@@ -81,9 +90,20 @@ class ReportServiceTest {
     /**
      * GIVEN
      */
-    Nana nana = TestUtil.findNana(em, 1);
+    Nana nana = Nana.builder()
+        .version("1")
+        .firstImageFile(imageFile1)
+        .priority(0L)
+        .build();
+    em.persist(nana);
 
-    NanaTitle nanaTitle = TestUtil.findNanaTitleByNana(em, nana);
+    NanaTitle nanaTitle = NanaTitle.builder()
+        .heading("heading")
+        .subHeading("subHeading")
+        .language(Language.KOREAN)
+        .nana(nana)
+        .build();
+    em.persist(nanaTitle);
 
     InfoFixDto infoFixDto = new InfoFixDto();
     infoFixDto.setFixType(FixType.CONTACT_OR_HOMEPAGE.name());

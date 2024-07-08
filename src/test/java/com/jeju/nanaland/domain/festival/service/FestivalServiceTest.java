@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -36,11 +38,13 @@ class FestivalServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private SearchService searchService;
+  @Mock
+  private ImageFileService imageFileService;
 
 
   @Mock
   private ImageFileRepository imageFileRepository;
- 
+
   @Test
   @DisplayName("festival 상세 조회에서 기간 국가별 요일")
   void getFestivalDetail() {
