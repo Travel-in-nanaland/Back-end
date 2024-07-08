@@ -62,7 +62,10 @@ public enum SuccessCode {
 
   // experience
   EXPERIENCE_LIST_SUCCESS(OK, "이색체험 썸네일 리스트 조회 성공"),
-  EXPERIENCE_DETAIL_SUCCESS(OK, "이색체험 상세정보 조회 성공");
+  EXPERIENCE_DETAIL_SUCCESS(OK, "이색체험 상세정보 조회 성공"),
+
+  // review
+  REVIEW_LIST_SUCCESS(OK, "리뷰 리스트 조회 성공");
 
   private final HttpStatus httpStatus;
   private final String message;

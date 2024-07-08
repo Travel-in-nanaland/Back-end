@@ -1,12 +1,9 @@
-package com.jeju.nanaland.domain.favorite.entity;
+package com.jeju.nanaland.domain.review.entity;
 
-import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.member.entity.Member;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -25,15 +22,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-    name = "favorite",
+    name = "review_heart",
     uniqueConstraints = {
         @UniqueConstraint(
-            name = "memberCategoryPostUnique",
-            columnNames = {"member_id", "category", "post_id"}
+            name = "memberReviewUnique",
+            columnNames = {"member_id", "review_id"}
         )
     }
 )
-public class Favorite extends BaseEntity {
+public class ReviewHeart extends BaseEntity {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
@@ -41,11 +38,7 @@ public class Favorite extends BaseEntity {
   private Member member;
 
   @NotNull
-  @Enumerated(EnumType.STRING)
-  private Category category;
-
-  @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "post_id", nullable = false)
-  private Post post;
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @JoinColumn(name = "review_id", nullable = false)
+  private Review review;
 }
