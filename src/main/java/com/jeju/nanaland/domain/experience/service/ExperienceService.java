@@ -12,8 +12,10 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThum
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
@@ -35,6 +37,8 @@ public class ExperienceService {
   private final FavoriteService favoriteService;
   private final ImageFileRepository imageFileRepository;
   private final SearchService searchService;
+  private final ReviewRepository reviewRepository;
+  private final HashtagRepository hashtagRepository;
 
   public ExperienceThumbnailDto getExperienceList(MemberInfoDto memberInfoDto,
       ExperienceType experienceType, List<String> keywordFilterList, List<String> addressFilterList,
@@ -50,12 +54,12 @@ public class ExperienceService {
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<ExperienceThumbnail> data = experienceThumbnailPage.getContent();
-    // favorite에 해당 id가 존재하면 isFavorite 필드 true, 아니라면 false
+    // 좋아요 여부, 리뷰 평균 추가
     for (ExperienceThumbnail experienceThumbnail : data) {
-      experienceThumbnail.setFavorite(favoriteIds.contains(experienceThumbnail.getId()));
+      Long postId = experienceThumbnail.getId();
+      experienceThumbnail.setFavorite(favoriteIds.contains(postId));
+      experienceThumbnail.setRatingAvg(reviewRepository.findTotalRatingAvg(EXPERIENCE, postId));
     }
-
-    // TODO: 리뷰 평점 평균
 
     return ExperienceThumbnailDto.builder()
         .totalElements(experienceThumbnailPage.getTotalElements())
@@ -89,6 +93,9 @@ public class ExperienceService {
     images.add(experienceCompositeDto.getFirstImage());
     images.addAll(imageFileRepository.findPostImageFiles(postId));
 
+    // 키워드
+    List<String> keywords = hashtagRepository.findKeywords(postId, EXPERIENCE, language);
+
     return ExperienceDetailDto.builder()
         .id(experienceCompositeDto.getId())
         .title(experienceCompositeDto.getTitle())
@@ -100,6 +107,7 @@ public class ExperienceService {
         .time(experienceCompositeDto.getTime())
         .amenity(experienceCompositeDto.getAmenity())
         .details(experienceCompositeDto.getDetails())
+        .keywords(keywords)
         .isFavorite(isFavorite)
         .images(images)
         .build();

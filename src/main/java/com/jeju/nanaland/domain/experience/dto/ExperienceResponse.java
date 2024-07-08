@@ -46,7 +46,7 @@ public class ExperienceResponse {
     private String addressTag;
 
     @Schema(description = "리뷰 평점 평균")
-    private Float ratingAvg;
+    private Double ratingAvg;
 
     @NotBlank
     @Schema(description = "좋아요 여부")
@@ -96,6 +96,9 @@ public class ExperienceResponse {
 
     @Schema(description = "상세 정보")
     private String details;
+
+    @Schema(description = "키워드")
+    private List<String> keywords;
 
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
