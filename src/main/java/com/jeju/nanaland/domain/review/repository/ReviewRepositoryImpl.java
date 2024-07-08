@@ -97,7 +97,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
     // 각 리뷰별 이미지 리스트 조회
     Map<Long, List<ImageFileDto>> reviewImagesMap = queryFactory
-        .from(reviewImageFile)
+        .selectFrom(reviewImageFile)
         .innerJoin(reviewImageFile.imageFile, imageFile)
         .where(reviewImageFile.review.id.in(reviewIds))
         .transform(GroupBy.groupBy(reviewImageFile.review.id)
@@ -107,8 +107,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
             )));
 
     // 각 리뷰별 키워드 리스트 조회
-    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = queryFactory.
-        from(reviewKeyword)
+    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = queryFactory
+        .selectFrom(reviewKeyword)
         .where(reviewKeyword.review.id.in(reviewIds))
         .transform(GroupBy.groupBy(reviewKeyword.review.id)
             .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));

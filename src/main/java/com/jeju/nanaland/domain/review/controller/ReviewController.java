@@ -5,6 +5,11 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
 import com.jeju.nanaland.global.auth.AuthMember;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/review")
+@Tag(name = "리뷰(Review)", description = "리뷰(Review) API입니다.")
 public class ReviewController {
 
   private final ReviewService reviewService;
 
+  @Operation(summary = "7대 자연 리스트 조회", description = "7대 자연 리스트 조회 (페이징)")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
   @GetMapping("/list/{id}")
   public ResponseEntity getReviewList(
       @AuthMember MemberInfoDto memberInfoDto,
