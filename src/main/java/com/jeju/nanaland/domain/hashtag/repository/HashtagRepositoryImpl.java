@@ -20,6 +20,8 @@ public class HashtagRepositoryImpl implements HashtagRepositoryCustom {
         .select(keyword.content)
         .from(hashtag)
         .innerJoin(hashtag.keyword, keyword)
+        .where(hashtag.post.id.eq(postId)
+            .and(hashtag.language.eq(language)))
         .fetch();
   }
 }

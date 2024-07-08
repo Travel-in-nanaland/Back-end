@@ -140,6 +140,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .selectDistinct(experience.count())
         .from(experience)
+        .innerJoin(experience.firstImageFile, imageFile)
         .innerJoin(experience.experienceTrans, experienceTrans)
         .innerJoin(hashtag)
         .on(hashtag.post.id.eq(experience.id)
@@ -147,6 +148,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .innerJoin(keyword)
         .on(keyword.id.eq(hashtag.keyword.id))
         .where(experienceTrans.language.eq(language)
+            .and(experience.experienceType.eq(experienceType))
             .and(addressTagCondition(addressFilterList))
             .and(keywordCondition(keywordFilterList)));
 

@@ -39,7 +39,7 @@ public class ExperienceController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @GetMapping("/experience/list")
+  @GetMapping("/list")
   public BaseResponse<ExperienceThumbnailDto> getCultureAndArtsList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
