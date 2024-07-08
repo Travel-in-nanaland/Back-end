@@ -33,42 +33,23 @@ public class ExperienceController {
 
   private final ExperienceService experienceService;
 
-  @Operation(summary = "액티비티 리스트 조회", description = "액티비티 리스트 조회 (페이징)")
+  @Operation(summary = "이색체험 리스트 조회", description = "이색체험 리스트 조회 (페이징)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @GetMapping("/activity/list")
-  public BaseResponse<ExperienceThumbnailDto> getActivityList(
-      @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam(defaultValue = "") List<String> keywordFilterList,
-      @RequestParam(defaultValue = "") List<String> addressFilterList,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "12") int size) {
-
-    ExperienceThumbnailDto thumbnailDto = experienceService.getExperienceList(memberInfoDto,
-        ExperienceType.ACTIVITY, keywordFilterList, addressFilterList, page, size);
-
-    return BaseResponse.success(EXPERIENCE_LIST_SUCCESS, thumbnailDto);
-  }
-
-  @Operation(summary = "문화예술 리스트 조회", description = "문화예술 리스트 조회 (페이징)")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
-      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
-  })
-  @GetMapping("/culture-and-arts/list")
+  @GetMapping("/experience/list")
   public BaseResponse<ExperienceThumbnailDto> getCultureAndArtsList(
       @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam ExperienceType experienceType,
       @RequestParam(defaultValue = "") List<String> keywordFilterList,
       @RequestParam(defaultValue = "") List<String> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
     ExperienceThumbnailDto thumbnailDto = experienceService.getExperienceList(memberInfoDto,
-        ExperienceType.CULTURE_AND_ARTS, keywordFilterList, addressFilterList, page, size);
+        experienceType, keywordFilterList, addressFilterList, page, size);
 
     return BaseResponse.success(EXPERIENCE_LIST_SUCCESS, thumbnailDto);
   }
