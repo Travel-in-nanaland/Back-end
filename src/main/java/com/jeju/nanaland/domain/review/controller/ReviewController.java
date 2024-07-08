@@ -1,9 +1,12 @@
 package com.jeju.nanaland.domain.review.controller;
 
+import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
+
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
+import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,7 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,14 +28,14 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
-  @Operation(summary = "7대 자연 리스트 조회", description = "7대 자연 리스트 조회 (페이징)")
+  @Operation(summary = "리뷰 리스트 조회", description = "리뷰 리스트 조회 (페이징)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
   @GetMapping("/list/{id}")
-  public ResponseEntity getReviewList(
+  public BaseResponse<ReviewListDto> getReviewList(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
@@ -41,6 +43,6 @@ public class ReviewController {
       @RequestParam(defaultValue = "12") int size
   ) {
     ReviewListDto reviewList = reviewService.getReviewList(memberInfoDto, category, id, page, size);
-    return ResponseEntity.ok(reviewList);
+    return BaseResponse.success(REVIEW_LIST_SUCCESS, reviewList);
   }
 }
