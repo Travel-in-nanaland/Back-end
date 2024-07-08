@@ -147,7 +147,8 @@ public class RecommendRepositoryTest {
   }
 
   Language initLanguageKorean() {
-    return Language.KOREAN;
+    Language language = Language.KOREAN;
+    return language;
   }
 
   Recommend initNatureRecommend(Language language, TravelType travelType) {
@@ -155,6 +156,17 @@ public class RecommendRepositoryTest {
 
     ImageFile imageFile = TestUtil.findImageFileByNumber(em, 1);
 
+    Nature nature = Nature.builder()
+        .firstImageFile(imageFile)
+        .priority(0L)
+        .build();
+    em.persist(nature);
+    NatureTrans natureTrans = NatureTrans.builder()
+        .title("7대자연 제목")
+        .nature(nature)
+        .language(language)
+        .build();
+    em.persist(natureTrans);
     Nature nature = TestUtil.findNatureList(em, 1).get(0);
     NatureTrans natureTrans = TestUtil.findNatureTransByNature(em, nature);
 
