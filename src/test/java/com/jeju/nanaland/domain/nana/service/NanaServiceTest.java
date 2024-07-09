@@ -1,27 +1,31 @@
 package com.jeju.nanaland.domain.nana.service;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
-import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
-import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +50,8 @@ public class NanaServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private HashtagRepository hashtagRepository;
+  @Mock
+  private ImageFileRepository imageFileRepository;
   @InjectMocks
   private NanaService nanaService;
 
@@ -100,38 +106,43 @@ public class NanaServiceTest {
     // Then
     Assertions.assertThat(nanaThumbnails1.getTotalElements()).isEqualTo(3L);
   }
-  // TODO 수정 필요
-//  @Test
-//  void getNanaDetail() {
-//    // Given
-//    Language language = Language.KOREAN;
-//    ImageFile imageFile = createImageFile(1);
-//    Member member = createMember(language, imageFile);
-//    MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
-//    Nana nana = createNana(1, imageFile);
-//    NanaTitle nanaTitle = createNanaTitle(1, nana, language);
-//    List<NanaContent> nanaContentList = createNanaContentList(nanaTitle);
-//    List<NanaContentImage> nanaContentImage = createNanaContentImage(
-//        List.of(createImageFile(1), createImageFile(2), createImageFile(3)), nana);
-//    Category category = Category.NANA;
-//
-//    when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
-//    when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
-//        Optional.of(nanaTitle));
-//    when(nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle)).thenReturn(
-//        nanaContentList);
-//    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
-//        nanaTitle.getNana().getId())).thenReturn(true);
-//
-//    // When
-//    NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
-//    List<NanaDetail> nanaDetails = nanaDetail.getNanaDetails();
-//
-//    // Then
-//    int[] numberList = {nanaDetails.get(0).number, nanaDetails.get(1).number,
-//        nanaDetails.get(2).number};
-//    Assertions.assertThat(numberList).containsSequence(1, 2, 3);
-//  }
+
+  @Test
+  void getNanaDetail() {
+    // Given
+    Language language = Language.KOREAN;
+    ImageFile imageFile = createImageFile(1);
+    Member member = createMember(language, imageFile);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(member, language);
+    Nana nana = createNana(1, imageFile);
+    NanaTitle nanaTitle = createNanaTitle(1, nana, language);
+    List<NanaContent> nanaContentList = createNanaContentList(nanaTitle);
+    List<List<ImageFileDto>> nanaContentImages = createNanaContentImage();
+    Category category = Category.NANA;
+
+    when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
+    when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
+        Optional.of(nanaTitle));
+    when(nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle)).thenReturn(
+        nanaContentList);
+    when(imageFileRepository.findPostImageFiles(nanaContentList.get(0).getId())).thenReturn(
+        nanaContentImages.get(0));
+    when(imageFileRepository.findPostImageFiles(nanaContentList.get(1).getId())).thenReturn(
+        nanaContentImages.get(1));
+    when(imageFileRepository.findPostImageFiles(nanaContentList.get(2).getId())).thenReturn(
+        nanaContentImages.get(2));
+    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
+        nanaTitle.getNana().getId())).thenReturn(true);
+
+    // When
+    NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
+    List<NanaDetail> nanaDetails = nanaDetail.getNanaDetails();
+
+    // Then
+    int[] numberList = {nanaDetails.get(0).number, nanaDetails.get(1).number,
+        nanaDetails.get(2).number};
+    Assertions.assertThat(numberList).containsSequence(1, 2, 3);
+  }
 
   ImageFile createImageFile(int idx) {
     return ImageFile.builder()
@@ -182,15 +193,7 @@ public class NanaServiceTest {
             .content("content")
             .priority(1L)
             .title("title")
-            .infoList(Set.of(
-                NanaAdditionalInfo.builder()
-                    .description("description1")
-                    .infoType(InfoType.ADDRESS)
-                    .build()
-                , NanaAdditionalInfo.builder()
-                    .description("description2")
-                    .infoType(InfoType.ADDRESS)
-                    .build()))
+
             .build(),
 
         NanaContent.builder()
@@ -199,15 +202,6 @@ public class NanaServiceTest {
             .content("content2")
             .priority(2L)
             .title("title2")
-            .infoList(Set.of(
-                NanaAdditionalInfo.builder()
-                    .description("description3")
-                    .infoType(InfoType.ADDRESS)
-                    .build()
-                , NanaAdditionalInfo.builder()
-                    .description("description4")
-                    .infoType(InfoType.ADDRESS)
-                    .build()))
             .build(),
 
         NanaContent.builder()
@@ -216,29 +210,20 @@ public class NanaServiceTest {
             .content("content3")
             .priority(3L)
             .title("title3")
-            .infoList(Set.of(
-                NanaAdditionalInfo.builder()
-                    .description("description5")
-                    .infoType(InfoType.ADDRESS)
-                    .build()
-                , NanaAdditionalInfo.builder()
-                    .description("description6")
-                    .infoType(InfoType.ADDRESS)
-                    .build()))
             .build());
   }
 
-//  List<NanaContentImage> createNanaContentImage(List<List<ImageFile>> imageFileList,
-//      List<NanaContent> nanaContentList) {
-//    List<NanaContentImage> nanaContentImageList = new ArrayList<>();
-//    int i = 1;
-//    for (ImageFile imageFile : imageFileList) {
-//      nanaContentImageList.add(NanaContentImage.builder()
-//          .imageFile(imageFile)
-//          .nana(nana)
-//          .number(i++)
-//          .build());
-//    }
-//    return nanaContentImageList;
-//  }
+  List<List<ImageFileDto>> createNanaContentImage() {
+    List<List<ImageFileDto>> imagesList = new ArrayList<>();
+    for (int i = 0; i < 3; i++) {
+      List<ImageFileDto> images = new ArrayList<>();
+      for (int j = 0; j < 3; j++) {
+        images.add(new ImageFileDto("origin Url" + ((i * 3) + (j + 1)),
+            "thumbnail Url" + ((i * 3) + (j + 1))));
+      }
+      imagesList.add(images);
+    }
+
+    return imagesList;
+  }
 }
