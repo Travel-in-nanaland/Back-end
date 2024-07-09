@@ -65,7 +65,6 @@ public class NatureService {
       searchService.updateSearchVolumeV1(NATURE, id);
     }
 
-    // TODO: category 없애는 리팩토링 필요
     boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
         id);
 

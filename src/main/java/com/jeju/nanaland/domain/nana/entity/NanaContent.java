@@ -27,12 +27,6 @@ public class NanaContent extends Post {
   @JoinColumn(name = "nana_title_id", nullable = false)
   private NanaTitle nanaTitle;
 
-  /**
-   * Post의 priority로 대체
-   */
-//  @Column(nullable = false)
-//  private int number;
-
   @NotBlank
   @Column(nullable = false)
   private String subTitle;

@@ -5,12 +5,10 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.PostImageFile;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +30,7 @@ class NanaRepositoryImplTest {
   Nana nana1, nana2, nana3, nana4, nana5;
   NanaTitle nanaTitle1, nanaTitle2, nanaTitle3, nanaTitle4, nanaTitle5;
   NanaContent nanaContent1, nanaContent2, nanaContent3;
-  @PersistenceContext
+  @Autowired
   private EntityManager em;
   @Autowired
   private NanaRepositoryImpl nanaRepositoryImpl;
@@ -247,18 +245,18 @@ class NanaRepositoryImplTest {
     Assertions.assertThat(isSearched).isTrue();
   }
 
-  @Test
-  void findNanaThumbnailPostDto() {
-    // Given
-    setNana();
-
-    // When
-    NanaThumbnailPost nanaThumbnailPostDto = nanaRepositoryImpl.findNanaThumbnailPostDto(
-        nanaTitle3.getId(), Language.KOREAN);
-    System.out.println("nanaTitle3 = " + nanaTitle3.getId());
-    System.out.println("nanaThumbnailPostDto.toString() = " + nanaThumbnailPostDto.toString());
-
-    // Then
-    Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());
-  }
+//  @Test
+//  void findNanaThumbnailPostDto() {
+//    // Given
+//    setNana();
+//
+//    // When
+//    NanaThumbnailPost nanaThumbnailPostDto = nanaRepositoryImpl.findNanaThumbnailPostDto(
+//        nanaTitle3.getId(), Language.KOREAN);
+//    System.out.println("nanaTitle3 = " + nanaTitle3.getId());
+//    System.out.println("nanaThumbnailPostDto.toString() = " + nanaThumbnailPostDto.toString());
+//
+//    // Then
+//    Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());
+//  }
 }

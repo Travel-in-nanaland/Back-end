@@ -72,7 +72,7 @@ public class MarketService {
     if (isSearch) {
       searchService.updateSearchVolumeV1(MARKET, id);
     }
-    // TODO: category 없애는 리팩토링 필요
+
     // 좋아요 여부 확인
     boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
 

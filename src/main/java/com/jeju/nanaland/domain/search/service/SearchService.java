@@ -93,7 +93,7 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -126,7 +126,7 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -159,7 +159,7 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
@@ -378,7 +378,7 @@ public class SearchService {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
-    // TODO: 이미지 추가 필요
+
     return SearchVolumeDto.builder()
         .id(compositeDto.getId())
         .firstImage(compositeDto.getFirstImage())
