@@ -16,7 +16,6 @@ import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
-import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -49,8 +48,6 @@ class ExperienceServiceTest {
   ImageFileRepository imageFileRepository;
   @Mock
   ReviewRepository reviewRepository;
-  @Mock
-  HashtagRepository hashtagRepository;
 
   @Test
   @DisplayName("액티비티 상세조회")
@@ -71,8 +68,6 @@ class ExperienceServiceTest {
         .isPostInFavorite(memberInfoDto.getMember(), Category.EXPERIENCE, postId);
     doReturn(List.of()).when(imageFileRepository)  // 빈 이미지 리스트
         .findPostImageFiles(postId);
-    doReturn(List.of()).when(hashtagRepository)
-        .findKeywords(postId, Category.EXPERIENCE, language);
 
     // when
     ExperienceDetailDto result = experienceService.getExperienceDetails(memberInfoDto, postId,
