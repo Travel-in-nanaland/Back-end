@@ -61,7 +61,8 @@ public enum SuccessCode {
   MARKET_DETAIL_SUCCESS(OK, "전통시장 상세정보 조회 성공"),
 
   // review
-  REVIEW_LIST_SUCCESS(OK, "리뷰 리스트 조회 성공");
+  REVIEW_LIST_SUCCESS(OK, "리뷰 리스트 조회 성공"),
+  REVIEW_HEART_SUCCESS(OK, "리뷰 좋아요 토글 요청 성공");
 
   private final HttpStatus httpStatus;
   private final String message;

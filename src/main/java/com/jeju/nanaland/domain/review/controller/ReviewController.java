@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.review.controller;
 
+import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
 
 import com.jeju.nanaland.domain.common.data.Category;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,11 +49,17 @@ public class ReviewController {
     return BaseResponse.success(REVIEW_LIST_SUCCESS, reviewList);
   }
 
+  @Operation(summary = "리뷰 좋아요 토글")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
   @PostMapping("/heart/{id}")
-  public ResponseEntity toggleReviewHeart(
+  public BaseResponse<StatusDto> toggleReviewHeart(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
     StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
-    return ResponseEntity.ok(statusDto);
+    return BaseResponse.success(REVIEW_HEART_SUCCESS, statusDto);
   }
 }
