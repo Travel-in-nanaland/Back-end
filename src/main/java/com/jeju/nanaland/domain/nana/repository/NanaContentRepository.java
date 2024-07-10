@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NanaContentRepository extends JpaRepository<NanaContent, Long> {
 
-  List<NanaContent> findAllByNanaTitleOrderByNumber(NanaTitle nanaTitle);
+  List<NanaContent> findAllByNanaTitleOrderByPriority(NanaTitle nanaTitle);
+
+  int countNanaContentByNanaTitle(NanaTitle nanaTitle);
 }

@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class S3ImageService {
 
+
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.s3.bucket}")
   private String bucketName;
@@ -110,6 +111,8 @@ public class S3ImageService {
     if (autoThumbnail) {
       //섬네일 생성 후 저장
       thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
+    } else {
+      thumbnailImageUrl = originalImageUrl;
     }
 
     return S3ImageDto.builder()
@@ -143,8 +146,10 @@ public class S3ImageService {
     String uploadThumbnailImageName = thumbnailPrefix + originImageFileName;
     BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
 
-    //일단 width: 240px, height: 300px으로 섬네일 제작. 기획과 상의 후 크기 수정.
-    BufferedImage thumbnailImage = Thumbnails.of(bufferImage).size(240, 300).asBufferedImage();
+    //일단 width: 600px 으로 섬네일 제작. 기획과 상의 후 크기 수정.
+    int newHeight = getResizeImageHeight(multipartFile);
+    BufferedImage thumbnailImage = Thumbnails.of(bufferImage).size(600, newHeight)
+        .asBufferedImage();
 
     ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
     String imageType = multipartFile.getContentType();
@@ -216,5 +221,15 @@ public class S3ImageService {
         .originUrl(originUrl)
         .thumbnailUrl(thumbnailUrl)
         .build();
+  }
+
+  private int getResizeImageHeight(MultipartFile file) throws IOException {
+    BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+
+    int originalHeight = bufferedImage.getHeight();
+    int originalWidth = bufferedImage.getWidth();
+    int aspectRatio = originalHeight / originalWidth;
+
+    return 600 * aspectRatio;
   }
 }

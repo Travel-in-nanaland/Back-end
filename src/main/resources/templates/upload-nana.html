@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>나나'pick upload용 페이지</title>
+</head>
+<body>
+
+</body>
+</html><!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    input[type="text"], textarea {
+      width: 30%;
+      padding: 12px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .result {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .result.success {
+      color: green;
+    }
+
+    .result.error {
+      color: red;
+    }
+
+    .textarea-label {
+      display: block; /* 라벨과 텍스트 영역이 한 줄에 나타나지 않도록 함 */
+      margin-bottom: 8px; /* 라벨과 텍스트 영역 사이의 간격 설정 */
+    }
+  </style>
+  <script>
+    let contentCount = 1;
+
+    function addNanaContent(button, countIndex) {
+      const container = button.parentElement;
+      const section = document.createElement('div');
+      section.id = `nana-content-${contentCount}`;
+
+      section.innerHTML = `
+                <br>
+                <br>
+                <hr>
+                <button type="button" onclick="removeNanaContent(this)">-</button>
+                    <label for="nanaContents[${contentCount}].number">Number:</label>
+                    <input name="nanaContents[${contentCount}].number" required type="number"/>
+                    <div class="nana-content-images">
+                      <label for="nanaContents[${contentCount}].nanaContentImages[0]">NanaContent Image:</label>
+                      <input accept="image/*" name="nanaContents[${contentCount}].nanaContentImages[0]" type="file"/>
+                      <button type="button" onclick="addNanaContentImage(this, ${contentCount})">+</button>
+                    </div>
+                    <div>
+                          <label for="nanaContents[${contentCount}].subTitle">SubTitle:</label>
+                          <input name="nanaContents[${contentCount}].subTitle" required type="text"/>
+                          <label for="nanaContents[${contentCount}].title">Title:</label>
+                          <input name="nanaContents[${contentCount}].title" required type="text"/>
+                    </div>
+                        <div>
+                            <label class="textarea-label" for="nanaContents[${contentCount}].content">Content:</label>
+                            <textarea name="nanaContents[${contentCount}].content" required></textarea>
+                        </div>
+                        <div class="nana-additionalInfo">
+                            <label for="nanaContents[${contentCount}].additionalInfo[0]">AdditionalInfo:</label>
+                            <select name="nanaContents[${contentCount}].additionalInfo[0]" required>
+                                <option value="ADDRESS">address</option>
+                                <option value="PARKING">parking</option>
+                                <option value="SPECIAL">special</option>
+                                <option value="AMENITY">amenity</option>
+                                <option value="WEBSITE">website</option>
+                                <option value="RESERVATION_LINK">reservation_link</option>
+                                <option value="AGE">age</option>
+                                <option value="TIME">time</option>
+                                <option value="FEE">fee</option>
+                                <option value="DATE">date</option>
+                                <option value="DESCRIPTION">description</option>
+                                <option value="CALL">CALL</option>
+                            </select>
+                            <label class="textarea-label" for="nanaContents[${contentCount}].infoDesc[0]">desc:</label>
+                            <textarea name="nanaContents[${contentCount}].infoDesc[0]" required></textarea>
+                            <button type="button" onclick="addAdditionalInfo(this, ${contentCount})">+</button>
+                        </div>
+                        <div>
+                          <label class="textarea-label" for="nanaContents[${contentCount}].hashtag[0]">Hashtag:</label>
+                          <textarea name="nanaContents[${contentCount}].hashtag[0]" required></textarea>
+                          <button onclick="addHashtag(this, ${contentCount})" type="button">+</button>
+                        </div>
+            `;
+
+      container.appendChild(section);
+      contentCount++;
+    }
+
+    function addNanaContentImage(button, contentIndex) {
+      const container = button.parentElement;
+      const count = container.querySelectorAll('input[type="file"]').length;
+
+      const section = document.createElement('div');
+      section.innerHTML = `
+            <label for="nanaContents[${contentIndex}].nanaContentImages[${count}]">NanaContent Image:</label>
+            <input accept="image/*" name="nanaContents[${contentIndex}].nanaContentImages[${count}]" type="file"/>
+            <button type="button" onclick="remove(this)">-</button>
+            `;
+
+      container.appendChild(section);
+    }
+
+    function remove(button) {
+      // 버튼의 부모 요소(div)에서 input 요소를 찾아 제거합니다.
+      const div = button.parentNode;
+      while (div.firstChild) {
+        div.removeChild(div.firstChild);
+      }
+      // 버튼을 포함한 div 요소를 제거합니다.
+      div.parentNode.removeChild(div);
+
+    }
+
+    function removeNanaContent(button) {
+      // 버튼의 부모 요소(div)에서 input 요소를 찾아 제거합니다.
+      const div = button.parentNode;
+
+      while (div.firstChild) {
+        div.removeChild(div.firstChild);
+      }
+      // 버튼을 포함한 div 요소를 제거합니다.
+      div.parentNode.removeChild(div);
+
+      contentCount--;
+    }
+
+    function addAdditionalInfo(button, contentIndex) {
+      const container = button.parentElement;
+      const count = container.querySelectorAll('select').length;
+
+      const section = document.createElement('div');
+      section.innerHTML = `
+            <label for="nanaContents[${contentIndex}].additionalInfo[${count}]">AdditionalInfo:</label>
+            <select name="nanaContents[${contentIndex}].additionalInfo[${count}]" required>
+              <option value="ADDRESS">address</option>
+              <option value="PARKING">parking</option>
+              <option value="SPECIAL">special</option>
+              <option value="AMENITY">amenity</option>
+              <option value="WEBSITE">website</option>
+              <option value="RESERVATION_LINK">reservation_link</option>
+              <option value="AGE">age</option>
+              <option value="TIME">time</option>
+              <option value="FEE">fee</option>
+              <option value="DATE">date</option>
+              <option value="DESCRIPTION">description</option>
+              <option value="CALL">CALL</option>
+            </select>
+            <label class="textarea-label" for="nanaContents[${contentIndex}].infoDesc[${count}]">desc:</label>
+            <textarea name="nanaContents[${contentIndex}].infoDesc[${count}]" required></textarea>
+            <button type="button" onclick="remove(this)">-</button>
+            `;
+
+      container.appendChild(section);
+    }
+
+    function addHashtag(button, contentIndex) {
+      const container = button.parentElement;
+      const count = container.querySelectorAll('textarea').length;
+
+      const section = document.createElement('div');
+      section.innerHTML = `
+            <label class="textarea-label" for="nanaContents[${contentIndex}].hashtag[${count}]">Hashtag:</label>
+            <textarea name="nanaContents[${contentIndex}].hashtag[${count}]" required></textarea>
+            <button type="button" onclick="remove(this)">-</button>
+            `;
+
+      container.appendChild(section);
+    }
+  </script>
+</head>
+<body>
+<div class="container">
+  <h1>Upload Nana (처음 만드는 경우 NANA ID -> 0으로!!!!!)</h1>
+  <div>
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Languages</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="entry : ${nanaInfo}">
+        <td th:text="${entry.key}"></td>
+        <td>
+          <ul>
+            <li th:each="lang : ${entry.value}" th:text="${lang}"></li>
+          </ul>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="result" th:classappend="${result.startsWith('성공') ? ' success' : ' error'}"
+       th:if="${result}"
+       th:text="${result}"></div>
+  <form enctype="multipart/form-data" method="post" th:action="@{/nana/upload}">
+    <input type="submit" value="Submit"/>
+    <br>
+    <br>
+    <hr>
+    <div>
+      <label for="postId">NANA ID:</label>
+      <input id="postId" name="postId" required type="number"/>
+      <label for="nanaTitleImage">NanaTitle Image:</label>
+      <input accept="image/*" id="nanaTitleImage" name="nanaTitleImage" type="file"/>
+      <label for="language">Language:</label>
+      <select id="language" name="language" required>
+        <option value="KOREAN">Korean</option>
+        <option value="ENGLISH">English</option>
+        <option value="CHINESE">Chinese</option>
+        <option value="MALAYSIA">Malaysia</option>
+        <option value="VIETNAMESE">Vietnamese</option>
+      </select>
+      <label for="version">version:</label>
+      <input id="version" name="version" required type="number"/>
+    </div>
+    <br>
+    <hr>
+    <div>
+      <h2>Nana Title</h2>
+      <label for="subHeading">SubHeading:</label>
+      <input id="subHeading" name="subHeading" required type="text"/>
+      <label for="heading">Heading:</label>
+      <input id="heading" name="heading" required type="text"/>
+    </div>
+    <div>
+      <label class="textarea-label" for="notice">Notice:</label>
+      <textarea id="notice" name="notice" required></textarea>
+    </div>
+    <br>
+    <hr>
+    <div id="nana-contents">
+      <h2>Nana Content</h2>
+      <div id="nana-content-0">
+        <label for="nanaContents[0].number">Number:</label>
+        <input name="nanaContents[0].number" required type="number"/>
+        <div class="nana-content-images">
+          <label for="nanaContents[0].nanaContentImages[0]">NanaContent Image:</label>
+          <input accept="image/*" name="nanaContents[0].nanaContentImages[0]" type="file"/>
+          <button type="button" onclick="addNanaContentImage(this, 0)">+</button>
+        </div>
+        <div>
+          <label for="nanaContents[0].subTitle">SubTitle:</label>
+          <input name="nanaContents[0].subTitle" required type="text"/>
+          <label for="nanaContents[0].title">Title:</label>
+          <input name="nanaContents[0].title" required type="text"/>
+          <div>
+            <label class="textarea-label" for="nanaContents[0].content">Content:</label>
+            <textarea name="nanaContents[0].content" required></textarea>
+          </div>
+          <div class="nana-additionalInfo">
+            <label for="nanaContents[0].additionalInfo[0]">AdditionalInfo:</label>
+            <select name="nanaContents[0].additionalInfo[0]" required>
+              <option value="ADDRESS">address</option>
+              <option value="PARKING">parking</option>
+              <option value="SPECIAL">special</option>
+              <option value="AMENITY">amenity</option>
+              <option value="WEBSITE">website</option>
+              <option value="RESERVATION_LINK">reservation_link</option>
+              <option value="AGE">age</option>
+              <option value="TIME">time</option>
+              <option value="FEE">fee</option>
+              <option value="DATE">date</option>
+              <option value="DESCRIPTION">description</option>
+              <option value="CALL">CALL</option>
+            </select>
+            <label class="textarea-label" for="nanaContents[0].infoDesc[0]">desc:</label>
+            <textarea name="nanaContents[0].infoDesc[0]" required></textarea>
+            <button onclick="addAdditionalInfo(this, 0)" type="button">+</button>
+          </div>
+          <div>
+            <label class="textarea-label" for="nanaContents[0].hashtag[0]">Hashtag:</label>
+            <textarea name="nanaContents[0].hashtag[0]" required></textarea>
+            <button onclick="addHashtag(this, 0)" type="button">+</button>
+          </div>
+        </div>
+      </div>
+      <button onclick="addNanaContent(this,0)" type="button">Add Nana Content</button>
+    </div>
+    <br>
+
+    <br><br>
+
+  </form>
+</div>
+</body>
+</html>
