@@ -6,6 +6,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.EXPERIENCE_LIST_SUC
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.service.ExperienceService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
@@ -43,7 +44,7 @@ public class ExperienceController {
   public BaseResponse<ExperienceThumbnailDto> getCultureAndArtsList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
-      @RequestParam(defaultValue = "") List<String> keywordFilterList,
+      @RequestParam(defaultValue = "") List<ExperienceTypeKeyword> keywordFilterList,
       @RequestParam(defaultValue = "") List<String> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {

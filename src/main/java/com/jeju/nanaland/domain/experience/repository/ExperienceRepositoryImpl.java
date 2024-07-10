@@ -2,9 +2,9 @@ package com.jeju.nanaland.domain.experience.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
+import static com.jeju.nanaland.domain.experience.entity.QExperienceKeyword.experienceKeyword;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
-import static com.jeju.nanaland.domain.hashtag.entity.QKeyword.keyword;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -13,11 +13,16 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThum
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
+import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -108,8 +113,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
   @Override
   public Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
-      ExperienceType experienceType, List<String> keywordFilterList, List<String> addressFilterList,
-      Pageable pageable) {
+      ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
+      List<String> addressFilterList, Pageable pageable) {
 
     List<ExperienceThumbnail> resultDto = queryFactory
         .selectDistinct(new QExperienceResponse_ExperienceThumbnail(
@@ -122,11 +127,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .innerJoin(experience.firstImageFile, imageFile)
         .innerJoin(experience.experienceTrans, experienceTrans)
-        .innerJoin(hashtag)
-        .on(hashtag.post.id.eq(experience.id)
-            .and(hashtag.language.eq(language)))
-        .innerJoin(keyword)
-        .on(keyword.id.eq(hashtag.keyword.id))
+        .innerJoin(experienceKeyword)
+        .on(experienceKeyword.experience.id.eq(experience.id))
         .where(experienceTrans.language.eq(language)
             .and(experience.experienceType.eq(experienceType))  // 이색체험 타입(액티비티/문화예술)
             .and(addressTagCondition(addressFilterList))  // 지역필터
@@ -142,17 +144,25 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .innerJoin(experience.firstImageFile, imageFile)
         .innerJoin(experience.experienceTrans, experienceTrans)
-        .innerJoin(hashtag)
-        .on(hashtag.post.id.eq(experience.id)
-            .and(hashtag.language.eq(language)))
-        .innerJoin(keyword)
-        .on(keyword.id.eq(hashtag.keyword.id))
+        .innerJoin(experienceKeyword)
+        .on(experienceKeyword.experience.id.eq(experience.id))
         .where(experienceTrans.language.eq(language)
             .and(experience.experienceType.eq(experienceType))
             .and(addressTagCondition(addressFilterList))
             .and(keywordCondition(keywordFilterList)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public Set<ExperienceTypeKeyword> getExperienceTypeKeywordSet(Long postId) {
+    Map<Long, Set<ExperienceTypeKeyword>> map = queryFactory
+        .selectFrom(experienceKeyword)
+        .where(experienceKeyword.experience.id.eq(postId))
+        .transform(GroupBy.groupBy(experienceKeyword.experience.id)
+            .as(GroupBy.set(experienceKeyword.experienceTypeKeyword)));
+
+    return map.getOrDefault(postId, Collections.emptySet());
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
@@ -187,11 +197,11 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     }
   }
 
-  private BooleanExpression keywordCondition(List<String> keywordFilterList) {
+  private BooleanExpression keywordCondition(List<ExperienceTypeKeyword> keywordFilterList) {
     if (keywordFilterList.isEmpty()) {
       return null;
     } else {
-      return keyword.content.in(keywordFilterList);
+      return experienceKeyword.experienceTypeKeyword.in(keywordFilterList);
     }
   }
 }

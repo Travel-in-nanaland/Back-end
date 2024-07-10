@@ -10,9 +10,9 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDeta
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
-import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
@@ -21,6 +21,7 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,11 +39,10 @@ public class ExperienceService {
   private final ImageFileRepository imageFileRepository;
   private final SearchService searchService;
   private final ReviewRepository reviewRepository;
-  private final HashtagRepository hashtagRepository;
 
   public ExperienceThumbnailDto getExperienceList(MemberInfoDto memberInfoDto,
-      ExperienceType experienceType, List<String> keywordFilterList, List<String> addressFilterList,
-      int page, int size) {
+      ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
+      List<String> addressFilterList, int page, int size) {
 
     Language language = memberInfoDto.getLanguage();
     Pageable pageable = PageRequest.of(page, size);
@@ -94,7 +94,12 @@ public class ExperienceService {
     images.addAll(imageFileRepository.findPostImageFiles(postId));
 
     // 키워드
-    List<String> keywords = hashtagRepository.findKeywords(postId, EXPERIENCE, language);
+    Set<ExperienceTypeKeyword> keywordSet = experienceRepository.getExperienceTypeKeywordSet(
+        postId);
+    List<String> keywords = keywordSet.stream()
+        .map(experienceTypeKeyword ->
+            experienceTypeKeyword.getValueByLocale(language)
+        ).toList();
 
     return ExperienceDetailDto.builder()
         .id(experienceCompositeDto.getId())
