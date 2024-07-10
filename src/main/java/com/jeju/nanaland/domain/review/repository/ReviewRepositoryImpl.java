@@ -62,7 +62,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .where(reviewHeart.review.id.eq(review.id));
 
     // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
-    BooleanExpression isFavoriteQuery = JPAExpressions.selectOne()
+    BooleanExpression isReviewHeartQuery = JPAExpressions.selectOne()
         .from(reviewHeart)
         .where(reviewHeart.review.id.eq(review.id)
             .and(reviewHeart.member.id.eq(memberId)))
@@ -80,7 +80,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.content,
                 review.createdAt,
                 ExpressionUtils.as(heartCountQuery, "heartCount"),
-                ExpressionUtils.as(isFavoriteQuery, "isFavorite")
+                ExpressionUtils.as(isReviewHeartQuery, "isReviewHeart")
             )
         )
         .from(review)

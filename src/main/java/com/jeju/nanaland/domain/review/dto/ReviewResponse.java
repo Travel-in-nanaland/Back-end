@@ -51,7 +51,7 @@ public class ReviewResponse {
     @Schema(description = "리뷰 좋아요 개수")
     private Integer heartCount;
     @Schema(description = "현 로그인 회원의 좋아요 여부")
-    private boolean isFavorite;
+    private boolean isReviewHeart;
     @Schema(description = "리뷰 이미지 리스트")
     private List<ImageFileDto> images;
     @Schema(description = "리뷰 키워드 리스트")
@@ -60,7 +60,7 @@ public class ReviewResponse {
     @QueryProjection
     public ReviewDetailDto(Long id, String nickname, ImageFileDto imageFileDto,
         Long memberReviewCount, Double memberReviewRatingAvg, String content,
-        LocalDateTime createdAt, Long heartCount, boolean isFavorite) {
+        LocalDateTime createdAt, Long heartCount, boolean isReviewHeart) {
       this.id = id;
       this.nickname = nickname;
       this.profileImage = imageFileDto;
@@ -69,7 +69,7 @@ public class ReviewResponse {
       this.content = content;
       this.createdAt = createdAt.toLocalDate();
       this.heartCount = Math.toIntExact(heartCount);
-      this.isFavorite = isFavorite;
+      this.isReviewHeart = isReviewHeart;
     }
   }
 
