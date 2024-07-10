@@ -39,7 +39,8 @@ public enum ErrorCode {
   START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다."),
   DAY_OF_WEEK_MAPPING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "나라별 요일 추출 에러입니다."),
 
-  REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다.");
+  REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
+  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다");
 
 
   private final HttpStatus httpStatus;
