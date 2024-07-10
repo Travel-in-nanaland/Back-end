@@ -25,7 +25,6 @@ public enum ErrorCode {
   INVALID_TOKEN(UNAUTHORIZED, "토큰이 유효하지 않습니다."),
 
   NOT_FOUND_EXCEPTION(NOT_FOUND, "존재하는 데이터를 찾을 수 없습니다"),
-
   MEMBER_NOT_FOUND(NOT_FOUND, "존재하는 회원을 찾을 수 없습니다."),
   NANA_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana 입니다."),
   NANA_TITLE_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana Title 입니다."),
@@ -33,6 +32,7 @@ public enum ErrorCode {
   MEMBER_WTIHDRAWAL_NOT_FOUND(NOT_FOUND, "존재하는 회원의 탈퇴 상태를 찾을 수 없습니다"),
   CATEGORY_NOT_FOUND(NOT_FOUND, "존재하는 카테고리를 찾을 수 없습니다."),
   REVIEW_NOT_FOUND(NOT_FOUND, "존재하는 리뷰를 찾을 수 없습니다."),
+
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
   NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다."),
