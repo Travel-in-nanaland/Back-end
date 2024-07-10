@@ -36,7 +36,7 @@ public class NatureResponse {
     private String title;
 
     @Schema(description = "게시물 썸네일 이미지")
-    private ImageFileDto imageFileDto;
+    private ImageFileDto firstImage;
 
     @Schema(description = "주소 태그")
     private String addressTag;
@@ -49,7 +49,7 @@ public class NatureResponse {
         String addressTag) {
       this.id = id;
       this.title = title;
-      this.imageFileDto = new ImageFileDto(originUrl, thumbnailUrl);
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.addressTag = addressTag;
     }
   }

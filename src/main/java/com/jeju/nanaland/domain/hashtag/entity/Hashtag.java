@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "LanguageKeywordCategoryPostUnique",
-            columnNames = {"language", "keyword_id", "category", "post_id"}
+            columnNames = {"language", "keyword_id", "category_id", "post_id"}
         )
     }
 )

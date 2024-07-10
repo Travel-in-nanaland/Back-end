@@ -16,6 +16,8 @@ import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.nana.entity.Nana;
+import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import java.util.ArrayList;
@@ -179,12 +181,30 @@ public class FavoriteRepositoryTest {
     assertThat(result).extracting("title").isEqualTo("market title 1");
   }
 
-  // TODO: 나나스픽 찜리스트 테스트
-//  @Test
-//  @DisplayName("나나스픽 찜리스트")
-//  void findNanaThumbnailsTest() {
-//
-//  }
+  @Test
+  @DisplayName("나나스픽 찜리스트")
+  void findNanaThumbnailsTest() {
+    // given
+    Language korean = initKoreanLanguage();
+    Member member = initMember(korean);
+    Language locale = Language.KOREAN;
+    Category category = Category.NANA;
+    Pageable pageable = PageRequest.of(0, 12);
+
+    // market 포스트 size개 생성
+    List<Nana> nanaList = getNanaList(korean, size);
+    // favorite에 등록
+    initFavorites(nanaList, member, category);
+
+    // when
+    Page<ThumbnailDto> result = favoriteRepository.findNanaThumbnails(member, locale, pageable);
+
+    // then
+    assertThat(result.getTotalElements()).isEqualTo(size);
+    assertThat(result.getContent().get(0))
+        .extracting("title").isEqualTo("nana heading " + size);
+
+  }
 
   Language initKoreanLanguage() {
     return Language.KOREAN;
@@ -307,5 +327,35 @@ public class FavoriteRepositoryTest {
     }
 
     return marketList;
+  }
+
+  List<Nana> getNanaList(Language language, int size) {
+    List<Nana> nanaList = new ArrayList<>();
+
+    for (int i = 1; i <= size; i++) {
+      ImageFile imageFile = ImageFile.builder()
+          .originUrl("origin url " + i)
+          .thumbnailUrl("thumbnail url " + i)
+          .build();
+      em.persist(imageFile);
+
+      Nana nana = Nana.builder()
+          .firstImageFile(imageFile)
+          .priority(0L)
+          .version("version " + i)
+          .build();
+      em.persist(nana);
+
+      NanaTitle nanaTitle = NanaTitle.builder()
+          .nana(nana)
+          .heading("nana heading " + i)
+          .language(language)
+          .build();
+      em.persist(nanaTitle);
+
+      nanaList.add(nana);
+    }
+
+    return nanaList;
   }
 }
