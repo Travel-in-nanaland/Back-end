@@ -72,4 +72,13 @@ public class ReviewResponse {
       this.isFavorite = isFavorite;
     }
   }
+
+  @Data
+  @Builder
+  @Schema(description = "좋아요 상태 결과")
+  public static class StatusDto {
+
+    @Schema(description = "좋아요 상태")
+    private boolean isReviewHeart;
+  }
 }
