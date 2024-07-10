@@ -1,4 +1,4 @@
-name: parallel build test
+name: Run Test When Push Or PR To Develop
 
 # develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
 on:
