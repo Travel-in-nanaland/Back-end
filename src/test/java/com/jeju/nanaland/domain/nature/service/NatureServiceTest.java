@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -24,12 +25,13 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,6 +40,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
+@Execution(ExecutionMode.CONCURRENT)
 class NatureServiceTest {
 
   MemberInfoDto memberInfoDto;
@@ -51,6 +54,9 @@ class NatureServiceTest {
   private SearchService searchService;
   @Mock
   private ImageFileRepository imageFileRepository;
+
+  @Mock
+  private ImageFileService imageFileService;
 
   @BeforeEach
   void setUp() {
@@ -195,13 +201,16 @@ class NatureServiceTest {
   void getNatureDetailSuccess() {
     // given
     NatureCompositeDto natureCompositeDto = createNatureCompositeDto();
-    List<ImageFileDto> additionalImages = Arrays.asList(
+    List<ImageFileDto> images = List.of(
+        natureCompositeDto.getFirstImage(),
         new ImageFileDto("origin url 1", "thumbnail url 1"),
-        new ImageFileDto("origin url 2", "thumbnail url 2"));
+        new ImageFileDto("origin url 2", "thumbnail url 2")
+    );
 
     doReturn(natureCompositeDto).when(natureRepository).findCompositeDtoById(any(), any());
     doReturn(true).when(favoriteService).isPostInFavorite(any(), any(), any());
-    doReturn(additionalImages).when(imageFileRepository).findPostImageFiles(1L);
+    doReturn(images).when(imageFileService)
+        .getPostImageFilesByPostIdIncludeFirstImage(1L, natureCompositeDto.getFirstImage());
 
     // when
     NatureDetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, 1L, true);
@@ -212,7 +221,8 @@ class NatureServiceTest {
 
     verify(natureRepository, times(1)).findCompositeDtoById(any(), any());
     verify(favoriteService, times(1)).isPostInFavorite(any(), any(), any());
-    verify(imageFileRepository, times(1)).findPostImageFiles(1L);
+    verify(imageFileService, times(1)).getPostImageFilesByPostIdIncludeFirstImage(1L,
+        natureCompositeDto.getFirstImage());
     verify(searchService, times(1)).updateSearchVolumeV1(any(), any());
   }
 }

@@ -5,7 +5,9 @@ import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -15,11 +17,8 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
-import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
-import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
-import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
@@ -27,10 +26,11 @@ import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,6 +40,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class NanaServiceTest {
 
   @Mock
@@ -52,6 +53,8 @@ public class NanaServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private HashtagRepository hashtagRepository;
+  @Mock
+  private ImageFileRepository imageFileRepository;
   @InjectMocks
   private NanaService nanaService;
 
@@ -74,19 +77,22 @@ public class NanaServiceTest {
     Pageable pageable = PageRequest.of(0, 10); // 0번 페이지, 페이지 크기 10
     List<NanaThumbnail> nanaThumbnailList = List.of(
         NanaThumbnail.builder()
-            .thumbnailUrl(nana1.getNanaTitleImageFile().getThumbnailUrl())
+            .firstImage(new ImageFileDto(nana1.getFirstImageFile().getOriginUrl(),
+                nana1.getFirstImageFile().getThumbnailUrl()))
             .subHeading(nanaTitle1.getSubHeading())
             .heading(nanaTitle1.getHeading())
             .version(nana1.getVersion())
             .build(),
         NanaThumbnail.builder()
-            .thumbnailUrl(nana2.getNanaTitleImageFile().getThumbnailUrl())
+            .firstImage(new ImageFileDto(nana2.getFirstImageFile().getOriginUrl(),
+                nana2.getFirstImageFile().getThumbnailUrl()))
             .subHeading(nanaTitle2.getSubHeading())
             .heading(nanaTitle2.getHeading())
             .version(nana2.getVersion())
             .build(),
         NanaThumbnail.builder()
-            .thumbnailUrl(nana3.getNanaTitleImageFile().getThumbnailUrl())
+            .firstImage(new ImageFileDto(nana3.getFirstImageFile().getOriginUrl(),
+                nana3.getFirstImageFile().getThumbnailUrl()))
             .subHeading(nanaTitle3.getSubHeading())
             .heading(nanaTitle3.getHeading())
             .version(nana3.getVersion())
@@ -114,9 +120,7 @@ public class NanaServiceTest {
     Nana nana = createNana(1, imageFile);
     NanaTitle nanaTitle = createNanaTitle(1, nana, language);
     List<NanaContent> nanaContentList = createNanaContentList(nanaTitle);
-    List<NanaContentImage> nanaContentImage = createNanaContentImage(
-        List.of(createImageFile(1), createImageFile(2), createImageFile(3)), nana);
-    nana.updateNanaContentImageList(nanaContentImage);
+    List<List<ImageFileDto>> nanaContentImages = createNanaContentImage();
     Category category = Category.NANA;
 
     when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
@@ -124,6 +128,12 @@ public class NanaServiceTest {
         Optional.of(nanaTitle));
     when(nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle)).thenReturn(
         nanaContentList);
+    when(imageFileRepository.findPostImageFiles(nanaContentList.get(0).getId())).thenReturn(
+        nanaContentImages.get(0));
+    when(imageFileRepository.findPostImageFiles(nanaContentList.get(1).getId())).thenReturn(
+        nanaContentImages.get(1));
+    when(imageFileRepository.findPostImageFiles(nanaContentList.get(2).getId())).thenReturn(
+        nanaContentImages.get(2));
     when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);
 
@@ -165,7 +175,7 @@ public class NanaServiceTest {
   Nana createNana(int idx, ImageFile imageFile) {
     return Nana.builder()
         .version("ver" + idx)
-        .nanaTitleImageFile(imageFile)
+        .firstImageFile(imageFile)
         .priority(0L)
         .build();
   }
@@ -184,64 +194,39 @@ public class NanaServiceTest {
             .subTitle("subtitle1")
             .nanaTitle(nanaTitle)
             .content("content")
-            .number(1)
+            .priority(1L)
             .title("title")
-            .infoList(Set.of(
-                NanaAdditionalInfo.builder()
-                    .description("description1")
-                    .infoType(InfoType.ADDRESS)
-                    .build()
-                , NanaAdditionalInfo.builder()
-                    .description("description2")
-                    .infoType(InfoType.ADDRESS)
-                    .build()))
+
             .build(),
 
         NanaContent.builder()
             .subTitle("subtitle2")
             .nanaTitle(nanaTitle)
             .content("content2")
-            .number(2)
+            .priority(2L)
             .title("title2")
-            .infoList(Set.of(
-                NanaAdditionalInfo.builder()
-                    .description("description3")
-                    .infoType(InfoType.ADDRESS)
-                    .build()
-                , NanaAdditionalInfo.builder()
-                    .description("description4")
-                    .infoType(InfoType.ADDRESS)
-                    .build()))
             .build(),
 
         NanaContent.builder()
             .subTitle("subtitle3")
             .nanaTitle(nanaTitle)
             .content("content3")
-            .number(3)
+            .priority(3L)
             .title("title3")
-            .infoList(Set.of(
-                NanaAdditionalInfo.builder()
-                    .description("description5")
-                    .infoType(InfoType.ADDRESS)
-                    .build()
-                , NanaAdditionalInfo.builder()
-                    .description("description6")
-                    .infoType(InfoType.ADDRESS)
-                    .build()))
             .build());
   }
 
-  List<NanaContentImage> createNanaContentImage(List<ImageFile> imageFileList, Nana nana) {
-    List<NanaContentImage> nanaContentImageList = new ArrayList<>();
-    int i = 1;
-    for (ImageFile imageFile : imageFileList) {
-      nanaContentImageList.add(NanaContentImage.builder()
-          .imageFile(imageFile)
-          .nana(nana)
-          .number(i++)
-          .build());
+  List<List<ImageFileDto>> createNanaContentImage() {
+    List<List<ImageFileDto>> imagesList = new ArrayList<>();
+    for (int i = 0; i < 3; i++) {
+      List<ImageFileDto> images = new ArrayList<>();
+      for (int j = 0; j < 3; j++) {
+        images.add(new ImageFileDto("origin Url" + ((i * 3) + (j + 1)),
+            "thumbnail Url" + ((i * 3) + (j + 1))));
+      }
+      imagesList.add(images);
     }
-    return nanaContentImageList;
+
+    return imagesList;
   }
 }

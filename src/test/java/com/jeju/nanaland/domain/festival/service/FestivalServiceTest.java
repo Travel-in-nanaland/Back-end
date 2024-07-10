@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -21,11 +23,14 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@Execution(ExecutionMode.CONCURRENT)
 class FestivalServiceTest {
 
   @InjectMocks
@@ -36,11 +41,13 @@ class FestivalServiceTest {
   private FavoriteService favoriteService;
   @Mock
   private SearchService searchService;
+  @Mock
+  private ImageFileService imageFileService;
 
 
   @Mock
   private ImageFileRepository imageFileRepository;
- 
+
   @Test
   @DisplayName("festival 상세 조회에서 기간 국가별 요일")
   void getFestivalDetail() {

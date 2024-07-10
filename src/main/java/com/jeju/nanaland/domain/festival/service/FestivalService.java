@@ -2,10 +2,10 @@ package com.jeju.nanaland.domain.festival.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 
-
 import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -39,7 +39,7 @@ public class FestivalService {
   private final FestivalRepository festivalRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
-  private final ImageFileRepository imageFileRepository;
+  private final ImageFileService imageFileService;
 
   public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
       List<String> addressFilterList) {
@@ -114,11 +114,6 @@ public class FestivalService {
     boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL,
         id);
 
-    // TODO: Image Service로 분리
-    List<ImageFileDto> images = new ArrayList<>();
-    images.add(compositeDtoById.getFirstImage());
-    images.addAll(imageFileRepository.findPostImageFiles(id));
-
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())
         .addressTag(compositeDtoById.getAddressTag())
@@ -133,7 +128,8 @@ public class FestivalService {
             compositeDtoById.getStartDate(),
             compositeDtoById.getEndDate()))
         .isFavorite(isPostInFavorite)
-        .images(images)
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+            compositeDtoById.getFirstImage()))
         .build();
 
 
@@ -175,7 +171,7 @@ public class FestivalService {
       thumbnails.add(
           FestivalThumbnail.builder()
               .id(dto.getId())
-              .imageFileDto(dto.getFirstImage())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .period(period)
               .addressTag(dto.getAddressTag())

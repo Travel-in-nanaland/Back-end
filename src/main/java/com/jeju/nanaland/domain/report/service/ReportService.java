@@ -124,7 +124,8 @@ public class ReportService {
         .build();
 
     try {
-      MimeMessage mimeMessage = createInfoFixReportMail("skdlzl753@naver.com", infoFixReport);
+      MimeMessage mimeMessage = createInfoFixReportMail("travel.in.nanaland@gmail.com",
+          infoFixReport);
       javaMailSender.send(mimeMessage);
       infoFixReportRepository.save(infoFixReport);
     } catch (Exception e) {

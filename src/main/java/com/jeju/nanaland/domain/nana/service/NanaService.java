@@ -110,13 +110,20 @@ public class NanaService {
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
 
     NanaTitle koreanNanaTitle;
-
+    List<NanaContent> nanaContentList;
+    List<NanaContent> koreanNanaContentList;
     // korean nanaTitle 찾기 -> nanaContent의 이미지는 korean nanaContent의 이미지를 공유하기 때문에 찾아놔야함
     if (language == Language.KOREAN) {
-      koreanNanaTitle = nanaTitle;
+      nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+          nanaTitle);
+      koreanNanaContentList = nanaContentList;
     } else {
       koreanNanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, Language.KOREAN)
           .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+      nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+          nanaTitle);
+      koreanNanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+          koreanNanaTitle);
     }
 
     if (isSearch) {
@@ -124,10 +131,6 @@ public class NanaService {
     }
 
     // nanaTitle에 맞는 nanaContent게시물 조회, <- 에 사용할 nanaContent 이미지 koreanNanaContent에서 찾기
-    List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
-        nanaTitle);
-    List<NanaContent> koreanNanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
-        koreanNanaTitle);
 
     // nanaContent 별 이미지 리스트 조회 후 저장하기.
     List<List<ImageFileDto>> nanaContentImageList = new ArrayList<>();
@@ -322,20 +325,22 @@ public class NanaService {
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
       Language locale, NanaContent nanaContent) {
+    List<NanaResponse.NanaAdditionalInfo> result = new ArrayList<>();
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
     // 순서 보장 위해 List 형으로 바꾸고 생성 순서로 정렬
-    List<NanaAdditionalInfo> nanaAdditionalInfos = new ArrayList<>(eachInfoList);
-    nanaAdditionalInfos.sort(Comparator.comparing(NanaAdditionalInfo::getCreatedAt));
+    if (eachInfoList != null) {
+      List<NanaAdditionalInfo> nanaAdditionalInfos = new ArrayList<>(eachInfoList);
+      nanaAdditionalInfos.sort(Comparator.comparing(NanaAdditionalInfo::getCreatedAt));
 
-    //DTO 형태로 변환
-    List<NanaResponse.NanaAdditionalInfo> result = new ArrayList<>();
-    for (NanaAdditionalInfo info : nanaAdditionalInfos) {
-      result.add(NanaResponse.NanaAdditionalInfo.builder()
-          .infoEmoji(info.getInfoType().toString())
-          .infoKey(info.getInfoType().getValueByLocale(locale))
-          .infoValue(info.getDescription())
-          .build());
+      //DTO 형태로 변환
+      for (NanaAdditionalInfo info : nanaAdditionalInfos) {
+        result.add(NanaResponse.NanaAdditionalInfo.builder()
+            .infoEmoji(info.getInfoType().toString())
+            .infoKey(info.getInfoType().getValueByLocale(locale))
+            .infoValue(info.getDescription())
+            .build());
+      }
     }
     return result;
   }
