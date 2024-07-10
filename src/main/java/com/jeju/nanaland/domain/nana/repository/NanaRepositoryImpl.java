@@ -32,6 +32,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   public List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Language language) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
             nana.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
@@ -39,7 +40,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where((nanaTitle.language.eq(language)))
         .orderBy(nanaTitle.createdAt.desc())
         .limit(4L)
@@ -52,6 +53,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
       Pageable pageable) {
     List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
             nana.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
@@ -59,7 +61,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where((nanaTitle.language.eq(language)))
         .orderBy(nanaTitle.createdAt.desc())
         .offset(pageable.getOffset())
@@ -70,7 +72,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .select(nanaTitle.count())
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where((nanaTitle.language.eq(language)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
@@ -84,6 +86,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
     List<NanaThumbnail> resultDto = queryFactory.selectDistinct(new QNanaResponse_NanaThumbnail(
             nana.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
@@ -92,11 +95,11 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .from(nana)
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
-            .or(nana.id.in(idListContainAllHashtags)))
+            .or(nanaContent.id.in(idListContainAllHashtags)))
         .orderBy(nanaTitle.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -107,11 +110,11 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .from(nana)
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
-            .or(nana.id.in(idListContainAllHashtags)));
+            .or(nanaContent.id.in(idListContainAllHashtags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -120,11 +123,12 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
     return queryFactory
         .select(new QNanaResponse_NanaThumbnailPost(
             nanaTitle.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nanaTitle.heading
         ))
         .from(nanaTitle)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where(nanaTitle.nana.id.eq(id)
             .and(nanaTitle.language.eq(language)))
         .fetchOne();
