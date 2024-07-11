@@ -30,8 +30,7 @@ public class ReviewService {
   private final ReviewHeartRepository reviewHeartRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
-      int page,
-      int size) {
+      int page, int size) {
     if (category != Category.EXPERIENCE) {
       throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
     }
