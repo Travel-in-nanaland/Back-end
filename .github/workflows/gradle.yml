@@ -55,7 +55,7 @@ jobs:
         run: |
           mkdir scripts
           echo "${{ secrets.EXECUTE_DEPLOY_SH }}" > scripts/execute-deploy.sh
-          chmod +x scripts/execute-deploy.sh
+          cat scripts/execute-deploy.sh
       
           
           # - name: Set up MariaDB 10
