@@ -32,7 +32,7 @@ public class ReviewRequest {
     )
     @Schema(
         description = "게시물 카테고리",
-        example = "[ANNIVERSARY, CUTE]",
+        example = "[\"ANNIVERSARY\", \"CUTE\"]",
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
             "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
     )
