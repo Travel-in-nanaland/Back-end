@@ -71,6 +71,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     List<ReviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_ReviewDetailDto(
                 review.id,
+                member.id,
                 member.nickname,
                 new QImageFileDto(
                     imageFile.originUrl,
