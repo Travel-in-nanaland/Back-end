@@ -45,7 +45,11 @@ jobs:
         run: |
           mkdir -p src/main/resources
           echo "${{ secrets.TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
-          find src    
+          find src
+      # 2.5) secret설정한 appspec.yml 등록
+      - name: Set appspec.yml
+        run: |
+          echo "${{ secrets.APPSPEC }}" > appspec.yml
           
           # - name: Set up MariaDB 10
           #   uses: getong/mariadb-action@v1.1
