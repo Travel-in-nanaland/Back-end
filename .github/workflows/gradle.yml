@@ -53,6 +53,7 @@ jobs:
       # 2.5) secret설정한 execute-deploy.sh 등록
       - name: Set execute-deploy.sh
         run: |
+          mkdir scripts
           echo "${{ secrets.EXECUTE_DEPLOY_SH }}" | base64 --decode > scripts/execute-deploy.sh
       
           
