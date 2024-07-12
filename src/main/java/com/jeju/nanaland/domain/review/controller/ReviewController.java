@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -66,7 +67,7 @@ public class ReviewController {
       @PathVariable Long id,
       @RequestParam Category category,
       @RequestPart List<MultipartFile> imageList,
-      @RequestPart ReviewRequest.CreateReviewDto createReviewDto
+      @RequestPart @Valid ReviewRequest.CreateReviewDto createReviewDto
   ) {
     reviewService.saveReview(memberInfoDto, id, category, createReviewDto, imageList);
     return BaseResponse.success(REVIEW_CREATED_SUCCESS);
