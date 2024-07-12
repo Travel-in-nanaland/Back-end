@@ -7,6 +7,8 @@ build/
 
 application.yml
 application-test.yml
+appspec.yml
+scripts/
 
 ## test를 위한 controller
 TestController.java
