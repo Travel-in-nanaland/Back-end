@@ -49,8 +49,8 @@ jobs:
       # 2.5) secret설정한 appspec.yml 등록
       - name: Set appspec.yml
         run: |
-          echo "${{ secrets.APPSPEC }}" > ./appspec.yml
-          ls -l ./appspec.yml
+          echo "${{ secrets.APPSPEC }}" | base64 --decode > ./appspec.yml
+      
           
           # - name: Set up MariaDB 10
           #   uses: getong/mariadb-action@v1.1
