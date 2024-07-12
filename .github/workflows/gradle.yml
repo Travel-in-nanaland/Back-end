@@ -50,6 +50,10 @@ jobs:
       - name: Set appspec.yml
         run: |
           echo "${{ secrets.APPSPEC }}" | base64 --decode > ./appspec.yml
+      # 2.5) secret설정한 execute-deploy.sh 등록
+      - name: Set execute-deploy.sh
+        run: |
+          echo "${{ secrets.EXECUTE_DEPLOY_SH }}" | base64 --decode > scripts/execute-deploy.sh
       
           
           # - name: Set up MariaDB 10
