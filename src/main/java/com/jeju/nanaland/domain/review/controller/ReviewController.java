@@ -53,7 +53,7 @@ public class ReviewController {
     return BaseResponse.success(REVIEW_LIST_SUCCESS, reviewList);
   }
 
-  @Operation(summary = "리뷰 리스트 생성", description = "유저가 리스트 작성")
+  @Operation(summary = "리뷰 생성", description = "게시물에 대한 리뷰 작성")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
