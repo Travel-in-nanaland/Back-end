@@ -54,7 +54,8 @@ jobs:
       - name: Set execute-deploy.sh
         run: |
           mkdir scripts
-          echo "${{ secrets.EXECUTE_DEPLOY_SH }}" | base64 --decode > scripts/execute-deploy.sh
+          echo "${{ secrets.EXECUTE_DEPLOY_SH }}" > scripts/execute-deploy.sh
+          chmod +x scripts/execute-deploy.sh
       
           
           # - name: Set up MariaDB 10
