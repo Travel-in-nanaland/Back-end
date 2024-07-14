@@ -56,4 +56,72 @@ public class RestaurantResponse {
       this.addressTag = addressTag;
     }
   }
+
+  @Data
+  @Builder
+  @Schema(description = "제주맛집 상세 정보")
+  public static class RestaurantDetailDto {
+
+    @Schema(description = "제주맛집 게시물 id")
+    private Long id;
+
+    @Schema(description = "제목")
+    private String title;
+
+    @Schema(description = "본문")
+    private String content;
+
+    @Schema(description = "위치")
+    private String address;
+
+    @Schema(description = "주소 태그")
+    private String addressTag;
+
+    @Schema(description = "연락처")
+    private String contact;
+
+    @Schema(description = "홈페이지")
+    private String homepage;
+
+    @Schema(description = "인스타그램")
+    private String instagram;
+
+    @Schema(description = "이용시간")
+    private String time;
+
+    @Schema(description = "메뉴")
+    private List<RestaurantMenuDto> menus;
+
+    @Schema(description = "키워드")
+    private List<String> keywords;
+
+    @Schema(description = "좋아요 여부")
+    private boolean isFavorite;
+
+    @Schema(description = "이미지 리스트")
+    private List<ImageFileDto> images;
+  }
+
+  @Data
+  @Builder
+  @AllArgsConstructor
+  @Schema(description = "메뉴 리스트")
+  public static class RestaurantMenuDto {
+
+    @Schema(description = "메뉴 이름")
+    private String menuName;
+
+    @Schema(description = "가격")
+    private String price;
+
+    @Schema(description = "이미지")
+    private ImageFileDto firstImage;
+
+    @QueryProjection
+    public RestaurantMenuDto(String menuName, String price, String originUrl, String thumbnailUrl) {
+      this.menuName = menuName;
+      this.price = price;
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
+    }
+  }
 }

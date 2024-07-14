@@ -25,5 +25,5 @@ public class RestaurantMenu extends BaseEntity {
   private String price;
 
   @OneToOne(fetch = FetchType.LAZY)
-  private ImageFile firstImage;
+  private ImageFile firstImageFile;
 }
