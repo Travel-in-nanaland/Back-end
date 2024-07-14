@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class RestaurantMenu extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "restaurant_trans_id", nullable = false)
   private RestaurantTrans restaurantTrans;
 
   private String menuName;
