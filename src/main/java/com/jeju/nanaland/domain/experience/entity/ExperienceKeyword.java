@@ -1,14 +1,14 @@
-package com.jeju.nanaland.domain.review.entity;
+package com.jeju.nanaland.domain.experience.entity;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,23 +21,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-    name = "review_heart",
+    name = "experience_keyword",
     uniqueConstraints = {
         @UniqueConstraint(
-            name = "memberReviewUnique",
-            columnNames = {"member_id", "review_id"}
+            name = "experienceTypeKeywordUnique",
+            columnNames = {"experience_id", "experience_type_keyword"}
         )
     }
 )
-public class ReviewHeart extends BaseEntity {
+public class ExperienceKeyword extends BaseEntity {
 
-  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "member_id", nullable = false)
-  private Member member;
+  private Experience experience;
 
-  @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "review_id", nullable = false)
-  private Review review;
+  @Enumerated(EnumType.STRING)
+  private ExperienceTypeKeyword experienceTypeKeyword;
 }

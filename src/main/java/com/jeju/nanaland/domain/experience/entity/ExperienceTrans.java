@@ -47,10 +47,12 @@ public class ExperienceTrans extends BaseEntity {
 
   private String amenity;
 
+  private String fee;
+
   @Builder
   public ExperienceTrans(Experience experience, Language language, String title, String content,
       String address, String addressTag, String time, String intro, String details,
-      String amenity) {
+      String amenity, String fee) {
     this.experience = experience;
     this.language = language;
     this.title = title;
@@ -61,5 +63,6 @@ public class ExperienceTrans extends BaseEntity {
     this.intro = intro;
     this.details = details;
     this.amenity = amenity;
+    this.fee = fee;
   }
 }

@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.review.service;
 import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.Post;
@@ -12,7 +13,10 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.entity.Review;
+import com.jeju.nanaland.domain.review.entity.ReviewHeart;
+import com.jeju.nanaland.domain.review.repository.ReviewHeartRepository;
 import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
 import com.jeju.nanaland.domain.review.entity.ReviewKeyword;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
@@ -21,6 +25,7 @@ import com.jeju.nanaland.domain.review.repository.ReviewKeywordRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.util.Optional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,10 +46,10 @@ public class ReviewService {
   private final ReviewKeywordRepository reviewKeywordRepository;
   private final ReviewImageFileRepository reviewImageFileRepository;
   private final ImageFileService imageFileService;
+  private final ReviewHeartRepository reviewHeartRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
-      int page,
-      int size) {
+      int page, int size) {
     if (category != Category.EXPERIENCE) {
       throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
     }
@@ -110,5 +115,37 @@ public class ReviewService {
       //TODO 맛집 개발 시 추가하기
       default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
     }
+  }
+
+  @Transactional
+  public StatusDto toggleReviewHeart(MemberInfoDto memberInfoDto, Long id) {
+
+    Review review = reviewRepository.findById(id)
+        .orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND.getMessage()));
+
+    Optional<ReviewHeart> reviewHeartOptional = reviewHeartRepository.findByMemberAndReview(
+        memberInfoDto.getMember(), review);
+
+    // 리뷰가 존재한다면, 삭제 후 false 응답
+    if (reviewHeartOptional.isPresent()) {
+      ReviewHeart reviewHeart = reviewHeartOptional.get();
+      reviewHeartRepository.delete(reviewHeart);
+
+      return StatusDto.builder()
+          .isReviewHeart(false)
+          .build();
+    }
+
+    // reviewHeart 생성, true 응답
+    ReviewHeart reviewHeart = ReviewHeart.builder()
+        .review(review)
+        .member(memberInfoDto.getMember())
+        .build();
+
+    reviewHeartRepository.save(reviewHeart);
+
+    return StatusDto.builder()
+        .isReviewHeart(true)
+        .build();
   }
 }
