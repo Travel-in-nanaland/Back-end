@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.review.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
@@ -16,18 +17,18 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
-import com.jeju.nanaland.domain.review.repository.ReviewHeartRepository;
 import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
 import com.jeju.nanaland.domain.review.entity.ReviewKeyword;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
+import com.jeju.nanaland.domain.review.repository.ReviewHeartRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewImageFileRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewKeywordRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.util.Optional;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -73,6 +74,9 @@ public class ReviewService {
       List<MultipartFile> imageList) {
 
     Post post = getPostById(id, category);
+    if (imageList != null && imageList.size() > 5) {
+      throw new BadRequestException(REVIEW_IMAGE_BAD_REQUEST.getMessage());
+    }
 
     // 리뷰 저장
     Review review = reviewRepository.save(Review.builder()
@@ -98,12 +102,14 @@ public class ReviewService {
     );
 
     // reviewImageFile
-    imageList.forEach(image ->
-        reviewImageFileRepository.save(ReviewImageFile.builder()
-            .imageFile(imageFileService.uploadAndSaveImageFile(image, true))
-            .review(review)
-            .build())
-    );
+    if (imageList != null) {
+      imageList.forEach(image ->
+          reviewImageFileRepository.save(ReviewImageFile.builder()
+              .imageFile(imageFileService.uploadAndSaveImageFile(image, true))
+              .review(review)
+              .build())
+      );
+    }
   }
 
   private Post getPostById(Long id, Category category) {

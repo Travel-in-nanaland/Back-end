@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.review.controller;
 
-import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_CREATED_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
 
 import com.jeju.nanaland.domain.common.data.Category;
@@ -68,7 +68,7 @@ public class ReviewController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
-      @RequestPart List<MultipartFile> imageList,
+      @RequestPart(required = false) List<MultipartFile> imageList,
       @RequestPart @Valid ReviewRequest.CreateReviewDto createReviewDto
   ) {
     reviewService.saveReview(memberInfoDto, id, category, createReviewDto, imageList);
