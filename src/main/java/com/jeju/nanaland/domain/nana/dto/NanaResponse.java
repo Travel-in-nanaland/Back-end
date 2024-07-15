@@ -1,9 +1,11 @@
 package com.jeju.nanaland.domain.nana.dto;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,15 +27,15 @@ public class NanaResponse {
 
   @Data
   @Builder
+  @AllArgsConstructor
   @Schema(description = "나나's pick 개별 썸네일 조회 DTO")
   public static class NanaThumbnail {
 
     @Schema(description = "게시물 id")
     private Long id;
 
-    @NotBlank
-    @Schema(description = "게시물 썸네일 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @Schema(description = "오른 쪽 위 버전 ex) nana's Pick vol.1")
     private String version;
@@ -46,10 +48,11 @@ public class NanaResponse {
 
 
     @QueryProjection
-    public NanaThumbnail(Long id, String thumbnailUrl, String version, String subHeading,
+    public NanaThumbnail(Long id, String originUrl, String thumbnailUrl, String version,
+        String subHeading,
         String heading) {
       this.id = id;
-      this.thumbnailUrl = thumbnailUrl;
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.version = version;
       this.subHeading = subHeading;
       this.heading = heading;
@@ -70,9 +73,8 @@ public class NanaResponse {
     @Schema(description = "ex) nana's Pick vol.1")
     private String version;
 
-    @NotBlank
-    @Schema(description = "게시물 url")
-    private String originUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @NotBlank
     @Schema(description = "알아두면 좋아요! 내용")
@@ -102,9 +104,8 @@ public class NanaResponse {
     @Schema(description = "제목")
     public String title;
 
-    @NotBlank
-    @Schema(description = "이미지 원본 url")
-    public String imageUrl;
+    @Schema(description = "게시물 이미지 리스트")
+    private List<ImageFileDto> images;
 
     @NotBlank
     @Schema(description = "게시물 설명")
@@ -135,24 +136,24 @@ public class NanaResponse {
 
   @Data
   @Builder
+  @AllArgsConstructor
   @Schema(description = "나나's pick 개별 게시글 썸네일 조회 DTO")
   public static class NanaThumbnailPost {
 
     @Schema(description = "게시물 id")
     private Long id;
 
-    @NotBlank
-    @Schema(description = "게시물 썸네일 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @Schema(description = "제목 ex) TOP 10 야경 맛집")
     private String heading;
 
 
     @QueryProjection
-    public NanaThumbnailPost(Long id, String thumbnailUrl, String heading) {
+    public NanaThumbnailPost(Long id, String originUrl, String thumbnailUrl, String heading) {
       this.id = id;
-      this.thumbnailUrl = thumbnailUrl;
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.heading = heading;
     }
   }

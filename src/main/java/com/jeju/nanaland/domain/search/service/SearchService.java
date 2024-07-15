@@ -93,11 +93,12 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(NATURE.name())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -125,11 +126,12 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(FESTIVAL.name())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -157,11 +159,12 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(EXPERIENCE.name())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -194,6 +197,7 @@ public class SearchService {
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(MARKET.name())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -225,7 +229,7 @@ public class SearchService {
           ThumbnailDto.builder()
               .id(thumbnail.getId())
               .category(NANA.name())
-              .thumbnailUrl(thumbnail.getThumbnailUrl())
+              .firstImage(thumbnail.getFirstImage())
               .title(thumbnail.getHeading())
               .isFavorite(favoriteIds.contains(thumbnail.getId()))
               .build());
@@ -328,7 +332,7 @@ public class SearchService {
           searchVolumeDtoList.add(SearchVolumeDto.builder()
               .id(nanaThumbnailPostDto.getId())
               .title(nanaThumbnailPostDto.getHeading())
-              .thumbnailUrl(nanaThumbnailPostDto.getThumbnailUrl())
+              .firstImage(nanaThumbnailPostDto.getFirstImage())
               .category(categoryContent.name())
               .isFavorite(
                   favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
@@ -374,9 +378,10 @@ public class SearchService {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
-    // TODO: 이미지 추가 필요
+
     return SearchVolumeDto.builder()
         .id(compositeDto.getId())
+        .firstImage(compositeDto.getFirstImage())
         .title(compositeDto.getTitle())
         .category(categoryContent.name())
         .isFavorite(

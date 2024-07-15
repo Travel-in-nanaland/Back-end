@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.festival.dto;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -35,8 +36,8 @@ public class FestivalResponse {
     private String title;
 
     @NotBlank
-    @Schema(description = "축제 썸네일 url")
-    private String thumbnailUrl;
+    @Schema(description = "축제 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @Schema(description = "주소 태그")
     private String addressTag;
@@ -57,8 +58,8 @@ public class FestivalResponse {
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
 
-    @Schema(description = "원본 이미지 url")
-    private String originUrl;
+    @Schema(description = "이미지 리스트")
+    private List<ImageFileDto> images;
 
     @Schema(description = "주소 태그")
     private String addressTag;

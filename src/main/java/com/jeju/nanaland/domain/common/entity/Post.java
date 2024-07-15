@@ -20,8 +20,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Post extends BaseEntity {
 
+  // nanaContent 때문에 nullable 허용, 논의해보기..
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "image_file_id", nullable = false)
+  @JoinColumn(name = "image_file_id")
   private ImageFile firstImageFile;
 
   @NotNull

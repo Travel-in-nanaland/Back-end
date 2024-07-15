@@ -24,11 +24,13 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @Import(TestConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class RecommendRepositoryTest {
 
   @Autowired
@@ -312,7 +314,6 @@ public class RecommendRepositoryTest {
     Nana nana = Nana.builder()
         .version("1")
         .firstImageFile(imageFile)
-        .nanaTitleImageFile(imageFile)
         .priority(0L)
         .build();
     em.persist(nana);

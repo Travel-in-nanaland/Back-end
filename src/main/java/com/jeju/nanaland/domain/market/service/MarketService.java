@@ -3,8 +3,8 @@ package com.jeju.nanaland.domain.market.service;
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
@@ -15,7 +15,6 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,7 @@ public class MarketService {
   private final FavoriteService favoriteService;
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
+  private final ImageFileService imageFileService;
 
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList, int page, int size) {
@@ -72,17 +72,14 @@ public class MarketService {
     if (isSearch) {
       searchService.updateSearchVolumeV1(MARKET, id);
     }
-    // TODO: category 없애는 리팩토링 필요
+
     // 좋아요 여부 확인
     boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
-    // 이미지 리스트
-    List<ImageFileDto> images = new ArrayList<>();
-    images.add(marketCompositeDto.getFirstImage());
-    images.addAll(imageFileRepository.findPostImageFiles(id));
 
     return MarketResponse.MarketDetailDto.builder()
         .id(marketCompositeDto.getId())
-        .images(images)
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+            marketCompositeDto.getFirstImage()))
         .title(marketCompositeDto.getTitle())
         .content(marketCompositeDto.getContent())
         .address(marketCompositeDto.getAddress())
