@@ -42,8 +42,8 @@ public class ReviewResponse {
     private ImageFileDto profileImage;
     @Schema(description = "작성자 총 리뷰 개수")
     private Integer memberReviewCount;
-    @Schema(description = "작성자 총 리뷰 평균 점수")
-    private Double memberReviewAvgRating;
+    @Schema(description = "리뷰 점수")
+    private Double rating;
     @Schema(description = "리뷰 내용")
     private String content;
     @Schema(description = "리뷰 작성일")
@@ -59,13 +59,13 @@ public class ReviewResponse {
 
     @QueryProjection
     public ReviewDetailDto(Long id, String nickname, ImageFileDto imageFileDto,
-        Long memberReviewCount, Double memberReviewRatingAvg, String content,
+        Long memberReviewCount, Integer rating, String content,
         LocalDateTime createdAt, Long heartCount, boolean isFavorite) {
       this.id = id;
       this.nickname = nickname;
       this.profileImage = imageFileDto;
       this.memberReviewCount = Math.toIntExact(memberReviewCount);
-      this.memberReviewAvgRating = Math.round(memberReviewRatingAvg * 100.0) / 100.0;
+      this.rating = Math.round(rating * 100.0) / 100.0;
       this.content = content;
       this.createdAt = createdAt.toLocalDate();
       this.heartCount = Math.toIntExact(heartCount);

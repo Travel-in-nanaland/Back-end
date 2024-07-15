@@ -49,12 +49,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .where(review.member.id.eq(member.id));
 
-    // 리뷰 작성자의 총 리뷰 평균 점수
-    JPQLQuery<Double> memberReviewRatingAvgQuery = JPAExpressions
-        .select(review.rating.avg())
-        .from(review)
-        .where(review.member.id.eq(member.id));
-
     // 해당 리뷰의 좋아요 개수
     JPQLQuery<Long> heartCountQuery = JPAExpressions
         .select(reviewHeart.count())
@@ -76,7 +70,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                     imageFile.originUrl,
                     imageFile.thumbnailUrl),
                 ExpressionUtils.as(memberReviewCountQuery, "memberReviewCount"),
-                ExpressionUtils.as(memberReviewRatingAvgQuery, "memberReviewAvgRating"),
+                review.rating,
                 review.content,
                 review.createdAt,
                 ExpressionUtils.as(heartCountQuery, "heartCount"),
