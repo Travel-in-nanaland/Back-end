@@ -117,7 +117,7 @@ class ReviewRepositoryImplTest {
 
     // when
     Page<ReviewDetailDto> reviewDetailDtos = reviewRepository.findReviewListByPostId(
-        memberInfoDto, validCategory, 1L, pageable);
+        memberInfoDto, validCategory, experience.getId(), pageable);
 
     // then
     assertThat(reviewDetailDtos).isNotNull();
@@ -133,7 +133,7 @@ class ReviewRepositoryImplTest {
     Double totalAvgRating = 5.0;
 
     // when
-    Double avgRating = reviewRepository.findTotalRatingAvg(validCategory, 1L);
+    Double avgRating = reviewRepository.findTotalRatingAvg(validCategory, experience.getId());
 
     // then
     assertThat(avgRating).isEqualTo(totalAvgRating);
