@@ -86,7 +86,7 @@ class ReviewServiceTest {
               .nickname("nickname")
               .profileImage(new ImageFileDto("originUrl", "thumbnailUrl"))
               .memberReviewCount(10)
-              .memberReviewAvgRating(4.5)
+              .rating(4.5)
               .content("content")
               .createdAt(LocalDate.now())
               .heartCount(5)
