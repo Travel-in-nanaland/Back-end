@@ -24,6 +24,7 @@ public class ReviewRequest {
 
     //TODO 최소 글자 수, 최대 공백 포함인지 확인하기
     @Schema(description = "리뷰 내용")
+    @Size(max = 200, message = "리뷰는 200글자 이하로 작성해야 합니다.")
     private String content;
 
     @EnumValid(
