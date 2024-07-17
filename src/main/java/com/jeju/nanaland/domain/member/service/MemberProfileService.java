@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
@@ -65,9 +66,18 @@ public class MemberProfileService {
     }
   }
 
-  public MemberResponse.ProfileDto getMemberProfile(MemberInfoDto memberInfoDto) {
+  public MemberResponse.ProfileDto getMemberProfile(MemberInfoDto memberInfoDto, Long id) {
 
     Member member = memberInfoDto.getMember();
+    boolean isMyProfile = true;
+    if (id != null) {
+      isMyProfile = member.getId().equals(id);
+      if (!isMyProfile) {
+        member = memberRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+      }
+    }
+
     TravelType travelType = member.getTravelType();
     Language language = member.getLanguage();
     String typeName = travelType.getTypeNameWithLocale(language);
@@ -76,13 +86,18 @@ public class MemberProfileService {
       hashtags = travelType.getHashtagsWithLanguage(language);
     }
 
-    List<ConsentItemResponse> consentItemResponses = memberRepository.findMemberConsentByMember(
-        member).stream().map(memberConsent -> ConsentItemResponse.builder()
-        .consentType(memberConsent.getConsentType().name())
-        .consent(memberConsent.getConsent())
-        .build()).toList();
+    List<ConsentItemResponse> consentItemResponses = new ArrayList<>();
+    if (isMyProfile) {
+      consentItemResponses = memberRepository.findMemberConsentByMember(
+          member).stream().map(memberConsent -> ConsentItemResponse.builder()
+          .consentType(memberConsent.getConsentType().name())
+          .consent(memberConsent.getConsent())
+          .build()).toList();
+    }
 
     return MemberResponse.ProfileDto.builder()
+        .isMyProfile(isMyProfile)
+        .consentItems(consentItemResponses)
         .email(member.getEmail())
         .provider(member.getProvider().name())
         .profileImageUrl(member.getProfileImageFile().getThumbnailUrl())
@@ -90,7 +105,6 @@ public class MemberProfileService {
         .description(member.getDescription())
         .travelType(typeName)
         .hashtags(hashtags)
-        .consentItems(consentItemResponses)
         .build();
   }
 

@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -212,16 +213,18 @@ public class MemberController {
 
   @Operation(
       summary = "유저 프로필 조회",
-      description = "유저 이메일, provider, 프로필 썸네일 이미지, 닉네임, 설명, 레벨, 해시태그 리스트 반환")
+      description = "유저 이메일, provider, 프로필 썸네일 이미지, 닉네임, 설명, 해시태그 리스트 반환."
+          + "id를 입력하지 않으면 내 프로필이 조회됩니다.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/profile")
   public BaseResponse<ProfileDto> getMemberProfile(
-      @AuthMember MemberInfoDto memberInfoDto) {
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(required = false) Long id) {
 
-    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
+    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, id);
     return BaseResponse.success(GET_MEMBER_PROFILE_SUCCESS, profileDto);
   }
 
