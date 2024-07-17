@@ -85,8 +85,6 @@ public class MemberResponse {
     private String nickname;
     @Schema(description = "설명")
     private String description;
-    @Schema(description = "레벨")
-    private Integer level;
     @Schema(description = "타입")
     private String travelType;
     @Schema(description = "해시태그 리스트")

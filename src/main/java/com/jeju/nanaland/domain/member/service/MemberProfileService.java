@@ -88,7 +88,6 @@ public class MemberProfileService {
         .profileImageUrl(member.getProfileImageFile().getThumbnailUrl())
         .nickname(member.getNickname())
         .description(member.getDescription())
-        .level(member.getLevel())
         .travelType(typeName)
         .hashtags(hashtags)
         .consentItems(consentItemResponses)
