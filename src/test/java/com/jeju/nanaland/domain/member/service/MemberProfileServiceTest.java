@@ -22,6 +22,7 @@ import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.io.IOException;
@@ -67,12 +68,12 @@ class MemberProfileServiceTest {
         .build();
   }
 
-  private Member createMember(Language language) {
+  private Member createMember(Language language, String nickname) {
     return spy(Member.builder()
         .language(language)
         .email("test@example.com")
         .profileImageFile(imageFile)
-        .nickname("testNickname")
+        .nickname(nickname)
         .gender("male")
         .birthDate(LocalDate.now())
         .provider(Provider.GOOGLE)
@@ -108,8 +109,8 @@ class MemberProfileServiceTest {
   void updateProfileFail() {
     // given
     Language language = Language.KOREAN;
-    Member member = createMember(language);
-    Member member2 = createMember(language);
+    Member member = createMember(language, "nickname");
+    Member member2 = createMember(language, "nickname");
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
         new byte[0]);
@@ -130,7 +131,7 @@ class MemberProfileServiceTest {
   void updateProfileSuccess() throws IOException {
     // given
     Language language = Language.KOREAN;
-    Member member = createMember(language);
+    Member member = createMember(language, "nickname");
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
         new byte[0]);
@@ -156,20 +157,41 @@ class MemberProfileServiceTest {
   }
 
   @Test
-  @DisplayName("프로필 조회")
-  void getMemberProfile() {
+  @DisplayName("유저 프로필 조회 실패 - 존재하지 않는 회원인 경우")
+  void getMemberProfileFail() {
     // given
     Language language = Language.KOREAN;
-    Member member = createMember(language);
+    Member member = createMember(language, "nickname");
+    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+
+    doReturn(1L).when(member).getId();
+
+    // when
+
+    NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> memberProfileService.getMemberProfile(memberInfoDto, 2L));
+
+    // then
+    assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+  }
+
+  @Test
+  @DisplayName("내 프로필 조회 성공")
+  void getMemberProfileSuccess() {
+    // given
+    Language language = Language.KOREAN;
+    Member member = createMember(language, "nickname");
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     List<MemberConsent> memberConsents = List.of(
         createMemberConsent(ConsentType.MARKETING, member),
         createMemberConsent(ConsentType.LOCATION_SERVICE, member)
     );
+    doReturn(1L).when(member).getId();
     doReturn(memberConsents).when(memberRepository).findMemberConsentByMember(member);
 
     // when
-    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
+    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, null);
+    ProfileDto profileDto2 = memberProfileService.getMemberProfile(memberInfoDto, 1L);
 
     // then
     assertThat(profileDto.getConsentItems()).hasSize(2);
@@ -179,12 +201,52 @@ class MemberProfileServiceTest {
         member.getProfileImageFile().getThumbnailUrl());
     assertThat(profileDto.getNickname()).isEqualTo(member.getNickname());
     assertThat(profileDto.getDescription()).isEqualTo(member.getDescription());
-    assertThat(profileDto.getLevel()).isEqualTo(member.getLevel());
     assertThat(profileDto.getTravelType()).isEqualTo(
         member.getTravelType().getTypeNameWithLocale(language));
     assertThat(profileDto.getHashtags()).hasSize(3);
+    assertThat(profileDto2.getConsentItems()).hasSize(2);
+    assertThat(profileDto2.getEmail()).isEqualTo(member.getEmail());
+    assertThat(profileDto2.getProvider()).isEqualTo(member.getProvider().name());
+    assertThat(profileDto2.getProfileImageUrl()).isEqualTo(
+        member.getProfileImageFile().getThumbnailUrl());
+    assertThat(profileDto2.getNickname()).isEqualTo(member.getNickname());
+    assertThat(profileDto2.getDescription()).isEqualTo(member.getDescription());
+    assertThat(profileDto2.getTravelType()).isEqualTo(
+        member.getTravelType().getTypeNameWithLocale(language));
+    assertThat(profileDto2.getHashtags()).hasSize(3);
 
-    verify(memberRepository, times(1)).findMemberConsentByMember(any());
+    verify(memberRepository, times(2)).findMemberConsentByMember(any());
+  }
+
+  @Test
+  @DisplayName("타인 프로필 조회 성공")
+  void getMemberProfileSuccess2() {
+    // given
+    Language language = Language.KOREAN;
+    Member member = createMember(language, "nickname");
+    Language language2 = Language.ENGLISH;
+    Member member2 = createMember(language2, "nickname2");
+    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+
+    doReturn(1L).when(member).getId();
+    doReturn(Optional.of(member2)).when(memberRepository).findById(2L);
+
+    // when
+    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, 2L);
+
+    // then
+    assertThat(profileDto.getConsentItems()).isEmpty();
+    assertThat(profileDto.getEmail()).isEqualTo(member2.getEmail());
+    assertThat(profileDto.getProvider()).isEqualTo(member2.getProvider().name());
+    assertThat(profileDto.getProfileImageUrl()).isEqualTo(
+        member2.getProfileImageFile().getThumbnailUrl());
+    assertThat(profileDto.getNickname()).isEqualTo(member2.getNickname());
+    assertThat(profileDto.getDescription()).isEqualTo(member2.getDescription());
+    assertThat(profileDto.getTravelType()).isEqualTo(
+        member2.getTravelType().getTypeNameWithLocale(language2));
+    assertThat(profileDto.getHashtags()).hasSize(3);
+
+    verify(memberRepository, times(0)).findMemberConsentByMember(any());
   }
 
   @Test
@@ -192,7 +254,7 @@ class MemberProfileServiceTest {
   void updateLanguage() {
     // given
     Language language = Language.KOREAN;
-    Member member = createMember(language);
+    Member member = createMember(language, "nickname");
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
     Language language2 = Language.ENGLISH;
     LanguageUpdateDto languageUpdateDto = new LanguageUpdateDto();
