@@ -7,11 +7,16 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGO
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
@@ -25,6 +30,7 @@ import com.jeju.nanaland.domain.review.repository.ReviewImageFileRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewKeywordRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +54,7 @@ public class ReviewService {
   private final ReviewImageFileRepository reviewImageFileRepository;
   private final ImageFileService imageFileService;
   private final ReviewHeartRepository reviewHeartRepository;
+  private final MemberRepository memberRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -152,6 +159,29 @@ public class ReviewService {
 
     return StatusDto.builder()
         .isReviewHeart(true)
+        .build();
+  }
+
+  public MemberReviewListDto getReviewListByMember(MemberInfoDto memberInfoDto, Long memberId,
+      int page, int size) {
+    Member member = memberInfoDto.getMember();
+    Language language = member.getLanguage();
+
+    boolean isMyReview;
+    if (memberId != null) {
+      isMyReview = member.getId().equals(memberId);
+      if (!isMyReview) {
+        member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+      }
+    }
+    Pageable pageable = PageRequest.of(page, size);
+    Page<MemberReviewDetailDto> reviewListByMember = reviewRepository.findReviewListByMember(
+        member, language, pageable);
+
+    return MemberReviewListDto.builder()
+        .totalElements(reviewListByMember.getTotalElements())
+        .data(reviewListByMember.getContent())
         .build();
   }
 }
