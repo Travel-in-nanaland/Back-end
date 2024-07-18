@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class ReviewResponse {
 
@@ -84,4 +85,30 @@ public class ReviewResponse {
     @Schema(description = "좋아요 상태")
     private boolean isReviewHeart;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "리뷰 작성위한 게시물 검색")
+  public static class SearchPostForReviewDto {
+
+    @Schema(description = "리뷰 게시물 id")
+    private Long id;
+
+    @Schema(description = "게시물 카테고리")
+    private String category;
+
+    @Schema(description = "게시물 제목")
+    private String title;
+
+    @Schema(description = "게시물 썸네일")
+    private ImageFileDto firstImage;
+
+    @Schema(description = "리뷰 총 개수")
+    private String address;
+
+
+  }
+
 }

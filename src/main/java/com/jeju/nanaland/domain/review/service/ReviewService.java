@@ -7,13 +7,17 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGO
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
@@ -26,14 +30,20 @@ import com.jeju.nanaland.domain.review.repository.ReviewKeywordRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,12 +52,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ReviewService {
 
+  private static final String SEARCH_AUTO_COMPLETE_HASH_KEY = "REVIEW AUTO COMPLETE:";
   private final ReviewRepository reviewRepository;
   private final ExperienceRepository experienceRepository;
   private final ReviewKeywordRepository reviewKeywordRepository;
   private final ReviewImageFileRepository reviewImageFileRepository;
   private final ImageFileService imageFileService;
   private final ReviewHeartRepository reviewHeartRepository;
+  private final MarketRepository marketRepository;
+  private final RedisTemplate<String, Object> redisTemplate;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -110,6 +123,55 @@ public class ReviewService {
               .build())
       );
     }
+  }
+
+  public List<SearchPostForReviewDto> getAutoCompleteSearchResultForReview(String keyword) {
+    HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
+    Map<String, SearchPostForReviewDto> test = hashOperations.entries(
+        SEARCH_AUTO_COMPLETE_HASH_KEY); // 여기 KEY를 나중에 language를 붙이면 될듯
+    List<SearchPostForReviewDto> dtoList = new ArrayList<>();
+    System.out.println("test.keySet().toString() = " + test.keySet().toString());
+    for (String key : test.keySet()) {
+      if (key.contains(keyword)) {
+        dtoList.add(test.get(key));
+      }
+    }
+    // title 사전 순으로 정렬
+    dtoList.sort(Comparator.comparing(SearchPostForReviewDto::getTitle));
+    return dtoList;
+  }
+
+  // TODO : 언어별로 SEARCH_AUTO_COMPLETE_HASH_KEY
+  @PostConstruct
+  private void init() {
+    System.out.println("***************************************");
+    HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
+    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + Language.KOREAN, "가나박물관, tag값",
+        SearchPostForReviewDto.builder()
+            .title("가나박물관")
+            .id(1L)
+            .category("category1")
+            .address("address1")
+            .firstImage(new ImageFileDto("image1", "image2"))
+            .build());
+    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "다라박물관",
+        SearchPostForReviewDto.builder()
+            .title("다라박물관")
+            .id(2L)
+            .category("category2")
+            .address("address2")
+            .firstImage(new ImageFileDto("image3", "image4"))
+            .build());
+    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "마바박물관",
+        SearchPostForReviewDto.builder()
+            .title("마바박물관")
+            .id(3L)
+            .category("category3")
+            .address("address3")
+            .firstImage(new ImageFileDto("image5", "image6"))
+            .build());
+    Long test = hashOperations.size(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN");
+    System.out.println("test = " + test);
   }
 
   private Post getPostById(Long id, Category category) {

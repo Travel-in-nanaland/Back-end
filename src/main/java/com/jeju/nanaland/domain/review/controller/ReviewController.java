@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
 import com.jeju.nanaland.global.BaseResponse;
@@ -88,4 +89,21 @@ public class ReviewController {
     StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
     return BaseResponse.success(REVIEW_HEART_SUCCESS, statusDto);
   }
+
+  @Operation(summary = "자동완성 테스트")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
+  @PostMapping("/test")
+  public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam String keyword) {
+    List<SearchPostForReviewDto> autoCompleteSearchResultForReview = reviewService.getAutoCompleteSearchResultForReview(
+        keyword);
+    return BaseResponse.success(REVIEW_HEART_SUCCESS, autoCompleteSearchResultForReview);
+  }
+  
+
 }
