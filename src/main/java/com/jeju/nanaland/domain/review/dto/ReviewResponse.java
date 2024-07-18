@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.review.dto;
 
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
@@ -108,7 +109,15 @@ public class ReviewResponse {
     @Schema(description = "리뷰 총 개수")
     private String address;
 
-
+    @QueryProjection
+    public SearchPostForReviewDto(Long id, String category, String title, ImageFile firstImage,
+        String address) {
+      this.id = id;
+      this.category = category;
+      this.title = title;
+      this.firstImage = new ImageFileDto(firstImage.getOriginUrl(), firstImage.getThumbnailUrl());
+      this.address = address;
+    }
   }
 
 }

@@ -14,8 +14,11 @@ import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
+import com.jeju.nanaland.domain.review.dto.QReviewResponse_SearchPostForReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -163,6 +166,19 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             .as(GroupBy.set(experienceKeyword.experienceTypeKeyword)));
 
     return map.getOrDefault(postId, Collections.emptySet());
+  }
+
+  @Override
+  public List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QReviewResponse_SearchPostForReviewDto(experience.id,
+                Expressions.stringTemplate("'{0}'", Category.EXPERIENCE),
+                experienceTrans.title, experience.firstImageFile, experienceTrans.address))
+        .from(experience)
+        .leftJoin(experienceTrans)
+        .on(experienceTrans.language.eq(language))
+        .fetch();
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {

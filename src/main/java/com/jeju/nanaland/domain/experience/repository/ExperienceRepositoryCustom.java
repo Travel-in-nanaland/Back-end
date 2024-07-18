@@ -5,6 +5,7 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Page;
@@ -22,4 +23,6 @@ public interface ExperienceRepositoryCustom {
       List<String> addressFilterList, Pageable pageable);
 
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSet(Long postId);
+
+  List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
 }
