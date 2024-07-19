@@ -106,7 +106,7 @@ public class ReviewResponse {
     @Schema(description = "게시물 썸네일")
     private ImageFileDto firstImage;
 
-    @Schema(description = "리뷰 총 개수")
+    @Schema(description = "게시물 주소")
     private String address;
 
     @QueryProjection

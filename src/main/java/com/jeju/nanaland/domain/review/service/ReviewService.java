@@ -8,7 +8,6 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -146,30 +145,49 @@ public class ReviewService {
   private void init() {
     System.out.println("***************************************");
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
-    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + Language.KOREAN, "가나박물관, tag값",
-        SearchPostForReviewDto.builder()
-            .title("가나박물관")
-            .id(1L)
-            .category("category1")
-            .address("address1")
-            .firstImage(new ImageFileDto("image1", "image2"))
-            .build());
-    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "다라박물관",
-        SearchPostForReviewDto.builder()
-            .title("다라박물관")
-            .id(2L)
-            .category("category2")
-            .address("address2")
-            .firstImage(new ImageFileDto("image3", "image4"))
-            .build());
-    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "마바박물관",
-        SearchPostForReviewDto.builder()
-            .title("마바박물관")
-            .id(3L)
-            .category("category3")
-            .address("address3")
-            .firstImage(new ImageFileDto("image5", "image6"))
-            .build());
+
+    /**
+     * 테스트 용
+     */
+//    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + Language.KOREAN, "가나박물관, tag값",
+//        SearchPostForReviewDto.builder()
+//            .title("가나박물관")
+//            .id(1L)
+//            .category("category1")
+//            .address("address1")
+//            .firstImage(new ImageFileDto("image1", "image2"))
+//            .build());
+//    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "다라박물관",
+//        SearchPostForReviewDto.builder()
+//            .title("다라박물관")
+//            .id(2L)
+//            .category("category2")
+//            .address("address2")
+//            .firstImage(new ImageFileDto("image3", "image4"))
+//            .build());
+//    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "마바박물관",
+//        SearchPostForReviewDto.builder()
+//            .title("마바박물관")
+//            .id(3L)
+//            .category("category3")
+//            .address("address3")
+//            .firstImage(new ImageFileDto("image5", "image6"))
+//            .build());
+
+    // ---------------------------------------
+
+    for (Language language : Language.values()) {
+      experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
+          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+              dto.getTitle(), dto));
+
+      // TODO 맛집 추가시 완성하기
+//      restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
+//          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+//              dto.getTitle(), dto));
+
+    }
+
     Long test = hashOperations.size(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN");
     System.out.println("test = " + test);
   }
