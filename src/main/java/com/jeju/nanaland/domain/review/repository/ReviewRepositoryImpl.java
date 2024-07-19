@@ -167,6 +167,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.id,
                 review.post.id,
                 review.category,
+                review.rating,
+                review.content,
                 review.createdAt,
                 ExpressionUtils.as(heartCountQuery, "heartCount")
             )
@@ -178,29 +180,52 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .limit(pageable.getPageSize())
         .fetch();
 
-    // 2. 각 리뷰에 대한 이미지 파일 정보 조회
-    List<Long> reviewIds = resultDto.stream().map(MemberReviewDetailDto::getId).toList();
-    Map<Long, ImageFileDto> reviewImageMap = fetchReviewImages(reviewIds);
-
-    // 3. EXPERIENCE 카테고리의 리뷰에 대한 제목 조회
+    // 2. EXPERIENCE 카테고리의 리뷰에 대한 제목 조회
     Map<Long, String> experienceTitleMap = fetchExperienceTitles(resultDto, language);
 
-    // TODO: 맛집 추가하기
+    // TODO: 3. 맛집 추가하기
+
+    List<Long> reviewIds = resultDto.stream().map(MemberReviewDetailDto::getId).toList();
+
+    // 4. 각 리뷰별 이미지 리스트 조회
+    Map<Long, List<ImageFileDto>> reviewImagesMap = queryFactory
+        .selectFrom(reviewImageFile)
+        .innerJoin(reviewImageFile.imageFile, imageFile)
+        .where(reviewImageFile.review.id.in(reviewIds))
+        .transform(GroupBy.groupBy(reviewImageFile.review.id)
+            .as(GroupBy.list(new QImageFileDto(
+                imageFile.originUrl,
+                imageFile.thumbnailUrl)
+            )));
+
+    // 5. 각 리뷰별 키워드 리스트 조회
+    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = queryFactory
+        .selectFrom(reviewKeyword)
+        .where(reviewKeyword.review.id.in(reviewIds))
+        .transform(GroupBy.groupBy(reviewKeyword.review.id)
+            .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));
 
     // 추가 정보를 리뷰 DTO에 설정
     resultDto.forEach(
         reviewDetailDto -> {
-          // 이미지 설정
-          reviewDetailDto.setImageFileDto(
-              reviewImageMap.getOrDefault(reviewDetailDto.getId(), null));
-
           // 제목 설정
           if (reviewDetailDto.getCategory() == Category.EXPERIENCE) {
-            reviewDetailDto.setTitle(
+            reviewDetailDto.setPlaceName(
                 experienceTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
             );
           }
           // TODO: 맛집 추가하기
+
+          // 이미지 설정
+          reviewDetailDto.setImages(
+              reviewImagesMap.getOrDefault(reviewDetailDto.getId(), Collections.emptyList()));
+
+          // 키워드 설정
+          reviewDetailDto.setReviewTypeKeywords(
+              reviewTypeKeywordMap.getOrDefault(reviewDetailDto.getId(), Collections.emptySet())
+                  .stream()
+                  .map(reviewTypeKeyword ->
+                      reviewTypeKeyword.getValueByLocale(language)).collect(Collectors.toSet()));
         }
     );
 

@@ -110,20 +110,29 @@ public class ReviewResponse {
     @Schema(description = "장소 카테고리(이색체험, 맛집)")
     private Category category;
     @Schema(description = "장소명")
-    private String title;
+    private String placeName;
+    @Schema(description = "리뷰 점수")
+    private Double rating;
+    @Schema(description = "리뷰 내용")
+    private String content;
     @Schema(description = "리뷰 작성일")
     private LocalDate createdAt;
     @Schema(description = "리뷰 좋아요 개수")
     private Integer heartCount;
-    @Schema(description = "리뷰 이미지")
-    private ImageFileDto imageFileDto;
+    @Schema(description = "리뷰 이미지 리스트")
+    private List<ImageFileDto> images;
+    @Schema(description = "리뷰 키워드 리스트")
+    private Set<String> reviewTypeKeywords;
 
     @QueryProjection
-    public MemberReviewDetailDto(Long id, Long postId, Category category, LocalDateTime createdAt,
-        Long heartCount) {
+    public MemberReviewDetailDto(Long id, Long postId, Category category,
+        Integer rating, String content,
+        LocalDateTime createdAt, Long heartCount) {
       this.id = id;
       this.postId = postId;
       this.category = category;
+      this.rating = Math.round(rating * 100.0) / 100.0;
+      this.content = content;
       this.createdAt = createdAt.toLocalDate();
       this.heartCount = Math.toIntExact(heartCount);
     }
