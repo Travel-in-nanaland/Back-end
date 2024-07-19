@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
@@ -88,6 +89,22 @@ public class ReviewController {
       @PathVariable Long id) {
     StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
     return BaseResponse.success(REVIEW_HEART_SUCCESS, statusDto);
+  }
+
+  @Operation(summary = "회원 별 리뷰 썸네일 리스트 조회(12개)", description = "회원 별 리뷰 썸네일 리스트 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
+  @GetMapping("/preview")
+  public BaseResponse<MemberReviewPreviewDto> getReviewList(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(required = false) Long memberId
+  ) {
+    MemberReviewPreviewDto reviewList = reviewService.getReviewPreviewByMember(memberInfoDto,
+        memberId);
+    return BaseResponse.success(REVIEW_LIST_SUCCESS, reviewList);
   }
 
   @Operation(summary = "회원 별 리뷰 리스트 조회", description = "회원 별 리뷰 리스트 조회 (페이징)")

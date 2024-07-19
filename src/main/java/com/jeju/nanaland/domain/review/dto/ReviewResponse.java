@@ -137,4 +137,47 @@ public class ReviewResponse {
       this.heartCount = Math.toIntExact(heartCount);
     }
   }
+
+  @Getter
+  @Builder
+  @Schema(description = "회원이 작성한 리뷰 리스트 썸네일 정보")
+  public static class MemberReviewPreviewDto {
+
+    @Schema(description = "리뷰 총 개수")
+    private Long totalElements;
+
+    @Schema(description = "리뷰 결과 리스트")
+    private List<MemberReviewPreviewDetailDto> data;
+  }
+
+  @Data
+  @Builder
+  @AllArgsConstructor
+  public static class MemberReviewPreviewDetailDto {
+
+    @Schema(description = "리뷰 게시물 id")
+    private Long id;
+    @Schema(description = "장소 게시물 id")
+    private Long postId;
+    @Schema(description = "장소 카테고리(이색체험, 맛집)")
+    private Category category;
+    @Schema(description = "장소명")
+    private String placeName;
+    @Schema(description = "리뷰 작성일")
+    private LocalDate createdAt;
+    @Schema(description = "리뷰 좋아요 개수")
+    private Integer heartCount;
+    @Schema(description = "리뷰 이미지")
+    private ImageFileDto imageFileDto;
+
+    @QueryProjection
+    public MemberReviewPreviewDetailDto(Long id, Long postId, Category category,
+        LocalDateTime createdAt, Long heartCount) {
+      this.id = id;
+      this.postId = postId;
+      this.category = category;
+      this.createdAt = createdAt.toLocalDate();
+      this.heartCount = Math.toIntExact(heartCount);
+    }
+  }
 }

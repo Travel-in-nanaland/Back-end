@@ -17,6 +17,8 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
@@ -182,6 +184,30 @@ public class ReviewService {
     return MemberReviewListDto.builder()
         .totalElements(reviewListByMember.getTotalElements())
         .data(reviewListByMember.getContent())
+        .build();
+  }
+
+  public MemberReviewPreviewDto getReviewPreviewByMember(MemberInfoDto memberInfoDto,
+      Long memberId) {
+    Member member = memberInfoDto.getMember();
+    Language language = member.getLanguage();
+
+    boolean isMyReview;
+    if (memberId != null) {
+      isMyReview = member.getId().equals(memberId);
+      if (!isMyReview) {
+        member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+      }
+    }
+    List<MemberReviewPreviewDetailDto> reviewListByMember = reviewRepository.findReviewPreviewByMember(
+        member, language);
+
+    Long totalCount = reviewRepository.findTotalCountByMember(member);
+
+    return MemberReviewPreviewDto.builder()
+        .totalElements(totalCount)
+        .data(reviewListByMember)
         .build();
   }
 }

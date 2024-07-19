@@ -16,8 +16,10 @@ import com.jeju.nanaland.domain.common.dto.QImageFileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.group.GroupBy;
@@ -40,6 +42,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 @RequiredArgsConstructor
 public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
+  private static final int PREVIEW_LIMIT = 12;
   private final JPAQueryFactory queryFactory;
 
   @Override
@@ -181,7 +184,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .fetch();
 
     // 2. EXPERIENCE 카테고리의 리뷰에 대한 제목 조회
-    Map<Long, String> experienceTitleMap = fetchExperienceTitles(resultDto, language);
+    List<Long> experienceIds = resultDto.stream()
+        .filter(dto -> dto.getCategory() == Category.EXPERIENCE)
+        .map(MemberReviewDetailDto::getPostId)
+        .toList();
+    Map<Long, String> experienceTitleMap = fetchExperienceTitles(experienceIds, language);
 
     // TODO: 3. 맛집 추가하기
 
@@ -238,6 +245,71 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
+  @Override
+  public List<MemberReviewPreviewDetailDto> findReviewPreviewByMember(Member member,
+      Language language) {
+    // 해당 리뷰의 좋아요 개수
+    JPQLQuery<Long> heartCountQuery = JPAExpressions
+        .select(reviewHeart.count())
+        .from(reviewHeart)
+        .where(reviewHeart.review.id.eq(review.id));
+
+    List<MemberReviewPreviewDetailDto> resultDto = queryFactory
+        .select(new QReviewResponse_MemberReviewPreviewDetailDto(
+                review.id,
+                review.post.id,
+                review.category,
+                review.createdAt,
+                ExpressionUtils.as(heartCountQuery, "heartCount")
+            )
+        )
+        .from(review)
+        .where(review.member.id.eq(member.getId()))
+        .orderBy(review.createdAt.desc())
+        .limit(PREVIEW_LIMIT)
+        .fetch();
+
+    // 2. EXPERIENCE 카테고리의 리뷰에 대한 제목 조회
+    List<Long> experienceIds = resultDto.stream()
+        .filter(dto -> dto.getCategory() == Category.EXPERIENCE)
+        .map(MemberReviewPreviewDetailDto::getPostId)
+        .toList();
+    Map<Long, String> experienceTitleMap = fetchExperienceTitles(experienceIds, language);
+
+    // TODO: 3. 맛집 추가하기
+
+    // 4. 각 리뷰에 대한 이미지 파일 정보 조회
+    List<Long> reviewIds = resultDto.stream().map(MemberReviewPreviewDetailDto::getId).toList();
+    Map<Long, ImageFileDto> reviewImageMap = fetchReviewImages(reviewIds);
+
+    // 추가 정보를 리뷰 DTO에 설정
+    resultDto.forEach(
+        reviewDetailDto -> {
+          // 이미지 설정
+          reviewDetailDto.setImageFileDto(
+              reviewImageMap.getOrDefault(reviewDetailDto.getId(), null));
+
+          // 제목 설정
+          if (reviewDetailDto.getCategory() == Category.EXPERIENCE) {
+            reviewDetailDto.setPlaceName(
+                experienceTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
+            );
+          }
+          // TODO: 맛집 추가하기
+        }
+    );
+    return resultDto;
+  }
+
+  @Override
+  public Long findTotalCountByMember(Member member) {
+    return queryFactory
+        .select(review.countDistinct())
+        .from(review)
+        .where(review.member.id.eq(member.getId()))
+        .fetchOne();
+  }
+
   // 리뷰 이미지 파일 조회
   private Map<Long, ImageFileDto> fetchReviewImages(List<Long> reviewIds) {
     return queryFactory
@@ -253,12 +325,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   }
 
   // EXPERIENCE 카테고리의 리뷰 제목 조회
-  private Map<Long, String> fetchExperienceTitles(List<MemberReviewDetailDto> reviews,
+  private Map<Long, String> fetchExperienceTitles(List<Long> experienceIds,
       Language language) {
-    List<Long> experienceIds = reviews.stream()
-        .filter(dto -> dto.getCategory() == Category.EXPERIENCE)
-        .map(MemberReviewDetailDto::getPostId)
-        .toList();
 
     return queryFactory
         .select(experienceTrans.title)
