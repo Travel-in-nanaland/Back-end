@@ -147,7 +147,6 @@ public class ReviewService {
     if ("test".equals(System.getProperty("spring.profiles.active"))) {
       return;
     }
-    System.out.println("***************************************");
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
 
     /**
