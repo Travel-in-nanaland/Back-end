@@ -144,6 +144,9 @@ public class ReviewService {
   // TODO : 언어별로 SEARCH_AUTO_COMPLETE_HASH_KEY
   @PostConstruct
   private void init() {
+    if ("test".equals(System.getProperty("spring.profiles.active"))) {
+      return;
+    }
     System.out.println("***************************************");
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
 
