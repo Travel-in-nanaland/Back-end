@@ -124,15 +124,16 @@ public class ReviewService {
     }
   }
 
-  public List<SearchPostForReviewDto> getAutoCompleteSearchResultForReview(String keyword) {
+  public List<SearchPostForReviewDto> getAutoCompleteSearchResultForReview(
+      MemberInfoDto memberInfoDto, String keyword) {
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
-    Map<String, SearchPostForReviewDto> test = hashOperations.entries(
-        SEARCH_AUTO_COMPLETE_HASH_KEY); // 여기 KEY를 나중에 language를 붙이면 될듯
+    Map<String, SearchPostForReviewDto> redisMap = hashOperations.entries(
+        SEARCH_AUTO_COMPLETE_HASH_KEY + memberInfoDto.getLanguage()
+            .name()); // 여기 KEY를 나중에 language를 붙이면 될듯
     List<SearchPostForReviewDto> dtoList = new ArrayList<>();
-    System.out.println("test.keySet().toString() = " + test.keySet().toString());
-    for (String key : test.keySet()) {
+    for (String key : redisMap.keySet()) {
       if (key.contains(keyword)) {
-        dtoList.add(test.get(key));
+        dtoList.add(redisMap.get(key));
       }
     }
     // title 사전 순으로 정렬

@@ -101,9 +101,9 @@ public class ReviewController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam String keyword) {
     List<SearchPostForReviewDto> autoCompleteSearchResultForReview = reviewService.getAutoCompleteSearchResultForReview(
-        keyword);
+        memberInfoDto, keyword);
     return BaseResponse.success(REVIEW_HEART_SUCCESS, autoCompleteSearchResultForReview);
   }
-  
+
 
 }
