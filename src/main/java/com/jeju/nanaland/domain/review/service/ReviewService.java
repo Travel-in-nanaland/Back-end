@@ -1,17 +1,21 @@
 package com.jeju.nanaland.domain.review.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_KEYWORD_DUPLICATION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
@@ -91,7 +95,7 @@ public class ReviewService {
     // 혹시나 keyword 값 잘못 보낼 경우. (List, Set의 크기가 같아야 통과)
     Set<String> reviewKeywordStringSet = new HashSet<>(createReviewDto.getReviewKeywords());
     if (reviewKeywordStringSet.size() != createReviewDto.getReviewKeywords().size()) {
-      throw new BadRequestException("review Keyword 값이 중복되었습니다.");
+      throw new BadRequestException(REVIEW_KEYWORD_DUPLICATION.getMessage());
     }
 
     reviewKeywordStringSet.forEach(keyword ->
@@ -110,6 +114,42 @@ public class ReviewService {
               .build())
       );
     }
+  }
+
+  public MyReviewDetailDto getMyReviewById(MemberInfoDto memberInfoDto, Long reviewId) {
+    Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
+        NOT_FOUND_EXCEPTION.getMessage()));
+    List<ImageFileDto> reviewImageList = reviewImageFileRepository.findAllById(reviewId)
+        .stream()
+        .map(image -> new ImageFileDto(image.getImageFile().getOriginUrl(),
+            image.getImageFile().getThumbnailUrl()))
+        .toList();
+    List<String> reviewKeywordStringList = reviewKeywordRepository.findAllById(reviewId)
+        .stream()
+        .map(
+            keyword -> keyword.getReviewTypeKeyword().getValueByLocale(memberInfoDto.getLanguage()))
+        .toList();
+    Category category = review.getCategory();
+    MyReviewDetailDto myReviewDetail;
+
+    if (category.equals(Category.EXPERIENCE)) {
+      myReviewDetail = reviewRepository.findExperienceMyReviewDetail(
+          review.getId(), memberInfoDto);
+    }
+    // TODO 맛집 생기면 주석 지우기
+//    else if (category.equals(Category.RESTAURANT)) {
+//      myReviewDetail = reviewRepository.findRestaurantMyReviewDetail(
+//          review.getId(), memberInfoDto);
+//    }
+    else {
+      throw new RuntimeException(NOT_FOUND_EXCEPTION.getMessage());
+    }
+    myReviewDetail.setImages(reviewImageList);
+    myReviewDetail.setReviewKeywords(reviewKeywordStringList);
+
+    return myReviewDetail;
+
+
   }
 
   private Post getPostById(Long id, Category category) {

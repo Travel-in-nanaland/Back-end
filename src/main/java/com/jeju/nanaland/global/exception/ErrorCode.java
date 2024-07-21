@@ -45,6 +45,7 @@ public enum ErrorCode {
   INVALID_EXPERIENCE_KEYWORD_TYPE(BAD_REQUEST, "잘못된 이색체험 키워드입니다."),
 
   REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
+  REVIEW_KEYWORD_DUPLICATION(BAD_REQUEST, "리뷰 카테고리가 중복 되었습니다."),
   POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다");
 
 

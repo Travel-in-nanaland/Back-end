@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.review.controller;
 
+import static com.jeju.nanaland.global.exception.SuccessCode.MY_REVIEW_DETAIL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_CREATED_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
@@ -7,6 +8,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
@@ -88,4 +90,21 @@ public class ReviewController {
     StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
     return BaseResponse.success(REVIEW_HEART_SUCCESS, statusDto);
   }
+
+  @Operation(summary = "마이페이지에서 내가 쓴 리뷰 글 상세 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
+  @GetMapping("/my/{id}")
+  public BaseResponse<MyReviewDetailDto> getMyReviewDetail(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @PathVariable Long id) {
+    StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
+    return BaseResponse.success(MY_REVIEW_DETAIL_SUCCESS,
+        reviewService.getMyReviewById(memberInfoDto, id));
+  }
+
+
 }
