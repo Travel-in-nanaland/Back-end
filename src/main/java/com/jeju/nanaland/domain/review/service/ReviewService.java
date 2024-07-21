@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.review.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_MY_REVIEW;
 import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
@@ -10,6 +11,7 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -150,6 +152,37 @@ public class ReviewService {
     return myReviewDetail;
 
 
+  }
+
+  @Transactional
+  public void deleteMyReviewById(MemberInfoDto memberInfoDto, Long reviewId) {
+    Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
+        REVIEW_NOT_FOUND.getMessage()));
+
+    // 삭제하려는 리뷰가 본인의 리뷰인지 체크
+    if (!review.getMember().equals(memberInfoDto.getMember())) {
+      throw new RuntimeException(NOT_MY_REVIEW.getMessage());
+    }
+
+    // s3에서 삭제하기 위해 reviewImageFile의 imageFile 추출
+    List<ImageFile> imageFileList = reviewImageFileRepository.findAllByReview(review)
+        .stream()
+        .map(ReviewImageFile::getImageFile)
+        .toList();
+
+    // reviewImageFile 삭제, cascade remove 설정으로 imageFile 함께 삭제
+    reviewImageFileRepository.deleteAllByReview(review);
+
+    // reviewHeart 삭제
+    reviewHeartRepository.deleteAllByReview(review);
+
+    // review 삭제, cascade remove 설정으로 reviewKeywords 같이 삭제
+    reviewRepository.deleteById(reviewId);
+
+    // s3에서도 이미지 삭제
+    for (ImageFile imageFile : imageFileList) {
+      imageFileService.deleteImageFileInS3(imageFile);
+    }
   }
 
   private Post getPostById(Long id, Category category) {

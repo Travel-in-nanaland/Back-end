@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.review.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.MY_REVIEW_DETAIL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_CREATED_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_DELETE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
 
@@ -23,6 +24,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,9 +103,22 @@ public class ReviewController {
   public BaseResponse<MyReviewDetailDto> getMyReviewDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
     return BaseResponse.success(MY_REVIEW_DETAIL_SUCCESS,
         reviewService.getMyReviewById(memberInfoDto, id));
+  }
+
+  @Operation(summary = "내가 쓴 리뷰 글 삭제")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+  })
+  @DeleteMapping("/my/{id}")
+  public BaseResponse<String> deleteMyReview(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @PathVariable Long id) {
+    reviewService.deleteMyReviewById(memberInfoDto, id);
+    return BaseResponse.success(REVIEW_DELETE_SUCCESS);
   }
 
 

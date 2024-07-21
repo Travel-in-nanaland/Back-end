@@ -58,4 +58,8 @@ public class ImageFileService {
     images.addAll(imageFileRepository.findPostImageFiles(postId));
     return images;
   }
+
+  public void deleteImageFileInS3(ImageFile imageFile) {
+    s3ImageService.deleteImageS3(imageFile);
+  }
 }
