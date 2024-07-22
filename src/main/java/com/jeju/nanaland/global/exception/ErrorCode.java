@@ -21,6 +21,7 @@ public enum ErrorCode {
   START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다."),
   INVALID_EXPERIENCE_TYPE(BAD_REQUEST, "이색체험 타입은 ACTIVITY, CULTURE_AND_ARTS 만 가능합니다."),
   INVALID_EXPERIENCE_KEYWORD_TYPE(BAD_REQUEST, "잘못된 이색체험 키워드입니다."),
+  INVALID_RESTAURANT_KEYWORD_TYPE(BAD_REQUEST, "잘못된 맛집 키워드입니다."),
   REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
   REVIEW_KEYWORD_DUPLICATION(BAD_REQUEST, "리뷰 카테고리가 중복 되었습니다."),
   NOT_MY_REVIEW(BAD_REQUEST, "자신의 리뷰만 삭제할 수 있습니다."),
@@ -57,7 +58,6 @@ public enum ErrorCode {
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
   NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다.");
-
 
   private final HttpStatus httpStatus;
   private final String message;

@@ -73,8 +73,10 @@ public class MemberResponse {
   @Schema(description = "사용자 정보 조회 DTO")
   public static class ProfileDto {
 
-    @Schema(description = "이용약관 동의 여부")
+    @Schema(description = "이용약관 동의 여부 - 내 프로필인 경우에만 제공")
     List<ConsentItemResponse> consentItems;
+    @Schema(description = "내 프로필인지 확인 여부")
+    private boolean isMyProfile;
     @Schema(description = "이메일")
     private String email;
     @Schema(description = "회원가입 형태", example = "KAKAO, GOOGLE, APPLE")
@@ -85,8 +87,6 @@ public class MemberResponse {
     private String nickname;
     @Schema(description = "설명")
     private String description;
-    @Schema(description = "레벨")
-    private Integer level;
     @Schema(description = "타입")
     private String travelType;
     @Schema(description = "해시태그 리스트")
