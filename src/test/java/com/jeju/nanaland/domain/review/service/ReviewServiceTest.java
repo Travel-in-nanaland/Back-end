@@ -4,15 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
@@ -46,6 +54,8 @@ import org.springframework.data.domain.PageRequest;
 @Execution(ExecutionMode.CONCURRENT)
 class ReviewServiceTest {
 
+  ImageFile imageFile;
+  Member member;
   MemberInfoDto memberInfoDto;
   Review review;
   ReviewHeart reviewHeart;
@@ -55,24 +65,44 @@ class ReviewServiceTest {
   private ReviewRepository reviewRepository;
   @Mock
   private ReviewHeartRepository reviewHeartRepository;
+  @Mock
+  private MemberRepository memberRepository;
 
   @BeforeEach
   void setUp() {
-    memberInfoDto = createMemberInfoDto();
+    imageFile = createImageFile();
+    Language language = Language.KOREAN;
+    member = createMember(language);
+    memberInfoDto = createMemberInfoDto(language, member);
     review = createReview();
     reviewHeart = createReviewHeart(memberInfoDto.getMember(), review);
   }
 
-  private MemberInfoDto createMemberInfoDto() {
-    Language language = Language.KOREAN;
-    Member member = Member.builder()
-        .language(language)
-        .travelType(TravelType.NONE)
+  private ImageFile createImageFile() {
+    return ImageFile.builder()
+        .originUrl("origin")
+        .thumbnailUrl("thumbnail")
         .build();
+  }
 
-    return MemberInfoDto.builder()
-        .member(member)
+  private Member createMember(Language language) {
+    return spy(Member.builder()
         .language(language)
+        .email("test@example.com")
+        .profileImageFile(imageFile)
+        .nickname("testNickname")
+        .gender("male")
+        .birthDate(LocalDate.now())
+        .provider(Provider.GOOGLE)
+        .providerId("123")
+        .travelType(TravelType.GAMGYUL)
+        .build());
+  }
+
+  private MemberInfoDto createMemberInfoDto(Language language, Member member) {
+    return MemberInfoDto.builder()
+        .language(language)
+        .member(member)
         .build();
   }
 
@@ -112,6 +142,41 @@ class ReviewServiceTest {
         .review(review)
         .build();
   }
+
+  private Page<MemberReviewDetailDto> createMemberReviewDetailList() {
+    List<MemberReviewDetailDto> reviewDetailDtos = new ArrayList<>();
+    for (int i = 1; i < 3; i++) {
+      reviewDetailDtos.add(
+          MemberReviewDetailDto.builder()
+              .id((long) i)
+              .postId(1L)
+              .category(Category.EXPERIENCE)
+              .placeName("title")
+              .createdAt(LocalDate.now())
+              .heartCount(5)
+              .build());
+    }
+
+    return new PageImpl<>(reviewDetailDtos, PageRequest.of(0, 2), 10);
+  }
+
+  private List<MemberReviewPreviewDetailDto> createMemberReviewPreviewDetailList() {
+    List<MemberReviewPreviewDetailDto> reviewDetailDtos = new ArrayList<>();
+    for (int i = 1; i < 15; i++) {
+      reviewDetailDtos.add(
+          MemberReviewPreviewDetailDto.builder()
+              .id((long) i)
+              .postId(1L)
+              .category(Category.EXPERIENCE)
+              .placeName("title")
+              .createdAt(LocalDate.now())
+              .heartCount(5)
+              .build());
+    }
+
+    return reviewDetailDtos;
+  }
+
 
   @Test
   @DisplayName("리뷰 리스트 조회 실패 - 리뷰가 존재하지 않는 카테고리인 경우")
@@ -202,5 +267,136 @@ class ReviewServiceTest {
     // then
     assertThat(statusDto.isReviewHeart()).isTrue();
     verify(reviewHeartRepository, times(1)).save(any(ReviewHeart.class));
+  }
+
+  @Test
+  @DisplayName("회원 리뷰 리스트 조회 실패 - 존재하지 않는 회원인 경우")
+  void getReviewListByMemberFail() {
+    // given
+    doReturn(1L).when(member).getId();
+
+    // when
+    NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> reviewService.getReviewListByMember(memberInfoDto, 2L, 0, 12));
+
+    // then
+    assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+  }
+
+  @Test
+  @DisplayName("내 리뷰 리스트 조회 성공")
+  void getReviewListByMemberSuccess() {
+    // given
+    doReturn(1L).when(member).getId();
+    Page<MemberReviewDetailDto> memberReviewDetailList = createMemberReviewDetailList();
+    doReturn(memberReviewDetailList).when(reviewRepository)
+        .findReviewListByMember(any(), any(), any());
+
+    // when
+    MemberReviewListDto reviewListByMember = reviewService.getReviewListByMember(memberInfoDto,
+        null, 0, 2);
+    MemberReviewListDto reviewListByMember2 = reviewService.getReviewListByMember(memberInfoDto,
+        1L, 0, 2);
+
+    // then
+    assertThat(reviewListByMember).isNotNull();
+    assertThat(reviewListByMember.getTotalElements()).isEqualTo(
+        memberReviewDetailList.getTotalElements());
+    assertThat(reviewListByMember.getData()).hasSameSizeAs(memberReviewDetailList.getContent());
+    assertThat(reviewListByMember2).isNotNull();
+    assertThat(reviewListByMember2.getTotalElements()).isEqualTo(
+        memberReviewDetailList.getTotalElements());
+    assertThat(reviewListByMember2.getData()).hasSameSizeAs(memberReviewDetailList.getContent());
+  }
+
+  @Test
+  @DisplayName("타인 리뷰 리스트 조회 성공")
+  void getReviewListByMemberSuccess2() {
+    // given
+    Page<MemberReviewDetailDto> memberReviewDetailList = createMemberReviewDetailList();
+    Language language = Language.ENGLISH;
+    Member member2 = createMember(language);
+
+    doReturn(1L).when(member).getId();
+    doReturn(Optional.of(member2)).when(memberRepository).findById(any());
+    doReturn(memberReviewDetailList).when(reviewRepository)
+        .findReviewListByMember(any(), any(), any());
+
+    // when
+    MemberReviewListDto reviewListByMember = reviewService.getReviewListByMember(memberInfoDto,
+        2L, 0, 2);
+
+    // then
+    assertThat(reviewListByMember).isNotNull();
+    assertThat(reviewListByMember.getTotalElements()).isEqualTo(
+        memberReviewDetailList.getTotalElements());
+    assertThat(reviewListByMember.getData()).hasSameSizeAs(memberReviewDetailList.getContent());
+  }
+
+  @Test
+  @DisplayName("회원 리뷰 미리보기 리스트 조회 실패 - 존재하지 않는 회원인 경우")
+  void getReviewPreviewByMemberFail() {
+    // given
+    doReturn(1L).when(member).getId();
+
+    // when
+    NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> reviewService.getReviewPreviewByMember(memberInfoDto, 2L));
+
+    // then
+    assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+  }
+
+  @Test
+  @DisplayName("내 리뷰 미리보기 리스트 조회 성공")
+  void getReviewPreviewByMemberSuccess() {
+    // given
+    doReturn(1L).when(member).getId();
+    List<MemberReviewPreviewDetailDto> previewDetailList = createMemberReviewPreviewDetailList();
+    doReturn(previewDetailList.subList(0, 12)).when(reviewRepository)
+        .findReviewPreviewByMember(any(), any());
+    doReturn((long) previewDetailList.size()).when(reviewRepository)
+        .findTotalCountByMember(any());
+
+    // when
+    MemberReviewPreviewDto reviewListByMember = reviewService.getReviewPreviewByMember(
+        memberInfoDto, null);
+    MemberReviewPreviewDto reviewListByMember2 = reviewService.getReviewPreviewByMember(
+        memberInfoDto, 1L);
+
+    // then
+    assertThat(reviewListByMember).isNotNull();
+    assertThat(reviewListByMember.getTotalElements()).isEqualTo(
+        previewDetailList.size());
+    assertThat(reviewListByMember.getData()).hasSize(12);
+    assertThat(reviewListByMember2).isNotNull();
+    assertThat(reviewListByMember2.getTotalElements()).isEqualTo(
+        previewDetailList.size());
+    assertThat(reviewListByMember2.getData()).hasSize(12);
+  }
+
+  @Test
+  @DisplayName("타인 리뷰 미리보기 리스트 조회 성공")
+  void getReviewPreviewByMemberSuccess2() {
+    // given
+    Language language = Language.ENGLISH;
+    Member member2 = createMember(language);
+    List<MemberReviewPreviewDetailDto> previewDetailList = createMemberReviewPreviewDetailList();
+
+    doReturn(1L).when(member).getId();
+    doReturn(Optional.of(member2)).when(memberRepository).findById(any());
+    doReturn(previewDetailList.subList(0, 12)).when(reviewRepository)
+        .findReviewPreviewByMember(any(), any());
+    doReturn((long) previewDetailList.size()).when(reviewRepository)
+        .findTotalCountByMember(any());
+
+    // when
+    MemberReviewPreviewDto reviewListByMember = reviewService.getReviewPreviewByMember(
+        memberInfoDto, 2L);
+
+    assertThat(reviewListByMember).isNotNull();
+    assertThat(reviewListByMember.getTotalElements()).isEqualTo(
+        previewDetailList.size());
+    assertThat(reviewListByMember.getData()).hasSize(12);
   }
 }
