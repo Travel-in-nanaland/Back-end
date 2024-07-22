@@ -84,9 +84,9 @@ public class ControllerAdvice {
 
   // 500 에러
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ExceptionHandler(ServerErrorException.class)
+  @ExceptionHandler({Exception.class, ServerErrorException.class})
   public BaseResponse<String> handleServerErrorException(
-      ServerErrorException e) {
+      Exception e) {
     return BaseResponse.error(INTERNAL_SERVER_ERROR, e.getMessage());
   }
 
