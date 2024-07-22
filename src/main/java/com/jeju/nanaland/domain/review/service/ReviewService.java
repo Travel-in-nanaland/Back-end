@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
@@ -58,6 +59,7 @@ public class ReviewService {
   private final ImageFileService imageFileService;
   private final ReviewHeartRepository reviewHeartRepository;
   private final MemberRepository memberRepository;
+  private final RestaurantRepository restaurantRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -128,7 +130,12 @@ public class ReviewService {
         return experienceRepository.findById(id)
             .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
       }
-      //TODO 맛집 개발 시 추가하기
+
+      case RESTAURANT -> {
+        return restaurantRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+      }
+
       default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
     }
   }

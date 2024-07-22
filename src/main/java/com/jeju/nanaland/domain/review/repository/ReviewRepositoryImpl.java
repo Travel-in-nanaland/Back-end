@@ -4,6 +4,8 @@ import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.member.entity.QMember.member;
+import static com.jeju.nanaland.domain.restaurant.entity.QRestaurant.restaurant;
+import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restaurantTrans;
 import static com.jeju.nanaland.domain.review.entity.QReview.review;
 import static com.jeju.nanaland.domain.review.entity.QReviewHeart.reviewHeart;
 import static com.jeju.nanaland.domain.review.entity.QReviewImageFile.reviewImageFile;
@@ -51,25 +53,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     Long memberId = memberInfoDto.getMember().getId();
     Language language = memberInfoDto.getLanguage();
 
-    // 리뷰 작성자의 총 작성한 리뷰 개수
-    JPQLQuery<Long> memberReviewCountQuery = JPAExpressions
-        .select(review.count())
-        .from(review)
-        .where(review.member.id.eq(member.id));
-
-    // 해당 리뷰의 좋아요 개수
-    JPQLQuery<Long> heartCountQuery = JPAExpressions
-        .select(reviewHeart.count())
-        .from(reviewHeart)
-        .where(reviewHeart.review.id.eq(review.id));
-
-    // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
-    BooleanExpression isReviewHeartQuery = JPAExpressions.selectOne()
-        .from(reviewHeart)
-        .where(reviewHeart.review.id.eq(review.id)
-            .and(reviewHeart.member.id.eq(memberId)))
-        .exists();
-
     List<ReviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_ReviewDetailDto(
                 review.id,
@@ -78,12 +61,15 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 new QImageFileDto(
                     imageFile.originUrl,
                     imageFile.thumbnailUrl),
-                ExpressionUtils.as(memberReviewCountQuery, "memberReviewCount"),
+                // 리뷰 작성자의 총 작성한 리뷰 개수
+                ExpressionUtils.as(getMemberReviewCountQuery(), "memberReviewCount"),
                 review.rating,
                 review.content,
                 review.createdAt,
-                ExpressionUtils.as(heartCountQuery, "heartCount"),
-                ExpressionUtils.as(isReviewHeartQuery, "isReviewHeart")
+                // 해당 리뷰의 좋아요 개수
+                ExpressionUtils.as(getHeartCountQuery(), "heartCount"),
+                // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
+                ExpressionUtils.as(getIsReviewHeartQuery(memberId), "isReviewHeart")
             )
         )
         .from(review)
@@ -133,15 +119,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
   }
 
-  // 각 리뷰별 키워드 리스트 조회
-  private Map<Long, Set<ReviewTypeKeyword>> getReviewTypeKeywordMap(List<Long> reviewIds) {
-    return queryFactory
-        .selectFrom(reviewKeyword)
-        .where(reviewKeyword.review.id.in(reviewIds))
-        .transform(GroupBy.groupBy(reviewKeyword.review.id)
-            .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));
-  }
-
   @Override
   public Double findTotalRatingAvg(Category category, Long id) {
     Double avgRating = queryFactory
@@ -157,12 +134,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   public Page<MemberReviewDetailDto> findReviewListByMember(Member member, Language language,
       Pageable pageable) {
 
-    // 해당 리뷰의 좋아요 개수
-    JPQLQuery<Long> heartCountQuery = JPAExpressions
-        .select(reviewHeart.count())
-        .from(reviewHeart)
-        .where(reviewHeart.review.id.eq(review.id));
-
     // 1. 좋아요 개수를 포함한 리뷰 세부 정보 조회
     List<MemberReviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_MemberReviewDetailDto(
@@ -172,7 +143,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.rating,
                 review.content,
                 review.createdAt,
-                ExpressionUtils.as(heartCountQuery, "heartCount")
+                // 해당 리뷰의 좋아요 개수
+                ExpressionUtils.as(getHeartCountQuery(), "heartCount")
             )
         )
         .from(review)
@@ -189,7 +161,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .toList();
     Map<Long, String> experienceTitleMap = fetchExperienceTitles(experienceIds, language);
 
-    // TODO: 3. 맛집 추가하기
+    // 3. RESTAURANT 카테고리의 리뷰에 대한 제목 조회
+    List<Long> restaurantIds = resultDto.stream()
+        .filter(dto -> dto.getCategory() == Category.RESTAURANT)
+        .map(MemberReviewDetailDto::getPostId)
+        .toList();
+    Map<Long, String> restaurantTitleMap = fetchRestaurantTitles(restaurantIds, language);
 
     List<Long> reviewIds = resultDto.stream().map(MemberReviewDetailDto::getId).toList();
 
@@ -210,7 +187,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 experienceTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
             );
           }
-          // TODO: 맛집 추가하기
+
+          if (reviewDetailDto.getCategory() == Category.RESTAURANT) {
+            reviewDetailDto.setPlaceName(
+                restaurantTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
+            );
+          }
 
           // 이미지 설정
           reviewDetailDto.setImages(
@@ -234,27 +216,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
-  // 리뷰 별 이미지 리스트 조회
-  private Map<Long, List<ImageFileDto>> getReviewImagesMap(List<Long> reviewIds) {
-    return queryFactory
-        .selectFrom(reviewImageFile)
-        .innerJoin(reviewImageFile.imageFile, imageFile)
-        .where(reviewImageFile.review.id.in(reviewIds))
-        .transform(GroupBy.groupBy(reviewImageFile.review.id)
-            .as(GroupBy.list(new QImageFileDto(
-                imageFile.originUrl,
-                imageFile.thumbnailUrl)
-            )));
-  }
-
   @Override
   public List<MemberReviewPreviewDetailDto> findReviewPreviewByMember(Member member,
       Language language) {
-    // 해당 리뷰의 좋아요 개수
-    JPQLQuery<Long> heartCountQuery = JPAExpressions
-        .select(reviewHeart.count())
-        .from(reviewHeart)
-        .where(reviewHeart.review.id.eq(review.id));
 
     List<MemberReviewPreviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_MemberReviewPreviewDetailDto(
@@ -262,7 +226,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.post.id,
                 review.category,
                 review.createdAt,
-                ExpressionUtils.as(heartCountQuery, "heartCount")
+                // 해당 리뷰의 좋아요 개수
+                ExpressionUtils.as(getHeartCountQuery(), "heartCount")
             )
         )
         .from(review)
@@ -278,7 +243,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .toList();
     Map<Long, String> experienceTitleMap = fetchExperienceTitles(experienceIds, language);
 
-    // TODO: 3. 맛집 추가하기
+    // 3. RESTAURANT 카테고리의 리뷰에 대한 제목 조회
+    List<Long> restaurantIds = resultDto.stream()
+        .filter(dto -> dto.getCategory() == Category.RESTAURANT)
+        .map(MemberReviewPreviewDetailDto::getPostId)
+        .toList();
+    Map<Long, String> restaurantTitleMap = fetchRestaurantTitles(restaurantIds, language);
 
     // 4. 각 리뷰에 대한 이미지 파일 정보 조회
     List<Long> reviewIds = resultDto.stream().map(MemberReviewPreviewDetailDto::getId).toList();
@@ -297,7 +267,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 experienceTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
             );
           }
-          // TODO: 맛집 추가하기
+
+          if (reviewDetailDto.getCategory() == Category.RESTAURANT) {
+            reviewDetailDto.setPlaceName(
+                restaurantTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
+            );
+          }
         }
     );
     return resultDto;
@@ -310,6 +285,53 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .where(review.member.id.eq(member.getId()))
         .fetchOne();
+  }
+
+  // 리뷰 작성자의 총 작성한 리뷰 개수
+  private JPQLQuery<Long> getMemberReviewCountQuery() {
+    return JPAExpressions
+        .select(review.count())
+        .from(review)
+        .where(review.member.id.eq(member.id));
+  }
+
+  // 해당 리뷰의 좋아요 개수
+  private JPQLQuery<Long> getHeartCountQuery() {
+    return JPAExpressions
+        .select(reviewHeart.count())
+        .from(reviewHeart)
+        .where(reviewHeart.review.id.eq(review.id));
+  }
+
+  // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
+  private BooleanExpression getIsReviewHeartQuery(Long memberId) {
+    return JPAExpressions.selectOne()
+        .from(reviewHeart)
+        .where(reviewHeart.review.id.eq(review.id)
+            .and(reviewHeart.member.id.eq(memberId)))
+        .exists();
+  }
+
+  // 각 리뷰별 키워드 리스트 조회
+  private Map<Long, Set<ReviewTypeKeyword>> getReviewTypeKeywordMap(List<Long> reviewIds) {
+    return queryFactory
+        .selectFrom(reviewKeyword)
+        .where(reviewKeyword.review.id.in(reviewIds))
+        .transform(GroupBy.groupBy(reviewKeyword.review.id)
+            .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));
+  }
+
+  // 리뷰 별 이미지 리스트 조회
+  private Map<Long, List<ImageFileDto>> getReviewImagesMap(List<Long> reviewIds) {
+    return queryFactory
+        .selectFrom(reviewImageFile)
+        .innerJoin(reviewImageFile.imageFile, imageFile)
+        .where(reviewImageFile.review.id.in(reviewIds))
+        .transform(GroupBy.groupBy(reviewImageFile.review.id)
+            .as(GroupBy.list(new QImageFileDto(
+                imageFile.originUrl,
+                imageFile.thumbnailUrl)
+            )));
   }
 
   // 리뷰 이미지 파일 조회
@@ -338,5 +360,19 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
             .and(experienceTrans.language.eq(language)))
         .transform(GroupBy.groupBy(experience.id)
             .as(experienceTrans.title));
+  }
+
+  // RESTAURANT 카테고리의 리뷰 제목 조회
+  private Map<Long, String> fetchRestaurantTitles(List<Long> restaurantIds,
+      Language language) {
+
+    return queryFactory
+        .select(restaurantTrans.title)
+        .from(restaurant)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .where(restaurant.id.in(restaurantIds)
+            .and(restaurantTrans.language.eq(language)))
+        .transform(GroupBy.groupBy(restaurant.id)
+            .as(restaurantTrans.title));
   }
 }
