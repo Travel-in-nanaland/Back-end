@@ -44,9 +44,9 @@ public enum ErrorCode {
   INVALID_EXPERIENCE_TYPE(BAD_REQUEST, "이색체험 타입은 ACTIVITY, CULTURE_AND_ARTS 만 가능합니다."),
   INVALID_EXPERIENCE_KEYWORD_TYPE(BAD_REQUEST, "잘못된 이색체험 키워드입니다."),
 
+  INVALID_RESTAURANT_KEYWORD_TYPE(BAD_REQUEST, "잘못된 맛집 키워드입니다."),
   REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
   POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다");
-
 
   private final HttpStatus httpStatus;
   private final String message;

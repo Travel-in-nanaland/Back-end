@@ -63,10 +63,6 @@ public class Member extends BaseEntity {
   private String nickname;
 
   private String description;
-
-  @Column(nullable = false)
-  private Integer level;
-
   private String gender;
   private LocalDate birthDate;
 
@@ -100,7 +96,6 @@ public class Member extends BaseEntity {
     this.profileImageFile = profileImageFile;
     this.nickname = nickname;
     this.description = (description != null) ? description : "";
-    this.level = 1;
     this.gender = (gender != null) ? gender : "";
     this.birthDate = birthDate;
     this.provider = provider;
