@@ -49,12 +49,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .where(review.member.id.eq(member.id));
 
-    // 리뷰 작성자의 총 리뷰 평균 점수
-    JPQLQuery<Double> memberReviewRatingAvgQuery = JPAExpressions
-        .select(review.rating.avg())
-        .from(review)
-        .where(review.member.id.eq(member.id));
-
     // 해당 리뷰의 좋아요 개수
     JPQLQuery<Long> heartCountQuery = JPAExpressions
         .select(reviewHeart.count())
@@ -62,7 +56,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .where(reviewHeart.review.id.eq(review.id));
 
     // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
-    BooleanExpression isFavoriteQuery = JPAExpressions.selectOne()
+    BooleanExpression isReviewHeartQuery = JPAExpressions.selectOne()
         .from(reviewHeart)
         .where(reviewHeart.review.id.eq(review.id)
             .and(reviewHeart.member.id.eq(memberId)))
@@ -71,16 +65,17 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     List<ReviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_ReviewDetailDto(
                 review.id,
+                member.id,
                 member.nickname,
                 new QImageFileDto(
                     imageFile.originUrl,
                     imageFile.thumbnailUrl),
                 ExpressionUtils.as(memberReviewCountQuery, "memberReviewCount"),
-                ExpressionUtils.as(memberReviewRatingAvgQuery, "memberReviewAvgRating"),
+                review.rating,
                 review.content,
                 review.createdAt,
                 ExpressionUtils.as(heartCountQuery, "heartCount"),
-                ExpressionUtils.as(isFavoriteQuery, "isFavorite")
+                ExpressionUtils.as(isReviewHeartQuery, "isReviewHeart")
             )
         )
         .from(review)

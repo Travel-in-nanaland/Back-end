@@ -2,7 +2,6 @@ package com.jeju.nanaland.domain.review.entity;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.member.entity.Member;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -38,7 +37,7 @@ public class ReviewHeart extends BaseEntity {
   private Member member;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "review_id", nullable = false)
   private Review review;
 }
