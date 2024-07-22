@@ -140,7 +140,7 @@ public class ReviewResponse {
 
   @Getter
   @Builder
-  @Schema(description = "회원이 작성한 리뷰 리스트 썸네일 정보")
+  @Schema(description = "회원이 작성한 리뷰 리스트 미리보기 정보")
   public static class MemberReviewPreviewDto {
 
     @Schema(description = "리뷰 총 개수")

@@ -91,7 +91,7 @@ public class ReviewController {
     return BaseResponse.success(REVIEW_HEART_SUCCESS, statusDto);
   }
 
-  @Operation(summary = "회원 별 리뷰 썸네일 리스트 조회(12개)", description = "회원 별 리뷰 썸네일 리스트 조회")
+  @Operation(summary = "회원 별 리뷰 썸네일 리스트 조회(6개 ~ 12개)", description = "회원 별 리뷰 썸네일 리스트 조회")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),

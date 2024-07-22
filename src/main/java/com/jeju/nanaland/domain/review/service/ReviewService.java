@@ -34,6 +34,7 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -203,11 +204,27 @@ public class ReviewService {
     List<MemberReviewPreviewDetailDto> reviewListByMember = reviewRepository.findReviewPreviewByMember(
         member, language);
 
+    List<MemberReviewPreviewDetailDto> selectedReviews = new ArrayList<>();
+    int totalWeight = 0;
+    final int MAX_WEIGHT = 12;
+
+    // 리뷰 선택 로직
+    for (MemberReviewPreviewDetailDto reviewDetail : reviewListByMember) {
+      int weight = (reviewDetail.getImageFileDto() != null) ? 2 : 1;
+
+      if (totalWeight + weight <= MAX_WEIGHT) {
+        selectedReviews.add(reviewDetail);
+        totalWeight += weight;
+      } else {
+        break;
+      }
+    }
+
     Long totalCount = reviewRepository.findTotalCountByMember(member);
 
     return MemberReviewPreviewDto.builder()
         .totalElements(totalCount)
-        .data(reviewListByMember)
+        .data(selectedReviews)
         .build();
   }
 }

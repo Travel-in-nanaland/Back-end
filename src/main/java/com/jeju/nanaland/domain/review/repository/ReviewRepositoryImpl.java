@@ -99,22 +99,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     List<Long> reviewIds = resultDto.stream().map(ReviewDetailDto::getId).toList();
 
     // 각 리뷰별 이미지 리스트 조회
-    Map<Long, List<ImageFileDto>> reviewImagesMap = queryFactory
-        .selectFrom(reviewImageFile)
-        .innerJoin(reviewImageFile.imageFile, imageFile)
-        .where(reviewImageFile.review.id.in(reviewIds))
-        .transform(GroupBy.groupBy(reviewImageFile.review.id)
-            .as(GroupBy.list(new QImageFileDto(
-                imageFile.originUrl,
-                imageFile.thumbnailUrl)
-            )));
+    Map<Long, List<ImageFileDto>> reviewImagesMap = getReviewImagesMap(
+        reviewIds);
 
     // 각 리뷰별 키워드 리스트 조회
-    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = queryFactory
-        .selectFrom(reviewKeyword)
-        .where(reviewKeyword.review.id.in(reviewIds))
-        .transform(GroupBy.groupBy(reviewKeyword.review.id)
-            .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));
+    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = getReviewTypeKeywordMap(
+        reviewIds);
 
     // resultDto에 담아주기
     resultDto.forEach(
@@ -141,6 +131,15 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
 
+  }
+
+  // 각 리뷰별 키워드 리스트 조회
+  private Map<Long, Set<ReviewTypeKeyword>> getReviewTypeKeywordMap(List<Long> reviewIds) {
+    return queryFactory
+        .selectFrom(reviewKeyword)
+        .where(reviewKeyword.review.id.in(reviewIds))
+        .transform(GroupBy.groupBy(reviewKeyword.review.id)
+            .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));
   }
 
   @Override
@@ -195,22 +194,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     List<Long> reviewIds = resultDto.stream().map(MemberReviewDetailDto::getId).toList();
 
     // 4. 각 리뷰별 이미지 리스트 조회
-    Map<Long, List<ImageFileDto>> reviewImagesMap = queryFactory
-        .selectFrom(reviewImageFile)
-        .innerJoin(reviewImageFile.imageFile, imageFile)
-        .where(reviewImageFile.review.id.in(reviewIds))
-        .transform(GroupBy.groupBy(reviewImageFile.review.id)
-            .as(GroupBy.list(new QImageFileDto(
-                imageFile.originUrl,
-                imageFile.thumbnailUrl)
-            )));
+    Map<Long, List<ImageFileDto>> reviewImagesMap = getReviewImagesMap(
+        reviewIds);
 
     // 5. 각 리뷰별 키워드 리스트 조회
-    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = queryFactory
-        .selectFrom(reviewKeyword)
-        .where(reviewKeyword.review.id.in(reviewIds))
-        .transform(GroupBy.groupBy(reviewKeyword.review.id)
-            .as(GroupBy.set(reviewKeyword.reviewTypeKeyword)));
+    Map<Long, Set<ReviewTypeKeyword>> reviewTypeKeywordMap = getReviewTypeKeywordMap(
+        reviewIds);
 
     // 추가 정보를 리뷰 DTO에 설정
     resultDto.forEach(
@@ -243,6 +232,19 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .where(review.member.id.eq(member.getId()));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  // 리뷰 별 이미지 리스트 조회
+  private Map<Long, List<ImageFileDto>> getReviewImagesMap(List<Long> reviewIds) {
+    return queryFactory
+        .selectFrom(reviewImageFile)
+        .innerJoin(reviewImageFile.imageFile, imageFile)
+        .where(reviewImageFile.review.id.in(reviewIds))
+        .transform(GroupBy.groupBy(reviewImageFile.review.id)
+            .as(GroupBy.list(new QImageFileDto(
+                imageFile.originUrl,
+                imageFile.thumbnailUrl)
+            )));
   }
 
   @Override
