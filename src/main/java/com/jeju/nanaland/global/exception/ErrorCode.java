@@ -24,6 +24,8 @@ public enum ErrorCode {
   REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
   REVIEW_KEYWORD_DUPLICATION(BAD_REQUEST, "리뷰 카테고리가 중복 되었습니다."),
   NOT_MY_REVIEW(BAD_REQUEST, "자신의 리뷰만 삭제할 수 있습니다."),
+  REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH(BAD_REQUEST, "리뷰 수정 시 이미지 리스트와 수정 이미지 정보 리스트 길이가 일치하지 않습니다."),
+  EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST(BAD_REQUEST, "리뷰 수정 시 기존 이미지에 대한 정보가 잘못 되었습니다."),
 
   //INTERNAL_SERVER_ERROR
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버측 에러입니다."),
@@ -39,7 +41,7 @@ public enum ErrorCode {
   UNSUPPORTED_FILE_FORMAT(UNSUPPORTED_MEDIA_TYPE, "적절하지 않은 확장자의 파일입니다."),
 
   // NOT_FOUND
-  NOT_FOUND_EXCEPTION(NOT_FOUND, "존재하는 데이터를 찾을 수 없습니다"),
+  NOT_FOUND_EXCEPTION(NOT_FOUND, "존재하는 데이터를 찾을 수 없습니다."),
   MEMBER_NOT_FOUND(NOT_FOUND, "존재하는 회원을 찾을 수 없습니다."),
   NANA_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana 입니다."),
   NANA_TITLE_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana Title 입니다."),
@@ -47,7 +49,9 @@ public enum ErrorCode {
   MEMBER_WTIHDRAWAL_NOT_FOUND(NOT_FOUND, "존재하는 회원의 탈퇴 상태를 찾을 수 없습니다"),
   CATEGORY_NOT_FOUND(NOT_FOUND, "존재하는 카테고리를 찾을 수 없습니다."),
   REVIEW_NOT_FOUND(NOT_FOUND, "존재하는 리뷰를 찾을 수 없습니다."),
-  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다"),
+  MEMBER_REIVEW_NOT_FOUND(NOT_FOUND, "유저가 작성한 리뷰를 찾을 수 없습니다."),
+  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다."),
+  IMAGE_FILE_NOT_FOUND(NOT_FOUND, "존재하는 이미지를 찾을 수 없습니다."),
 
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),

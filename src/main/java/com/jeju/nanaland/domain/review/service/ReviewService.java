@@ -1,10 +1,13 @@
 package com.jeju.nanaland.domain.review.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_REIVEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_MY_REVIEW;
 import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_KEYWORD_DUPLICATION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
@@ -17,6 +20,8 @@ import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewRequest.EditReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewRequest.EditReviewDto.EditImageInfo;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
@@ -36,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -185,15 +191,28 @@ public class ReviewService {
     }
   }
 
-  private Post getPostById(Long id, Category category) {
-    switch (category) {
-      case EXPERIENCE -> {
-        return experienceRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
-      }
-      //TODO 맛집 개발 시 추가하기
-      default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
+  @Transactional
+  public void updateMyReview(MemberInfoDto memberInfoDto, Long reviewId,
+      List<MultipartFile> imageList, EditReviewDto editReviewDto) {
+    // 유저가 쓴 리뷰 조회
+    Review review = reviewRepository.findReviewByIdAndMember(reviewId, memberInfoDto.getMember())
+        .orElseThrow(() -> new NotFoundException(
+            MEMBER_REIVEW_NOT_FOUND.getMessage()));
+
+    // rating 업데이트 되었으면 수정
+    if (review.getRating() != editReviewDto.getRating()) {
+      review.updateRating(editReviewDto.getRating());
     }
+
+    // content 업데이트 되었으면 수정
+    if (review.getContent().equals(editReviewDto.getContent())) {
+      review.updateContent(editReviewDto.getContent());
+    }
+
+    // reviewKeyword 수정
+    updateReviewKeyword(review, editReviewDto);
+    // 이미지가 있는 리뷰라면 수정
+    updateReviewImages(review, editReviewDto, imageList);
   }
 
   @Transactional
@@ -226,5 +245,94 @@ public class ReviewService {
     return StatusDto.builder()
         .isReviewHeart(true)
         .build();
+  }
+
+  private Post getPostById(Long id, Category category) {
+    switch (category) {
+      case EXPERIENCE -> {
+        return experienceRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+      }
+      //TODO 맛집 개발 시 추가하기
+      default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
+    }
+  }
+
+
+  private void updateReviewKeyword(Review review, EditReviewDto editReviewDto) {
+    List<String> editReviewKeywords = editReviewDto.getReviewKeywords();
+    List<ReviewKeyword> originReviewKeywords = review.getReviewKeywords().stream().toList();
+    List<String> stringOriginReviewKeywords = originReviewKeywords
+        .stream()
+        .map(keyword -> keyword.getReviewTypeKeyword().name())
+        .toList();
+
+    // 기존 값 모두 false, 기존 키워드들이 수정되어 제출된 리뷰에도 있는지 판단
+    // 기존에있고 수정되어 제출된 리뷰에도 있다면 true, 기존에 있지만 수정되어 제출된 리뷰에 없다면 false로 체크 예정
+    boolean[] existKeyword = new boolean[stringOriginReviewKeywords.size()];
+
+    // 수정되어 제출된 keyword가 기존 keywrod에 있는 것인지 확인.
+    for (String editKeyword : editReviewKeywords) {
+      boolean isNew = true;
+      for (int j = 0; j < stringOriginReviewKeywords.size(); j++) {
+        // 기존에 있던 키워드면 existKeyword = True, isNew = false
+        if (editKeyword.equals(stringOriginReviewKeywords.get(j))) {
+          existKeyword[j] = true;
+          isNew = false;
+          break;
+        }
+      }
+      // j로 돌아가는 반복문에서 isNew가 false로 바뀌지 않았다면 새로 추가된 키워드이므로 저장
+      if (isNew) {
+        reviewKeywordRepository.save(ReviewKeyword.builder()
+            .review(review)
+            .reviewTypeKeyword(ReviewTypeKeyword.valueOf(editKeyword))
+            .build());
+      }
+    }
+    // existKeyword가 false라는 것은 기존에는 있었지만 리뷰를 수정하면서 삭제된 것이므로 제거
+    for (int i = 0; i < stringOriginReviewKeywords.size(); i++) {
+      if (!existKeyword[i]) {
+        reviewKeywordRepository.deleteById(originReviewKeywords.get(i).getId());
+      }
+    }
+  }
+
+  private void updateReviewImages(Review review, EditReviewDto editReviewDto,
+      List<MultipartFile> editImages) {
+    List<EditImageInfo> editImageInfoList = editReviewDto.getEditImageInfoList();
+    List<ReviewImageFile> originReviewImageList = reviewImageFileRepository.findAllByReview(review);
+
+    // 수정되어 제출된 리뷰의 이미지 리스트의 크기와 수정되어 제출된 리뷰의 이미지 정보 리스트의 크기 같은지 비교
+    if (editImageInfoList.size() != editImages.size()) {
+      throw new RuntimeException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
+    }
+
+    // 기존 이미지들의 id를 저장
+    // 나중에 여기에 남아있는 이미지는 삭제되었다고 판단할 예정
+    Set<Long> existImageIds = originReviewImageList
+        .stream()
+        .map(ReviewImageFile::getId)
+        .collect(Collectors.toSet());
+
+    for (int i = 0; i < editImageInfoList.size(); i++) {
+      // 수정 제출된 이미지가
+      EditImageInfo editImageInfo = editImageInfoList.get(i);
+      if (editImageInfo.isNew()) { // 새로 제출된 이미지라면 저장
+        reviewImageFileRepository.save(ReviewImageFile.builder()
+            .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(i), true))
+            .review(review)
+            .build());
+      } else { // 원래 있던 이미지라면
+        if (!existImageIds.remove(
+            editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것
+          throw new BadRequestException(EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST.getMessage());
+        }
+      }
+    }
+    // set에 남아있는 이미지는 삭제된 것이므로 데이터베이스에서 삭제
+    existImageIds.forEach(reviewImageFileRepository::deleteById);
+    // s3에서 삭제
+    existImageIds.forEach(imageFileService::deleteImageFileInS3ById);
   }
 }
