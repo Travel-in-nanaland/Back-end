@@ -16,14 +16,14 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.dto.QImageFileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.review.dto.QReviewResponse_MyReviewDetailDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.QReviewResponse_MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_ReviewDetailDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.group.GroupBy;
@@ -147,22 +147,21 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(experience, experienceTrans.experience).fetchOne();
   }
 
-  // TODO 맛집 생기면 주석 지우기
-//  @Override
-//  public MyReviewDetailDto findRestaurantMyReviewDetail(Long reviewId,
-//      MemberInfoDto memberInfoDto) {
-//    return queryFactory
-//        .select(
-//            new QReviewResponse_MyReviewDetailDto(review.id, restaurant.firstImageFile.originUrl,
-//                restaurant.firstImageFile.thumbnailUrl, restaurantTrans.title,
-//                restaurantTrans.address, review.rating,
-//                review.content))
-//        .from(review)
-//        .leftJoin(experience)
-//        .where(review.post.id.eq(experience.id))
-//        .innerJoin(restaurant, restaurantTrans.restaurant).fetchOne();
-//  }
 
+  @Override
+  public MyReviewDetailDto findRestaurantMyReviewDetail(Long reviewId,
+      MemberInfoDto memberInfoDto) {
+    return queryFactory
+        .select(
+            new QReviewResponse_MyReviewDetailDto(review.id, restaurant.firstImageFile.originUrl,
+                restaurant.firstImageFile.thumbnailUrl, restaurantTrans.title,
+                restaurantTrans.address, review.rating,
+                review.content))
+        .from(review)
+        .leftJoin(experience)
+        .where(review.post.id.eq(experience.id))
+        .innerJoin(restaurant, restaurantTrans.restaurant).fetchOne();
+  }
 
 
   @Override

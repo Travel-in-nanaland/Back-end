@@ -75,7 +75,7 @@ public class ReviewService {
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
-    if (category != Category.EXPERIENCE) {
+    if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
       throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
     }
 
@@ -96,6 +96,9 @@ public class ReviewService {
   public void saveReview(MemberInfoDto memberInfoDto, Long id, Category category,
       CreateReviewDto createReviewDto,
       List<MultipartFile> imageList) {
+    if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
+      throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
+    }
 
     Post post = getPostById(id, category);
     if (imageList != null && imageList.size() > 5) {
@@ -188,13 +191,10 @@ public class ReviewService {
     if (category.equals(Category.EXPERIENCE)) {
       myReviewDetail = reviewRepository.findExperienceMyReviewDetail(
           review.getId(), memberInfoDto);
-    }
-    // TODO 맛집 생기면 주석 지우기
-//    else if (category.equals(Category.RESTAURANT)) {
-//      myReviewDetail = reviewRepository.findRestaurantMyReviewDetail(
-//          review.getId(), memberInfoDto);
-//    }
-    else {
+    } else if (category.equals(Category.RESTAURANT)) {
+      myReviewDetail = reviewRepository.findRestaurantMyReviewDetail(
+          review.getId(), memberInfoDto);
+    } else {
       throw new RuntimeException(NOT_FOUND_EXCEPTION.getMessage());
     }
     myReviewDetail.setImages(reviewImageList);
