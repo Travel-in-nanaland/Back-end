@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -45,12 +46,12 @@ public class ReportController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestPart("reqDto") @Valid ReportRequest.InfoFixDto reqDto,
       @Parameter(
-          description = "정보 수정 요청 이미지파일",
+          description = "정보 수정 요청 이미지파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
-      @RequestPart(value = "multipartFile", required = false) MultipartFile multipartFile) {
+      @RequestPart(value = "multipartFile", required = false) List<MultipartFile> imageList) {
 
-    reportService.postInfoFixReport(memberInfoDto, reqDto, multipartFile);
+    reportService.postInfoFixReport(memberInfoDto, reqDto, imageList);
     return BaseResponse.success(POST_INFO_FIX_REPORT_SUCCESS);
   }
 }
