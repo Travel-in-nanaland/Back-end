@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.notice.controller;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
 import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeListDto;
 import com.jeju.nanaland.domain.notice.service.NoticeService;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,5 +30,13 @@ public class NoticeController {
   ) {
     NoticeListDto noticeList = noticeService.getNoticeList(memberInfoDto, page, size);
     return ResponseEntity.ok(noticeList);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity getNoticeDetail(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @PathVariable Long id) {
+    NoticeDetailDto noticeDetailDto = noticeService.getNoticeDetail(memberInfoDto, id);
+    return ResponseEntity.ok(noticeDetailDto);
   }
 }

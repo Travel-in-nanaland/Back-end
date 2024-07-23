@@ -1,10 +1,11 @@
 package com.jeju.nanaland.domain.notice.dto;
 
-import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -26,15 +27,49 @@ public class NoticeResponse {
   @Builder
   public static class NoticeTitleDto {
 
-    private NoticeCategory noticeCategory;
+    private String noticeCategory;
     private String title;
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public NoticeTitleDto(NoticeCategory noticeCategory, String title, LocalDateTime createdAt) {
+    public NoticeTitleDto(String noticeCategory, String title, LocalDateTime createdAt) {
       this.noticeCategory = noticeCategory;
       this.title = title;
       this.createdAt = createdAt;
+    }
+  }
+
+  @Data
+  @Builder
+  @AllArgsConstructor
+  public static class NoticeDetailDto {
+
+    private String title;
+    private LocalDateTime createdAt;
+
+    private List<NoticeContentDto> noticeContents;
+
+    @QueryProjection
+    public NoticeDetailDto(String title, LocalDateTime createdAt) {
+      this.title = title;
+      this.createdAt = createdAt;
+    }
+  }
+
+  @Data
+  @Builder
+  public static class NoticeContentDto {
+
+    private ImageFileDto imageFileDto;
+    private String content;
+
+    @QueryProjection
+    public NoticeContentDto(ImageFileDto imageFileDto, String content) {
+      if (imageFileDto.getThumbnailUrl() == null && imageFileDto.getOriginUrl() == null) {
+        imageFileDto = null;
+      }
+      this.imageFileDto = imageFileDto;
+      this.content = content;
     }
   }
 }

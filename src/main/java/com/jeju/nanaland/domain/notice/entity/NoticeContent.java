@@ -33,6 +33,6 @@ public class NoticeContent {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "image_file_id")
-  private ImageFile image;
+  private ImageFile imageFile;
 
 }
