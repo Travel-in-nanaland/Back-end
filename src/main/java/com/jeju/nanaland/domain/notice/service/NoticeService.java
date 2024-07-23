@@ -41,14 +41,15 @@ public class NoticeService {
     // 공지사항 세부정보와 내용 조회
     NoticeDetailDto noticeDetailDto = noticeRepository.getNoticeDetail(memberInfoDto.getLanguage(),
         id);
-    List<NoticeContentDto> noticeContentDtos = noticeRepository.getNoticeContents(
-        memberInfoDto.getLanguage(), id);
 
     if (noticeDetailDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
 
-    noticeDetailDto.setNoticeContents(noticeContentDtos);
+    List<NoticeContentDto> noticeContents = noticeRepository.getNoticeContents(
+        memberInfoDto.getLanguage(), id);
+
+    noticeDetailDto.setNoticeContents(noticeContents);
     return noticeDetailDto;
   }
 }
