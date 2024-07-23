@@ -64,6 +64,11 @@ public class ReportService {
       throw new BadRequestException("나나스픽 게시물은 정보 수정 요청이 불가능합니다.");
     }
 
+    // 이미지 5장 이상 전처리
+    if (imageList.size() > 5) {
+      throw new BadRequestException("이미지는 최대 5장까지 요청 가능합니다.");
+    }
+
     // 해당 게시물 정보 가져오기
     Long postId = reqDto.getPostId();
     Category category = Category.valueOf(reqDto.getCategory());
