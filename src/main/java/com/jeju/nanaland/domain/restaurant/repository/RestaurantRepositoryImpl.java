@@ -6,6 +6,7 @@ import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantKeyword.rest
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantMenu.restaurantMenu;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restaurantTrans;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantResponse_RestaurantMenuDto;
@@ -14,8 +15,11 @@ import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantMenuDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantThumbnail;
 import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
+import com.jeju.nanaland.domain.review.dto.QReviewResponse_SearchPostForReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
@@ -142,5 +146,18 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
     } else {
       return restaurantKeyword.restaurantTypeKeyword.in(keywordFilterList);
     }
+  }
+
+  @Override
+  public List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QReviewResponse_SearchPostForReviewDto(restaurant.id,
+                Expressions.constant(Category.RESTAURANT.name()),
+                restaurantTrans.title, restaurant.firstImageFile, restaurantTrans.address))
+        .from(restaurant)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .where(restaurantTrans.language.eq(language))
+        .fetch();
   }
 }

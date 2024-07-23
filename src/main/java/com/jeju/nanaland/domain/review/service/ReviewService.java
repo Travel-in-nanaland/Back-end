@@ -39,14 +39,15 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,6 +57,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -141,86 +143,34 @@ public class ReviewService {
     Map<String, SearchPostForReviewDto> redisMap = hashOperations.entries(
         SEARCH_AUTO_COMPLETE_HASH_KEY + memberInfoDto.getLanguage()
             .name()); // 여기 KEY를 나중에 language를 붙이면 될듯
-    List<SearchPostForReviewDto> dtoList = new ArrayList<>();
-    for (String key : redisMap.keySet()) {
-      if (key.contains(keyword)) {
-        dtoList.add(redisMap.get(key));
+
+    // 태호 박물관 -> {"태호", "박물관"}
+    List<String> splitKeywordList = Arrays.asList(keyword.split(" "));
+    // 태호 박물관 -> 태호박물관
+    String mergedKeyword = String.join("", splitKeywordList);
+
+    // 레디스에서 기존 keyword, 공백 없앤 keyword, 공백으로 분리한 keywordList로 검색한 값 title기준으로 사전 정렬
+    List<SearchPostForReviewDto> keywordSearch = new ArrayList<>(
+        searchByKeyword(redisMap, keyword));
+    List<SearchPostForReviewDto> mergedKeywordSearch = new ArrayList<>(
+        searchByKeyword(redisMap, mergedKeyword));
+    List<SearchPostForReviewDto> splitKeywordSearch = new ArrayList<>(
+        searchByKeywordList(redisMap, splitKeywordList));
+
+    // keywordSearch에 존재하지 않을 경우에만 결과에 추가 (중복 제거)
+    for (SearchPostForReviewDto dto : mergedKeywordSearch) {
+      if (!keywordSearch.contains(dto)) {
+        keywordSearch.add(dto);
       }
     }
-    // title 사전 순으로 정렬
-    dtoList.sort(Comparator.comparing(SearchPostForReviewDto::getTitle));
-    return dtoList;
-  }
-
-  // TODO : 언어별로 SEARCH_AUTO_COMPLETE_HASH_KEY
-  @PostConstruct
-  private void init() {
-    if ("test".equals(System.getProperty("spring.profiles.active"))) {
-      return;
-    }
-    HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
-
-    /**
-     * 테스트 용
-     */
-//    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + Language.KOREAN, "가나박물관, tag값",
-//        SearchPostForReviewDto.builder()
-//            .title("가나박물관")
-//            .id(1L)
-//            .category("category1")
-//            .address("address1")
-//            .firstImage(new ImageFileDto("image1", "image2"))
-//            .build());
-//    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "다라박물관",
-//        SearchPostForReviewDto.builder()
-//            .title("다라박물관")
-//            .id(2L)
-//            .category("category2")
-//            .address("address2")
-//            .firstImage(new ImageFileDto("image3", "image4"))
-//            .build());
-//    hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN", "마바박물관",
-//        SearchPostForReviewDto.builder()
-//            .title("마바박물관")
-//            .id(3L)
-//            .category("category3")
-//            .address("address3")
-//            .firstImage(new ImageFileDto("image5", "image6"))
-//            .build());
-
-    // ---------------------------------------
-
-    for (Language language : Language.values()) {
-      experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
-          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
-              dto.getTitle(), dto));
-
-      // TODO 맛집 추가시 완성하기
-//      restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
-//          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
-//              dto.getTitle(), dto));
-
-    }
-
-    Long test = hashOperations.size(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN");
-    System.out.println("test = " + test);
-  }
-
-  private Post getPostById(Long id, Category category) {
-    switch (category) {
-      case EXPERIENCE -> {
-        return experienceRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+    for (SearchPostForReviewDto dto : splitKeywordSearch) {
+      if (!keywordSearch.contains(dto)) {
+        keywordSearch.add(dto);
       }
-
-      case RESTAURANT -> {
-        return restaurantRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
-      }
-
-      default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
     }
+    return keywordSearch;
   }
+
 
   @Transactional
   public StatusDto toggleReviewHeart(MemberInfoDto memberInfoDto, Long id) {
@@ -316,4 +266,70 @@ public class ReviewService {
         .data(selectedReviews)
         .build();
   }
+
+  @PostConstruct
+  private void initAutoCompleteData() {
+    // 테스트 돌릴 때 redis가 켜지지 않아 이 부분 에러남. 테스트 일때는 실행되지 않도록 설정
+    if ("test".equals(System.getProperty("spring.profiles.active"))) {
+      return;
+    }
+    HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
+
+    for (Language language : Language.values()) {
+      experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
+          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+              dto.getTitle(), dto));
+
+      restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
+          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+              dto.getTitle(), dto));
+
+    }
+
+    Long test = hashOperations.size(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN");
+    System.out.println("test = " + test);
+  }
+
+  private Post getPostById(Long id, Category category) {
+    switch (category) {
+      case EXPERIENCE -> {
+        return experienceRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+      }
+
+      case RESTAURANT -> {
+        return restaurantRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+      }
+
+      default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
+    }
+  }
+
+  /**
+   * redis에서 모든 값 가져온 후 key가 keyword를 포함한 것 찾기 찾은 것들에 value->(SearchPostForReviewDto) 가져오기 title로
+   * 정렬
+   */
+  private List<SearchPostForReviewDto> searchByKeyword(Map<String, SearchPostForReviewDto> redisMap,
+      String keyword) {
+    return redisMap.entrySet().stream()
+        .filter(entry -> entry.getKey().contains(keyword))
+        .map(Map.Entry::getValue)
+        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
+        .toList();
+  }
+
+  /**
+   * redis에서 모든 값 가져온 후 List<> keyword를 stream돌려서 key가 keyword를 포함한 것 찾기 찾은 것들에
+   * value->(SearchPostForReviewDto) 가져오기 title로 정렬
+   */
+  private List<SearchPostForReviewDto> searchByKeywordList(
+      Map<String, SearchPostForReviewDto> redisMap, List<String> keywords) {
+    return redisMap.entrySet().stream()
+        .filter(entry -> keywords.stream().anyMatch(entry.getKey()::contains))
+        .map(Map.Entry::getValue)
+        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
+        .toList();
+  }
+
 }

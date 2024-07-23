@@ -173,11 +173,11 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     return queryFactory
         .select(
             new QReviewResponse_SearchPostForReviewDto(experience.id,
-                Expressions.stringTemplate("'{0}'", Category.EXPERIENCE),
+                Expressions.constant(Category.EXPERIENCE.name()),
                 experienceTrans.title, experience.firstImageFile, experienceTrans.address))
         .from(experience)
-        .leftJoin(experienceTrans)
-        .on(experienceTrans.language.eq(language))
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experienceTrans.language.eq(language))
         .fetch();
   }
 
