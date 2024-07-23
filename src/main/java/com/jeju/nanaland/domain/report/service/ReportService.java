@@ -59,8 +59,10 @@ public class ReportService {
   @Transactional
   public void postInfoFixReport(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
       List<MultipartFile> imageList) {
+
+    Category category = Category.valueOf(reqDto.getCategory());
     // 나나스픽 전처리
-    if (reqDto.getCategory().equals(Category.NANA.name())) {
+    if (List.of(Category.NANA, Category.NANA_CONTENT).contains(category)) {
       throw new BadRequestException("나나스픽 게시물은 정보 수정 요청이 불가능합니다.");
     }
 
@@ -71,7 +73,6 @@ public class ReportService {
 
     // 해당 게시물 정보 가져오기
     Long postId = reqDto.getPostId();
-    Category category = Category.valueOf(reqDto.getCategory());
     Language language = memberInfoDto.getLanguage();
     CompositeDto compositeDto = findCompositeDto(category, postId, language);
     if (compositeDto == null) {
