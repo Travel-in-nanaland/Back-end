@@ -13,7 +13,14 @@ import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest.CreateReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
@@ -28,10 +35,12 @@ import com.jeju.nanaland.domain.review.repository.ReviewImageFileRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewKeywordRepository;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +69,8 @@ public class ReviewService {
   private final ReviewHeartRepository reviewHeartRepository;
   private final MarketRepository marketRepository;
   private final RedisTemplate<String, Object> redisTemplate;
+  private final MemberRepository memberRepository;
+  private final RestaurantRepository restaurantRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -201,7 +212,12 @@ public class ReviewService {
         return experienceRepository.findById(id)
             .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
       }
-      //TODO 맛집 개발 시 추가하기
+
+      case RESTAURANT -> {
+        return restaurantRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+      }
+
       default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
     }
   }
@@ -235,6 +251,69 @@ public class ReviewService {
 
     return StatusDto.builder()
         .isReviewHeart(true)
+        .build();
+  }
+
+  public MemberReviewListDto getReviewListByMember(MemberInfoDto memberInfoDto, Long memberId,
+      int page, int size) {
+    Member member = memberInfoDto.getMember();
+    Language language = member.getLanguage();
+
+    boolean isMyReview;
+    if (memberId != null) {
+      isMyReview = member.getId().equals(memberId);
+      if (!isMyReview) {
+        member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+      }
+    }
+    Pageable pageable = PageRequest.of(page, size);
+    Page<MemberReviewDetailDto> reviewListByMember = reviewRepository.findReviewListByMember(
+        member, language, pageable);
+
+    return MemberReviewListDto.builder()
+        .totalElements(reviewListByMember.getTotalElements())
+        .data(reviewListByMember.getContent())
+        .build();
+  }
+
+  public MemberReviewPreviewDto getReviewPreviewByMember(MemberInfoDto memberInfoDto,
+      Long memberId) {
+    Member member = memberInfoDto.getMember();
+    Language language = member.getLanguage();
+
+    boolean isMyReview;
+    if (memberId != null) {
+      isMyReview = member.getId().equals(memberId);
+      if (!isMyReview) {
+        member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+      }
+    }
+    List<MemberReviewPreviewDetailDto> reviewListByMember = reviewRepository.findReviewPreviewByMember(
+        member, language);
+
+    List<MemberReviewPreviewDetailDto> selectedReviews = new ArrayList<>();
+    int totalWeight = 0;
+    final int MAX_WEIGHT = 12;
+
+    // 리뷰 선택 로직
+    for (MemberReviewPreviewDetailDto reviewDetail : reviewListByMember) {
+      int weight = (reviewDetail.getImageFileDto() != null) ? 2 : 1;
+
+      if (totalWeight + weight <= MAX_WEIGHT) {
+        selectedReviews.add(reviewDetail);
+        totalWeight += weight;
+      } else {
+        break;
+      }
+    }
+
+    Long totalCount = reviewRepository.findTotalCountByMember(member);
+
+    return MemberReviewPreviewDto.builder()
+        .totalElements(totalCount)
+        .data(selectedReviews)
         .build();
   }
 }

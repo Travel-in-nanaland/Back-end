@@ -6,5 +6,6 @@ public enum Category {
   EXPERIENCE,
   FESTIVAL,
   NATURE,
-  MARKET
+  MARKET,
+  RESTAURANT
 }
