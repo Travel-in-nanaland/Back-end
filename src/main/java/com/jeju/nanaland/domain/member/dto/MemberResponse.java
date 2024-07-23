@@ -82,7 +82,7 @@ public class MemberResponse {
     @Schema(description = "회원가입 형태", example = "KAKAO, GOOGLE, APPLE")
     private String provider;
     @Schema(description = "프로필 사진 url")
-    private String profileImageUrl;
+    private ImageFileDto profileImage;
     @Schema(description = "닉네임")
     private String nickname;
     @Schema(description = "설명")

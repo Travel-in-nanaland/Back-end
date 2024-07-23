@@ -197,7 +197,7 @@ class MemberProfileServiceTest {
     assertThat(profileDto.getConsentItems()).hasSize(2);
     assertThat(profileDto.getEmail()).isEqualTo(member.getEmail());
     assertThat(profileDto.getProvider()).isEqualTo(member.getProvider().name());
-    assertThat(profileDto.getProfileImageUrl()).isEqualTo(
+    assertThat(profileDto.getProfileImage().getThumbnailUrl()).isEqualTo(
         member.getProfileImageFile().getThumbnailUrl());
     assertThat(profileDto.getNickname()).isEqualTo(member.getNickname());
     assertThat(profileDto.getDescription()).isEqualTo(member.getDescription());
@@ -207,7 +207,7 @@ class MemberProfileServiceTest {
     assertThat(profileDto2.getConsentItems()).hasSize(2);
     assertThat(profileDto2.getEmail()).isEqualTo(member.getEmail());
     assertThat(profileDto2.getProvider()).isEqualTo(member.getProvider().name());
-    assertThat(profileDto2.getProfileImageUrl()).isEqualTo(
+    assertThat(profileDto2.getProfileImage().getThumbnailUrl()).isEqualTo(
         member.getProfileImageFile().getThumbnailUrl());
     assertThat(profileDto2.getNickname()).isEqualTo(member.getNickname());
     assertThat(profileDto2.getDescription()).isEqualTo(member.getDescription());
@@ -238,8 +238,8 @@ class MemberProfileServiceTest {
     assertThat(profileDto.getConsentItems()).isEmpty();
     assertThat(profileDto.getEmail()).isEqualTo(member2.getEmail());
     assertThat(profileDto.getProvider()).isEqualTo(member2.getProvider().name());
-    assertThat(profileDto.getProfileImageUrl()).isEqualTo(
-        member2.getProfileImageFile().getThumbnailUrl());
+    assertThat(profileDto.getProfileImage().getThumbnailUrl()).isEqualTo(
+        member.getProfileImageFile().getThumbnailUrl());
     assertThat(profileDto.getNickname()).isEqualTo(member2.getNickname());
     assertThat(profileDto.getDescription()).isEqualTo(member2.getDescription());
     assertThat(profileDto.getTravelType()).isEqualTo(
