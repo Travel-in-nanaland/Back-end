@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.notice.dto;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -27,8 +28,11 @@ public class NoticeResponse {
   @Builder
   public static class NoticeTitleDto {
 
+    @Schema(description = "카테고리")
     private String noticeCategory;
+    @Schema(description = "제목")
     private String title;
+    @Schema(description = "생성일")
     private LocalDateTime createdAt;
 
     @QueryProjection
@@ -44,15 +48,17 @@ public class NoticeResponse {
   @AllArgsConstructor
   public static class NoticeDetailDto {
 
+    @Schema(description = "제목")
     private String title;
-    private LocalDateTime createdAt;
-
+    @Schema(description = "생성일")
+    private LocalDate createdAt;
+    @Schema(description = "내용 리스트")
     private List<NoticeContentDto> noticeContents;
 
     @QueryProjection
     public NoticeDetailDto(String title, LocalDateTime createdAt) {
       this.title = title;
-      this.createdAt = createdAt;
+      this.createdAt = createdAt.toLocalDate();
     }
   }
 
@@ -60,7 +66,9 @@ public class NoticeResponse {
   @Builder
   public static class NoticeContentDto {
 
-    private ImageFileDto imageFileDto;
+    @Schema(description = "이미지")
+    private ImageFileDto image;
+    @Schema(description = "내용")
     private String content;
 
     @QueryProjection
@@ -68,7 +76,7 @@ public class NoticeResponse {
       if (imageFileDto.getThumbnailUrl() == null && imageFileDto.getOriginUrl() == null) {
         imageFileDto = null;
       }
-      this.imageFileDto = imageFileDto;
+      this.image = imageFileDto;
       this.content = content;
     }
   }
