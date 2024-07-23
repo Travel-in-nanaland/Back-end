@@ -83,8 +83,8 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
         .select(
             new QNoticeResponse_NoticeContentDto(
                 new QImageFileDto(
-                    imageFile.thumbnailUrl,
-                    imageFile.originUrl
+                    imageFile.originUrl,
+                    imageFile.thumbnailUrl
                 ),
                 noticeContent.content
             )
