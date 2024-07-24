@@ -3,7 +3,6 @@ package com.jeju.nanaland.domain.common.service;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
@@ -60,14 +59,12 @@ public class ImageFileService {
     return images;
   }
 
-  public void deleteImageFileInS3(ImageFile imageFile) {
+  public void deleteImageFileInS3ByImageFile(ImageFile imageFile) {
     s3ImageService.deleteImageS3(imageFile);
   }
 
-  public void deleteImageFileInS3ById(long id) {
-    ImageFile imageFile = imageFileRepository.findById(id)
-        .orElseThrow(() -> new BadRequestException(ErrorCode.IMAGE_FILE_NOT_FOUND.getMessage()));
-    s3ImageService.deleteImageS3(imageFile);
+  public void deleteImageFileInS3ByOriginUrl(String originUrl) {
+    s3ImageService.deleteImageS3ByOriginUrl(originUrl);
   }
 
 }

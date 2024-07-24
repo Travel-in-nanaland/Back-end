@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.review.dto;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
@@ -112,7 +113,7 @@ public class ReviewResponse {
     private String content;
 
     @Schema(description = "리뷰 이미지 리스트")
-    private List<ImageFileDto> images;
+    private List<MyReviewImageDto> images;
 
     @Schema(
         description = "게시물 카테고리",
@@ -120,7 +121,7 @@ public class ReviewResponse {
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
             "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
     )
-    private List<String> reviewKeywords;
+    private List<ReviewTypeKeyword> reviewKeywords;
 
     @QueryProjection
     public MyReviewDetailDto(Long id, String firstImageOriginUrl, String firstImageThumbnailUrl,
@@ -131,6 +132,17 @@ public class ReviewResponse {
       this.address = address;
       this.rating = rating;
       this.content = content;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "회원이 작성한 리뷰 이미지 정보")
+    public static class MyReviewImageDto {
+
+      private Long id;
+      private String originUrl;
+      private String thumbnailUrl;
+
     }
   }
 

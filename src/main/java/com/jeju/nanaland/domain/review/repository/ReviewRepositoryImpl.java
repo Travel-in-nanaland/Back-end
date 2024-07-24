@@ -143,8 +143,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.content))
         .from(review)
         .leftJoin(experience)
-        .where(review.post.id.eq(experience.id))
-        .innerJoin(experience, experienceTrans.experience).fetchOne();
+        .on(review.post.id.eq(experience.id))
+        .innerJoin(experience.experienceTrans, experienceTrans).fetchOne();
   }
 
 

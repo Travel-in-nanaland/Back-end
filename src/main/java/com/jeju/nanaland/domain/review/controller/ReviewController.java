@@ -10,9 +10,9 @@ import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_UPDATE_SUCCE
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.review.dto.ReviewRequest;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
@@ -151,7 +151,8 @@ public class ReviewController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
-  @PutMapping("/my/{id}")
+  @PutMapping(value = "/my/{id}",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> editMyReviewDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,

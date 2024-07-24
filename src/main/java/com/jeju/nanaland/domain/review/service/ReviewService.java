@@ -14,9 +14,9 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -31,6 +31,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto.MyReviewImageDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
@@ -72,6 +73,7 @@ public class ReviewService {
   private final ReviewHeartRepository reviewHeartRepository;
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
+  private final ImageFileRepository imageFileRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -175,15 +177,20 @@ public class ReviewService {
   public MyReviewDetailDto getMyReviewById(MemberInfoDto memberInfoDto, Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
         NOT_FOUND_EXCEPTION.getMessage()));
-    List<ImageFileDto> reviewImageList = reviewImageFileRepository.findAllById(reviewId)
+    List<MyReviewImageDto> reviewImageList = reviewImageFileRepository.findAllByReview(review)
         .stream()
-        .map(image -> new ImageFileDto(image.getImageFile().getOriginUrl(),
-            image.getImageFile().getThumbnailUrl()))
+        .map(image -> MyReviewImageDto.builder()
+            .id(image.getId()) // reviewImageFile id 전달
+            .originUrl(image.getImageFile().getOriginUrl())
+            .thumbnailUrl(image.getImageFile().getThumbnailUrl())
+            .build())
         .toList();
-    List<String> reviewKeywordStringList = reviewKeywordRepository.findAllById(reviewId)
+
+    List<ReviewTypeKeyword> reviewKeywordStringList = reviewKeywordRepository.findAllByReview(
+            review)
         .stream()
         .map(
-            keyword -> keyword.getReviewTypeKeyword().getValueByLocale(memberInfoDto.getLanguage()))
+            ReviewKeyword::getReviewTypeKeyword)
         .toList();
     Category category = review.getCategory();
     MyReviewDetailDto myReviewDetail;
@@ -232,7 +239,7 @@ public class ReviewService {
 
     // s3에서도 이미지 삭제
     for (ImageFile imageFile : imageFileList) {
-      imageFileService.deleteImageFileInS3(imageFile);
+      imageFileService.deleteImageFileInS3ByImageFile(imageFile);
     }
   }
 
@@ -250,7 +257,7 @@ public class ReviewService {
     }
 
     // content 업데이트 되었으면 수정
-    if (review.getContent().equals(editReviewDto.getContent())) {
+    if (!review.getContent().equals(editReviewDto.getContent())) {
       review.updateContent(editReviewDto.getContent());
     }
 
@@ -380,15 +387,17 @@ public class ReviewService {
 
   private void updateReviewImages(Review review, EditReviewDto editReviewDto,
       List<MultipartFile> editImages) {
+
     List<EditImageInfoDto> editImageInfoList = editReviewDto.getEditImageInfoList();
     List<ReviewImageFile> originReviewImageList = reviewImageFileRepository.findAllByReview(review);
 
+    // 수정된 리뷰에 이미지가 있을 경우
     // 수정되어 제출된 리뷰의 이미지 리스트의 크기와 수정되어 제출된 리뷰의 이미지 정보 리스트의 크기 같은지 비교
-    if (editImageInfoList.size() != editImages.size()) {
+    if ((editImages != null) && (editImageInfoList.size() != editImages.size())) {
       throw new RuntimeException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
     }
 
-    // 기존 이미지들의 id를 저장
+    // 기존 ReviewImageFile들의 id를 저장
     // 나중에 여기에 남아있는 이미지는 삭제되었다고 판단할 예정
     Set<Long> existImageIds = originReviewImageList
         .stream()
@@ -398,7 +407,8 @@ public class ReviewService {
     for (int i = 0; i < editImageInfoList.size(); i++) {
       // 수정 제출된 이미지가
       EditImageInfoDto editImageInfo = editImageInfoList.get(i);
-      if (editImageInfo.isNew()) { // 새로 제출된 이미지라면 저장
+
+      if (editImageInfo.isNewImage()) { // 새로 제출된 이미지라면 저장
         reviewImageFileRepository.save(ReviewImageFile.builder()
             .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(i), true))
             .review(review)
@@ -410,9 +420,17 @@ public class ReviewService {
         }
       }
     }
-    // set에 남아있는 이미지는 삭제된 것이므로 데이터베이스에서 삭제
-    existImageIds.forEach(reviewImageFileRepository::deleteById);
+
+    // 삭제되어야할 reviewImageFile
+    List<ReviewImageFile> allById = reviewImageFileRepository.findAllById(existImageIds);
+    List<String> originUrlList = allById.stream()
+        .filter(reviewImageFile -> existImageIds.contains(reviewImageFile.getId()))
+        .map(reviewImageFile -> reviewImageFile.getImageFile().getOriginUrl()).toList();
+
+    // reviewImageFile 삭제 -> cascade remove로 imageFile도 삭제됨
+    reviewImageFileRepository.deleteAll(allById);
     // s3에서 삭제
-    existImageIds.forEach(imageFileService::deleteImageFileInS3ById);
+    originUrlList.forEach(imageFileService::deleteImageFileInS3ByOriginUrl);
+
   }
 }
