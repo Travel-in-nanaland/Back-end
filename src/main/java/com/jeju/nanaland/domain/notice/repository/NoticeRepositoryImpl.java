@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.notice.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
-import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import static com.jeju.nanaland.domain.notice.entity.QNotice.notice;
 import static com.jeju.nanaland.domain.notice.entity.QNoticeContent.noticeContent;
 import static com.jeju.nanaland.domain.notice.entity.QNoticeTitle.noticeTitle;
@@ -56,7 +55,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
 
     JPAQuery<Long> countQuery = queryFactory
         .select(noticeTitle.count())
-        .from(nanaTitle)
+        .from(noticeTitle)
         .innerJoin(noticeTitle.notice, notice)
         .where(noticeTitle.language.eq(language));
 
