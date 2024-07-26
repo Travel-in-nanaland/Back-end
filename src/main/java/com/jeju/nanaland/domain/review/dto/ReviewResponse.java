@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class ReviewResponse {
 
@@ -184,6 +185,7 @@ public class ReviewResponse {
   }
 
   @Getter
+  @Setter
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
@@ -193,8 +195,11 @@ public class ReviewResponse {
     @Schema(description = "리뷰 게시물 id")
     private Long id;
 
-    @Schema(description = "게시물 카테고리")
+    @Schema(description = "게시물 카테고리 ex) RESTAURANT, EXPERIENCE")
     private String category;
+
+    @Schema(description = "게시물 카테고리 이름, 화면에 사용할 값(언어별 번역 제공) ex) 제주 맛집,,,")
+    private String categoryValue;
 
     @Schema(description = "게시물 제목")
     private String title;

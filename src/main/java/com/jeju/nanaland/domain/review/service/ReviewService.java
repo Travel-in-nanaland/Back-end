@@ -277,12 +277,18 @@ public class ReviewService {
 
     for (Language language : Language.values()) {
       experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
-          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
-              dto.getTitle(), dto));
+          .forEach(dto -> {
+            dto.setCategoryValue(Category.EXPERIENCE.getValueByLocale(language));
+            hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+                dto.getTitle(), dto);
+          });
 
       restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
-          .forEach(dto -> hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
-              dto.getTitle(), dto));
+          .forEach(dto -> {
+            dto.setCategoryValue(Category.RESTAURANT.getValueByLocale(language));
+            hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+                dto.getTitle(), dto);
+          });
 
     }
 
