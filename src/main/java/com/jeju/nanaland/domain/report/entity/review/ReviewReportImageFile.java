@@ -32,7 +32,7 @@ public class ReviewReportImageFile {
   private ImageFile imageFile;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "review_claim_id", nullable = false)
+  @JoinColumn(name = "review_report_id", nullable = false)
   private ReviewReport reviewReport;
 
   @Builder
