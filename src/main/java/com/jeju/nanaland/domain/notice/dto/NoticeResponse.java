@@ -28,6 +28,8 @@ public class NoticeResponse {
   @Builder
   public static class NoticeTitleDto {
 
+    @Schema(description = "공지사항 id")
+    private Long id;
     @Schema(description = "카테고리")
     private String noticeCategory;
     @Schema(description = "제목")
@@ -36,7 +38,8 @@ public class NoticeResponse {
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public NoticeTitleDto(String noticeCategory, String title, LocalDateTime createdAt) {
+    public NoticeTitleDto(Long id, String noticeCategory, String title, LocalDateTime createdAt) {
+      this.id = id;
       this.noticeCategory = noticeCategory;
       this.title = title;
       this.createdAt = createdAt;

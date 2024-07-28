@@ -31,6 +31,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
   public Page<NoticeTitleDto> findNoticeList(Language language, Pageable pageable) {
     List<NoticeTitleDto> resultDto = queryFactory
         .select(new QNoticeResponse_NoticeTitleDto(
+                notice.id,
                 notice.noticeCategory.stringValue(),
                 noticeTitle.title,
                 notice.createdAt
