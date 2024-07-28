@@ -53,8 +53,6 @@ public class InfoFixReport extends BaseEntity {
   @Column(columnDefinition = "TEXT")
   private String content;
 
-  private String imageUrl;
-
   @NotBlank
   @Pattern(
       regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",

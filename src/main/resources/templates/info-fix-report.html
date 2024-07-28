@@ -21,7 +21,21 @@
       <br>
       게시물 제목 : <span th:text="${title}"></span>
       <br><br>
-      <img style="max-width: 300px; height: auto" th:src="${image}"/>
+      <div th:if="${image_0 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_0}"/>
+      </div>
+      <div th:if="${image_1 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_1}"/>
+      </div>
+      <div th:if="${image_2 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_2}"/>
+      </div>
+      <div th:if="${image_3 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_3}"/>
+      </div>
+      <div th:if="${image_4 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_4}"/>
+      </div>
       <br><br>
       수정 요청 내용 : <span th:text="${content}"></span>
       <br>
