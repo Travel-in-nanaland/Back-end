@@ -1,13 +1,23 @@
 package com.jeju.nanaland.domain.notification.service;
 
+import com.google.api.core.ApiFuture;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
+import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
-import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessage;
+import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageDto;
+import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
+import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
+import com.jeju.nanaland.global.exception.NotFoundException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,43 +28,116 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
 
   private final FcmTokenRepository fcmTokenRepository;
-  private final String SENDER = "Nanaland";
 
-  public String sendPushNotification(FcmMessage fcmMessage) {
+  public void sendPushNotificationToAllMembers(FcmMessageDto fcmMessageDto) {
 
-    // FCM 토큰 조회
-//    FcmToken fcmToken = fcmTokenRepository.findFcmTokenById(fcmMessage.getTargetToken())
-//        .orElseThrow(() -> new NotFoundException("해당하는 FCM 토큰이 없습니다."));
+    // 모든 토큰 조회
+    List<String> tokenList = fcmTokenRepository.findAll().stream()
+        .map(FcmToken::getToken)
+        .toList();
 
     // 메세지 만들기
-    Message message = makeMessage(fcmMessage);
+    MulticastMessage message = makeMulticastMessage(tokenList, fcmMessageDto);
 
-    // 메세지 전송
+    // 비동기 메세지 전송
     try {
-      return FirebaseMessaging.getInstance().send(message);
-    } catch (FirebaseMessagingException exception) {
-      log.error("Fcm 메세지 전송 실패: {}", exception.getMessage());
-      throw new RuntimeException(exception);
+      ApiFuture<BatchResponse> responseApiFuture = FirebaseMessaging.getInstance()
+          .sendEachForMulticastAsync(message);
+      BatchResponse batchResponse = responseApiFuture.get();
+      log.info("전체 알림 전송 성공: {}개", batchResponse.getSuccessCount());
+
+    } catch (InterruptedException e) {
+      log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+      throw new RuntimeException(e);
     }
   }
 
-  private Message makeMessage(FcmMessage fcmMessage) {
+  public void sendPushNotificationToTarget(FcmMessageToTargetDto fcmMessageToTargetDto) {
 
-    return Message.builder()
-        .setToken(fcmMessage.getTargetToken())
-        .setNotification(Notification.builder()
-            .setTitle(fcmMessage.getTitle())
-            .setBody(fcmMessage.getContent())
-            .build())
+    String targetToken = fcmMessageToTargetDto.getTargetToken();
+    // 타겟 토큰 조회
+    FcmToken fcmToken = fcmTokenRepository.findByToken(targetToken)
+        .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
+
+    // 메세지 만들기
+    Message message = makeMessage(fcmMessageToTargetDto);
+
+    // 메세지 전송
+    try {
+      String response = FirebaseMessaging.getInstance().send(message);
+      log.info("메세지 전송 성공 {}", response);
+
+    } catch (FirebaseMessagingException e) {
+      log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  private MulticastMessage makeMulticastMessage(List<String> tokenList,
+      FcmMessageDto fcmMessageDto) {
+
+    return MulticastMessage.builder()
+        // 수신 측 토큰 정보 - token
+        .addAllTokens(tokenList)
+        // 공통 알림 정보 - notification
+        .setNotification(
+            Notification.builder()
+                .setTitle(fcmMessageDto.getTitle())
+                .setBody(fcmMessageDto.getContent())
+                .build())
+        // Android 전용 설정 - android
         .setAndroidConfig(
             AndroidConfig.builder()
                 .setNotification(
                     AndroidNotification.builder()
-                        .setTitle(fcmMessage.getTitle())
-                        .setBody(fcmMessage.getContent())
-                        // click 이벤트
+                        // click 이벤트 등 추가 가능
+                        .setClickAction("nana_pick")
                         .build()
-                ).build()
-        ).build();
+                ).build())
+        // IOS 전용 설정 - apns
+        .setApnsConfig(
+            ApnsConfig.builder()
+                .setAps(
+                    Aps.builder()
+                        .setCategory("nana_pick")
+                        .build()
+                ).build())
+        .build();
+  }
+
+  private Message makeMessage(FcmMessageToTargetDto fcmMessageToTargetDto) {
+
+    return Message.builder()
+        // 수신 측 토큰 정보 - token
+        .setToken(fcmMessageToTargetDto.getTargetToken())
+        // 주제 - topic
+        .setTopic("topic")
+        // 공통 알림 정보 - notification
+        .setNotification(
+            Notification.builder()
+                .setTitle(fcmMessageToTargetDto.getMessage().getTitle())
+                .setBody(fcmMessageToTargetDto.getMessage().getContent())
+                .build())
+        // Android 전용 설정 - android
+        .setAndroidConfig(
+            AndroidConfig.builder()
+                .setNotification(
+                    AndroidNotification.builder()
+                        // click 이벤트 등 추가 가능
+                        .setClickAction("nana_pick")
+                        .build()
+                ).build())
+        // IOS 전용 설정 - apns
+        .setApnsConfig(
+            ApnsConfig.builder()
+                .setAps(
+                    Aps.builder()
+                        .setCategory("nana_pick")
+                        .build()
+                ).build())
+        .build();
   }
 }

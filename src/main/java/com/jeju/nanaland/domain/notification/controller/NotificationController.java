@@ -6,6 +6,7 @@ import com.jeju.nanaland.domain.notification.data.NotificationRequest;
 import com.jeju.nanaland.domain.notification.service.NotificationService;
 import com.jeju.nanaland.global.BaseResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,12 +23,19 @@ public class NotificationController {
 
   private final NotificationService notificationService;
 
-  @PostMapping("/send-all")
+  @PostMapping("/send/all")
   public BaseResponse<String> sendNotificationToAllMember(
-      @RequestBody NotificationRequest.FcmMessage fcmMessage) {
+      @RequestBody @Valid NotificationRequest.FcmMessageDto fcmMessageDto) {
 
-    String message = notificationService.sendPushNotification(fcmMessage);
-    log.info(message);
+    notificationService.sendPushNotificationToAllMembers(fcmMessageDto);
+    return BaseResponse.success(SEND_NOTIFICATION_SUCCESS);
+  }
+
+  @PostMapping("/send")
+  public BaseResponse<String> sendNotificationToAllMember(
+      @RequestBody @Valid NotificationRequest.FcmMessageToTargetDto reqDto) {
+
+    notificationService.sendPushNotificationToTarget(reqDto);
     return BaseResponse.success(SEND_NOTIFICATION_SUCCESS);
   }
 }
