@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.review.entity.claim;
+package com.jeju.nanaland.domain.report.entity.review;
 
 public enum ClaimType {
   COMMERCIAL_PURPOSE,
@@ -9,5 +9,5 @@ public enum ClaimType {
   FACILITY_ISSUE,
   DRUGS,
   VIOLENCE,
-  OTHER
+  ETC
 }
