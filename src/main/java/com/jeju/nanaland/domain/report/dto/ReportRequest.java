@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.report.dto;
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.report.entity.FixType;
+import com.jeju.nanaland.domain.report.entity.review.ClaimType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -58,5 +59,22 @@ public class ReportRequest {
         example = "test@naver.com"
     )
     private String email;
+  }
+
+  @Data
+  @AllArgsConstructor
+  @Builder
+  public static class ReviewReportDto {
+
+    @NotNull
+    private Long reviewId;
+
+    @EnumValid(
+        enumClass = ClaimType.class
+    )
+    private String claimType;
+
+    @NotBlank
+    private String content;
   }
 }

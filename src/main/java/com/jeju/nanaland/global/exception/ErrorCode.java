@@ -17,6 +17,7 @@ public enum ErrorCode {
   BAD_REQUEST_EXCEPTION(BAD_REQUEST, "잘못된 요청입니다."),
   REQUEST_VALIDATION_EXCEPTION(BAD_REQUEST, "입력 형태가 잘못된 요청입니다."),
   MEMBER_CONSENT_BAD_REQUEST(BAD_REQUEST, "TERMS_OF_USE는 필수로 동의해야 합니다."),
+  IMAGE_BAD_REQUEST(BAD_REQUEST, "이미지는 최대 5장까지 가능합니다."),
   REVIEW_IMAGE_BAD_REQUEST(BAD_REQUEST, "리뷰 이미지는 최대 5장까지 가능합니다."),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버측 에러입니다."),
   UNAUTHORIZED_USER(UNAUTHORIZED, "access token이 존재하지 않습니다."),
