@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<div style="margin: 95px;">
+
+  <div style="margin: 95px;">
+    <img alt="nanaland 로고"
+         src="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/nanaland-logo.png"
+         style="max-width: 70px; height: auto;">
+    <h1> nanaland 리뷰 신고 사항 </h1>
+
+    <div align="center"
+         style="border-top: 1px solid black; border-bottom: 1px solid black; font-family:verdana; text-align: left">
+      <br><br>
+      리뷰 ID : <span th:text="${review_id}"></span>
+      <br>
+      리뷰 내용 : <span th:text="${review_content}"></span>
+      <br>
+      <br><br>
+      신고 이유 : <span th:text="${claim_type}"></span>
+      <br>
+      신고 내용 : <span th:text="${content}"></span>
+      <br>
+      <div th:if="${image_0 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_0}"/>
+      </div>
+      <div th:if="${image_1 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_1}"/>
+      </div>
+      <div th:if="${image_2 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_2}"/>
+      </div>
+      <div th:if="${image_3 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_3}"/>
+      </div>
+      <div th:if="${image_4 != null}">
+        <img style="max-width: 300px; height: auto" th:src="${image_4}"/>
+      </div>
+      <br><br>
+      요청자 이메일 : <span th:text="${email}"></span>
+      <br><br><br>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
