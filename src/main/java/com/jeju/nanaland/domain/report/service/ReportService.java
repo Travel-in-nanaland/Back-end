@@ -82,8 +82,8 @@ public class ReportService {
     }
 
     // 이미지 5장 이상 전처리
-    if (imageList.size() > 5) {
-      throw new BadRequestException("이미지는 최대 5장까지 요청 가능합니다.");
+    if (imageList != null && imageList.size() > MAX_IMAGE_COUNT) {
+      throw new BadRequestException(ErrorCode.IMAGE_BAD_REQUEST.getMessage());
     }
 
     // 해당 게시물 정보 가져오기
@@ -94,7 +94,7 @@ public class ReportService {
       throw new NotFoundException("해당 축제 게시물이 없습니다.");
     }
 
-    // InfoFixReport 엔티티 객체 생성
+    // InfoFixReport 저장
     String title = compositeDto.getTitle();
     FixType fixType = FixType.valueOf(reqDto.getFixType());
     InfoFixReport infoFixReport = InfoFixReport.builder()
@@ -107,64 +107,14 @@ public class ReportService {
         .content(reqDto.getContent())
         .email(reqDto.getEmail())
         .build();
+    infoFixReportRepository.save(infoFixReport);
 
     // 이미지 저장
-    List<String> imageUrlList = new ArrayList<>();
-    if (imageList != null) {
-      for (MultipartFile image : imageList) {
-        // S3에 저장, ImageFile 객체 생성
-        ImageFile imageFile = imageFileService.uploadAndSaveImageFile(image, false,
-            INFO_FIX_REPORT_IMAGE_DIRECTORY);
-        imageUrlList.add(imageFile.getOriginUrl());
+    List<String> imageUrlList = saveImagesAndGetUrls(imageList, infoFixReport,
+        INFO_FIX_REPORT_IMAGE_DIRECTORY);
 
-        InfoFixReportImageFile infoFixReportImageFile = InfoFixReportImageFile.builder()
-            .imageFile(imageFile)
-            .infoFixReport(infoFixReport)
-            .build();
-
-        // 정보 수정 제안 이미지 저장
-        infoFixReportImageFileRepository.save(infoFixReportImageFile);
-      }
-    }
-
-    // 관리자 메일로 전송
-    // TODO: 배포시 관리자 메일로 변경하기
-    try {
-//      MimeMessage mimeMessage = createInfoFixReportMail("travel.in.nanaland@gmail.com",
-//          infoFixReport, imageUrlList);
-      MimeMessage mimeMessage = createInfoFixReportMail("skdlzl753@naver.com",
-          infoFixReport, imageUrlList);
-      javaMailSender.send(mimeMessage);
-      infoFixReportRepository.save(infoFixReport);
-    } catch (Exception e) {
-      log.error(e.getMessage());
-      throw new ServerErrorException("메일 전송 실패");
-    }
-  }
-
-  private MimeMessage createInfoFixReportMail(String mail, InfoFixReport infoFixReport,
-      List<String> imageUrlList)
-      throws MessagingException, UnsupportedEncodingException {
-    MimeMessage message = javaMailSender.createMimeMessage();
-    String senderEmail = env.getProperty("spring.mail.username");
-    message.setFrom(new InternetAddress(senderEmail, "Jeju in Nanaland"));
-    message.setRecipients(MimeMessage.RecipientType.TO, mail);
-    message.setSubject("[Nanaland] 정보 수정 요청입니다.");
-
-    Context context = new Context();
-    context.setVariable("fix_type", infoFixReport.getFixType());
-    context.setVariable("category", infoFixReport.getCategory());
-    context.setVariable("language", infoFixReport.getLocale().name());
-    context.setVariable("title", infoFixReport.getTitle());
-    context.setVariable("content", infoFixReport.getContent());
-    context.setVariable("email", infoFixReport.getEmail());
-    for (int i = 0; i < imageUrlList.size(); i++) {
-      context.setVariable("image_" + i, imageUrlList.get(i));
-    }
-
-    message.setText(templateEngine.process("info-fix-report", context), "utf-8", "html");
-
-    return message;
+    // 이메일 전송
+    sendEmailReport(memberInfoDto.getMember().getEmail(), infoFixReport, imageUrlList);
   }
 
   private CompositeDto findCompositeDto(Category category, Long postId, Language language) {
@@ -200,21 +150,36 @@ public class ReportService {
     reviewReportRepository.save(reviewReport);
 
     // reviewReportImageFile 이미지 저장
-    List<String> imageUrlList = new ArrayList<>();
-    if (imageList != null) {
-      List<Object> saveImageFiles = saveImageFiles(imageList, reviewReport,
-          REVIEW_REPORT_IMAGE_DIRECTORY);
+    List<String> imageUrlList = saveImagesAndGetUrls(imageList, reviewReport,
+        REVIEW_REPORT_IMAGE_DIRECTORY);
 
-      List<ReviewReportImageFile> reviewReportImageFiles = saveImageFiles.stream()
-          .map(o -> (ReviewReportImageFile) o).collect(Collectors.toList());
-      reviewReportImageFileRepository.saveAll(reviewReportImageFiles);
-
-      imageUrlList = reviewReportImageFiles.stream()
-          .map(reviewReportImageFile -> reviewReportImageFile.getImageFile().getOriginUrl())
-          .collect(Collectors.toList());
-    }
     // 이메일 전송
     sendEmailReport(memberInfoDto.getMember().getEmail(), reviewReport, imageUrlList);
+  }
+
+  private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
+      String directory) {
+    List<String> imageUrlList = new ArrayList<>();
+    if (imageList != null) {
+      List<Object> saveImageFiles = saveImageFiles(imageList, report, directory);
+
+      if (report instanceof InfoFixReport) {
+        List<InfoFixReportImageFile> infoFixReportImageFiles = saveImageFiles.stream()
+            .map(o -> (InfoFixReportImageFile) o).collect(Collectors.toList());
+        infoFixReportImageFileRepository.saveAll(infoFixReportImageFiles);
+        imageUrlList = infoFixReportImageFiles.stream()
+            .map(file -> file.getImageFile().getOriginUrl())
+            .collect(Collectors.toList());
+      } else if (report instanceof ReviewReport) {
+        List<ReviewReportImageFile> reviewReportImageFiles = saveImageFiles.stream()
+            .map(o -> (ReviewReportImageFile) o).collect(Collectors.toList());
+        reviewReportImageFileRepository.saveAll(reviewReportImageFiles);
+        imageUrlList = reviewReportImageFiles.stream()
+            .map(file -> file.getImageFile().getOriginUrl())
+            .collect(Collectors.toList());
+      }
+    }
+    return imageUrlList;
   }
 
   private List<Object> saveImageFiles(List<MultipartFile> imageList, Object report,
@@ -223,18 +188,16 @@ public class ReportService {
     for (MultipartFile image : imageList) {
       ImageFile imageFile = imageFileService.uploadAndSaveImageFile(image, false, directory);
 
-      if (report instanceof InfoFixReport) {
-        InfoFixReportImageFile infoFixReportImageFile = InfoFixReportImageFile.builder()
+      if (report instanceof InfoFixReport infoFixReport) {
+        imageFileList.add(InfoFixReportImageFile.builder()
             .imageFile(imageFile)
-            .infoFixReport((InfoFixReport) report)
-            .build();
-        imageFileList.add(infoFixReportImageFile);
-      } else if (report instanceof ReviewReport) {
-        ReviewReportImageFile reviewReportImageFile = ReviewReportImageFile.builder()
+            .infoFixReport(infoFixReport)
+            .build());
+      } else if (report instanceof ReviewReport reviewReport) {
+        imageFileList.add(ReviewReportImageFile.builder()
             .imageFile(imageFile)
-            .reviewReport((ReviewReport) report)
-            .build();
-        imageFileList.add(reviewReportImageFile);
+            .reviewReport(reviewReport)
+            .build());
       }
     }
     return imageFileList;
@@ -259,8 +222,7 @@ public class ReportService {
 
     Context context = new Context();
     String templateName = "";
-    if (report instanceof InfoFixReport) {
-      InfoFixReport infoFixReport = (InfoFixReport) report;
+    if (report instanceof InfoFixReport infoFixReport) {
       message.setSubject("[Nanaland] 정보 수정 요청입니다.");
       context.setVariable("fix_type", infoFixReport.getFixType());
       context.setVariable("category", infoFixReport.getCategory());
@@ -269,8 +231,7 @@ public class ReportService {
       context.setVariable("content", infoFixReport.getContent());
       context.setVariable("email", infoFixReport.getEmail());
       templateName = "info-fix-report";
-    } else if (report instanceof ReviewReport) {
-      ReviewReport reviewReport = (ReviewReport) report;
+    } else if (report instanceof ReviewReport reviewReport) {
       message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
       context.setVariable("claim_type", reviewReport.getClaimType());
       context.setVariable("review_id", reviewReport.getReview().getId());
