@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessage
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
@@ -32,26 +33,33 @@ public class NotificationService {
   public void sendPushNotificationToAllMembers(FcmMessageDto fcmMessageDto) {
 
     // 모든 토큰 조회
-    List<String> tokenList = fcmTokenRepository.findAll().stream()
+    List<String> allTokenList = fcmTokenRepository.findAll().stream()
         .map(FcmToken::getToken)
         .toList();
 
-    // 메세지 만들기
-    MulticastMessage message = makeMulticastMessage(tokenList, fcmMessageDto);
+    // 한번에 전송 가능한 단위인 500개로 분할
+    List<List<String>> splitedTokenList = splitTokenList(allTokenList);
 
-    // 비동기 메세지 전송
-    try {
-      ApiFuture<BatchResponse> responseApiFuture = FirebaseMessaging.getInstance()
-          .sendEachForMulticastAsync(message);
-      BatchResponse batchResponse = responseApiFuture.get();
-      log.info("전체 알림 전송 성공: {}개", batchResponse.getSuccessCount());
+    int currentSuccessCount = 0;
+    for (List<String> tokenList : splitedTokenList) {
+      // 메세지 만들기
+      MulticastMessage message = makeMulticastMessage(tokenList, fcmMessageDto);
 
-    } catch (InterruptedException e) {
-      log.error("fcm 메세지 전송 실패: {}", e.getMessage());
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      log.error("fcm 메세지 전송 실패: {}", e.getMessage());
-      throw new RuntimeException(e);
+      // 비동기 메세지 전송
+      try {
+        ApiFuture<BatchResponse> responseApiFuture = FirebaseMessaging.getInstance()
+            .sendEachForMulticastAsync(message);
+        BatchResponse batchResponse = responseApiFuture.get();
+        currentSuccessCount += batchResponse.getSuccessCount();
+        log.info("전체 알림 전송 성공: {}개", currentSuccessCount);
+
+      } catch (InterruptedException e) {
+        log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+        throw new RuntimeException(e);
+      } catch (ExecutionException e) {
+        log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -139,5 +147,19 @@ public class NotificationService {
                         .build()
                 ).build())
         .build();
+  }
+
+  private List<List<String>> splitTokenList(List<String> tokenList) {
+    List<List<String>> splitedTokenList = new ArrayList<>();
+    int totalSize = tokenList.size();
+
+    for (int i = 0; i < totalSize; i += 500) {
+      List<String> chunk = new ArrayList<>(
+          tokenList.subList(i, Math.min(totalSize, i + 500))
+      );
+      splitedTokenList.add(chunk);
+    }
+
+    return splitedTokenList;
   }
 }
