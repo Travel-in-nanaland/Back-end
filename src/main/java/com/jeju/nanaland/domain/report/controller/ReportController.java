@@ -66,8 +66,8 @@ public class ReportController {
           description = "리뷰 신고 요청 이미지 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
-      @RequestPart(value = "multipartFile", required = false) List<MultipartFile> imageList) {
-    reportService.requestReviewReport(memberInfoDto, reqDto, imageList);
+      @RequestPart(value = "multipartFile", required = false) List<MultipartFile> fileList) {
+    reportService.requestReviewReport(memberInfoDto, reqDto, fileList);
     return ResponseEntity.ok().build();
   }
 }

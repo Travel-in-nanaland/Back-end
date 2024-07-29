@@ -4,7 +4,9 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.VideoFile;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.VideoFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
@@ -18,10 +20,12 @@ import com.jeju.nanaland.domain.report.entity.InfoFixReportImageFile;
 import com.jeju.nanaland.domain.report.entity.review.ClaimType;
 import com.jeju.nanaland.domain.report.entity.review.ReviewReport;
 import com.jeju.nanaland.domain.report.entity.review.ReviewReportImageFile;
+import com.jeju.nanaland.domain.report.entity.review.ReviewReportVideoFile;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
 import com.jeju.nanaland.domain.report.repository.ReviewReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.ReviewReportRepository;
+import com.jeju.nanaland.domain.report.repository.ReviewReportVideoFileRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
@@ -55,7 +59,8 @@ public class ReportService {
   private static final int MAX_IMAGE_COUNT = 5;
   private static final String ADMIN_EMAIL = "jyajoo1020@gmail.com";
   private static final String INFO_FIX_REPORT_IMAGE_DIRECTORY = "/info_fix_report_images";
-  private static final String REVIEW_REPORT_IMAGE_DIRECTORY = "/review_report_images";
+  private static final String REVIEW_REPORT_IMAGE_DIRECTORY = "/review_report_files";
+  private final ReviewReportVideoFileRepository reviewReportVideoFileRepository;
   private final ReviewReportRepository reviewReportRepository;
   private final ReviewReportImageFileRepository reviewReportImageFileRepository;
   private final ReviewRepository reviewRepository;
@@ -67,6 +72,7 @@ public class ReportService {
   private final ExperienceRepository experienceRepository;
   private final RestaurantRepository restaurantRepository;
   private final ImageFileService imageFileService;
+  private final VideoFileService videoFileService;
   private final Environment env;
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
@@ -130,13 +136,13 @@ public class ReportService {
 
   @Transactional
   public void requestReviewReport(MemberInfoDto memberInfoDto, ReviewReportDto reqDto,
-      List<MultipartFile> imageList) {
+      List<MultipartFile> fileList) {
     // 리뷰 조회
     Review review = reviewRepository.findById(reqDto.getReviewId())
         .orElseThrow(() -> new NotFoundException(ErrorCode.REVIEW_NOT_FOUND.getMessage()));
 
-    // 이미지 개수 확인
-    if (imageList != null && imageList.size() > MAX_IMAGE_COUNT) {
+    // 파일 개수 확인
+    if (fileList != null && fileList.size() > MAX_IMAGE_COUNT) {
       throw new BadRequestException(ErrorCode.IMAGE_BAD_REQUEST.getMessage());
     }
 
@@ -149,20 +155,44 @@ public class ReportService {
         .build();
     reviewReportRepository.save(reviewReport);
 
+    // 이미지, 동영상 분리
+    List<MultipartFile> imageFiles = new ArrayList<>();
+    List<MultipartFile> videoFiles = new ArrayList<>();
+    if (fileList != null) {
+      for (MultipartFile file : fileList) {
+        String contentType = file.getContentType();
+        if (contentType != null) {
+          if (contentType.startsWith("image/")) {
+            imageFiles.add(file);
+          } else if (contentType.startsWith("video/")) {
+            videoFiles.add(file);
+          }
+        }
+      }
+    }
+
     // reviewReportImageFile 이미지 저장
-    List<String> imageUrlList = saveImagesAndGetUrls(imageList, reviewReport,
+    List<String> imageUrlList = saveImagesAndGetUrls(imageFiles, reviewReport,
+        REVIEW_REPORT_IMAGE_DIRECTORY);
+
+    // reviewReportVideoFile 동영상 저장
+    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, reviewReport,
         REVIEW_REPORT_IMAGE_DIRECTORY);
 
     // 이메일 전송
-    sendEmailReport(memberInfoDto.getMember().getEmail(), reviewReport, imageUrlList);
+    List<String> combinedUrlList = new ArrayList<>(imageUrlList);
+    combinedUrlList.addAll(videoUrlList);
+    sendEmailReport(memberInfoDto.getMember().getEmail(), reviewReport, combinedUrlList);
   }
 
   private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
       String directory) {
     List<String> imageUrlList = new ArrayList<>();
     if (imageList != null) {
+      // 이미지 파일 저장
       List<Object> saveImageFiles = saveImageFiles(imageList, report, directory);
 
+      // 이미지 연관 관계 저장 && url 반환
       if (report instanceof InfoFixReport) {
         List<InfoFixReportImageFile> infoFixReportImageFiles = saveImageFiles.stream()
             .map(o -> (InfoFixReportImageFile) o).collect(Collectors.toList());
@@ -182,6 +212,7 @@ public class ReportService {
     return imageUrlList;
   }
 
+  // 이미지 파일 저장 && 이미지 연관 관계 객체 생성
   private List<Object> saveImageFiles(List<MultipartFile> imageList, Object report,
       String directory) {
     List<Object> imageFileList = new ArrayList<>();
@@ -201,6 +232,38 @@ public class ReportService {
       }
     }
     return imageFileList;
+  }
+
+  private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ReviewReport report,
+      String directory) {
+    List<String> videoUrlList = new ArrayList<>();
+    if (videoFiles != null) {
+      // 동영상 파일 저장
+      List<ReviewReportVideoFile> reviewReportImageFiles = saveVideoFiles(videoFiles, report,
+          directory);
+
+      // 동영상 연관 관계 저장 && url 반환
+      reviewReportVideoFileRepository.saveAll(reviewReportImageFiles);
+      videoUrlList = reviewReportImageFiles.stream()
+          .map(file -> file.getVideoFile().getOriginUrl())
+          .collect(Collectors.toList());
+    }
+    return videoUrlList;
+  }
+
+  // 동영상 파일 저장 && 동영상 연관 관계 생성
+  private List<ReviewReportVideoFile> saveVideoFiles(List<MultipartFile> videoFiles,
+      ReviewReport report, String directory) {
+    List<ReviewReportVideoFile> videoFileList = new ArrayList<>();
+    for (MultipartFile video : videoFiles) {
+      VideoFile videoFile = videoFileService.uploadAndSaveVideoFile(video, directory);
+
+      videoFileList.add(ReviewReportVideoFile.builder()
+          .videoFile(videoFile)
+          .reviewReport(report)
+          .build());
+    }
+    return videoFileList;
   }
 
   private void sendEmailReport(String email, Object report, List<String> imageUrlList) {
