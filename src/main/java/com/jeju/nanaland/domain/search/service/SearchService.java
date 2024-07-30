@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -23,6 +24,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
@@ -75,6 +77,7 @@ public class SearchService {
         .festival(searchFestivalResultDto(memberInfoDto, keyword, page, size))
         .market(searchMarketResultDto(memberInfoDto, keyword, page, size))
         .experience(searchExperienceResultDto(memberInfoDto, keyword, page, size))
+        .restaurant(searchRestaurantResultDto(memberInfoDto, keyword, page, size))
         .nana(searchNanaResultDto(memberInfoDto, keyword, page, size))
         .build();
   }
@@ -219,18 +222,18 @@ public class SearchService {
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<MarketCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
+    Page<RestaurantCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (MarketCompositeDto dto : resultPage) {
+    for (RestaurantCompositeDto dto : resultPage) {
       // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
-              .category(MARKET.name())
+              .category(RESTAURANT.name())
               .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
