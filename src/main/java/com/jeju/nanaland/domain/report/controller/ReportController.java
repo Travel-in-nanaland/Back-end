@@ -51,7 +51,7 @@ public class ReportController {
           description = "정보 수정 요청 이미지파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
-      @RequestPart(value = "multipartFile", required = false) List<MultipartFile> imageList) {
+      @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> imageList) {
 
     reportService.postInfoFixReport(memberInfoDto, reqDto, imageList);
     return BaseResponse.success(POST_INFO_FIX_REPORT_SUCCESS);
@@ -66,7 +66,7 @@ public class ReportController {
           description = "리뷰 신고 요청 파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
-      @RequestPart(value = "multipartFile", required = false) List<MultipartFile> fileList) {
+      @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> fileList) {
     reportService.requestReviewReport(memberInfoDto, reqDto, fileList);
     return BaseResponse.success(POST_REVIEW_REPORT_SUCCESS);
   }
