@@ -14,7 +14,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -90,10 +90,10 @@ public class ReviewController {
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
   @PostMapping("/heart/{id}")
-  public BaseResponse<StatusDto> toggleReviewHeart(
+  public BaseResponse<ReviewStatusDto> toggleReviewHeart(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
+    ReviewStatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, id);
     return BaseResponse.success(REVIEW_HEART_SUCCESS, statusDto);
   }
 

@@ -23,7 +23,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDet
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
 import com.jeju.nanaland.domain.review.repository.ReviewHeartRepository;
@@ -264,7 +264,7 @@ class ReviewServiceTest {
         .findByMemberAndReview(memberInfoDto2.getMember(), review);
 
     // when
-    StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto2, reviewId);
+    ReviewStatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto2, reviewId);
 
     // then
     assertThat(statusDto.isReviewHeart()).isFalse();
@@ -284,7 +284,7 @@ class ReviewServiceTest {
         .findByMemberAndReview(memberInfoDto2.getMember(), review);
 
     // when
-    StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto2, reviewId);
+    ReviewStatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto2, reviewId);
 
     // then
     assertThat(statusDto.isReviewHeart()).isTrue();

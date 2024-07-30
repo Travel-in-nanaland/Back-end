@@ -35,7 +35,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto.MyReviewImageDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
 import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
@@ -146,7 +146,7 @@ public class ReviewService {
 
 
   @Transactional
-  public StatusDto toggleReviewHeart(MemberInfoDto memberInfoDto, Long id) {
+  public ReviewStatusDto toggleReviewHeart(MemberInfoDto memberInfoDto, Long id) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND.getMessage()));
@@ -163,7 +163,7 @@ public class ReviewService {
       ReviewHeart reviewHeart = reviewHeartOptional.get();
       reviewHeartRepository.delete(reviewHeart);
 
-      return StatusDto.builder()
+      return ReviewStatusDto.builder()
           .isReviewHeart(false)
           .build();
     }
@@ -176,7 +176,7 @@ public class ReviewService {
 
     reviewHeartRepository.save(reviewHeart);
 
-    return StatusDto.builder()
+    return ReviewStatusDto.builder()
         .isReviewHeart(true)
         .build();
   }
