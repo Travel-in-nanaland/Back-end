@@ -57,6 +57,13 @@ public class ReportController {
     return BaseResponse.success(POST_INFO_FIX_REPORT_SUCCESS);
   }
 
+  @Operation(summary = "리뷰 신고 기능")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "사진파일 업로드 실패 또는 관리자에게로 메일 전송 실패", content = @Content)
+  })
   @PostMapping(value = "/review",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> requestReviewReport(

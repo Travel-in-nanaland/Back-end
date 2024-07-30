@@ -57,6 +57,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 public class ReportService {
 
   private static final int MAX_IMAGE_COUNT = 5;
+  // TODO: 관리자 계정으로 바꾸기
   private static final String ADMIN_EMAIL = "jyajoo1020@gmail.com";
   private static final String INFO_FIX_REPORT_IMAGE_DIRECTORY = "/info_fix_report_images";
   private static final String REVIEW_REPORT_IMAGE_DIRECTORY = "/review_report_files";
