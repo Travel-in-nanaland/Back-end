@@ -2,6 +2,7 @@ package com.jeju.nanaland.global.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
@@ -50,14 +51,17 @@ public enum ErrorCode {
   MEMBER_WTIHDRAWAL_NOT_FOUND(NOT_FOUND, "존재하는 회원의 탈퇴 상태를 찾을 수 없습니다"),
   CATEGORY_NOT_FOUND(NOT_FOUND, "존재하는 카테고리를 찾을 수 없습니다."),
   REVIEW_NOT_FOUND(NOT_FOUND, "존재하는 리뷰를 찾을 수 없습니다."),
-  MEMBER_REIVEW_NOT_FOUND(NOT_FOUND, "유저가 작성한 리뷰를 찾을 수 없습니다."),
+  MEMBER_REVIEW_NOT_FOUND(NOT_FOUND, "유저가 작성한 리뷰를 찾을 수 없습니다."),
   POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다."),
   IMAGE_FILE_NOT_FOUND(NOT_FOUND, "존재하는 이미지를 찾을 수 없습니다."),
 
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
-  NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다.");
+  NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다."),
+
+  // FORBIDDEN
+  REVIEW_SELF_LIKE_FORBIDDEN(FORBIDDEN, "본인의 리뷰는 좋아요를 누를 수 없습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;

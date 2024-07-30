@@ -144,7 +144,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .leftJoin(experience)
         .on(review.post.id.eq(experience.id))
-        .innerJoin(experience.experienceTrans, experienceTrans).fetchOne();
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experienceTrans.language.eq(memberInfoDto.getLanguage()))
+        .fetchOne();
   }
 
 
@@ -160,7 +162,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .leftJoin(experience)
         .where(review.post.id.eq(experience.id))
-        .innerJoin(restaurant, restaurantTrans.restaurant).fetchOne();
+        .innerJoin(restaurant, restaurantTrans.restaurant)
+        .where(restaurantTrans.language.eq(memberInfoDto.getLanguage()))
+        .fetchOne();
   }
 
 

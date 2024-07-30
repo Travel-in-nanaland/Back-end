@@ -76,7 +76,7 @@ public class ReviewController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
-      @RequestPart(required = false) List<MultipartFile> imageList,
+      @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> imageList,
       @RequestPart @Valid ReviewRequest.CreateReviewDto createReviewDto
   ) {
     reviewService.saveReview(memberInfoDto, id, category, createReviewDto, imageList);

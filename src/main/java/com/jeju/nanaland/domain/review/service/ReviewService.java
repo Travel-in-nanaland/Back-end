@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.review.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST;
-import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_REIVEW_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_MY_REVIEW;
 import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
@@ -11,6 +11,7 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_IMAGE_IN
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_KEYWORD_DUPLICATION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_SELF_LIKE_FORBIDDEN;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -52,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -132,10 +134,12 @@ public class ReviewService {
 
     // reviewImageFile
     if (imageList != null) {
+      AtomicInteger num = new AtomicInteger(1);
       imageList.forEach(image ->
           reviewImageFileRepository.save(ReviewImageFile.builder()
               .imageFile(imageFileService.uploadAndSaveImageFile(image, true))
               .review(review)
+              .number(num.getAndIncrement())
               .build())
       );
     }
@@ -148,6 +152,10 @@ public class ReviewService {
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND.getMessage()));
 
+    if (review.getMember().equals(memberInfoDto.getMember())) {
+      throw new BadRequestException(REVIEW_SELF_LIKE_FORBIDDEN.getMessage());
+    }
+    
     Optional<ReviewHeart> reviewHeartOptional = reviewHeartRepository.findByMemberAndReview(
         memberInfoDto.getMember(), review);
 
@@ -249,7 +257,7 @@ public class ReviewService {
     // 유저가 쓴 리뷰 조회
     Review review = reviewRepository.findReviewByIdAndMember(reviewId, memberInfoDto.getMember())
         .orElseThrow(() -> new NotFoundException(
-            MEMBER_REIVEW_NOT_FOUND.getMessage()));
+            MEMBER_REVIEW_NOT_FOUND.getMessage()));
 
     // rating 업데이트 되었으면 수정
     if (review.getRating() != editReviewDto.getRating()) {
@@ -391,9 +399,14 @@ public class ReviewService {
     List<EditImageInfoDto> editImageInfoList = editReviewDto.getEditImageInfoList();
     List<ReviewImageFile> originReviewImageList = reviewImageFileRepository.findAllByReview(review);
 
+    // 바뀐 이미지 몇 개인지
+    int totalNewImage = (int) editImageInfoList.stream()
+        .filter(EditImageInfoDto::isNewImage)
+        .count();
+
     // 수정된 리뷰에 이미지가 있을 경우
-    // 수정되어 제출된 리뷰의 이미지 리스트의 크기와 수정되어 제출된 리뷰의 이미지 정보 리스트의 크기 같은지 비교
-    if ((editImages != null) && (editImageInfoList.size() != editImages.size())) {
+    // MultipartFile 이미지 리스트의 크기와 editImageInfo의 newImage가 true인 것의 수가 같은지 비교
+    if ((editImages != null) && (totalNewImage != editImages.size())) {
       throw new RuntimeException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
     }
 
@@ -404,18 +417,20 @@ public class ReviewService {
         .map(ReviewImageFile::getId)
         .collect(Collectors.toSet());
 
+    int newImageIdx = 0;
     for (int i = 0; i < editImageInfoList.size(); i++) {
       // 수정 제출된 이미지가
       EditImageInfoDto editImageInfo = editImageInfoList.get(i);
 
       if (editImageInfo.isNewImage()) { // 새로 제출된 이미지라면 저장
         reviewImageFileRepository.save(ReviewImageFile.builder()
-            .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(i), true))
+            .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(newImageIdx++), true))
             .review(review)
+            .number(i + 1)
             .build());
       } else { // 원래 있던 이미지라면
         if (!existImageIds.remove(
-            editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것
+            editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것 / 나중에 여기 남아있는 건 삭제해야한다고 판단.
           throw new BadRequestException(EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST.getMessage());
         }
       }
