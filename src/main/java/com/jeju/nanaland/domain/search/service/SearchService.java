@@ -23,6 +23,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
@@ -53,6 +54,7 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
+  private final RestaurantRepository restaurantRepository;
   private final FavoriteService favoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -186,6 +188,38 @@ public class SearchService {
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
+        keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+
+    List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
+    for (MarketCompositeDto dto : resultPage) {
+      thumbnails.add(
+          ThumbnailDto.builder()
+              .id(dto.getId())
+              .category(MARKET.name())
+              .firstImage(dto.getFirstImage())
+              .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
+              .build());
+    }
+
+    return SearchResponse.ResultDto.builder()
+        .totalElements(resultPage.getTotalElements())
+        .data(thumbnails)
+        .build();
+  }
+
+  public SearchResponse.ResultDto searchRestaurantResultDto(
+      MemberInfoDto memberInfoDto,
+      String keyword,
+      int page,
+      int size) {
+
+    Language locale = memberInfoDto.getLanguage();
+    Member member = memberInfoDto.getMember();
+    Pageable pageable = PageRequest.of(page, size);
+    Page<MarketCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);

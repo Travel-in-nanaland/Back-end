@@ -20,4 +20,7 @@ public interface RestaurantRepositoryCustom {
   Set<RestaurantTypeKeyword> getRestaurantTypeKeywordSet(Long postId);
 
   List<RestaurantMenuDto> getRestaurantMenuList(Long postId, Language language);
+
+  Page<RestaurantCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
+      Pageable pageable);
 }
