@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -64,17 +65,29 @@ public class ReportRequest {
   @Data
   @AllArgsConstructor
   @Builder
+  @Schema(description = "리뷰 신고 요청 Dto")
   public static class ReviewReportDto {
 
     @NotNull
+    @Schema(description = "리뷰 id")
     private Long reviewId;
 
     @EnumValid(
-        enumClass = ClaimType.class
+        enumClass = ClaimType.class,
+        message = "리뷰 신고 사유 타입이 유효하지 않습니다."
+    )
+    @Schema(
+        description = "리뷰 신고 사유 타입",
+        example = "COMMERCIAL_PURPOSE",
+        allowableValues = {"COMMERCIAL_PURPOSE", "DISLIKE", "PROFANITY", "PERSONAL_INFORMATION",
+            "OBSCENITY", "FACILITY_ISSUE", "DRUGS", "VIOLENCE", "ETC"}
     )
     private String claimType;
 
     @NotBlank
+    @Schema(description = "리뷰 신고 내용", example = "reviewReport reviewReport")
+    @Size(min = 20, message = "신고 사유는 20자 이상으로 작성해주세요.")
+    @Size(max = 500, message = "신고 사유는 500자 이하로 작성해주세요.")
     private String content;
   }
 }

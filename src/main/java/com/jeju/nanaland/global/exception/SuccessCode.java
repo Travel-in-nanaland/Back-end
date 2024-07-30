@@ -51,6 +51,7 @@ public enum SuccessCode {
 
   // report
   POST_INFO_FIX_REPORT_SUCCESS(OK, "정보 수정 제안 요청 성공"),
+  POST_REVIEW_REPORT_SUCCESS(OK, "리뷰 신고 요청 성공"),
 
   // festival
   FESTIVAL_LIST_SUCCESS(OK, "축제 썸네일 리스트 조회 성공"),

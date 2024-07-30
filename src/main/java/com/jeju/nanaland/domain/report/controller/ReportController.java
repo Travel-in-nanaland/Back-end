@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.report.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_INFO_FIX_REPORT_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.POST_REVIEW_REPORT_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
@@ -19,7 +20,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -59,15 +59,15 @@ public class ReportController {
 
   @PostMapping(value = "/review",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity requestReviewReport(
+  public BaseResponse<String> requestReviewReport(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestPart("reqDto") @Valid ReviewReportDto reqDto,
       @Parameter(
-          description = "리뷰 신고 요청 이미지 리스트",
+          description = "리뷰 신고 요청 파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
       @RequestPart(value = "multipartFile", required = false) List<MultipartFile> fileList) {
     reportService.requestReviewReport(memberInfoDto, reqDto, fileList);
-    return ResponseEntity.ok().build();
+    return BaseResponse.success(POST_REVIEW_REPORT_SUCCESS);
   }
 }
