@@ -89,5 +89,14 @@ public class ReportRequest {
     @Size(min = 20, message = "신고 사유는 20자 이상으로 작성해주세요.")
     @Size(max = 500, message = "신고 사유는 500자 이하로 작성해주세요.")
     private String content;
+
+    @Pattern(
+        regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        message = "이메일 형식이 올바르지 않습니다.")
+    @Schema(
+        description = "이메일 정규식: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}\\$",
+        example = "test@naver.com"
+    )
+    private String email;
   }
 }

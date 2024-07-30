@@ -182,7 +182,7 @@ public class ReportService {
     // 이메일 전송
     List<String> combinedUrlList = new ArrayList<>(imageUrlList);
     combinedUrlList.addAll(videoUrlList);
-    sendEmailReport(memberInfoDto.getMember().getEmail(), reviewReport, combinedUrlList);
+    sendEmailReport(reqDto.getEmail(), reviewReport, combinedUrlList);
   }
 
   private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
