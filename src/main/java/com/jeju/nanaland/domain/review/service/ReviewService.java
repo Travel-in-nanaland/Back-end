@@ -139,7 +139,6 @@ public class ReviewService {
           reviewImageFileRepository.save(ReviewImageFile.builder()
               .imageFile(imageFileService.uploadAndSaveImageFile(image, true))
               .review(review)
-              .number(num.getAndIncrement())
               .build())
       );
     }
@@ -155,7 +154,7 @@ public class ReviewService {
     if (review.getMember().equals(memberInfoDto.getMember())) {
       throw new BadRequestException(REVIEW_SELF_LIKE_FORBIDDEN.getMessage());
     }
-    
+
     Optional<ReviewHeart> reviewHeartOptional = reviewHeartRepository.findByMemberAndReview(
         memberInfoDto.getMember(), review);
 
@@ -426,7 +425,6 @@ public class ReviewService {
         reviewImageFileRepository.save(ReviewImageFile.builder()
             .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(newImageIdx++), true))
             .review(review)
-            .number(i + 1)
             .build());
       } else { // 원래 있던 이미지라면
         if (!existImageIds.remove(
