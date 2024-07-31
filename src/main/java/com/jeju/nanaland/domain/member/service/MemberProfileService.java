@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.member.service;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
@@ -100,7 +101,10 @@ public class MemberProfileService {
         .consentItems(consentItemResponses)
         .email(member.getEmail())
         .provider(member.getProvider().name())
-        .profileImageUrl(member.getProfileImageFile().getThumbnailUrl())
+        .profileImage(new ImageFileDto(
+            member.getProfileImageFile().getOriginUrl(),
+            member.getProfileImageFile().getThumbnailUrl()
+        ))
         .nickname(member.getNickname())
         .description(member.getDescription())
         .travelType(typeName)

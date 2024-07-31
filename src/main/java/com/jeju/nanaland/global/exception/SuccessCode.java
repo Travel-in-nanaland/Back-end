@@ -75,7 +75,11 @@ public enum SuccessCode {
   REVIEW_HEART_SUCCESS(OK, "리뷰 좋아요 토글 요청 성공"),
   MY_REVIEW_DETAIL_SUCCESS(OK, "직접 작성한 리뷰 조회 성공"),
   REVIEW_DELETE_SUCCESS(NO_CONTENT, "리뷰 삭제 성공"),
-  REVIEW_UPDATE_SUCCESS(OK, "리뷰 수정 성공");
+  REVIEW_UPDATE_SUCCESS(OK, "리뷰 수정 성공"),
+
+  // notice
+  NOTICE_LIST_SUCCESS(OK, "공지사항 리스트 조회 성공"),
+  NOTICE_DETAIL_SUCCESS(OK, "공지사항 상세 조회 성공");
 
   private final HttpStatus httpStatus;
   private final String message;
