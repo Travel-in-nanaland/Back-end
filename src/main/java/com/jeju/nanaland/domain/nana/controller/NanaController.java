@@ -49,6 +49,20 @@ public class NanaController {
   }
 
   @Operation(
+      summary = "금주 추천 나나's pick",
+      description = "나나's pick 페이지 상단 금주 추천 게시물 4개 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/recommend")
+  public BaseResponse<List<NanaResponse.NanaThumbnail>> nanaRecommend(
+      @AuthMember MemberInfoDto memberInfoDto) {
+    return BaseResponse.success(SuccessCode.NANA_RECOMMEND_LIST_SUCCESS,
+        nanaService.getRecommendNanaThumbnails(memberInfoDto.getLanguage()));
+  }
+
+  @Operation(
       summary = "나나's pick 리스트 조회",
       description = "나나's pick 페이지에서 4개 게시물 조회, 모두 보기 게시물 조회)")
   @ApiResponses(value = {

@@ -13,10 +13,11 @@ public interface NanaRepositoryCustom {
   //메인 페이지에서 슬라이드되는 Nana's pick 찾기
   List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Language locale);
 
-  //나나 pick 눌렀을 때 나올 모든 썸네일
+  //나나 pick 썸네일 페이징 조회
   Page<NanaThumbnail> findAllNanaThumbnailDto(Language locale, Pageable pageable);
-  //이거 좀 어렵군요...
-//  NanaResponse.nanaDetailDto findNanaDetailById(Long id, Locale locale);
+
+  //나나 pick 추천 게시물 4개 modifiedAt으로 최신순 4개
+  List<NanaResponse.NanaThumbnail> findRecommendNanaThumbnailDto(Language locale);
 
   Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Language locale,
       Pageable pageable);

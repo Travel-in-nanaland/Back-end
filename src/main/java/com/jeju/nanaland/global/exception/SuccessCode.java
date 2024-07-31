@@ -38,6 +38,7 @@ public enum SuccessCode {
 
   // nana
   NANA_MAIN_SUCCESS(OK, "나나 메인 페이지 썸네일 조회 성공"),
+  NANA_RECOMMEND_LIST_SUCCESS(OK, "나나 추천 게시물 조회 성공"),
   NANA_LIST_SUCCESS(OK, "나나 썸네일 리스트 조회 성공"),
   NANA_DETAIL_SUCCESS(OK, "나나 상세 페이지 조회 성공"),
 

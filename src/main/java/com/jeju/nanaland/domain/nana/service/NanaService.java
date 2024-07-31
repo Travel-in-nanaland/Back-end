@@ -71,6 +71,12 @@ public class NanaService {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
 
+  // 나나's pick 금주 추천 게시글 4개 (modifiedAt 으로 최신순 4개)
+  public List<NanaThumbnail> getRecommendNanaThumbnails(Language locale) {
+    return nanaRepository.findRecommendNanaThumbnailDto(locale);
+  }
+
+
   //나나's pick 썸네일 리스트 조회
   public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
