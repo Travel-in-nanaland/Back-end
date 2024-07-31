@@ -36,9 +36,8 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto.MyReviewImageDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
 import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
@@ -60,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -521,22 +519,6 @@ public class ReviewService {
 
     Long test = hashOperations.size(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN");
     System.out.println("test = " + test);
-  }
-
-  private Post getPostById(Long id, Category category) {
-    switch (category) {
-      case EXPERIENCE -> {
-        return experienceRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
-      }
-
-      case RESTAURANT -> {
-        return restaurantRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
-      }
-
-      default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
-    }
   }
 
   /**

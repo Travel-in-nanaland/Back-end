@@ -14,9 +14,8 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
-import com.jeju.nanaland.domain.review.dto.ReviewResponse.StatusDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -179,20 +178,18 @@ public class ReviewController {
   }
 
 
-
   @Operation(summary = "자동완성 테스트")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
-      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
-  @PostMapping("/test")
+  @PostMapping("/search/auto-complete")
   public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam String keyword) {
-    List<SearchPostForReviewDto> autoCompleteSearchResultForReview = reviewService.getAutoCompleteSearchResultForReview(
-        memberInfoDto, keyword);
-    return BaseResponse.success(REVIEW_HEART_SUCCESS, autoCompleteSearchResultForReview);
+    return BaseResponse.success(REVIEW_HEART_SUCCESS,
+        reviewService.getAutoCompleteSearchResultForReview(
+            memberInfoDto, keyword));
   }
 
 
