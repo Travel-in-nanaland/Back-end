@@ -1,9 +1,11 @@
 package com.jeju.nanaland.domain.nana.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,16 +48,23 @@ public class NanaResponse {
     @Schema(description = "사진에 들어갈 제목 ex) TOP 10 야경 맛집")
     private String heading;
 
+    @Schema(description = "게시물에 new tag 유무 / true 일 경우에 new 태그")
+    private boolean newest;
+
+    // querydsl에서만 사용, 클라에게 return할 필요 없음
+    @JsonIgnore
+    private LocalDateTime createdAt;
 
     @QueryProjection
     public NanaThumbnail(Long id, String originUrl, String thumbnailUrl, String version,
         String subHeading,
-        String heading) {
+        String heading, LocalDateTime createdAt) {
       this.id = id;
       this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.version = version;
       this.subHeading = subHeading;
       this.heading = heading;
+      this.createdAt = createdAt;
     }
   }
 

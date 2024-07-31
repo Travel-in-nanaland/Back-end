@@ -33,6 +33,8 @@ import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -71,24 +73,16 @@ public class NanaService {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
 
-  //나나 들어갔을 때 보여줄 모든 nana
+  //나나's pick 썸네일 리스트 조회
   public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
     List<NanaThumbnail> resultDtoContent = resultDto.getContent();
 
-//    List<NanaThumbnail> thumbnails = new ArrayList<>();
-//    for (NanaThumbnail dto : resultDto) {
-//      thumbnails.add(
-//          NanaThumbnail.builder()
-//              .id(dto.getId())
-//              .thumbnailUrl(dto.getThumbnailUrl())
-//              .version(dto.getVersion())
-//              .subHeading(dto.getSubHeading())
-//              .heading(dto.getHeading())
-//              .build());
-//    }
+    // new 태그 붙일지 말지 결정
+    markNewestThumbnails(resultDtoContent);
+
     return NanaThumbnailDto.builder()
         .totalElements(resultDto.getTotalElements())
         .data(resultDtoContent)
@@ -403,5 +397,14 @@ public class NanaService {
       );
     }
     return nanaAdditionalInfoSet;
+  }
+
+  // new 태그 붙일지 말지 결정
+  // 게시된지 한달 안지나면 new 태그
+  private void markNewestThumbnails(List<NanaThumbnail> thumbnails) {
+    LocalDateTime now = LocalDateTime.now();
+    thumbnails.stream()
+        .filter(nanaThumbnail -> ChronoUnit.MONTHS.between(nanaThumbnail.getCreatedAt(), now) < 1)
+        .forEach(nanaThumbnail -> nanaThumbnail.setNewest(true));
   }
 }

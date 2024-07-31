@@ -49,8 +49,8 @@ public class NanaController {
   }
 
   @Operation(
-      summary = "나나's pick 전체 조회",
-      description = "나나's pick 페이지에서 전체 게시물 썸네일 조회")
+      summary = "나나's pick 리스트 조회",
+      description = "나나's pick 페이지에서 4개 게시물 조회, 모두 보기 게시물 조회)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)

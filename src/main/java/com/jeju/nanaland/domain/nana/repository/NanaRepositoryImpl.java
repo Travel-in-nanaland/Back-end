@@ -36,7 +36,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nanaTitle.subHeading,
+            nana.createdAt
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
@@ -57,7 +58,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nanaTitle.subHeading,
+            nana.createdAt
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
@@ -90,7 +92,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nanaTitle.subHeading,
+            nana.createdAt
         ))
         .from(nana)
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
