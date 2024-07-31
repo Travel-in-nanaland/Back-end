@@ -19,9 +19,11 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.QReviewResponse_MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.group.GroupBy;
@@ -129,6 +131,42 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .fetchOne();
     return avgRating != null ? Math.round(avgRating * 100.0) / 100.0 : 0.0;
   }
+
+  @Override
+  public MyReviewDetailDto findExperienceMyReviewDetail(Long reviewId,
+      MemberInfoDto memberInfoDto) {
+    return queryFactory
+        .select(
+            new QReviewResponse_MyReviewDetailDto(review.id, experience.firstImageFile.originUrl,
+                experience.firstImageFile.thumbnailUrl, experienceTrans.title,
+                experienceTrans.address, review.rating,
+                review.content))
+        .from(review)
+        .leftJoin(experience)
+        .on(review.post.id.eq(experience.id))
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experienceTrans.language.eq(memberInfoDto.getLanguage()))
+        .fetchOne();
+  }
+
+
+  @Override
+  public MyReviewDetailDto findRestaurantMyReviewDetail(Long reviewId,
+      MemberInfoDto memberInfoDto) {
+    return queryFactory
+        .select(
+            new QReviewResponse_MyReviewDetailDto(review.id, restaurant.firstImageFile.originUrl,
+                restaurant.firstImageFile.thumbnailUrl, restaurantTrans.title,
+                restaurantTrans.address, review.rating,
+                review.content))
+        .from(review)
+        .leftJoin(experience)
+        .where(review.post.id.eq(experience.id))
+        .innerJoin(restaurant, restaurantTrans.restaurant)
+        .where(restaurantTrans.language.eq(memberInfoDto.getLanguage()))
+        .fetchOne();
+  }
+
 
   @Override
   public Page<MemberReviewDetailDto> findReviewListByMember(Member member, Language language,

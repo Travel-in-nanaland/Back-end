@@ -45,6 +45,19 @@ public class ImageFileService {
     }
   }
 
+  // S3에 저장될 경로 지정
+  public ImageFile uploadAndSaveImageFile(MultipartFile multipartFile, boolean autoThumbnail,
+      String directory) {
+    try {
+      S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, autoThumbnail,
+          directory);
+      return saveS3ImageFile(s3ImageDto);
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+    }
+  }
+
   public ImageFile getRandomProfileImageFile() {
     String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
     S3ImageDto s3ImageDto = s3ImageService.getS3Urls(selectedProfile);
@@ -58,4 +71,13 @@ public class ImageFileService {
     images.addAll(imageFileRepository.findPostImageFiles(postId));
     return images;
   }
+
+  public void deleteImageFileInS3ByImageFile(ImageFile imageFile) {
+    s3ImageService.deleteImageS3(imageFile);
+  }
+
+  public void deleteImageFileInS3ByOriginUrl(String originUrl) {
+    s3ImageService.deleteImageS3ByOriginUrl(originUrl);
+  }
+
 }

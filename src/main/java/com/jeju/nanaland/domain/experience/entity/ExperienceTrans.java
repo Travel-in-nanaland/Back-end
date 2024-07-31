@@ -41,12 +41,16 @@ public class ExperienceTrans extends BaseEntity {
   @Column(columnDefinition = "VARCHAR(1024)")
   private String time;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String intro;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String details;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String amenity;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String fee;
 
   @Builder
