@@ -33,6 +33,7 @@ import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -71,24 +72,25 @@ public class NanaService {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
 
-  //나나 들어갔을 때 보여줄 모든 nana
+  // 나나's pick 금주 추천 게시글 4개 (modifiedAt 으로 최신순 4개)
+  public List<NanaThumbnail> getRecommendNanaThumbnails(Language locale) {
+    List<NanaThumbnail> recommendNanaThumbnailDto = nanaRepository.findRecommendNanaThumbnailDto(
+        locale);
+    markNewestThumbnails(recommendNanaThumbnailDto);
+    return recommendNanaThumbnailDto;
+  }
+
+
+  //나나's pick 썸네일 리스트 조회
   public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
     List<NanaThumbnail> resultDtoContent = resultDto.getContent();
 
-//    List<NanaThumbnail> thumbnails = new ArrayList<>();
-//    for (NanaThumbnail dto : resultDto) {
-//      thumbnails.add(
-//          NanaThumbnail.builder()
-//              .id(dto.getId())
-//              .thumbnailUrl(dto.getThumbnailUrl())
-//              .version(dto.getVersion())
-//              .subHeading(dto.getSubHeading())
-//              .heading(dto.getHeading())
-//              .build());
-//    }
+    // new 태그 붙일지 말지 결정
+    markNewestThumbnails(resultDtoContent);
+
     return NanaThumbnailDto.builder()
         .totalElements(resultDto.getTotalElements())
         .data(resultDtoContent)
@@ -403,5 +405,15 @@ public class NanaService {
       );
     }
     return nanaAdditionalInfoSet;
+  }
+
+  // new 태그 붙일지 말지 결정
+  // 이번 달에 생성된 게시글이면 new
+  private void markNewestThumbnails(List<NanaThumbnail> thumbnails) {
+    LocalDate now = LocalDate.now();
+    thumbnails.stream()
+        .filter(thumbnail -> (thumbnail.getCreatedAt().getYear() == now.getYear()) && (
+            thumbnail.getCreatedAt().getMonth() == now.getMonth()))
+        .forEach(thumbnail -> thumbnail.setNewest(true));
   }
 }

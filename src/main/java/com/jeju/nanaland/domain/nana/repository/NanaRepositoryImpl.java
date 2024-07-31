@@ -36,7 +36,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nanaTitle.subHeading,
+            nana.createdAt
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
@@ -57,7 +58,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nanaTitle.subHeading,
+            nana.createdAt
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
@@ -79,6 +81,26 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   @Override
+  public List<NanaThumbnail> findRecommendNanaThumbnailDto(Language language) {
+    return queryFactory.select(new QNanaResponse_NanaThumbnail(
+            nana.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            nana.version,
+            nanaTitle.heading,
+            nanaTitle.subHeading,
+            nana.createdAt
+        ))
+        .from(nanaTitle)
+        .leftJoin(nanaTitle.nana, nana)
+        .leftJoin(nana.firstImageFile, imageFile)
+        .where((nanaTitle.language.eq(language)))
+        .orderBy(nanaTitle.modifiedAt.desc())
+        .limit(4L)
+        .fetch();
+  }
+
+  @Override
   public Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
 
@@ -90,7 +112,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.thumbnailUrl,
             nana.version,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nanaTitle.subHeading,
+            nana.createdAt
         ))
         .from(nana)
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
