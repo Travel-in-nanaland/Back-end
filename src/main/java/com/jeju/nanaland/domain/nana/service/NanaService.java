@@ -33,6 +33,7 @@ import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -73,7 +74,10 @@ public class NanaService {
 
   // 나나's pick 금주 추천 게시글 4개 (modifiedAt 으로 최신순 4개)
   public List<NanaThumbnail> getRecommendNanaThumbnails(Language locale) {
-    return nanaRepository.findRecommendNanaThumbnailDto(locale);
+    List<NanaThumbnail> recommendNanaThumbnailDto = nanaRepository.findRecommendNanaThumbnailDto(
+        locale);
+    markNewestThumbnails(recommendNanaThumbnailDto);
+    return recommendNanaThumbnailDto;
   }
 
 
@@ -404,8 +408,12 @@ public class NanaService {
   }
 
   // new 태그 붙일지 말지 결정
-  // 게시된지 한달 안지나면 new 태그 -> 였다가 맨 처음 하나만 붙이신다해서 일단 수정,,
+  // 이번 달에 생성된 게시글이면 new
   private void markNewestThumbnails(List<NanaThumbnail> thumbnails) {
-    thumbnails.get(0).setNewest(true);
+    LocalDate now = LocalDate.now();
+    thumbnails.stream()
+        .filter(thumbnail -> (thumbnail.getCreatedAt().getYear() == now.getYear()) && (
+            thumbnail.getCreatedAt().getMonth() == now.getMonth()))
+        .forEach(thumbnail -> thumbnail.setNewest(true));
   }
 }
