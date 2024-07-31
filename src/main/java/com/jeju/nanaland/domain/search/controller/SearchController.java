@@ -141,6 +141,24 @@ public class SearchController {
   }
 
   @Operation(
+      summary = "제주 맛집 검색 결과",
+      description = "제주 맛집 검색 결과 반환")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/restaurant")
+  public BaseResponse<SearchResponse.ResultDto> searchRestaurant(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @NotNull String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
+
+    ResultDto result = searchService.searchRestaurantResultDto(memberInfoDto, keyword, page, size);
+    return BaseResponse.success(SEARCH_SUCCESS, result);
+  }
+
+  @Operation(
       summary = "인기 검색어 조회",
       description = "언어 별로 가장 검색이 많이 된 8개 반환")
   @ApiResponses(value = {

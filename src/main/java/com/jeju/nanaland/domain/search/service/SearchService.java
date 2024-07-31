@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -23,6 +24,8 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
@@ -53,6 +56,7 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
+  private final RestaurantRepository restaurantRepository;
   private final FavoriteService favoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -73,6 +77,7 @@ public class SearchService {
         .festival(searchFestivalResultDto(memberInfoDto, keyword, page, size))
         .market(searchMarketResultDto(memberInfoDto, keyword, page, size))
         .experience(searchExperienceResultDto(memberInfoDto, keyword, page, size))
+        .restaurant(searchRestaurantResultDto(memberInfoDto, keyword, page, size))
         .nana(searchNanaResultDto(memberInfoDto, keyword, page, size))
         .build();
   }
@@ -192,11 +197,42 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (MarketCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(MARKET.name())
+              .firstImage(dto.getFirstImage())
+              .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
+              .build());
+    }
+
+    return SearchResponse.ResultDto.builder()
+        .totalElements(resultPage.getTotalElements())
+        .data(thumbnails)
+        .build();
+  }
+
+  public SearchResponse.ResultDto searchRestaurantResultDto(
+      MemberInfoDto memberInfoDto,
+      String keyword,
+      int page,
+      int size) {
+
+    Language locale = memberInfoDto.getLanguage();
+    Member member = memberInfoDto.getMember();
+    Pageable pageable = PageRequest.of(page, size);
+    Page<RestaurantCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
+        keyword, locale, pageable);
+
+    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+
+    List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
+    for (RestaurantCompositeDto dto : resultPage) {
+      thumbnails.add(
+          ThumbnailDto.builder()
+              .id(dto.getId())
+              .category(RESTAURANT.name())
               .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))

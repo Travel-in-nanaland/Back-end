@@ -25,6 +25,9 @@ public class SearchResponse {
     @Schema(description = "전통시장 조회 결과")
     private ResultDto market;
 
+    @Schema(description = "제주 맛집 조회 결과")
+    private ResultDto restaurant;
+
     @Schema(description = "나나스픽 조회 결과")
     private ResultDto nana;
   }
