@@ -91,11 +91,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
             restaurantTrans.time,
             restaurant.homepage,
             restaurant.instagram,
-            restaurantTrans.reservation,
-            restaurantTrans.takeOut,
-            restaurantTrans.parking,
-            restaurantTrans.groupReservation,
-            restaurantTrans.pet
+            restaurantTrans.service
         ))
         .from(restaurant)
         .innerJoin(restaurant.restaurantTrans, restaurantTrans)

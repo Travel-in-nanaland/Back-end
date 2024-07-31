@@ -115,6 +115,7 @@ public class RestaurantService {
         .homepage(restaurantCompositeDto.getHomepage())
         .instagram(restaurantCompositeDto.getInstagram())
         .time(restaurantCompositeDto.getTime())
+        .service(restaurantCompositeDto.getService())
         .keywords(keywords)
         .menus(menuDtoList)
         .isFavorite(isFavorite)
