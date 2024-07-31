@@ -20,6 +20,7 @@ import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
@@ -36,6 +37,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto.MyRe
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
 import com.jeju.nanaland.domain.review.entity.ReviewImageFile;
@@ -48,31 +50,41 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
+  private static final String SEARCH_AUTO_COMPLETE_HASH_KEY = "REVIEW AUTO COMPLETE:";
   private final ReviewRepository reviewRepository;
   private final ExperienceRepository experienceRepository;
   private final ReviewKeywordRepository reviewKeywordRepository;
   private final ReviewImageFileRepository reviewImageFileRepository;
   private final ImageFileService imageFileService;
   private final ReviewHeartRepository reviewHeartRepository;
+  private final MarketRepository marketRepository;
+  private final RedisTemplate<String, Object> redisTemplate;
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
   private final ImageFileRepository imageFileRepository;
@@ -134,7 +146,6 @@ public class ReviewService {
 
     // reviewImageFile
     if (imageList != null) {
-      AtomicInteger num = new AtomicInteger(1);
       imageList.forEach(image ->
           reviewImageFileRepository.save(ReviewImageFile.builder()
               .imageFile(imageFileService.uploadAndSaveImageFile(image, true))
@@ -142,6 +153,40 @@ public class ReviewService {
               .build())
       );
     }
+  }
+
+  public List<SearchPostForReviewDto> getAutoCompleteSearchResultForReview(
+      MemberInfoDto memberInfoDto, String keyword) {
+    HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
+    Map<String, SearchPostForReviewDto> redisMap = hashOperations.entries(
+        SEARCH_AUTO_COMPLETE_HASH_KEY + memberInfoDto.getLanguage()
+            .name()); // 여기 KEY를 나중에 language를 붙이면 될듯
+
+    // 태호 박물관 -> {"태호", "박물관"}
+    List<String> splitKeywordList = Arrays.asList(keyword.split(" "));
+    // 태호 박물관 -> 태호박물관
+    String mergedKeyword = String.join("", splitKeywordList);
+
+    // 레디스에서 기존 keyword, 공백 없앤 keyword, 공백으로 분리한 keywordList로 검색한 값 title기준으로 사전 정렬
+    List<SearchPostForReviewDto> keywordSearch = new ArrayList<>(
+        searchByKeyword(redisMap, keyword));
+    List<SearchPostForReviewDto> mergedKeywordSearch = new ArrayList<>(
+        searchByKeyword(redisMap, mergedKeyword));
+    List<SearchPostForReviewDto> splitKeywordSearch = new ArrayList<>(
+        searchByKeywordList(redisMap, splitKeywordList));
+
+    // keywordSearch에 존재하지 않을 경우에만 결과에 추가 (중복 제거)
+    for (SearchPostForReviewDto dto : mergedKeywordSearch) {
+      if (!keywordSearch.contains(dto)) {
+        keywordSearch.add(dto);
+      }
+    }
+    for (SearchPostForReviewDto dto : splitKeywordSearch) {
+      if (!keywordSearch.contains(dto)) {
+        keywordSearch.add(dto);
+      }
+    }
+    return keywordSearch;
   }
 
 
@@ -446,4 +491,58 @@ public class ReviewService {
     originUrlList.forEach(imageFileService::deleteImageFileInS3ByOriginUrl);
 
   }
+
+  @PostConstruct
+  private void initAutoCompleteData() {
+    // 테스트 돌릴 때 redis가 켜지지 않아 이 부분 에러남. 테스트 일때는 실행되지 않도록 설정
+    if ("test".equals(System.getProperty("spring.profiles.active"))) {
+      return;
+    }
+    HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
+
+    for (Language language : Language.values()) {
+      experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
+          .forEach(dto -> {
+            dto.setCategoryValue(Category.EXPERIENCE.getValueByLocale(language));
+            hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+                dto.getTitle(), dto);
+          });
+
+      restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
+          .forEach(dto -> {
+            dto.setCategoryValue(Category.RESTAURANT.getValueByLocale(language));
+            hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+                dto.getTitle(), dto);
+          });
+
+    }
+
+  }
+
+  /**
+   * redis에서 모든 값 가져온 후 key가 keyword를 포함한 것 찾기 찾은 것들에 value->(SearchPostForReviewDto) 가져오기 title로
+   * 정렬
+   */
+  private List<SearchPostForReviewDto> searchByKeyword(Map<String, SearchPostForReviewDto> redisMap,
+      String keyword) {
+    return redisMap.entrySet().stream()
+        .filter(entry -> entry.getKey().contains(keyword))
+        .map(Map.Entry::getValue)
+        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
+        .toList();
+  }
+
+  /**
+   * redis에서 모든 값 가져온 후 List<> keyword를 stream돌려서 key가 keyword를 포함한 것 찾기 찾은 것들에
+   * value->(SearchPostForReviewDto) 가져오기 title로 정렬
+   */
+  private List<SearchPostForReviewDto> searchByKeywordList(
+      Map<String, SearchPostForReviewDto> redisMap, List<String> keywords) {
+    return redisMap.entrySet().stream()
+        .filter(entry -> keywords.stream().anyMatch(entry.getKey()::contains))
+        .map(Map.Entry::getValue)
+        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
+        .toList();
+  }
+
 }

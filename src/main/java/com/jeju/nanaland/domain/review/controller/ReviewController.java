@@ -15,6 +15,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.service.ReviewService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -174,6 +175,21 @@ public class ReviewController {
       @PathVariable Long id) {
     reviewService.deleteMyReviewById(memberInfoDto, id);
     return BaseResponse.success(REVIEW_DELETE_SUCCESS);
+  }
+
+
+  @Operation(summary = "리뷰위한 게시글 검색 자동완성")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @PostMapping("/search/auto-complete")
+  public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam String keyword) {
+    return BaseResponse.success(REVIEW_HEART_SUCCESS,
+        reviewService.getAutoCompleteSearchResultForReview(
+            memberInfoDto, keyword));
   }
 
 

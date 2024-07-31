@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.review.dto;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class ReviewResponse {
 
@@ -240,4 +243,42 @@ public class ReviewResponse {
       this.heartCount = Math.toIntExact(heartCount);
     }
   }
+
+  @Getter
+  @Setter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "리뷰 작성위한 게시물 검색")
+  public static class SearchPostForReviewDto {
+
+    @Schema(description = "리뷰 게시물 id")
+    private Long id;
+
+    @Schema(description = "게시물 카테고리 ex) RESTAURANT, EXPERIENCE")
+    private String category;
+
+    @Schema(description = "게시물 카테고리 이름, 화면에 사용할 값(언어별 번역 제공) ex) 제주 맛집,,,")
+    private String categoryValue;
+
+    @Schema(description = "게시물 제목")
+    private String title;
+
+    @Schema(description = "게시물 썸네일")
+    private ImageFileDto firstImage;
+
+    @Schema(description = "게시물 주소")
+    private String address;
+
+    @QueryProjection
+    public SearchPostForReviewDto(Long id, String category, String title, ImageFile firstImage,
+        String address) {
+      this.id = id;
+      this.category = category;
+      this.title = title;
+      this.firstImage = new ImageFileDto(firstImage.getOriginUrl(), firstImage.getThumbnailUrl());
+      this.address = address;
+    }
+  }
+
 }

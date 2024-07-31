@@ -9,6 +9,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -39,6 +40,16 @@ public class RedisConfig {
     RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(redisConnectionFactory());
     redisTemplate.setDefaultSerializer(new StringRedisSerializer());
+    return redisTemplate;
+  }
+
+  @Bean
+  public RedisTemplate<String, Object> objectRedisTemplate() {
+    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(redisConnectionFactory());
+    redisTemplate.setKeySerializer(new StringRedisSerializer());
+    redisTemplate.setDefaultSerializer(
+        new GenericJackson2JsonRedisSerializer()); // 예시로 Jackson Serializer 사용
     return redisTemplate;
   }
 }
