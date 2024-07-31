@@ -178,7 +178,7 @@ public class ReviewController {
   }
 
 
-  @Operation(summary = "자동완성 테스트")
+  @Operation(summary = "리뷰위한 게시글 검색 자동완성")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
