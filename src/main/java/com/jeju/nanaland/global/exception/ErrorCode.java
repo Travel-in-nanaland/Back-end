@@ -33,6 +33,7 @@ public enum ErrorCode {
   MEMBER_WTIHDRAWAL_NOT_FOUND(NOT_FOUND, "존재하는 회원의 탈퇴 상태를 찾을 수 없습니다"),
   CATEGORY_NOT_FOUND(NOT_FOUND, "존재하는 카테고리를 찾을 수 없습니다."),
   REVIEW_NOT_FOUND(NOT_FOUND, "존재하는 리뷰를 찾을 수 없습니다."),
+  NOTICE_NOT_FOUND(NOT_FOUND, "존재하는 공지사항을 찾을 수 없습니다."),
 
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),
