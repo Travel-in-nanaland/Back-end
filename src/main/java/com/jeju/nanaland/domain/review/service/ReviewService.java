@@ -517,8 +517,6 @@ public class ReviewService {
 
     }
 
-    Long test = hashOperations.size(SEARCH_AUTO_COMPLETE_HASH_KEY + "KOREAN");
-    System.out.println("test = " + test);
   }
 
   /**
