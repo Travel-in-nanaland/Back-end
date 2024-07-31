@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.review.entity;
+package com.jeju.nanaland.domain.report.entity.review;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewImageFile {
+public class ReviewReportImageFile {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +32,12 @@ public class ReviewImageFile {
   private ImageFile imageFile;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "review_id", nullable = false)
-  private Review review;
+  @JoinColumn(name = "review_report_id", nullable = false)
+  private ReviewReport reviewReport;
 
   @Builder
-  public ReviewImageFile(ImageFile imageFile, Review review) {
+  public ReviewReportImageFile(ImageFile imageFile, ReviewReport reviewReport) {
     this.imageFile = imageFile;
-    this.review = review;
+    this.reviewReport = reviewReport;
   }
 }

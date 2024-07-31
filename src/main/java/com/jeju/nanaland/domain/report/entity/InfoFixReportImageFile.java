@@ -1,7 +1,6 @@
-package com.jeju.nanaland.domain.review.entity;
+package com.jeju.nanaland.domain.report.entity;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -11,33 +10,30 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewImageFile {
+public class InfoFixReportImageFile {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "image_file_id", nullable = false)
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "image_file_id")
   private ImageFile imageFile;
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "review_id", nullable = false)
-  private Review review;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "info_fix_report_id")
+  private InfoFixReport infoFixReport;
 
   @Builder
-  public ReviewImageFile(ImageFile imageFile, Review review) {
+  public InfoFixReportImageFile(ImageFile imageFile, InfoFixReport infoFixReport) {
     this.imageFile = imageFile;
-    this.review = review;
+    this.infoFixReport = infoFixReport;
   }
 }
