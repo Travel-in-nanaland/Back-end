@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -21,6 +23,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDet
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewListDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewStatusDto;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.entity.ReviewHeart;
 import com.jeju.nanaland.domain.review.repository.ReviewHeartRepository;
@@ -232,27 +235,8 @@ class ReviewServiceTest {
   }
 
   @Test
-  @DisplayName("리뷰 좋아요 토글 성공 - 좋아요가 이미 존재하는 경우")
-  void toggleReviewHeartSuccess() {
-    // TODO 윤아 고치기
-//    // given
-//    Long reviewId = 1L;
-//
-//    doReturn(Optional.of(review)).when(reviewRepository).findById(reviewId);
-//    doReturn(Optional.of(reviewHeart)).when(reviewHeartRepository)
-//        .findByMemberAndReview(memberInfoDto.getMember(), review);
-//
-//    // when
-//    StatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto, reviewId);
-//
-//    // then
-//    assertThat(statusDto.isReviewHeart()).isFalse();
-//    verify(reviewHeartRepository, times(1)).delete(reviewHeart);
-  }
-
-  @Test
-  @DisplayName("리뷰 좋아요 토글 성공 - 좋아요가 존재하지 않는 경우")
-  void toggleReviewHeartSuccess2() {
+  @DisplayName("리뷰 좋아요 토글 성공 - 본인이 작성한 리뷰인 경우")
+  void toggleReviewHeartFail2() {
     // given
     Long reviewId = 1L;
 
@@ -265,6 +249,46 @@ class ReviewServiceTest {
     // then
     assertThat(badRequestException.getMessage()).isEqualTo(
         ErrorCode.REVIEW_SELF_LIKE_FORBIDDEN.getMessage());
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 토글 성공 - 좋아요가 이미 존재하는 경우")
+  void toggleReviewHeartSuccess() {
+    // given
+    Long reviewId = 1L;
+    Member member2 = createMember(Language.ENGLISH);
+    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.ENGLISH, member2);
+
+    doReturn(Optional.of(review)).when(reviewRepository).findById(reviewId);
+    doReturn(Optional.of(reviewHeart)).when(reviewHeartRepository)
+        .findByMemberAndReview(memberInfoDto2.getMember(), review);
+
+    // when
+    ReviewStatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto2, reviewId);
+
+    // then
+    assertThat(statusDto.isReviewHeart()).isFalse();
+    verify(reviewHeartRepository, times(1)).delete(reviewHeart);
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 토글 성공 - 좋아요가 존재하지 않는 경우")
+  void toggleReviewHeartSuccess2() {
+    // given
+    Long reviewId = 1L;
+    Member member2 = createMember(Language.ENGLISH);
+    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.ENGLISH, member2);
+
+    doReturn(Optional.of(review)).when(reviewRepository).findById(reviewId);
+    doReturn(Optional.empty()).when(reviewHeartRepository)
+        .findByMemberAndReview(memberInfoDto2.getMember(), review);
+
+    // when
+    ReviewStatusDto statusDto = reviewService.toggleReviewHeart(memberInfoDto2, reviewId);
+
+    // then
+    assertThat(statusDto.isReviewHeart()).isTrue();
+    verify(reviewHeartRepository, times(1)).save(any(ReviewHeart.class));
   }
 
   @Test

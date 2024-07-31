@@ -81,7 +81,7 @@ public class ReviewResponse {
   @Data
   @Builder
   @Schema(description = "좋아요 상태 결과")
-  public static class StatusDto {
+  public static class ReviewStatusDto {
 
     @Schema(description = "좋아요 상태")
     private boolean isReviewHeart;
