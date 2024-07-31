@@ -89,6 +89,9 @@ public class RestaurantResponse {
     @Schema(description = "이용시간")
     private String time;
 
+    @Schema(description = "제공 서비스")
+    private String service;
+
     @Schema(description = "메뉴")
     private List<RestaurantMenuDto> menus;
 
