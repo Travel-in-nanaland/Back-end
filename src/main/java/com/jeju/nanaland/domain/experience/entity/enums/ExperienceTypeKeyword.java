@@ -10,7 +10,7 @@ public enum ExperienceTypeKeyword {
   WATER_LEISURE(ExperienceType.ACTIVITY, "수상레저", "enCu", "zhCu", "msCu", "viCu"),
   AIR_LEISURE(ExperienceType.ACTIVITY, "항공레저", "enLu", "zhLu", "msLu", "viLu"),
   MARINE_EXPERIENCE(ExperienceType.ACTIVITY, "해양체험", "enSc", "zhSc", "msSc", "viSc"),
-  RURAL_EXPERIENCE(ExperienceType.ACTIVITY, "농총체험", "enKi", "zhKi", "msKi", "viKi"),
+  RURAL_EXPERIENCE(ExperienceType.ACTIVITY, "농촌체험", "enKi", "zhKi", "msKi", "viKi"),
   HEALING_THERAPY(ExperienceType.ACTIVITY, "힐링테라피", "enCh", "zhCh", "msCh", "viCh"),
 
   HISTORY(ExperienceType.CULTURE_AND_ARTS, "역사", "enFr", "zhFr", "msFr", "viFr"),
