@@ -229,7 +229,6 @@ public class SearchService {
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (RestaurantCompositeDto dto : resultPage) {
-      // TODO: 이미지 추가 필요
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
