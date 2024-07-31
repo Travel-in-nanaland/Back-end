@@ -23,6 +23,7 @@ import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +76,7 @@ public class NanaServiceTest {
     NanaTitle nanaTitle3 = createNanaTitle(3, nana3, language);
 
     Pageable pageable = PageRequest.of(0, 10); // 0번 페이지, 페이지 크기 10
+    LocalDateTime now = LocalDateTime.now();
     List<NanaThumbnail> nanaThumbnailList = List.of(
         NanaThumbnail.builder()
             .firstImage(new ImageFileDto(nana1.getFirstImageFile().getOriginUrl(),
@@ -82,6 +84,7 @@ public class NanaServiceTest {
             .subHeading(nanaTitle1.getSubHeading())
             .heading(nanaTitle1.getHeading())
             .version(nana1.getVersion())
+            .createdAt(now.plusDays(1))
             .build(),
         NanaThumbnail.builder()
             .firstImage(new ImageFileDto(nana2.getFirstImageFile().getOriginUrl(),
@@ -89,6 +92,7 @@ public class NanaServiceTest {
             .subHeading(nanaTitle2.getSubHeading())
             .heading(nanaTitle2.getHeading())
             .version(nana2.getVersion())
+            .createdAt(now.plusDays(2))
             .build(),
         NanaThumbnail.builder()
             .firstImage(new ImageFileDto(nana3.getFirstImageFile().getOriginUrl(),
@@ -96,6 +100,7 @@ public class NanaServiceTest {
             .subHeading(nanaTitle3.getSubHeading())
             .heading(nanaTitle3.getHeading())
             .version(nana3.getVersion())
+            .createdAt(now.plusDays(3))
             .build());
     Page<NanaThumbnail> nanaThumbnails = new PageImpl<>(nanaThumbnailList, pageable,
         nanaThumbnailList.size());
