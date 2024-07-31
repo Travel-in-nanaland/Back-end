@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ReviewHeartRepository extends JpaRepository<ReviewHeart, Long> {
 
   Optional<ReviewHeart> findByMemberAndReview(Member member, Review review);
+
+  void deleteAllByReview(Review review);
 }

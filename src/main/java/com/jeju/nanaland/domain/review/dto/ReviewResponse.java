@@ -2,6 +2,8 @@ package com.jeju.nanaland.domain.review.dto;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
@@ -12,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class ReviewResponse {
 
@@ -80,10 +84,69 @@ public class ReviewResponse {
   @Data
   @Builder
   @Schema(description = "좋아요 상태 결과")
-  public static class StatusDto {
+  public static class ReviewStatusDto {
 
     @Schema(description = "좋아요 상태")
     private boolean isReviewHeart;
+  }
+
+  @Data
+  @Builder
+  @AllArgsConstructor
+  @Schema(description = "마이페이지에서 리뷰 수정 클릭 했을 때 원래 작성했던 리뷰 내용")
+  public static class MyReviewDetailDto {
+
+    @Schema(description = "리뷰 게시물 id")
+    private Long id;
+
+
+    @Schema(description = "post 썸네일 이미지")
+    private ImageFileDto firstImage;
+
+    @Schema(description = "post 장소 이름")
+    private String title;
+
+    @Schema(description = "post 장소 주소")
+    private String address;
+
+    @Schema(description = "리뷰 별점 (1~5)")
+    private int rating;
+
+    @Schema(description = "리뷰 내용")
+    private String content;
+
+    @Schema(description = "리뷰 이미지 리스트")
+    private List<MyReviewImageDto> images;
+
+    @Schema(
+        description = "게시물 카테고리",
+        example = "[\"ANNIVERSARY\", \"CUTE\"]",
+        allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
+            "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
+    )
+    private List<ReviewTypeKeyword> reviewKeywords;
+
+    @QueryProjection
+    public MyReviewDetailDto(Long id, String firstImageOriginUrl, String firstImageThumbnailUrl,
+        String title, String address, int rating, String content) {
+      this.id = id;
+      this.firstImage = new ImageFileDto(firstImageOriginUrl, firstImageThumbnailUrl);
+      this.title = title;
+      this.address = address;
+      this.rating = rating;
+      this.content = content;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "회원이 작성한 리뷰 이미지 정보")
+    public static class MyReviewImageDto {
+
+      private Long id;
+      private String originUrl;
+      private String thumbnailUrl;
+
+    }
   }
 
   @Getter
@@ -180,4 +243,42 @@ public class ReviewResponse {
       this.heartCount = Math.toIntExact(heartCount);
     }
   }
+
+  @Getter
+  @Setter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "리뷰 작성위한 게시물 검색")
+  public static class SearchPostForReviewDto {
+
+    @Schema(description = "리뷰 게시물 id")
+    private Long id;
+
+    @Schema(description = "게시물 카테고리 ex) RESTAURANT, EXPERIENCE")
+    private String category;
+
+    @Schema(description = "게시물 카테고리 이름, 화면에 사용할 값(언어별 번역 제공) ex) 제주 맛집,,,")
+    private String categoryValue;
+
+    @Schema(description = "게시물 제목")
+    private String title;
+
+    @Schema(description = "게시물 썸네일")
+    private ImageFileDto firstImage;
+
+    @Schema(description = "게시물 주소")
+    private String address;
+
+    @QueryProjection
+    public SearchPostForReviewDto(Long id, String category, String title, ImageFile firstImage,
+        String address) {
+      this.id = id;
+      this.category = category;
+      this.title = title;
+      this.firstImage = new ImageFileDto(firstImage.getOriginUrl(), firstImage.getThumbnailUrl());
+      this.address = address;
+    }
+  }
+
 }

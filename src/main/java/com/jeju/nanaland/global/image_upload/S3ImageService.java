@@ -194,6 +194,24 @@ public class S3ImageService {
     }
   }
 
+  @Transactional
+  public void deleteImageS3ByOriginUrl(String originUrl) {
+    // 원본 파일 이름 찾기
+    String filename = extractFileName(originUrl);
+
+    // 원본 이미지 삭제
+    amazonS3Client.deleteObject(bucketName + imageDirectory, filename);
+
+    if (amazonS3Client.doesObjectExist(bucketName + thumbnailDirectory,
+        thumbnailPrefix + filename)) { // 썸네일 이미지가 있으면
+      log.info("섬네일 존재");
+
+      //썸네일 이미지 삭제
+      amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
+    }
+  }
+
+
   public String extractFileName(String accessUrl) {
     String[] parts = accessUrl.split("images/");
     if (parts.length > 1) {

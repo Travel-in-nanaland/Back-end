@@ -16,7 +16,7 @@ public enum ReviewTypeKeyword {
   FRIEND(Type.COMPANION, "친구", "enFr", "zhFr", "msFr", "viFr"),
   PARENTS(Type.COMPANION, "부모님", "enPa", "zhPa", "msPa", "viPa"),
   ALONE(Type.COMPANION, "혼자", "enAl", "zhAl", "msAl", "viAl"),
-  HALF(Type.COMPANION, "연인, 배우자", "enHa", "zhHa", "msHa", "viHa"),
+  HALF(Type.COMPANION, "연인/배우자", "enHa", "zhHa", "msHa", "viHa"),
   RELATIVE(Type.COMPANION, "친척/형제", "enRe", "zhRe", "msRe", "viRe"),
   PET(Type.COMPANION, "반려동물", "enPe", "zhPe", "msPe", "viPe"),
 

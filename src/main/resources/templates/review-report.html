@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <style>
+    body {
+      font-family: verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      margin: auto;
+      padding: 5%;
+      max-width: 600px;
+      box-sizing: border-box;
+    }
+
+    .header img {
+      max-width: 70px;
+      height: auto;
+    }
+
+    .content {
+      border-top: 1px solid black;
+      border-bottom: 1px solid black;
+      text-align: left;
+      padding: 15px 0;
+    }
+
+    .content div {
+      margin-bottom: 10px;
+    }
+
+    .content a {
+      display: block;
+      margin: 5px 0;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+    }
+  </style>
+  <title></title>
+</head>
+<body>
+<div class="container">
+  <div class="header" style="text-align: center;">
+    <img alt="nanaland 로고"
+         src="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/nanaland-logo.png">
+    <h1>리뷰 신고 사항</h1>
+  </div>
+  <div class="content">
+    <div>리뷰 ID: <span th:text="${review_id}"></span></div>
+    <div>리뷰 내용: <span th:text="${review_content}"></span></div>
+    <div>신고 이유: <span th:text="${claim_type}"></span></div>
+    <div>신고 내용: <span th:text="${content}"></span></div>
+    <div th:if="${image_0 != null}"><a th:href="${image_0}">report file Url1</a></div>
+    <div th:if="${image_1 != null}"><a th:href="${image_1}">report file Url2</a></div>
+    <div th:if="${image_2 != null}"><a th:href="${image_2}">report file Url3</a></div>
+    <div th:if="${image_3 != null}"><a th:href="${image_3}">report file Url4</a></div>
+    <div th:if="${image_4 != null}"><a th:href="${image_4}">report file Url5</a></div>
+    <div>요청자 이메일: <span th:text="${email}"></span></div>
+  </div>
+</div>
+</body>
+</html>

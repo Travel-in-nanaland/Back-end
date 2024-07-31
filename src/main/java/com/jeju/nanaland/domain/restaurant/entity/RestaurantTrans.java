@@ -39,20 +39,11 @@ public class RestaurantTrans extends BaseEntity {
 
   private String addressTag;
 
-  private String reservation;
-
-  private String takeOut;
-
-  private String parking;
-
-  private String groupReservation;
-
-  private String pet;
+  private String service;
 
   @Builder
   public RestaurantTrans(Restaurant restaurant, Language language, String title, String content,
-      String time, String address, String addressTag, String reservation, String takeOut,
-      String parking, String groupReservation, String pet) {
+      String time, String address, String addressTag, String service) {
     this.restaurant = restaurant;
     this.language = language;
     this.title = title;
@@ -60,10 +51,6 @@ public class RestaurantTrans extends BaseEntity {
     this.time = time;
     this.address = address;
     this.addressTag = addressTag;
-    this.reservation = reservation;
-    this.takeOut = takeOut;
-    this.parking = parking;
-    this.groupReservation = groupReservation;
-    this.pet = pet;
+    this.service = service;
   }
 }
