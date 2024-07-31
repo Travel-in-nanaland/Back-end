@@ -33,8 +33,6 @@ import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -400,11 +398,8 @@ public class NanaService {
   }
 
   // new 태그 붙일지 말지 결정
-  // 게시된지 한달 안지나면 new 태그
+  // 게시된지 한달 안지나면 new 태그 -> 였다가 맨 처음 하나만 붙이신다해서 일단 수정,,
   private void markNewestThumbnails(List<NanaThumbnail> thumbnails) {
-    LocalDateTime now = LocalDateTime.now();
-    thumbnails.stream()
-        .filter(nanaThumbnail -> ChronoUnit.MONTHS.between(nanaThumbnail.getCreatedAt(), now) < 1)
-        .forEach(nanaThumbnail -> nanaThumbnail.setNewest(true));
+    thumbnails.get(0).setNewest(true);
   }
 }
