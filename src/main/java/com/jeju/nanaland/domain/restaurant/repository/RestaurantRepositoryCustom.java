@@ -5,6 +5,7 @@ import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantMenuDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantThumbnail;
 import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Page;
@@ -23,4 +24,6 @@ public interface RestaurantRepositoryCustom {
 
   Page<RestaurantCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable);
+  
+  List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
 }

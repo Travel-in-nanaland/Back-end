@@ -16,8 +16,11 @@ import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantMenuDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantThumbnail;
 import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
+import com.jeju.nanaland.domain.review.dto.QReviewResponse_SearchPostForReviewDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -213,5 +216,18 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
       tokenList.add(token.trim());
     }
     return tokenList;
+  }
+  
+  @Override
+  public List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QReviewResponse_SearchPostForReviewDto(restaurant.id,
+                Expressions.constant(Category.RESTAURANT.name()),
+                restaurantTrans.title, restaurant.firstImageFile, restaurantTrans.address))
+        .from(restaurant)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .where(restaurantTrans.language.eq(language))
+        .fetch();
   }
 }
