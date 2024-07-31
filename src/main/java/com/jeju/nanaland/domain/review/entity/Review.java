@@ -53,4 +53,12 @@ public class Review extends BaseEntity {
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.REMOVE)
   private Set<ReviewKeyword> reviewKeywords;
+
+  public void updateRating(Integer rating) {
+    this.rating = rating;
+  }
+
+  public void updateContent(String content) {
+    this.content = content;
+  }
 }
