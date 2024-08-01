@@ -378,7 +378,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .selectFrom(reviewImageFile)
         .innerJoin(reviewImageFile.imageFile, imageFile)
         .where(reviewImageFile.review.id.in(reviewIds))
-        .limit(1)
         .transform(GroupBy.groupBy(reviewImageFile.review.id)
             .as(new QImageFileDto(
                 imageFile.originUrl,
