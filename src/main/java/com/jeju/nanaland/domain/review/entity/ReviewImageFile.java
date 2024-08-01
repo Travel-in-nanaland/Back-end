@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.review.entity;
 
-import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -22,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewImageFile extends BaseEntity {
+public class ReviewImageFile {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
