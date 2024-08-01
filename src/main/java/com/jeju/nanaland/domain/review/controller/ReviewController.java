@@ -183,7 +183,7 @@ public class ReviewController {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
-  @PostMapping("/search/auto-complete")
+  @GetMapping("/search/auto-complete")
   public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam String keyword) {
