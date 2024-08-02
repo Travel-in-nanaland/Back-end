@@ -19,6 +19,10 @@ public class NotificationRequest {
     @NotNull
     @Schema(name = "알림 내용")
     private String content;
+
+    @NotNull
+    @Schema(name = "클릭 시 수행할 행동")
+    private String clickAction;
   }
 
   @Getter
