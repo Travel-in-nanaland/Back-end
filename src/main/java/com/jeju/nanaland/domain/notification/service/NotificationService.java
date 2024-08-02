@@ -53,11 +53,15 @@ public class NotificationService {
         currentSuccessCount += batchResponse.getSuccessCount();
         log.info("전체 알림 전송 성공: {}개", currentSuccessCount);
 
-      } catch (InterruptedException e) {
-        log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+      }
+      // ApiFuture 에러 처리
+      catch (ExecutionException e) {
+        log.error("알림 전송 실패: {}", e.getMessage());
         throw new RuntimeException(e);
-      } catch (ExecutionException e) {
-        log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+      }
+      // 쓰레드 인터럽트 에러 처리
+      catch (InterruptedException e) {
+        log.error("알림 전송 실패: {}", e.getMessage());
         throw new RuntimeException(e);
       }
     }
@@ -76,10 +80,10 @@ public class NotificationService {
     // 메세지 전송
     try {
       String response = FirebaseMessaging.getInstance().send(message);
-      log.info("메세지 전송 성공 {}", response);
+      log.info("알림 전송 성공 {}", response);
 
     } catch (FirebaseMessagingException e) {
-      log.error("fcm 메세지 전송 실패: {}", e.getMessage());
+      log.error("알림 전송 실패 {}: {}", e.getErrorCode(), e.getMessage());
       throw new RuntimeException(e);
     }
   }
