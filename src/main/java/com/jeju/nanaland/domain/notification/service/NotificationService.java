@@ -102,7 +102,7 @@ public class NotificationService {
                 .setNotification(
                     AndroidNotification.builder()
                         // click 이벤트 등 추가 가능
-                        .setClickAction("nana_pick")
+                        .setClickAction(fcmMessageDto.getClickAction())
                         .build()
                 ).build())
         // IOS 전용 설정 - apns
@@ -110,7 +110,7 @@ public class NotificationService {
             ApnsConfig.builder()
                 .setAps(
                     Aps.builder()
-                        .setCategory("nana_pick")
+                        .setCategory(fcmMessageDto.getClickAction())
                         .build()
                 ).build())
         .build();
@@ -135,7 +135,7 @@ public class NotificationService {
                 .setNotification(
                     AndroidNotification.builder()
                         // click 이벤트 등 추가 가능
-                        .setClickAction("nana_pick")
+                        .setClickAction(fcmMessageToTargetDto.getMessage().getClickAction())
                         .build()
                 ).build())
         // IOS 전용 설정 - apns
@@ -143,7 +143,7 @@ public class NotificationService {
             ApnsConfig.builder()
                 .setAps(
                     Aps.builder()
-                        .setCategory("nana_pick")
+                        .setCategory(fcmMessageToTargetDto.getMessage().getClickAction())
                         .build()
                 ).build())
         .build();
