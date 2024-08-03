@@ -2,7 +2,6 @@ package com.jeju.nanaland.domain.notification.service;
 
 import com.google.api.core.ApiFuture;
 import com.google.firebase.FirebaseException;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
@@ -25,23 +24,37 @@ import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationService {
 
+  private final FcmTokenService fcmTokenService;
   private final FcmTokenRepository fcmTokenRepository;
 
+  @Transactional
   public void sendPushNotificationToAllMembers(FcmMessageDto fcmMessageDto) {
 
-    // 모든 토큰 조회
-    List<String> allTokenList = fcmTokenRepository.findAll().stream()
-        .map(FcmToken::getToken)
+    // 모든 토큰 조회, 검증
+    List<String> verifiedTokenList = fcmTokenRepository.findAll()
+        .stream()
+        .filter(fcmToken -> {
+          try {
+            fcmTokenService.verifyFcmToken(fcmToken);
+            return true;
+          } catch (FirebaseException e) {
+            fcmTokenService.deleteFcmToken(fcmToken);
+            log.info("Invalid fcm token deleted: {}", fcmToken.getToken());
+            return false;
+          }
+        })
+        .map(FcmToken::toString)
         .toList();
 
     // 한번에 전송 가능한 단위인 500개로 분할
-    List<List<String>> splitedTokenList = splitTokenList(allTokenList);
+    List<List<String>> splitedTokenList = splitTokenList(verifiedTokenList);
 
     int currentSuccessCount = 0;
     for (List<String> tokenList : splitedTokenList) {
@@ -55,7 +68,6 @@ public class NotificationService {
         BatchResponse batchResponse = responseApiFuture.get();
         currentSuccessCount += batchResponse.getSuccessCount();
         log.info("전체 알림 전송 성공: {}개", currentSuccessCount);
-
       }
       // ApiFuture 에러 처리
       catch (ExecutionException e) {
@@ -70,6 +82,7 @@ public class NotificationService {
     }
   }
 
+  @Transactional
   public void sendPushNotificationToTarget(FcmMessageToTargetDto fcmMessageToTargetDto) {
 
     String targetToken = fcmMessageToTargetDto.getTargetToken();
@@ -79,9 +92,11 @@ public class NotificationService {
 
     // FCM 토큰 검증
     try {
-      FirebaseAuth.getInstance().verifyIdToken(fcmToken.getToken());
+      fcmTokenService.verifyFcmToken(fcmToken);
     } catch (FirebaseException e) {
       log.error("FCM 토큰 검증 실패: {}", fcmToken.getToken());
+      // 해당 토큰 삭제
+      fcmTokenService.deleteFcmToken(fcmToken);
       throw new BadRequestException(e.getMessage());
     }
 
@@ -94,6 +109,7 @@ public class NotificationService {
       log.info("알림 전송 성공 {}", response);
     } catch (FirebaseMessagingException e) {
       log.error("알림 전송 실패 {}: {}", e.getErrorCode(), e.getMessage());
+      fcmTokenService.deleteFcmToken(fcmToken);
       throw new RuntimeException(e);
     }
   }
