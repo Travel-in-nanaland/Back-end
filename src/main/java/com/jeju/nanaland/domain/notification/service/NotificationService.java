@@ -1,6 +1,8 @@
 package com.jeju.nanaland.domain.notification.service;
 
 import com.google.api.core.ApiFuture;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
@@ -15,6 +17,7 @@ import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessage
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +77,14 @@ public class NotificationService {
     FcmToken fcmToken = fcmTokenRepository.findByToken(targetToken)
         .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
 
+    // FCM 토큰 검증
+    try {
+      FirebaseAuth.getInstance().verifyIdToken(fcmToken.getToken());
+    } catch (FirebaseException e) {
+      log.error("FCM 토큰 검증 실패: {}", fcmToken.getToken());
+      throw new BadRequestException(e.getMessage());
+    }
+
     // 메세지 만들기
     Message message = makeMessage(fcmMessageToTargetDto);
 
@@ -81,7 +92,6 @@ public class NotificationService {
     try {
       String response = FirebaseMessaging.getInstance().send(message);
       log.info("알림 전송 성공 {}", response);
-
     } catch (FirebaseMessagingException e) {
       log.error("알림 전송 실패 {}: {}", e.getErrorCode(), e.getMessage());
       throw new RuntimeException(e);
