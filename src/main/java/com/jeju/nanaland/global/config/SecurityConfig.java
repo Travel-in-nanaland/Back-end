@@ -55,6 +55,8 @@ public class SecurityConfig {
             .hasAnyRole("MEMBER", "ADMIN")
             .requestMatchers(HttpMethod.POST, "/nana/upload")
             .permitAll()
+            .requestMatchers("/notification/send/*")
+            .hasRole("ADMIN")
             .anyRequest().authenticated());
 
     http
