@@ -13,10 +13,15 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
+import com.jeju.nanaland.domain.notification.data.NotificationResponse;
+import com.jeju.nanaland.domain.notification.data.NotificationResponse.NotificationDetailDto;
+import com.jeju.nanaland.domain.notification.data.NotificationResponse.NotificationListDto;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
+import com.jeju.nanaland.domain.notification.repository.NotificationRepository;
 import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
@@ -25,6 +30,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +42,34 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final FcmTokenUtil fcmTokenUtil;
+  private final NotificationRepository notificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
+
+  public NotificationResponse.NotificationListDto getNotificationList(MemberInfoDto memberInfoDto,
+      String fcmToken, int page, int size) {
+
+    // 해당 토큰 조회
+    fcmTokenRepository.findByToken(fcmToken)
+        .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
+
+    // 알림 리스트 조회
+    Pageable pageable = PageRequest.of(page, size);
+    Page<com.jeju.nanaland.domain.notification.entity.Notification> resultPage =
+        notificationRepository.findAllNotificationByMember(memberInfoDto.getMember(), pageable);
+
+    return NotificationListDto.builder()
+        .totalElements(resultPage.getTotalElements())
+        .data(resultPage.getContent()
+            .stream()
+            .map(notification -> NotificationDetailDto.builder()
+                .id(notification.getId())
+                .title(notification.getTitle())
+                .content(notification.getContent())
+                .clickAction(notification.getClickAction())
+                .build()
+            ).toList()
+        ).build();
+  }
 
   @Transactional
   public void sendPushNotificationToAllMembers(FcmMessageDto fcmMessageDto) {

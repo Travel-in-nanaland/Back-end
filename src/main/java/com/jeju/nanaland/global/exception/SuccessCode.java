@@ -74,6 +74,7 @@ public enum SuccessCode {
   REVIEW_HEART_SUCCESS(OK, "리뷰 좋아요 토글 요청 성공"),
 
   // notification
+  NOTIFICATION_LIST_SUCCESS(OK, "알림 조회 성공"),
   SEND_NOTIFICATION_SUCCESS(CREATED, "알림 전송 성공");
 
   private final HttpStatus httpStatus;
