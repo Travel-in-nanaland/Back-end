@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.notification.entity;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
@@ -20,4 +21,7 @@ public class Notification extends BaseEntity {
 
   @NotNull
   private String clickAction;
+
+  @NotNull
+  private Language language;
 }

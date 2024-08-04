@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.notification.data;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -11,6 +12,10 @@ public class NotificationRequest {
   @Builder
   @Schema(name = "알림 정보")
   public static class FcmMessageDto {
+
+    @NotNull
+    @Schema(name = "언어")
+    private Language language;
 
     @NotNull
     @Schema(name = "알림 제목")

@@ -12,10 +12,12 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
+import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
@@ -31,21 +33,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class NotificationService {
 
-  private final FcmTokenService fcmTokenService;
+  private final FcmTokenUtil fcmTokenUtil;
   private final FcmTokenRepository fcmTokenRepository;
 
   @Transactional
   public void sendPushNotificationToAllMembers(FcmMessageDto fcmMessageDto) {
 
-    // 모든 토큰 조회, 검증
-    List<String> verifiedTokenList = fcmTokenRepository.findAll()
+    Language language = fcmMessageDto.getLanguage();
+
+    // 요청 언어와 동일한 모든 토큰 조회, 검증
+    List<String> verifiedTokenList = fcmTokenRepository.findAllByLanguage(language)
         .stream()
         .filter(fcmToken -> {
           try {
-            fcmTokenService.verifyFcmToken(fcmToken);
+            fcmTokenUtil.verifyFcmToken(fcmToken);
             return true;
           } catch (FirebaseException e) {
-            fcmTokenService.deleteFcmToken(fcmToken);
+            fcmTokenUtil.deleteFcmToken(fcmToken);
             log.info("Invalid fcm token deleted: {}", fcmToken.getToken());
             return false;
           }
@@ -92,11 +96,11 @@ public class NotificationService {
 
     // FCM 토큰 검증
     try {
-      fcmTokenService.verifyFcmToken(fcmToken);
+      fcmTokenUtil.verifyFcmToken(fcmToken);
     } catch (FirebaseException e) {
       log.error("FCM 토큰 검증 실패: {}", fcmToken.getToken());
       // 해당 토큰 삭제
-      fcmTokenService.deleteFcmToken(fcmToken);
+      fcmTokenUtil.deleteFcmToken(fcmToken);
       throw new BadRequestException(e.getMessage());
     }
 
@@ -109,7 +113,7 @@ public class NotificationService {
       log.info("알림 전송 성공 {}", response);
     } catch (FirebaseMessagingException e) {
       log.error("알림 전송 실패 {}: {}", e.getErrorCode(), e.getMessage());
-      fcmTokenService.deleteFcmToken(fcmToken);
+      fcmTokenUtil.deleteFcmToken(fcmToken);
       throw new RuntimeException(e);
     }
   }

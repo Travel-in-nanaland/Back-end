@@ -46,7 +46,9 @@ public enum ErrorCode {
 
   INVALID_RESTAURANT_KEYWORD_TYPE(BAD_REQUEST, "잘못된 맛집 키워드입니다."),
   REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
-  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다");
+  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다"),
+
+  INVALID_LANGUAGE(BAD_REQUEST, "지원하지 않는 언어입니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
