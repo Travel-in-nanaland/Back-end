@@ -12,6 +12,8 @@ import static com.jeju.nanaland.domain.nana.entity.QNana.nana;
 import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
+import static com.jeju.nanaland.domain.restaurant.entity.QRestaurant.restaurant;
+import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restaurantTrans;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -330,6 +332,67 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .on(nana.eq(nanaTitle.nana)
             .and(nanaTitle.language.eq(language)))
         .innerJoin(nana.firstImageFile, imageFile)
+        .where(favorite.post.id.eq(postId))
+        .fetchOne();
+  }
+
+  @Override
+  public Page<ThumbnailDto> findRestaurantThumbnails(Member member, Language language,
+      Pageable pageable) {
+    List<ThumbnailDto> resultDto = queryFactory
+        .select(new QFavoriteResponse_ThumbnailDto(
+            restaurant.id,
+            restaurantTrans.title,
+            favorite.category.stringValue(),
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(restaurant)
+        .innerJoin(favorite)
+        .on(favorite.post.id.eq(restaurant.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.eq(Category.RESTAURANT)))
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .on(restaurantTrans.language.eq(language))
+        .innerJoin(restaurant.firstImageFile, imageFile)
+        .orderBy(favorite.createdAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(restaurant.count())
+        .from(restaurant)
+        .innerJoin(favorite)
+        .on(favorite.post.id.eq(restaurant.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.eq(Category.RESTAURANT)))
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .on(restaurantTrans.language.eq(language))
+        .innerJoin(restaurant.firstImageFile, imageFile);
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public ThumbnailDto findRestaurantThumbnailByPostId(Member member, Long postId,
+      Language language) {
+    return queryFactory
+        .select(new QFavoriteResponse_ThumbnailDto(
+            restaurant.id,
+            restaurantTrans.title,
+            favorite.category.stringValue(),
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(restaurant)
+        .innerJoin(favorite)
+        .on(favorite.post.id.eq(restaurant.id)
+            .and(favorite.member.eq(member))
+            .and(favorite.category.eq(Category.RESTAURANT)))
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .on(restaurantTrans.language.eq(language))
+        .innerJoin(restaurant.firstImageFile, imageFile)
         .where(favorite.post.id.eq(postId))
         .fetchOne();
   }

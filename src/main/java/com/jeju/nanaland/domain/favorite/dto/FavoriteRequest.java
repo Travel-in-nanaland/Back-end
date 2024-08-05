@@ -22,7 +22,7 @@ public class FavoriteRequest {
     @Schema(
         description = "게시물 카테고리",
         example = "NATURE",
-        allowableValues = {"NANA", "EXPERIENCE", "FESTIVAL", "NATURE", "MARKET"}
+        allowableValues = {"NANA", "EXPERIENCE", "FESTIVAL", "NATURE", "MARKET", "RESTAURANT"}
     )
     private String category;
   }
