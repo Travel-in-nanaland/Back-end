@@ -56,6 +56,7 @@ public enum ErrorCode {
   POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다."),
   IMAGE_FILE_NOT_FOUND(NOT_FOUND, "존재하는 이미지를 찾을 수 없습니다."),
   NOTICE_NOT_FOUND(NOT_FOUND, "존재하는 공지사항을 찾을 수 없습니다."),
+  LANGUAGE_NOT_FOUND(NOT_FOUND, "지원하지 않는 언어입니다."),
 
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
