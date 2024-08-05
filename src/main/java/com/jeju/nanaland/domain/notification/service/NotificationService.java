@@ -62,10 +62,11 @@ public class NotificationService {
         .data(resultPage.getContent()
             .stream()
             .map(notification -> NotificationDetailDto.builder()
-                .id(notification.getId())
+                .notificationId(notification.getId())
+                .contentCategory(notification.getContentCategory())
+                .contentId(notification.getContentId())
                 .title(notification.getTitle())
                 .content(notification.getContent())
-                .clickAction(notification.getClickAction())
                 .build()
             ).toList()
         ).build();
@@ -159,6 +160,9 @@ public class NotificationService {
     return MulticastMessage.builder()
         // 수신 측 토큰 정보 - token
         .addAllTokens(tokenList)
+        // 알림 내용 정보 - data
+        .putData("contentCategory", fcmMessageDto.getContentCategory())
+        .putData("contentId", fcmMessageDto.getContentId().toString())
         // 공통 알림 정보 - notification
         .setNotification(
             Notification.builder()
@@ -170,8 +174,6 @@ public class NotificationService {
             AndroidConfig.builder()
                 .setNotification(
                     AndroidNotification.builder()
-                        // click 이벤트 등 추가 가능
-                        .setClickAction(fcmMessageDto.getClickAction())
                         .build()
                 ).build())
         // IOS 전용 설정 - apns
@@ -179,7 +181,6 @@ public class NotificationService {
             ApnsConfig.builder()
                 .setAps(
                     Aps.builder()
-                        .setCategory(fcmMessageDto.getClickAction())
                         .build()
                 ).build())
         .build();
@@ -187,24 +188,25 @@ public class NotificationService {
 
   private Message makeMessage(FcmMessageToTargetDto fcmMessageToTargetDto) {
 
+    FcmMessageDto fcmMessageDto = fcmMessageToTargetDto.getMessage();
+
     return Message.builder()
         // 수신 측 토큰 정보 - token
         .setToken(fcmMessageToTargetDto.getTargetToken())
-        // 주제 - topic
-        .setTopic("topic")
+        // 알림 내용 정보 - data
+        .putData("contentCategory", fcmMessageDto.getContentCategory())
+        .putData("contentId", fcmMessageDto.toString())
         // 공통 알림 정보 - notification
         .setNotification(
             Notification.builder()
-                .setTitle(fcmMessageToTargetDto.getMessage().getTitle())
-                .setBody(fcmMessageToTargetDto.getMessage().getContent())
+                .setTitle(fcmMessageDto.getTitle())
+                .setBody(fcmMessageDto.getContent())
                 .build())
         // Android 전용 설정 - android
         .setAndroidConfig(
             AndroidConfig.builder()
                 .setNotification(
                     AndroidNotification.builder()
-                        // click 이벤트 등 추가 가능
-                        .setClickAction(fcmMessageToTargetDto.getMessage().getClickAction())
                         .build()
                 ).build())
         // IOS 전용 설정 - apns
@@ -212,7 +214,6 @@ public class NotificationService {
             ApnsConfig.builder()
                 .setAps(
                     Aps.builder()
-                        .setCategory(fcmMessageToTargetDto.getMessage().getClickAction())
                         .build()
                 ).build())
         .build();

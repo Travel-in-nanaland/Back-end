@@ -9,7 +9,7 @@ public class NotificationResponse {
 
   @Getter
   @Builder
-  @Schema(name = "알림 리스트 조회 결과")
+  @Schema(description = "알림 리스트 조회 결과")
   public static class NotificationListDto {
 
     @Schema(description = "총 알림 개수")
@@ -21,11 +21,17 @@ public class NotificationResponse {
 
   @Getter
   @Builder
-  @Schema(name = "알림 정보")
+  @Schema(description = "알림 정보")
   public static class NotificationDetailDto {
 
     @Schema(description = "알림 id")
-    private Long id;
+    private Long notificationId;
+
+    @Schema(description = "알림 내용 카테고리")
+    private String contentCategory;
+
+    @Schema(description = "알림 내용 id")
+    private Long contentId;
 
     @Schema(description = "알림 제목")
     private String title;

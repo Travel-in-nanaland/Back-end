@@ -10,36 +10,41 @@ public class NotificationRequest {
 
   @Getter
   @Builder
-  @Schema(name = "알림 정보")
+  @Schema(description = "알림 정보")
   public static class FcmMessageDto {
 
     @NotNull
-    @Schema(name = "언어")
+    @Schema(description = "알림 내용 카테고리")
+    private String contentCategory;
+
+    @NotNull
+    @Schema(description = "알림 내용 id")
+    private Long contentId;
+
+    @NotNull
+    @Schema(description = "언어")
     private Language language;
 
     @NotNull
-    @Schema(name = "알림 제목")
+    @Schema(description = "알림 제목")
     private String title;
 
     @NotNull
-    @Schema(name = "알림 내용")
+    @Schema(description = "알림 내용")
     private String content;
-
-    @NotNull
-    @Schema(name = "클릭 시 수행할 행동")
-    private String clickAction;
   }
 
   @Getter
   @Builder
-  @Schema(name = "특정 유저에게 알림 요청")
+  @Schema(description = "특정 유저에게 알림 요청")
   public static class FcmMessageToTargetDto {
 
     @NotNull
-    @Schema(name = "타겟 fcm 토큰")
+    @Schema(description = "타겟 fcm 토큰")
     private String targetToken;
 
     @NotNull
+    @Schema(description = "알림 정보")
     private FcmMessageDto message;
   }
 }

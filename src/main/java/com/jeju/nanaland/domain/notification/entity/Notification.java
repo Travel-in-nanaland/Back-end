@@ -25,8 +25,5 @@ public class Notification extends BaseEntity {
   private String content;
 
   @NotNull
-  private String clickAction;
-
-  @NotNull
   private Language language;
 }
