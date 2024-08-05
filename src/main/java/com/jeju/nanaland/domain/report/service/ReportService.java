@@ -150,7 +150,7 @@ public class ReportService {
     // reviewReport 저장
     ReviewReport reviewReport = ReviewReport.builder()
         .member(memberInfoDto.getMember())
-        .review(review)
+        .reviewId(review.getId())
         .claimType(ClaimType.valueOf(reqDto.getClaimType()))
         .content(reqDto.getContent())
         .build();
@@ -298,8 +298,8 @@ public class ReportService {
     } else if (report instanceof ReviewReport reviewReport) {
       message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
       context.setVariable("claim_type", reviewReport.getClaimType());
-      context.setVariable("review_id", reviewReport.getReview().getId());
-      context.setVariable("review_content", reviewReport.getReview().getContent());
+      context.setVariable("review_id", reviewReport.getReviewId());
+      context.setVariable("review_content", reviewReport.getReviewId());
       context.setVariable("content", reviewReport.getContent());
       context.setVariable("email", memberEmail);
       templateName = "review-report";
