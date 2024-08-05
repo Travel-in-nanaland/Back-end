@@ -14,6 +14,11 @@ import lombok.NoArgsConstructor;
 public class Notification extends BaseEntity {
 
   @NotNull
+  private String contentCategory;
+
+  private Long contentId;
+
+  @NotNull
   private String title;
 
   @NotNull
