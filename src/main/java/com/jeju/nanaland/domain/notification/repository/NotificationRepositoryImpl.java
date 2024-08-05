@@ -5,6 +5,8 @@ import static com.jeju.nanaland.domain.notification.entity.QNotification.notific
 
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.QMember;
+import com.jeju.nanaland.domain.notification.data.MemberNotificationCompose;
+import com.jeju.nanaland.domain.notification.data.QMemberNotificationCompose;
 import com.jeju.nanaland.domain.notification.entity.Notification;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -39,5 +41,19 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         .on(QMember.member.id.eq(memberNotification.memberId));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public List<MemberNotificationCompose> findAllMemberNotificationCompose() {
+    return queryFactory
+        .select(new QMemberNotificationCompose(
+            memberNotification.id,
+            memberNotification.memberId,
+            notification.contentCategory,
+            notification.contentId
+        ))
+        .from(memberNotification)
+        .innerJoin(memberNotification.notification, notification)
+        .fetch();
   }
 }

@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.notification.data.MemberNotificationCompose;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse;
@@ -176,8 +177,10 @@ public class NotificationService {
             }
         ).toList();
 
-    // TODO: 알림을 이미 보냈는지 확인
-
+    // 알림id, memberId, contentCategory, contentId 모두 조회
+    List<MemberNotificationCompose> memberNotificationComposes =
+        notificationRepository.findAllMemberNotificationCompose();
+    
   }
 
   private MulticastMessage makeMulticastMessage(List<String> tokenList,
