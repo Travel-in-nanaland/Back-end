@@ -13,6 +13,8 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.favorite.entity.Favorite;
+import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
@@ -25,6 +27,7 @@ import com.jeju.nanaland.domain.notification.repository.NotificationRepository;
 import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -33,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +48,7 @@ public class NotificationService {
   private final FcmTokenUtil fcmTokenUtil;
   private final NotificationRepository notificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
+  private final FavoriteRepository favoriteRepository;
 
   public NotificationResponse.NotificationListDto getNotificationList(MemberInfoDto memberInfoDto,
       String fcmToken, int page, int size) {
@@ -154,6 +159,27 @@ public class NotificationService {
     }
   }
 
+  // 매일 10시에 나의 찜 알림 대상에게 알림 전송
+  @Transactional
+  @Scheduled(cron = "0 0 10 * * *")
+  protected void sendMyFavoriteNotification() {
+    List<Favorite> allFavorites = favoriteRepository.findAll();
+
+    // 한 달 이상 전에 생성되었고, 생성된 이후 같은 게시물에 대해 5개 이상의 좋아요가 있을 때
+    List<Favorite> filteredFavorites = allFavorites.stream()
+        .filter(favorite -> {
+              LocalDateTime createdAt = favorite.getCreatedAt();
+              Long postId = favorite.getPost().getId();
+
+              return favorite.getCreatedAt().isBefore(LocalDateTime.now()) &&
+                  countSamePostIdCreatedAfter(allFavorites, createdAt, postId) >= 5;
+            }
+        ).toList();
+
+    // TODO: 알림을 이미 보냈는지 확인
+
+  }
+
   private MulticastMessage makeMulticastMessage(List<String> tokenList,
       FcmMessageDto fcmMessageDto) {
 
@@ -231,5 +257,13 @@ public class NotificationService {
     }
 
     return splitedTokenList;
+  }
+
+  private long countSamePostIdCreatedAfter(List<Favorite> favoriteList, LocalDateTime localDateTime,
+      Long postId) {
+    return favoriteList.stream()
+        .filter(favorite -> favorite.getPost().getId().equals(postId) &&
+            favorite.getCreatedAt().isAfter(localDateTime))
+        .toList().size();
   }
 }
