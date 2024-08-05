@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
@@ -138,6 +139,23 @@ public class FavoriteController {
 
     FavoriteThumbnailDto resultDto =
         favoriteService.getCategoryFavoriteList(memberInfoDto, NANA, page, size);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
+  }
+
+  @Operation(summary = "맛집 찜리스트 조회", description = "맛집 찜리스트 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없는 경우 또는 해당 id의 게시물이 없는 경우", content = @Content),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
+  @GetMapping("/restaurant/list")
+  public BaseResponse<FavoriteThumbnailDto> getRestaurantFavoriteList(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
+
+    FavoriteThumbnailDto resultDto =
+        favoriteService.getCategoryFavoriteList(memberInfoDto, RESTAURANT, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, resultDto);
   }
 

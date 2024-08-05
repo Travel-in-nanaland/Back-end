@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class FavoriteService {
   private final ExperienceRepository experienceRepository;
   private final FestivalRepository festivalRepository;
   private final MarketRepository marketRepository;
+  private final RestaurantRepository restaurantRepository;
 
   public FavoriteThumbnailDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page, int size) {
 
@@ -147,6 +149,7 @@ public class FavoriteService {
       case MARKET -> favoriteRepository.findMarketThumbnailByPostId(member, postId, locale);
       case EXPERIENCE -> favoriteRepository.findExperienceThumbnailByPostId(member, postId, locale);
       case FESTIVAL -> favoriteRepository.findFestivalThumbnailByPostId(member, postId, locale);
+      case RESTAURANT -> favoriteRepository.findRestaurantThumbnailByPostId(member, postId, locale);
       default -> null;
     };
   }
@@ -159,6 +162,7 @@ public class FavoriteService {
       case NATURE -> favoriteRepository.findNatureThumbnails(member, locale, pageable);
       case MARKET -> favoriteRepository.findMarketThumbnails(member, locale, pageable);
       case FESTIVAL -> favoriteRepository.findFestivalThumbnails(member, locale, pageable);
+      case RESTAURANT -> favoriteRepository.findRestaurantThumbnails(member, locale, pageable);
       default -> throw new ServerErrorException("해당하는 카테고리가 없습니다.");
     };
   }
@@ -178,6 +182,9 @@ public class FavoriteService {
           .orElseThrow(() -> new NotFoundException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
 
       case FESTIVAL -> festivalRepository.findById(postId)
+          .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
+
+      case RESTAURANT -> restaurantRepository.findById(postId)
           .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
 
       default -> throw new NotFoundException("해당 id의 게시물이 존재하지 않습니다.");
