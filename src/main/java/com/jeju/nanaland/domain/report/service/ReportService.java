@@ -40,6 +40,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -141,6 +142,17 @@ public class ReportService {
     // 리뷰 조회
     Review review = reviewRepository.findById(reqDto.getReviewId())
         .orElseThrow(() -> new NotFoundException(ErrorCode.REVIEW_NOT_FOUND.getMessage()));
+
+    if (review.getMember().equals(memberInfoDto.getMember())) {
+      throw new BadRequestException(ErrorCode.CANNOT_REPORT_OWN_REVIEW.getMessage());
+    }
+
+    Optional<ReviewReport> reviewReportOptional = reviewReportRepository.findByMemberAndReviewId(
+        memberInfoDto.getMember(), review.getId());
+
+    if (reviewReportOptional.isPresent()) {
+      throw new BadRequestException(ErrorCode.REVIEW_ALREADY_REPORTED.getMessage());
+    }
 
     // 파일 개수 확인
     if (fileList != null && fileList.size() > MAX_IMAGE_COUNT) {
