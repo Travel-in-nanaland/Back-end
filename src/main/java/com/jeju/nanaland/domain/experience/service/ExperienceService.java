@@ -104,6 +104,7 @@ public class ExperienceService {
     return ExperienceDetailDto.builder()
         .id(experienceCompositeDto.getId())
         .title(experienceCompositeDto.getTitle())
+        .intro(experienceCompositeDto.getIntro())
         .content(experienceCompositeDto.getContent())
         .address(experienceCompositeDto.getAddress())
         .addressTag(experienceCompositeDto.getAddressTag())

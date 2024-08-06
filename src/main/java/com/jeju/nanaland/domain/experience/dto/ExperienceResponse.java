@@ -73,6 +73,9 @@ public class ExperienceResponse {
     @Schema(description = "제목")
     private String title;
 
+    @Schema(description = "간단 설명")
+    private String intro;
+
     @Schema(description = "본문")
     private String content;
 
