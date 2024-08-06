@@ -50,18 +50,20 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   private static final int PREVIEW_LIMIT = 12;
   private final JPAQueryFactory queryFactory;
 
+  // 해당 리뷰를 신고한 적이 없는 경우에 true
+  private static BooleanExpression getReviewReportNotExists(Long memberId) {
+    return JPAExpressions.selectOne()
+        .from(reviewReport)
+        .where(reviewReport.member.id.eq(memberId)
+            .and(reviewReport.reviewId.eq(review.id)))
+        .notExists();
+  }
+
   @Override
   public Page<ReviewDetailDto> findReviewListByPostId(MemberInfoDto memberInfoDto,
       Category category, Long id, Pageable pageable) {
     Long memberId = memberInfoDto.getMember().getId();
     Language language = memberInfoDto.getLanguage();
-
-    // 해당 리뷰를 신고한 적이 있는지 조회
-    BooleanExpression reviewReportNotExists = JPAExpressions.selectOne()
-        .from(reviewReport)
-        .where(reviewReport.member.id.eq(memberId)
-            .and(reviewReport.reviewId.eq(review.id)))
-        .notExists();
 
     List<ReviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_ReviewDetailDto(
@@ -87,7 +89,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(member.profileImageFile, imageFile)
         .where(review.category.eq(category)
             .and(review.post.id.eq(id))
-            .and(reviewReportNotExists))
+            .and(getReviewReportNotExists(memberId))) // 해당 리뷰를 신고한 적이 있는지 조회
         .orderBy(review.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -125,7 +127,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(member.profileImageFile, imageFile)
         .where(review.category.eq(category)
             .and(review.post.id.eq(id))
-            .and(reviewReportNotExists));
+            .and(getReviewReportNotExists(memberId)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
 
@@ -159,7 +161,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .fetchOne();
   }
 
-
   @Override
   public MyReviewDetailDto findRestaurantMyReviewDetail(Long reviewId,
       MemberInfoDto memberInfoDto) {
@@ -177,13 +178,12 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .fetchOne();
   }
 
-
   @Override
-  public Page<MemberReviewDetailDto> findReviewListByMember(Member member, Language language,
-      Pageable pageable) {
+  public Page<MemberReviewDetailDto> findReviewListByMember(Long currentMemberId, Member member,
+      Language language, Pageable pageable) {
 
     // 1. 좋아요 개수를 포함한 리뷰 세부 정보 조회
-    List<MemberReviewDetailDto> resultDto = queryFactory
+    JPAQuery<MemberReviewDetailDto> query = queryFactory
         .select(new QReviewResponse_MemberReviewDetailDto(
                 review.id,
                 review.post.id,
@@ -196,7 +196,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
             )
         )
         .from(review)
-        .where(review.member.id.eq(member.getId()))
+        .where(review.member.id.eq(member.getId()));
+
+    // 해당 리뷰를 신고한 적이 있는지 조회
+    if (!currentMemberId.equals(member.getId())) {
+      query.where(getReviewReportNotExists(currentMemberId));
+    }
+
+    List<MemberReviewDetailDto> resultDto = query
         .orderBy(review.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -261,14 +268,18 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .where(review.member.id.eq(member.getId()));
 
+    if (!currentMemberId.equals(member.getId())) {
+      countQuery.where(getReviewReportNotExists(currentMemberId));
+    }
+
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public List<MemberReviewPreviewDetailDto> findReviewPreviewByMember(Member member,
-      Language language) {
+  public List<MemberReviewPreviewDetailDto> findReviewPreviewByMember(Long currentMemberId,
+      Member member, Language language) {
 
-    List<MemberReviewPreviewDetailDto> resultDto = queryFactory
+    JPAQuery<MemberReviewPreviewDetailDto> query = queryFactory
         .select(new QReviewResponse_MemberReviewPreviewDetailDto(
                 review.id,
                 review.post.id,
@@ -279,7 +290,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
             )
         )
         .from(review)
-        .where(review.member.id.eq(member.getId()))
+        .where(review.member.id.eq(member.getId()));
+
+    // 내 리뷰 조회가 아닌 경우, 신고한 리뷰인지 확인
+    if (!currentMemberId.equals(member.getId())) {
+      query.where(getReviewReportNotExists(currentMemberId));
+    }
+
+    List<MemberReviewPreviewDetailDto> resultDto = query
         .orderBy(review.createdAt.desc())
         .limit(PREVIEW_LIMIT)
         .fetch();
