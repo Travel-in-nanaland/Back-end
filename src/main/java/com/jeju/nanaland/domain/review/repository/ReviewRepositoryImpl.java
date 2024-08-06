@@ -4,6 +4,7 @@ import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.member.entity.QMember.member;
+import static com.jeju.nanaland.domain.report.entity.review.QReviewReport.reviewReport;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurant.restaurant;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restaurantTrans;
 import static com.jeju.nanaland.domain.review.entity.QReview.review;
@@ -55,6 +56,13 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     Long memberId = memberInfoDto.getMember().getId();
     Language language = memberInfoDto.getLanguage();
 
+    // 해당 리뷰를 신고한 적이 있는지 조회
+    BooleanExpression reviewReportNotExists = JPAExpressions.selectOne()
+        .from(reviewReport)
+        .where(reviewReport.member.id.eq(memberId)
+            .and(reviewReport.reviewId.eq(review.id)))
+        .notExists();
+
     List<ReviewDetailDto> resultDto = queryFactory
         .select(new QReviewResponse_ReviewDetailDto(
                 review.id,
@@ -78,7 +86,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(review.member, member)
         .innerJoin(member.profileImageFile, imageFile)
         .where(review.category.eq(category)
-            .and(review.post.id.eq(id)))
+            .and(review.post.id.eq(id))
+            .and(reviewReportNotExists))
         .orderBy(review.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -115,7 +124,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(review.member, member)
         .innerJoin(member.profileImageFile, imageFile)
         .where(review.category.eq(category)
-            .and(review.post.id.eq(id)));
+            .and(review.post.id.eq(id))
+            .and(reviewReportNotExists));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
 
