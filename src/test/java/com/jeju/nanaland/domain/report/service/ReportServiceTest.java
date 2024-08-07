@@ -1,6 +1,8 @@
 package com.jeju.nanaland.domain.report.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.CANNOT_REPORT_OWN_REVIEW;
 import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_ALREADY_REPORTED;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -115,9 +117,10 @@ class ReportServiceTest {
         .build();
   }
 
-  private Review createReview() {
+  private Review createReview(Member member) {
     return Review.builder()
         .category(Category.EXPERIENCE)
+        .member(member)
         .content("content")
         .build();
   }
@@ -223,8 +226,9 @@ class ReportServiceTest {
   void requestReviewReportFail2() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
+    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
     ReviewReportDto reviewReportDto = createReviewReportDto();
-    Review review = createReview();
+    Review review = createReview(memberInfoDto2.getMember());
     List<MultipartFile> fileList = new ArrayList<>();
     for (int i = 0; i < 6; i++) {
       fileList.add(new MockMultipartFile("image", "test.png", "png", "test file".getBytes(
@@ -241,12 +245,50 @@ class ReportServiceTest {
   }
 
   @Test
+  @DisplayName("리뷰 신고 실패 - 본인의 리뷰 신고")
+  void requestReviewReportFail3() {
+    // given
+    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
+    ReviewReportDto reviewReportDto = createReviewReportDto();
+    Review review = createReview(memberInfoDto.getMember());
+    doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+
+    // when
+    BadRequestException badRequestException = assertThrows(BadRequestException.class,
+        () -> reportService.requestReviewReport(memberInfoDto, reviewReportDto, null));
+
+    // then
+    assertThat(badRequestException.getMessage()).isEqualTo(CANNOT_REPORT_OWN_REVIEW.getMessage());
+  }
+
+  @Test
+  @DisplayName("리뷰 신고 실패 - 이미 신고한 리뷰인 경우")
+  void requestReviewReportFail4() {
+    // given
+    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
+    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
+    ReviewReportDto reviewReportDto = createReviewReportDto();
+    Review review = createReview(memberInfoDto2.getMember());
+    doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+    doReturn(Optional.of(reviewReportDto)).when(reviewReportRepository)
+        .findByMemberAndReviewId(any(), any());
+
+    // when
+    BadRequestException badRequestException = assertThrows(BadRequestException.class,
+        () -> reportService.requestReviewReport(memberInfoDto, reviewReportDto, null));
+
+    // then
+    assertThat(badRequestException.getMessage()).isEqualTo(REVIEW_ALREADY_REPORTED.getMessage());
+  }
+
+  @Test
   @DisplayName("리뷰 신고 성공")
   void requestReviewReportSuccess() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
+    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
     ReviewReportDto reviewReportDto = createReviewReportDto();
-    Review review = createReview();
+    Review review = createReview(memberInfoDto2.getMember());
     List<MultipartFile> fileList = new ArrayList<>();
     for (int i = 0; i < 2; i++) {
       fileList.add(new MockMultipartFile("image", "test.png", "image/png", "test file".getBytes(
