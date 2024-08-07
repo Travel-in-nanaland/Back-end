@@ -4,7 +4,7 @@ import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.member.entity.QMember.member;
-import static com.jeju.nanaland.domain.report.entity.review.QReviewReport.reviewReport;
+import static com.jeju.nanaland.domain.report.entity.claim.QClaimReport.claimReport;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurant.restaurant;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restaurantTrans;
 import static com.jeju.nanaland.domain.review.entity.QReview.review;
@@ -18,6 +18,7 @@ import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.dto.QImageFileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.report.entity.claim.ReportType;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MyReviewDetailDto;
@@ -53,9 +54,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   // 해당 리뷰를 신고한 적이 없는 경우에 true
   private static BooleanExpression getReviewReportNotExists(Long memberId) {
     return JPAExpressions.selectOne()
-        .from(reviewReport)
-        .where(reviewReport.member.id.eq(memberId)
-            .and(reviewReport.reviewId.eq(review.id)))
+        .from(claimReport)
+        .where(claimReport.member.id.eq(memberId)
+            .and(claimReport.referenceId.eq(review.id))
+            .and(claimReport.reportType.eq(ReportType.REVIEW)))
         .notExists();
   }
 

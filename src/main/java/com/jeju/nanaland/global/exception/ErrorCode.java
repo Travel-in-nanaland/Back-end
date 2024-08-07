@@ -29,7 +29,7 @@ public enum ErrorCode {
   NOT_MY_REVIEW(BAD_REQUEST, "자신의 리뷰만 삭제할 수 있습니다."),
   REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH(BAD_REQUEST, "리뷰 수정 시 이미지 리스트와 수정 이미지 정보 리스트 길이가 일치하지 않습니다."),
   EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST(BAD_REQUEST, "리뷰 수정 시 기존 이미지에 대한 정보가 잘못 되었습니다."),
-  CANNOT_REPORT_OWN_REVIEW(BAD_REQUEST, "본인의 리뷰는 신고할 수 없습니다."),
+  SELF_REPORT_NOT_ALLOWED(BAD_REQUEST, "본인을 신고하는 요청은 유효하지 않습니다."),
   REVIEW_ALREADY_REPORTED(BAD_REQUEST, "이미 신고된 리뷰입니다."),
 
   //INTERNAL_SERVER_ERROR
