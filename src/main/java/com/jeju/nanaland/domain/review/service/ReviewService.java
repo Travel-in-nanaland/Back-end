@@ -370,7 +370,8 @@ public class ReviewService {
       }
     }
 
-    Long totalCount = reviewRepository.findTotalCountByMember(member);
+    Long totalCount = reviewRepository.findTotalCountByMember(memberInfoDto.getMember().getId(),
+        member);
 
     return MemberReviewPreviewDto.builder()
         .totalElements(totalCount)

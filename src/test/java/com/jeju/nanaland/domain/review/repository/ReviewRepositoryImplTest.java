@@ -301,7 +301,7 @@ class ReviewRepositoryImplTest {
   @DisplayName("회원이 작성한 리뷰 총 개수")
   void findTotalCountByMember() {
     // when
-    Long totalCountByMember = reviewRepository.findTotalCountByMember(member1);
+    Long totalCountByMember = reviewRepository.findTotalCountByMember(member1.getId(), member1);
 
     // then
     assertThat(totalCountByMember).isEqualTo(3);

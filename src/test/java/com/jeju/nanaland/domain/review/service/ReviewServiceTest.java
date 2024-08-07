@@ -378,7 +378,7 @@ class ReviewServiceTest {
     doReturn(previewDetailList.subList(0, 12)).when(reviewRepository)
         .findReviewPreviewByMember(any(), any(), any());
     doReturn((long) previewDetailList.size()).when(reviewRepository)
-        .findTotalCountByMember(any());
+        .findTotalCountByMember(any(), any());
 
     // when
     MemberReviewPreviewDto reviewListByMember = reviewService.getReviewPreviewByMember(
@@ -410,7 +410,7 @@ class ReviewServiceTest {
     doReturn(previewDetailList.subList(0, 12)).when(reviewRepository)
         .findReviewPreviewByMember(any(), any(), any());
     doReturn((long) previewDetailList.size()).when(reviewRepository)
-        .findTotalCountByMember(any());
+        .findTotalCountByMember(any(), any());
 
     // when
     MemberReviewPreviewDto reviewListByMember = reviewService.getReviewPreviewByMember(

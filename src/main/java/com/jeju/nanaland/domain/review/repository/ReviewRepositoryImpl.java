@@ -61,6 +61,16 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .notExists();
   }
 
+  // 해당 유저를 신고한 적이 없는 경우에 true
+  private static BooleanExpression getMemberReportNotExists(Long currentMemberId) {
+    return JPAExpressions.selectOne()
+        .from(claimReport)
+        .where(claimReport.member.id.eq(currentMemberId)
+            .and(claimReport.referenceId.eq(review.member.id))
+            .and(claimReport.reportType.eq(ReportType.MEMBER)))
+        .notExists();
+  }
+
   @Override
   public Page<ReviewDetailDto> findReviewListByPostId(MemberInfoDto memberInfoDto,
       Category category, Long id, Pageable pageable) {
@@ -91,7 +101,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(member.profileImageFile, imageFile)
         .where(review.category.eq(category)
             .and(review.post.id.eq(id))
-            .and(getReviewReportNotExists(memberId))) // 해당 리뷰를 신고한 적이 있는지 조회
+            .and(getReviewReportNotExists(memberId)) // 해당 리뷰를 신고한 적이 있는지 조회
+            .and(getMemberReportNotExists(memberId))) // 해당 유저를 신고한 적이 있는지 조회
         .orderBy(review.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -129,7 +140,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .innerJoin(member.profileImageFile, imageFile)
         .where(review.category.eq(category)
             .and(review.post.id.eq(id))
-            .and(getReviewReportNotExists(memberId)));
+            .and(getReviewReportNotExists(memberId))
+            .and(getMemberReportNotExists(memberId)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
 
@@ -200,9 +212,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .where(review.member.id.eq(member.getId()));
 
-    // 해당 리뷰를 신고한 적이 있는지 조회
+    // 해당 리뷰를 신고한 적이 있거나 해당 유저를 신고한 적이 있는지
     if (!currentMemberId.equals(member.getId())) {
-      query.where(getReviewReportNotExists(currentMemberId));
+      query.where(getReviewReportNotExists(currentMemberId)
+          .and(getMemberReportNotExists(currentMemberId)));
     }
 
     List<MemberReviewDetailDto> resultDto = query
@@ -271,7 +284,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .where(review.member.id.eq(member.getId()));
 
     if (!currentMemberId.equals(member.getId())) {
-      countQuery.where(getReviewReportNotExists(currentMemberId));
+      countQuery.where(getReviewReportNotExists(currentMemberId)
+          .and(getMemberReportNotExists(currentMemberId)));
     }
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
@@ -294,9 +308,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(review)
         .where(review.member.id.eq(member.getId()));
 
-    // 내 리뷰 조회가 아닌 경우, 신고한 리뷰인지 확인
+    // 해당 리뷰를 신고한 적이 있거나 해당 유저를 신고한 적이 있는지
     if (!currentMemberId.equals(member.getId())) {
-      query.where(getReviewReportNotExists(currentMemberId));
+      query.where(getReviewReportNotExists(currentMemberId)
+          .and(getMemberReportNotExists(currentMemberId)));
     }
 
     List<MemberReviewPreviewDetailDto> resultDto = query
@@ -347,12 +362,18 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   }
 
   @Override
-  public Long findTotalCountByMember(Member member) {
-    return queryFactory
+  public Long findTotalCountByMember(Long currentMemberId, Member member) {
+    JPAQuery<Long> query = queryFactory
         .select(review.countDistinct())
         .from(review)
-        .where(review.member.id.eq(member.getId()))
-        .fetchOne();
+        .where(review.member.id.eq(member.getId()));
+
+    // 해당 리뷰를 신고한 적이 있거나 해당 유저를 신고한 적이 있는지
+    if (!currentMemberId.equals(member.getId())) {
+      query.where(getReviewReportNotExists(currentMemberId)
+          .and(getMemberReportNotExists(currentMemberId)));
+    }
+    return query.fetchOne();
   }
 
   // 리뷰 작성자의 총 작성한 리뷰 개수
