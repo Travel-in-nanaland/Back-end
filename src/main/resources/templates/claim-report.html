@@ -49,12 +49,12 @@
   <div class="header" style="text-align: center;">
     <img alt="nanaland 로고"
          src="https://nanaland-image-bucket.s3.ap-northeast-2.amazonaws.com/images/nanaland-logo.png">
-    <h1>리뷰 신고 사항</h1>
+    <h1>신고 사항</h1>
   </div>
   <div class="content">
-    <div>리뷰 ID: <span th:text="${review_id}"></span></div>
-    <div>리뷰 내용: <span th:text="${review_content}"></span></div>
     <div>신고 이유: <span th:text="${claim_type}"></span></div>
+    <div>신고 대상: <span th:text="${report_type}"></span></div>
+    <div>신고 대상 ID: <span th:text="${id}"></span></div>
     <div>신고 내용: <span th:text="${content}"></span></div>
     <div th:if="${image_0 != null}"><a th:href="${image_0}">report file Url1</a></div>
     <div th:if="${image_1 != null}"><a th:href="${image_1}">report file Url2</a></div>

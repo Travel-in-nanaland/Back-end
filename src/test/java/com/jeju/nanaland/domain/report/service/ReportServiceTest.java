@@ -1,9 +1,9 @@
 package com.jeju.nanaland.domain.report.service;
 
-import static com.jeju.nanaland.global.exception.ErrorCode.CANNOT_REPORT_OWN_REVIEW;
 import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_ALREADY_REPORTED;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOWED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,17 +30,18 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.ReviewReportDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
-import com.jeju.nanaland.domain.report.entity.review.ClaimType;
-import com.jeju.nanaland.domain.report.entity.review.ReviewReport;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
+import com.jeju.nanaland.domain.report.entity.claim.ReportType;
+import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
+import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
+import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
-import com.jeju.nanaland.domain.report.repository.ReviewReportImageFileRepository;
-import com.jeju.nanaland.domain.report.repository.ReviewReportRepository;
-import com.jeju.nanaland.domain.report.repository.ReviewReportVideoFileRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
@@ -89,11 +90,11 @@ class ReportServiceTest {
   @Mock
   ReviewRepository reviewRepository;
   @Mock
-  ReviewReportRepository reviewReportRepository;
+  ClaimReportRepository claimReportRepository;
   @Mock
-  ReviewReportImageFileRepository reviewReportImageFileRepository;
+  ClaimReportImageFileRepository claimReportImageFileRepository;
   @Mock
-  ReviewReportVideoFileRepository reviewReportVideoFileRepository;
+  ClaimReportVideoFileRepository claimReportVideoFileRepository;
   @Mock
   ImageFileService imageFileService;
   @Mock
@@ -125,10 +126,11 @@ class ReportServiceTest {
         .build();
   }
 
-  private ReviewReportDto createReviewReportDto() {
-    return ReviewReportDto.builder()
-        .reviewId(1L)
+  private ClaimReportDto createClaimReportDto(ReportType reportType) {
+    return ClaimReportDto.builder()
+        .id(1L)
         .email("test@gmail.com")
+        .reportType(reportType.name())
         .claimType(ClaimType.ETC.name())
         .build();
   }
@@ -203,19 +205,15 @@ class ReportServiceTest {
 
   @Test
   @DisplayName("리뷰 신고 실패 - 리뷰가 존재하지 않는 경우")
-  void requestReviewReportFail() {
+  void requestClaimReportDtoFail() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ReviewReportDto reviewReportDto = ReviewReportDto.builder()
-        .reviewId(1L)
-        .email("test@gmail.com")
-        .claimType(ClaimType.ETC.name())
-        .build();
+    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
     doReturn(Optional.empty()).when(reviewRepository).findById(any());
 
     // when
     NotFoundException notFoundException = assertThrows(NotFoundException.class,
-        () -> reportService.requestReviewReport(memberInfoDto, reviewReportDto, null));
+        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null));
 
     // then
     assertThat(notFoundException.getMessage()).isEqualTo(REVIEW_NOT_FOUND.getMessage());
@@ -223,11 +221,11 @@ class ReportServiceTest {
 
   @Test
   @DisplayName("리뷰 신고 실패 - 파일 개수가 최대개수를 넘는 경우")
-  void requestReviewReportFail2() {
+  void requestClaimReportDtoFail2() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
     MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ReviewReportDto reviewReportDto = createReviewReportDto();
+    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
     Review review = createReview(memberInfoDto2.getMember());
     List<MultipartFile> fileList = new ArrayList<>();
     for (int i = 0; i < 6; i++) {
@@ -238,7 +236,7 @@ class ReportServiceTest {
 
     // when
     BadRequestException badRequestException = assertThrows(BadRequestException.class,
-        () -> reportService.requestReviewReport(memberInfoDto, reviewReportDto, fileList));
+        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, fileList));
 
     // then
     assertThat(badRequestException.getMessage()).isEqualTo(IMAGE_BAD_REQUEST.getMessage());
@@ -246,36 +244,36 @@ class ReportServiceTest {
 
   @Test
   @DisplayName("리뷰 신고 실패 - 본인의 리뷰 신고")
-  void requestReviewReportFail3() {
+  void requestClaimReportDtoFail3() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ReviewReportDto reviewReportDto = createReviewReportDto();
+    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
     Review review = createReview(memberInfoDto.getMember());
     doReturn(Optional.of(review)).when(reviewRepository).findById(any());
 
     // when
     BadRequestException badRequestException = assertThrows(BadRequestException.class,
-        () -> reportService.requestReviewReport(memberInfoDto, reviewReportDto, null));
+        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null));
 
     // then
-    assertThat(badRequestException.getMessage()).isEqualTo(CANNOT_REPORT_OWN_REVIEW.getMessage());
+    assertThat(badRequestException.getMessage()).isEqualTo(SELF_REPORT_NOT_ALLOWED.getMessage());
   }
 
   @Test
   @DisplayName("리뷰 신고 실패 - 이미 신고한 리뷰인 경우")
-  void requestReviewReportFail4() {
+  void requestClaimReportDtoFail4() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
     MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ReviewReportDto reviewReportDto = createReviewReportDto();
+    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
     Review review = createReview(memberInfoDto2.getMember());
     doReturn(Optional.of(review)).when(reviewRepository).findById(any());
-    doReturn(Optional.of(reviewReportDto)).when(reviewReportRepository)
-        .findByMemberAndReviewId(any(), any());
+    doReturn(Optional.of(claimReportDto)).when(claimReportRepository)
+        .findByMemberAndIdAndReportType(any(), any(), any());
 
     // when
     BadRequestException badRequestException = assertThrows(BadRequestException.class,
-        () -> reportService.requestReviewReport(memberInfoDto, reviewReportDto, null));
+        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null));
 
     // then
     assertThat(badRequestException.getMessage()).isEqualTo(REVIEW_ALREADY_REPORTED.getMessage());
@@ -283,11 +281,11 @@ class ReportServiceTest {
 
   @Test
   @DisplayName("리뷰 신고 성공")
-  void requestReviewReportSuccess() {
+  void requestClaimReportSuccess() {
     // given
     MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
     MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ReviewReportDto reviewReportDto = createReviewReportDto();
+    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
     Review review = createReview(memberInfoDto2.getMember());
     List<MultipartFile> fileList = new ArrayList<>();
     for (int i = 0; i < 2; i++) {
@@ -313,14 +311,14 @@ class ReportServiceTest {
     doReturn("videoUrl").when(mockVideoFile).getOriginUrl();
 
     // when
-    reportService.requestReviewReport(memberInfoDto, reviewReportDto, fileList);
+    reportService.requestClaimReport(memberInfoDto, claimReportDto, fileList);
 
     // then
-    verify(reviewReportRepository, times(1)).save(any(ReviewReport.class));
+    verify(claimReportRepository, times(1)).save(any(ClaimReport.class));
     verify(imageFileService, times(2)).uploadAndSaveImageFile(any(), anyBoolean(), any());
     verify(videoFileService, times(2)).uploadAndSaveVideoFile(any(), any());
-    verify(reviewReportImageFileRepository, times(1)).saveAll(anyList());
-    verify(reviewReportVideoFileRepository, times(1)).saveAll(anyList());
+    verify(claimReportImageFileRepository, times(1)).saveAll(anyList());
+    verify(claimReportVideoFileRepository, times(1)).saveAll(anyList());
     verify(javaMailSender, times(1)).send(any(MimeMessage.class));
   }
 }
