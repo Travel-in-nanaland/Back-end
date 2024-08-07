@@ -312,7 +312,7 @@ class ReviewServiceTest {
     doReturn(1L).when(member).getId();
     Page<MemberReviewDetailDto> memberReviewDetailList = createMemberReviewDetailList();
     doReturn(memberReviewDetailList).when(reviewRepository)
-        .findReviewListByMember(any(), any(), any());
+        .findReviewListByMember(any(), any(), any(), any());
 
     // when
     MemberReviewListDto reviewListByMember = reviewService.getReviewListByMember(memberInfoDto,
@@ -342,7 +342,7 @@ class ReviewServiceTest {
     doReturn(1L).when(member).getId();
     doReturn(Optional.of(member2)).when(memberRepository).findById(any());
     doReturn(memberReviewDetailList).when(reviewRepository)
-        .findReviewListByMember(any(), any(), any());
+        .findReviewListByMember(any(), any(), any(), any());
 
     // when
     MemberReviewListDto reviewListByMember = reviewService.getReviewListByMember(memberInfoDto,
@@ -376,7 +376,7 @@ class ReviewServiceTest {
     doReturn(1L).when(member).getId();
     List<MemberReviewPreviewDetailDto> previewDetailList = createMemberReviewPreviewDetailList();
     doReturn(previewDetailList.subList(0, 12)).when(reviewRepository)
-        .findReviewPreviewByMember(any(), any());
+        .findReviewPreviewByMember(any(), any(), any());
     doReturn((long) previewDetailList.size()).when(reviewRepository)
         .findTotalCountByMember(any());
 
@@ -408,7 +408,7 @@ class ReviewServiceTest {
     doReturn(1L).when(member).getId();
     doReturn(Optional.of(member2)).when(memberRepository).findById(any());
     doReturn(previewDetailList.subList(0, 12)).when(reviewRepository)
-        .findReviewPreviewByMember(any(), any());
+        .findReviewPreviewByMember(any(), any(), any());
     doReturn((long) previewDetailList.size()).when(reviewRepository)
         .findTotalCountByMember(any());
 

@@ -40,6 +40,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -142,6 +143,17 @@ public class ReportService {
     Review review = reviewRepository.findById(reqDto.getReviewId())
         .orElseThrow(() -> new NotFoundException(ErrorCode.REVIEW_NOT_FOUND.getMessage()));
 
+    if (review.getMember().equals(memberInfoDto.getMember())) {
+      throw new BadRequestException(ErrorCode.CANNOT_REPORT_OWN_REVIEW.getMessage());
+    }
+
+    Optional<ReviewReport> reviewReportOptional = reviewReportRepository.findByMemberAndReviewId(
+        memberInfoDto.getMember(), review.getId());
+
+    if (reviewReportOptional.isPresent()) {
+      throw new BadRequestException(ErrorCode.REVIEW_ALREADY_REPORTED.getMessage());
+    }
+
     // 파일 개수 확인
     if (fileList != null && fileList.size() > MAX_IMAGE_COUNT) {
       throw new BadRequestException(ErrorCode.IMAGE_BAD_REQUEST.getMessage());
@@ -150,7 +162,7 @@ public class ReportService {
     // reviewReport 저장
     ReviewReport reviewReport = ReviewReport.builder()
         .member(memberInfoDto.getMember())
-        .review(review)
+        .reviewId(review.getId())
         .claimType(ClaimType.valueOf(reqDto.getClaimType()))
         .content(reqDto.getContent())
         .build();
@@ -298,8 +310,8 @@ public class ReportService {
     } else if (report instanceof ReviewReport reviewReport) {
       message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
       context.setVariable("claim_type", reviewReport.getClaimType());
-      context.setVariable("review_id", reviewReport.getReview().getId());
-      context.setVariable("review_content", reviewReport.getReview().getContent());
+      context.setVariable("review_id", reviewReport.getReviewId());
+      context.setVariable("review_content", reviewReport.getReviewId());
       context.setVariable("content", reviewReport.getContent());
       context.setVariable("email", memberEmail);
       templateName = "review-report";

@@ -19,10 +19,11 @@ public interface ReviewRepositoryCustom {
 
   Double findTotalRatingAvg(Category category, Long id);
 
-  Page<MemberReviewDetailDto> findReviewListByMember(Member member, Language language,
+  Page<MemberReviewDetailDto> findReviewListByMember(Long currentMemberId, Member member, Language language,
       Pageable pageable);
 
-  List<MemberReviewPreviewDetailDto> findReviewPreviewByMember(Member member, Language language);
+  List<MemberReviewPreviewDetailDto> findReviewPreviewByMember(Long currentMemberId, Member member,
+      Language language);
 
   Long findTotalCountByMember(Member member);
 

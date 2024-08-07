@@ -2,7 +2,6 @@ package com.jeju.nanaland.domain.report.entity.review;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.review.entity.Review;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,9 +30,7 @@ public class ReviewReport extends BaseEntity {
   private Member member;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "review_id", nullable = false)
-  private Review review;
+  private Long reviewId;
 
   @NotNull
   @Enumerated(EnumType.STRING)
