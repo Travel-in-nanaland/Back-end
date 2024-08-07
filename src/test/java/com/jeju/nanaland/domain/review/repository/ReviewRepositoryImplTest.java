@@ -40,10 +40,10 @@ import org.springframework.data.domain.Pageable;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ReviewRepositoryImplTest {
 
-  ImageFile imageFile, imageFile2;
-  Member member1, member2;
-  Experience experience;
-  List<Review> reviewList, reviewList2;
+  ImageFile imageFile, imageFile2, imageFile3;
+  Member member1, member2, member3;
+  Experience experience, experience2, experience3;
+  List<Review> reviewList, reviewList2, reviewList3;
   @Autowired
   TestEntityManager entityManager;
   @Autowired
@@ -56,8 +56,13 @@ class ReviewRepositoryImplTest {
     experience = createExperience();
     reviewList = createReviewList(experience, member1, 3);
     imageFile2 = createImageFile();
+    experience2 = createExperience();
     member2 = createMember("nickname2", imageFile2);
-    reviewList2 = createReviewList(experience, member2, 2);
+    reviewList2 = createReviewList(experience2, member2, 2);
+    imageFile3 = createImageFile();
+    experience3 = createExperience();
+    member3 = createMember("nickname3", imageFile3);
+    reviewList3 = createReviewList(experience2, member3, 4);
   }
 
   private ImageFile createImageFile() {
@@ -125,10 +130,10 @@ class ReviewRepositoryImplTest {
     return reviews;
   }
 
-  private void createClaimReport(Long id, Member member) {
+  private void createClaimReport(Long id, Member member, ReportType reportType) {
     ClaimReport claimReport = ClaimReport.builder()
         .referenceId(id)
-        .reportType(ReportType.REVIEW)
+        .reportType(reportType)
         .claimType(ClaimType.DISLIKE)
         .member(member)
         .content("content")
@@ -150,7 +155,7 @@ class ReviewRepositoryImplTest {
 
     // then
     assertThat(reviewDetails).isNotNull();
-    assertThat(reviewDetails.getTotalElements()).isEqualTo(5);
+    assertThat(reviewDetails.getTotalElements()).isEqualTo(3);
     assertThat(reviewDetails.getContent()).isNotEmpty();
   }
 
@@ -159,7 +164,7 @@ class ReviewRepositoryImplTest {
   void findReviewListByPostId2() {
     // given - member2가 member1의 첫 번째 리뷰 신고
     MemberInfoDto member2InfoDto = createMemberInfoDto(member2);
-    createClaimReport(reviewList.get(0).getId(), member2);
+    createClaimReport(reviewList.get(0).getId(), member2, ReportType.REVIEW);
 
     Category validCategory = Category.EXPERIENCE;
     Pageable pageable = PageRequest.of(0, 2);
@@ -170,8 +175,28 @@ class ReviewRepositoryImplTest {
 
     // then
     assertThat(reviewDetails).isNotNull();
-    assertThat(reviewDetails.getTotalElements()).isEqualTo(4);
+    assertThat(reviewDetails.getTotalElements()).isEqualTo(2);
     assertThat(reviewDetails.getContent()).isNotEmpty();
+  }
+
+  @Test
+  @DisplayName("리뷰 리스트 조회 - 신고한 유저의 리뷰는 안보이도록")
+  void findReviewListByPostId3() {
+    // given - member3가 member1 유저 신고
+    MemberInfoDto member3InfoDto = createMemberInfoDto(member3);
+    createClaimReport(member1.getId(), member3, ReportType.MEMBER);
+
+    Category validCategory = Category.EXPERIENCE;
+    Pageable pageable = PageRequest.of(0, 2);
+
+    // when
+    Page<ReviewDetailDto> reviewDetails = reviewRepository.findReviewListByPostId(
+        member3InfoDto, validCategory, experience.getId(), pageable);
+
+    // then
+    assertThat(reviewDetails).isNotNull();
+    assertThat(reviewDetails.getTotalElements()).isZero();
+    assertThat(reviewDetails.getContent()).isEmpty();
   }
 
   @Test
@@ -221,7 +246,7 @@ class ReviewRepositoryImplTest {
     assertThat(memberReviewDetails.getTotalElements()).isEqualTo(2);
     MemberReviewDetailDto dto = memberReviewDetails.getContent().get(0);
     assertThat(dto.getId()).isNotNull();
-    assertThat(dto.getPostId()).isEqualTo(experience.getId());
+    assertThat(dto.getPostId()).isEqualTo(experience2.getId());
     assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
@@ -231,7 +256,7 @@ class ReviewRepositoryImplTest {
   void findReviewListByMember3() {
     // given - member1이 member2 첫 번째 리뷰 신고
     Pageable pageable = PageRequest.of(0, 2);
-    createClaimReport(reviewList2.get(0).getId(), member1);
+    createClaimReport(reviewList2.get(0).getId(), member1, ReportType.REVIEW);
 
     // when
     Page<MemberReviewDetailDto> memberReviewDetails = reviewRepository.findReviewListByMember(
@@ -241,9 +266,24 @@ class ReviewRepositoryImplTest {
     assertThat(memberReviewDetails.getTotalElements()).isEqualTo(1);
     MemberReviewDetailDto dto = memberReviewDetails.getContent().get(0);
     assertThat(dto.getId()).isNotNull();
-    assertThat(dto.getPostId()).isEqualTo(experience.getId());
+    assertThat(dto.getPostId()).isEqualTo(experience2.getId());
     assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
+  }
+
+  @Test
+  @DisplayName("회원 별 리뷰 리스트 조회 - 타인 프로필 조회 - 신고한 유저의 리뷰는 안보이도록")
+  void findReviewListByMember4() {
+    // given - member1이 member3 유저 신고
+    createClaimReport(member3.getId(), member1, ReportType.MEMBER);
+    Pageable pageable = PageRequest.of(0, 2);
+
+    // when
+    Page<MemberReviewDetailDto> memberReviewDetails = reviewRepository.findReviewListByMember(
+        member1.getId(), member3, member1.getLanguage(), pageable);
+
+    // then
+    assertThat(memberReviewDetails.getTotalElements()).isZero();
   }
 
   @Test
@@ -273,7 +313,7 @@ class ReviewRepositoryImplTest {
     assertThat(memberReviewPreviewDetails).hasSize(2);
     MemberReviewPreviewDetailDto dto = memberReviewPreviewDetails.get(0);
     assertThat(dto.getId()).isNotNull();
-    assertThat(dto.getPostId()).isEqualTo(experience.getId());
+    assertThat(dto.getPostId()).isEqualTo(experience2.getId());
     assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
@@ -282,7 +322,7 @@ class ReviewRepositoryImplTest {
   @DisplayName("회원 별 리뷰 썸네일 리스트 조회 - 타인 프로필 - 신고한 리뷰는 안보이도록")
   void findReviewPreviewByMember3() {
     // given
-    createClaimReport(reviewList2.get(0).getId(), member1);
+    createClaimReport(reviewList2.get(0).getId(), member1, ReportType.REVIEW);
 
     // when - member1이 member2 조회
     List<MemberReviewPreviewDetailDto> memberReviewPreviewDetails = reviewRepository.findReviewPreviewByMember(
@@ -292,9 +332,23 @@ class ReviewRepositoryImplTest {
     assertThat(memberReviewPreviewDetails).hasSize(1);
     MemberReviewPreviewDetailDto dto = memberReviewPreviewDetails.get(0);
     assertThat(dto.getId()).isNotNull();
-    assertThat(dto.getPostId()).isEqualTo(experience.getId());
+    assertThat(dto.getPostId()).isEqualTo(experience2.getId());
     assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
+  }
+
+  @Test
+  @DisplayName("회원 별 리뷰 썸네일 리스트 조회 - 타인 프로필 - 신고한 유저의 리뷰는 안보이도록")
+  void findReviewPreviewByMember4() {
+    // given
+    createClaimReport(member3.getId(), member1, ReportType.MEMBER);
+
+    // when - member1이 member2 조회
+    List<MemberReviewPreviewDetailDto> memberReviewPreviewDetails = reviewRepository.findReviewPreviewByMember(
+        member1.getId(), member3, member1.getLanguage());
+
+    // then
+    assertThat(memberReviewPreviewDetails).isEmpty();
   }
 
   @Test
