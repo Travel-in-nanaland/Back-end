@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.report.entity.review;
+package com.jeju.nanaland.domain.report.entity.claim;
 
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewReport extends BaseEntity {
+public class ClaimReport extends BaseEntity {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
@@ -30,7 +30,11 @@ public class ReviewReport extends BaseEntity {
   private Member member;
 
   @NotNull
-  private Long reviewId;
+  private Long referenceId;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private ReportType reportType;
 
   @NotNull
   @Enumerated(EnumType.STRING)
