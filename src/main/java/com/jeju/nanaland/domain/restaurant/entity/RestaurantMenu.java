@@ -24,5 +24,6 @@ public class RestaurantMenu extends BaseEntity {
   private String price;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "image_file_id", nullable = true)
   private ImageFile firstImageFile;
 }
