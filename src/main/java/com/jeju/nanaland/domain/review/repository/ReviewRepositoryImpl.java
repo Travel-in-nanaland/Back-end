@@ -129,6 +129,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                   .stream()
                   .map(reviewTypeKeyword ->
                       reviewTypeKeyword.getValueByLocale(language)).collect(Collectors.toSet()));
+
+          reviewDetailDto.setMyReview(reviewDetailDto.getMemberId().equals(memberId));
         }
     );
 
