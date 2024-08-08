@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.restaurant.entity;
 
 import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -15,6 +16,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue("RESTAURANT")
 public class Restaurant extends Post {
+
+  @Column(unique = true)
+  private String contentId;
 
   private String contact;
 

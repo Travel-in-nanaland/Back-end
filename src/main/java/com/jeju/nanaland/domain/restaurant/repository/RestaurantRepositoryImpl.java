@@ -124,7 +124,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
             imageFile.thumbnailUrl
         ))
         .from(restaurantMenu)
-        .innerJoin(restaurantMenu.firstImageFile, imageFile)
+        .leftJoin(restaurantMenu.firstImageFile, imageFile)
         .where(restaurantMenu.restaurantTrans.restaurant.id.eq(postId)
             .and(restaurantTrans.language.eq(language)))
         .fetch();
@@ -217,7 +217,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
     }
     return tokenList;
   }
-  
+
   @Override
   public List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language) {
     return queryFactory
