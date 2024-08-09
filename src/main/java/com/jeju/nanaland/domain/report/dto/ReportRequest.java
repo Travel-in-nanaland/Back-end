@@ -3,7 +3,8 @@ package com.jeju.nanaland.domain.report.dto;
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.report.entity.FixType;
-import com.jeju.nanaland.domain.report.entity.review.ClaimType;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
+import com.jeju.nanaland.domain.report.entity.claim.ReportType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -65,16 +66,27 @@ public class ReportRequest {
   @Data
   @AllArgsConstructor
   @Builder
-  @Schema(description = "리뷰 신고 요청 Dto")
-  public static class ReviewReportDto {
+  @Schema(description = "신고 요청 Dto")
+  public static class ClaimReportDto {
 
     @NotNull
-    @Schema(description = "리뷰 id")
-    private Long reviewId;
+    @Schema(description = "회원 ID 또는 리뷰 ID")
+    private Long id;
+
+    @EnumValid(
+        enumClass = ReportType.class,
+        message = "신고 타입이 유효하지 않습니다."
+    )
+    @Schema(
+        description = "신고 타입",
+        example = "REVIEW",
+        allowableValues = {"MEMBER", "REVIEW"}
+    )
+    private String reportType;
 
     @EnumValid(
         enumClass = ClaimType.class,
-        message = "리뷰 신고 사유 타입이 유효하지 않습니다."
+        message = "신고 사유 타입이 유효하지 않습니다."
     )
     @Schema(
         description = "리뷰 신고 사유 타입",
@@ -85,7 +97,7 @@ public class ReportRequest {
     private String claimType;
 
     @NotBlank
-    @Schema(description = "리뷰 신고 내용", example = "reviewReport reviewReport")
+    @Schema(description = "신고 내용", example = "claimReport claimReport")
     @Size(min = 20, message = "신고 사유는 20자 이상으로 작성해주세요.")
     @Size(max = 500, message = "신고 사유는 500자 이하로 작성해주세요.")
     private String content;

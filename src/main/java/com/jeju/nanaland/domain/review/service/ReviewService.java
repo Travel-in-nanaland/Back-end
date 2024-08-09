@@ -17,10 +17,8 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
@@ -83,11 +81,9 @@ public class ReviewService {
   private final ReviewImageFileRepository reviewImageFileRepository;
   private final ImageFileService imageFileService;
   private final ReviewHeartRepository reviewHeartRepository;
-  private final MarketRepository marketRepository;
   private final RedisTemplate<String, Object> redisTemplate;
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
-  private final ImageFileRepository imageFileRepository;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -334,7 +330,7 @@ public class ReviewService {
     }
     Pageable pageable = PageRequest.of(page, size);
     Page<MemberReviewDetailDto> reviewListByMember = reviewRepository.findReviewListByMember(
-        member, language, pageable);
+        memberInfoDto.getMember().getId(), member, language, pageable);
 
     return MemberReviewListDto.builder()
         .totalElements(reviewListByMember.getTotalElements())
@@ -356,7 +352,7 @@ public class ReviewService {
       }
     }
     List<MemberReviewPreviewDetailDto> reviewListByMember = reviewRepository.findReviewPreviewByMember(
-        member, language);
+        memberInfoDto.getMember().getId(), member, language);
 
     List<MemberReviewPreviewDetailDto> selectedReviews = new ArrayList<>();
     int totalWeight = 0;
@@ -374,7 +370,8 @@ public class ReviewService {
       }
     }
 
-    Long totalCount = reviewRepository.findTotalCountByMember(member);
+    Long totalCount = reviewRepository.findTotalCountByMember(memberInfoDto.getMember().getId(),
+        member);
 
     return MemberReviewPreviewDto.builder()
         .totalElements(totalCount)
