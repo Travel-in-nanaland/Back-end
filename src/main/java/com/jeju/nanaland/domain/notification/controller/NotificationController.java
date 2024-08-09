@@ -62,9 +62,9 @@ public class NotificationController {
   })
   @PostMapping("/send/all")
   public BaseResponse<String> sendNotificationToAllMember(
-      @RequestBody @Valid NotificationRequest.FcmMessageDto fcmMessageDto) {
+      @RequestBody @Valid NotificationRequest.NotificationDto notificationDto) {
 
-    notificationService.sendPushNotificationToAllMembers(fcmMessageDto);
+    notificationService.sendPushNotificationToAllMembers(notificationDto);
     return BaseResponse.success(SEND_NOTIFICATION_SUCCESS);
   }
 
@@ -78,7 +78,7 @@ public class NotificationController {
   })
   @PostMapping("/send")
   public BaseResponse<String> sendNotificationToAllMember(
-      @RequestBody @Valid NotificationRequest.FcmMessageToTargetDto reqDto) {
+      @RequestBody @Valid NotificationRequest.NotificationWithTargetDto reqDto) {
 
     notificationService.sendPushNotificationToTarget(reqDto);
     return BaseResponse.success(SEND_NOTIFICATION_SUCCESS);

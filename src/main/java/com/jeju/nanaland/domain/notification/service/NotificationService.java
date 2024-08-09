@@ -1,5 +1,7 @@
 package com.jeju.nanaland.domain.notification.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.NOTIFICATION_FORBIDDEN;
+
 import com.google.api.core.ApiFuture;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.messaging.AndroidConfig;
@@ -17,16 +19,18 @@ import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.notification.data.MemberNotificationCompose;
-import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageDto;
-import com.jeju.nanaland.domain.notification.data.NotificationRequest.FcmMessageToTargetDto;
+import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationDto;
+import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationWithTargetDto;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse.NotificationDetailDto;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse.NotificationListDto;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
+import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
-import com.jeju.nanaland.domain.notification.repository.NotificationRepository;
+import com.jeju.nanaland.domain.notification.repository.NanalandNanalandNotificationRepository;
 import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ForbiddenException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,7 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final FcmTokenUtil fcmTokenUtil;
-  private final NotificationRepository notificationRepository;
+  private final NanalandNanalandNotificationRepository nanalandNotificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
   private final FavoriteRepository favoriteRepository;
 
@@ -55,13 +59,19 @@ public class NotificationService {
       String fcmToken, int page, int size) {
 
     // 해당 토큰 조회
-    fcmTokenRepository.findByToken(fcmToken)
+    FcmToken targetToken = fcmTokenRepository.findByToken(fcmToken)
         .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
+
+    // 토큰 정보의 유저와 동일한지 검사
+    if (targetToken.getMember() != memberInfoDto.getMember()) {
+      throw new ForbiddenException(NOTIFICATION_FORBIDDEN.getMessage());
+    }
 
     // 알림 리스트 조회
     Pageable pageable = PageRequest.of(page, size);
-    Page<com.jeju.nanaland.domain.notification.entity.Notification> resultPage =
-        notificationRepository.findAllNotificationByMember(memberInfoDto.getMember(), pageable);
+    Page<NanalandNotification> resultPage =
+        nanalandNotificationRepository.findAllNotificationByMember(memberInfoDto.getMember(),
+            pageable);
 
     return NotificationListDto.builder()
         .totalElements(resultPage.getTotalElements())
@@ -69,7 +79,8 @@ public class NotificationService {
             .stream()
             .map(notification -> NotificationDetailDto.builder()
                 .notificationId(notification.getId())
-                .contentCategory(notification.getContentCategory())
+                .clickEvent(notification.getClickEvent().name())
+                .category(notification.getNotificationCategory().name())
                 .contentId(notification.getContentId())
                 .title(notification.getTitle())
                 .content(notification.getContent())
@@ -79,9 +90,9 @@ public class NotificationService {
   }
 
   @Transactional
-  public void sendPushNotificationToAllMembers(FcmMessageDto fcmMessageDto) {
+  public void sendPushNotificationToAllMembers(NotificationDto notificationDto) {
 
-    Language language = fcmMessageDto.getLanguage();
+    Language language = notificationDto.getLanguage();
 
     // 요청 언어와 동일한 모든 토큰 조회, 검증
     List<String> verifiedTokenList = fcmTokenRepository.findAllByLanguage(language)
@@ -105,7 +116,7 @@ public class NotificationService {
     int currentSuccessCount = 0;
     for (List<String> tokenList : splitedTokenList) {
       // 메세지 만들기
-      MulticastMessage message = makeMulticastMessage(tokenList, fcmMessageDto);
+      MulticastMessage message = makeMulticastMessage(tokenList, notificationDto);
 
       // 비동기 메세지 전송
       try {
@@ -129,10 +140,10 @@ public class NotificationService {
   }
 
   @Transactional
-  public void sendPushNotificationToTarget(FcmMessageToTargetDto fcmMessageToTargetDto) {
+  public void sendPushNotificationToTarget(NotificationWithTargetDto notificationWithTargetDto) {
 
-    String targetToken = fcmMessageToTargetDto.getTargetToken();
     // 타겟 토큰 조회
+    String targetToken = notificationWithTargetDto.getTargetToken();
     FcmToken fcmToken = fcmTokenRepository.findByToken(targetToken)
         .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
 
@@ -146,8 +157,12 @@ public class NotificationService {
       throw new BadRequestException(e.getMessage());
     }
 
+    // 알림 정보 저장
+    NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
+    NanalandNotification nanalandNotification = saveNanalandNotification(notificationDto);
+
     // 메세지 만들기
-    Message message = makeMessage(fcmMessageToTargetDto);
+    Message message = makeMessage(notificationWithTargetDto);
 
     // 메세지 전송
     try {
@@ -158,6 +173,8 @@ public class NotificationService {
       fcmTokenUtil.deleteFcmToken(fcmToken);
       throw new RuntimeException(e);
     }
+
+    // 전송한 알림 정보를 유저와 매핑
   }
 
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
@@ -179,24 +196,30 @@ public class NotificationService {
 
     // 알림id, memberId, contentCategory, contentId 모두 조회
     List<MemberNotificationCompose> memberNotificationComposes =
-        notificationRepository.findAllMemberNotificationCompose();
-    
+        nanalandNotificationRepository.findAllMemberNotificationCompose();
+
+  }
+
+  private NanalandNotification saveNanalandNotification(NotificationDto notificationDto) {
+    NanalandNotification newNotification =
+        NanalandNotification.buildNanalandNotification(notificationDto);
+    return nanalandNotificationRepository.save(newNotification);
   }
 
   private MulticastMessage makeMulticastMessage(List<String> tokenList,
-      FcmMessageDto fcmMessageDto) {
+      NotificationDto notificationDto) {
 
     return MulticastMessage.builder()
         // 수신 측 토큰 정보 - token
         .addAllTokens(tokenList)
         // 알림 내용 정보 - data
-        .putData("contentCategory", fcmMessageDto.getContentCategory())
-        .putData("contentId", fcmMessageDto.getContentId().toString())
+        .putData("category", notificationDto.getCategory().name())
+        .putData("contentId", notificationDto.getContentId().toString())
         // 공통 알림 정보 - notification
         .setNotification(
             Notification.builder()
-                .setTitle(fcmMessageDto.getTitle())
-                .setBody(fcmMessageDto.getContent())
+                .setTitle(notificationDto.getTitle())
+                .setBody(notificationDto.getContent())
                 .build())
         // Android 전용 설정 - android
         .setAndroidConfig(
@@ -215,21 +238,21 @@ public class NotificationService {
         .build();
   }
 
-  private Message makeMessage(FcmMessageToTargetDto fcmMessageToTargetDto) {
+  private Message makeMessage(NotificationWithTargetDto notificationWithTargetDto) {
 
-    FcmMessageDto fcmMessageDto = fcmMessageToTargetDto.getMessage();
+    NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
 
     return Message.builder()
         // 수신 측 토큰 정보 - token
-        .setToken(fcmMessageToTargetDto.getTargetToken())
+        .setToken(notificationWithTargetDto.getTargetToken())
         // 알림 내용 정보 - data
-        .putData("contentCategory", fcmMessageDto.getContentCategory())
-        .putData("contentId", fcmMessageDto.toString())
+        .putData("category", notificationDto.getCategory().name())
+        .putData("contentId", notificationDto.toString())
         // 공통 알림 정보 - notification
         .setNotification(
             Notification.builder()
-                .setTitle(fcmMessageDto.getTitle())
-                .setBody(fcmMessageDto.getContent())
+                .setTitle(notificationDto.getTitle())
+                .setBody(notificationDto.getContent())
                 .build())
         // Android 전용 설정 - android
         .setAndroidConfig(

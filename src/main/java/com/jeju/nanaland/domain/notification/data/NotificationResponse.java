@@ -27,10 +27,26 @@ public class NotificationResponse {
     @Schema(description = "알림 id")
     private Long notificationId;
 
-    @Schema(description = "알림 내용 카테고리")
-    private String contentCategory;
+    @Schema(
+        name = "클릭 이벤트",
+        allowableValues = {
+            "POST", "NOTICE", "NONE"
+        },
+        description = "POST - 나나스픽, 자연경관, 축제, 이색체험, 맛집 상세 페이지로 이동\n"
+            + "NOTICE - 공지사항 상세 페이지로 이동\n"
+            + "NONE - 페이지 이동 없음. 알림 정보만 제공"
+    )
+    private String clickEvent;
 
-    @Schema(description = "알림 내용 id")
+    @Schema(
+        description = "상세 페이지 요청에 필요한 카테고리",
+        allowableValues = {
+            "NANA", "NATURE", "FESTIVAL", "MARKET", "FESTIVAL", "EXPERIENCE", "RESTAURANT",
+            "NOTICE", "ETC"
+        })
+    private String category;
+
+    @Schema(description = "상세 페이지 요청에 필요한 id")
     private Long contentId;
 
     @Schema(description = "알림 제목")
@@ -38,8 +54,5 @@ public class NotificationResponse {
 
     @Schema(description = "알림 내용")
     private String content;
-
-    @Schema(description = "알림 클릭 이벤트")
-    private String clickAction;
   }
 }

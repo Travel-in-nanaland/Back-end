@@ -23,5 +23,5 @@ public class MemberNotification {
 
   @ManyToOne
   @JoinColumn(name = "notification_id", nullable = false)
-  private Notification notification;
+  private NanalandNotification nanalandNotification;
 }

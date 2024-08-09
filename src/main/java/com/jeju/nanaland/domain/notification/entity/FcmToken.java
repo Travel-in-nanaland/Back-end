@@ -10,12 +10,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class FcmToken {
 
   @Id
@@ -32,7 +36,7 @@ public class FcmToken {
   @NotNull
   private LocalDateTime timestamp;
 
-  public void updateTimestamp() {
+  public void updateTimestampToNow() {
     timestamp = LocalDateTime.now();
   }
 }
