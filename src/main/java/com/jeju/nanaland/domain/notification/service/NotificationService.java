@@ -25,8 +25,10 @@ import com.jeju.nanaland.domain.notification.data.NotificationResponse;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse.NotificationDetailDto;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse.NotificationListDto;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
+import com.jeju.nanaland.domain.notification.entity.MemberNotification;
 import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
+import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
 import com.jeju.nanaland.domain.notification.repository.NanalandNanalandNotificationRepository;
 import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -52,6 +54,7 @@ public class NotificationService {
 
   private final FcmTokenUtil fcmTokenUtil;
   private final NanalandNanalandNotificationRepository nanalandNotificationRepository;
+  private final MemberNotificationRepository memberNotificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
   private final FavoriteRepository favoriteRepository;
 
@@ -175,6 +178,7 @@ public class NotificationService {
     }
 
     // 전송한 알림 정보를 유저와 매핑
+    saveMemberNotification(fcmToken, nanalandNotification);
   }
 
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
@@ -204,6 +208,15 @@ public class NotificationService {
     NanalandNotification newNotification =
         NanalandNotification.buildNanalandNotification(notificationDto);
     return nanalandNotificationRepository.save(newNotification);
+  }
+
+  private MemberNotification saveMemberNotification(FcmToken fcmToken,
+      NanalandNotification nanalandNotification) {
+    MemberNotification memberNotification = MemberNotification.builder()
+        .memberId(fcmToken.getMember().getId())
+        .nanalandNotification(nanalandNotification)
+        .build();
+    return memberNotificationRepository.save(memberNotification);
   }
 
   private MulticastMessage makeMulticastMessage(List<String> tokenList,
