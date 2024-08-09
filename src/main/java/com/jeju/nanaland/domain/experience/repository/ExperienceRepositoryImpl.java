@@ -143,7 +143,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .selectDistinct(experience.count())
+        .selectDistinct(experience.countDistinct())
         .from(experience)
         .innerJoin(experience.firstImageFile, imageFile)
         .innerJoin(experience.experienceTrans, experienceTrans)
