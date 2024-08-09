@@ -64,7 +64,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .fetch();
 
     JPAQuery<Long> countQuery = queryFactory
-        .selectDistinct(restaurant.count())
+        .selectDistinct(restaurant.countDistinct())
         .from(restaurant)
         .innerJoin(restaurant.firstImageFile, imageFile)
         .innerJoin(restaurant.restaurantTrans, restaurantTrans)
