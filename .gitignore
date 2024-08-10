@@ -9,6 +9,7 @@ application.yml
 application-test.yml
 appspec.yml
 scripts/
+src/main/resources/nanalandtestAccountKey.json
 
 ## test를 위한 controller
 TestController.java
