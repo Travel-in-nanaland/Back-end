@@ -23,16 +23,16 @@ public class NotificationRequest {
     private Long contentId;
 
     @NotNull
-    @Schema(description = "언어")
-    private Language language;
-
-    @NotNull
     @Schema(description = "알림 제목")
     private String title;
 
     @NotNull
     @Schema(description = "알림 내용")
     private String content;
+
+    @NotNull
+    @Schema(description = "언어")
+    private Language language;
   }
 
   @Getter

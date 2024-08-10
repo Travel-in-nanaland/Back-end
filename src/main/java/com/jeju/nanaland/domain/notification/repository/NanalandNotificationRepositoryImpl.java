@@ -8,9 +8,11 @@ import com.jeju.nanaland.domain.member.entity.QMember;
 import com.jeju.nanaland.domain.notification.data.MemberNotificationCompose;
 import com.jeju.nanaland.domain.notification.data.QMemberNotificationCompose;
 import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
+import com.jeju.nanaland.domain.notification.entity.eums.NotificationCategory;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,5 +57,20 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
         .from(memberNotification)
         .innerJoin(memberNotification.nanalandNotification, nanalandNotification)
         .fetch();
+  }
+
+  @Override
+  public Optional<NanalandNotification> findByNotificationInfo(
+      NotificationCategory notificationCategory, Long contentId, String title, String content) {
+    NanalandNotification result = queryFactory
+        .selectFrom(nanalandNotification)
+        .where(nanalandNotification.notificationCategory.eq(notificationCategory),
+            nanalandNotification.contentId.eq(contentId),
+            nanalandNotification.title.eq(title),
+            nanalandNotification.content.eq(content)
+        )
+        .fetchOne();
+    
+    return Optional.of(result);
   }
 }

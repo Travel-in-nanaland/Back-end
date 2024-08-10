@@ -29,7 +29,7 @@ import com.jeju.nanaland.domain.notification.entity.MemberNotification;
 import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
-import com.jeju.nanaland.domain.notification.repository.NanalandNanalandNotificationRepository;
+import com.jeju.nanaland.domain.notification.repository.NanalandNotificationRepository;
 import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ForbiddenException;
@@ -37,6 +37,7 @@ import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final FcmTokenUtil fcmTokenUtil;
-  private final NanalandNanalandNotificationRepository nanalandNotificationRepository;
+  private final NanalandNotificationRepository nanalandNotificationRepository;
   private final MemberNotificationRepository memberNotificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
   private final FavoriteRepository favoriteRepository;
@@ -82,7 +83,7 @@ public class NotificationService {
             .stream()
             .map(notification -> NotificationDetailDto.builder()
                 .notificationId(notification.getId())
-                .clickEvent(notification.getClickEvent().name())
+                .clickEvent(notification.getNotificationCategory().getClickEvent().name())
                 .category(notification.getNotificationCategory().name())
                 .contentId(notification.getContentId())
                 .title(notification.getTitle())
@@ -98,7 +99,7 @@ public class NotificationService {
     Language language = notificationDto.getLanguage();
 
     // 요청 언어와 동일한 모든 토큰 조회, 검증
-    List<String> verifiedTokenList = fcmTokenRepository.findAllByLanguage(language)
+    List<FcmToken> verifiedTokenList = fcmTokenRepository.findAllByLanguage(language)
         .stream()
         .filter(fcmToken -> {
           try {
@@ -110,14 +111,16 @@ public class NotificationService {
             return false;
           }
         })
-        .map(FcmToken::toString)
         .toList();
 
     // 한번에 전송 가능한 단위인 500개로 분할
-    List<List<String>> splitedTokenList = splitTokenList(verifiedTokenList);
+    List<List<FcmToken>> splitedTokenList = splitTokenList(verifiedTokenList);
+
+    // 동일한 알림 정보가 있다면 가져오고 없다면 생성
+    NanalandNotification nanalandNotification = saveOrGetNanalandNotification(notificationDto);
 
     int currentSuccessCount = 0;
-    for (List<String> tokenList : splitedTokenList) {
+    for (List<FcmToken> tokenList : splitedTokenList) {
       // 메세지 만들기
       MulticastMessage message = makeMulticastMessage(tokenList, notificationDto);
 
@@ -128,6 +131,11 @@ public class NotificationService {
         BatchResponse batchResponse = responseApiFuture.get();
         currentSuccessCount += batchResponse.getSuccessCount();
         log.info("전체 알림 전송 성공: {}개", currentSuccessCount);
+
+        // 전송한 알림 정보를 유저와 매핑
+        for (FcmToken token : tokenList) {
+          saveMemberNotification(token, nanalandNotification);
+        }
       }
       // ApiFuture 에러 처리
       catch (ExecutionException e) {
@@ -160,9 +168,9 @@ public class NotificationService {
       throw new BadRequestException(e.getMessage());
     }
 
-    // 알림 정보 저장
+    // 동일한 알림 정보가 있다면 가져오고 없다면 생성
     NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
-    NanalandNotification nanalandNotification = saveNanalandNotification(notificationDto);
+    NanalandNotification nanalandNotification = saveOrGetNanalandNotification(notificationDto);
 
     // 메세지 만들기
     Message message = makeMessage(notificationWithTargetDto);
@@ -184,7 +192,7 @@ public class NotificationService {
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
   @Transactional
   @Scheduled(cron = "0 0 10 * * *")
-  protected void sendMyFavoriteNotification() {
+  public void sendMyFavoriteNotification() {
     List<Favorite> allFavorites = favoriteRepository.findAll();
 
     // 한 달 이상 전에 생성되었고, 생성된 이후 같은 게시물에 대해 5개 이상의 좋아요가 있을 때
@@ -219,12 +227,15 @@ public class NotificationService {
     return memberNotificationRepository.save(memberNotification);
   }
 
-  private MulticastMessage makeMulticastMessage(List<String> tokenList,
+  private MulticastMessage makeMulticastMessage(List<FcmToken> tokenList,
       NotificationDto notificationDto) {
 
     return MulticastMessage.builder()
         // 수신 측 토큰 정보 - token
-        .addAllTokens(tokenList)
+        .addAllTokens(
+            tokenList.stream()
+                .map(FcmToken::getToken)
+                .toList())
         // 알림 내용 정보 - data
         .putData("category", notificationDto.getCategory().name())
         .putData("contentId", notificationDto.getContentId().toString())
@@ -284,12 +295,12 @@ public class NotificationService {
         .build();
   }
 
-  private List<List<String>> splitTokenList(List<String> tokenList) {
-    List<List<String>> splitedTokenList = new ArrayList<>();
+  private List<List<FcmToken>> splitTokenList(List<FcmToken> tokenList) {
+    List<List<FcmToken>> splitedTokenList = new ArrayList<>();
     int totalSize = tokenList.size();
 
     for (int i = 0; i < totalSize; i += 500) {
-      List<String> chunk = new ArrayList<>(
+      List<FcmToken> chunk = new ArrayList<>(
           tokenList.subList(i, Math.min(totalSize, i + 500))
       );
       splitedTokenList.add(chunk);
@@ -304,5 +315,16 @@ public class NotificationService {
         .filter(favorite -> favorite.getPost().getId().equals(postId) &&
             favorite.getCreatedAt().isAfter(localDateTime))
         .toList().size();
+  }
+
+  private NanalandNotification saveOrGetNanalandNotification(NotificationDto notificationDto) {
+
+    Optional<NanalandNotification> result = nanalandNotificationRepository.findByNotificationInfo(
+        notificationDto.getCategory(),
+        notificationDto.getContentId(),
+        notificationDto.getTitle(),
+        notificationDto.getContent());
+
+    return result.orElseGet(() -> saveNanalandNotification(notificationDto));
   }
 }
