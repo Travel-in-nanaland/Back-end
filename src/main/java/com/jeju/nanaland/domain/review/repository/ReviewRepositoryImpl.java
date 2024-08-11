@@ -188,7 +188,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.content))
         .from(review)
         .leftJoin(restaurant)
-        .where(review.post.id.eq(experience.id))
+        .where(review.post.id.eq(restaurant.id))
         .innerJoin(restaurant, restaurantTrans.restaurant)
         .where(restaurantTrans.language.eq(memberInfoDto.getLanguage()).and(review.id.eq(reviewId)))
         .fetchOne();
