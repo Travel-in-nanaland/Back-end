@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface FcmTokenRepositoryCustom {
 
-  List<FcmToken> findAllByLanguage(Language language);
+  List<FcmToken> findAllByMemberLanguage(Language language);
 }

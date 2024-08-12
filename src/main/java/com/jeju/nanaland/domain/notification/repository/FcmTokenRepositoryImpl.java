@@ -14,7 +14,7 @@ public class FcmTokenRepositoryImpl implements FcmTokenRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<FcmToken> findAllByLanguage(Language language) {
+  public List<FcmToken> findAllByMemberLanguage(Language language) {
     return queryFactory
         .selectFrom(fcmToken)
         .where(fcmToken.member.language.eq(language))

@@ -65,8 +65,7 @@ public enum ErrorCode {
 
   // FORBIDDEN
   FORBIDDEN_EXCEPTION(FORBIDDEN, "접근 권한이 없습니다."),
-  REVIEW_SELF_LIKE_FORBIDDEN(FORBIDDEN, "본인의 리뷰는 좋아요를 누를 수 없습니다."),
-  NOTIFICATION_FORBIDDEN(FORBIDDEN, "해당 알림에 대한 접근 권한이 없습니다.");
+  REVIEW_SELF_LIKE_FORBIDDEN(FORBIDDEN, "본인의 리뷰는 좋아요를 누를 수 없습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;

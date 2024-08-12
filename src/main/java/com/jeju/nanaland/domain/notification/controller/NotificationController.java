@@ -19,7 +19,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,14 +40,13 @@ public class NotificationController {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
-  @GetMapping("/list/{fcmToken}")
+  @GetMapping("/list")
   public BaseResponse<NotificationResponse.NotificationListDto> getNotificationList(
       @AuthMember MemberInfoDto memberInfoDto,
-      @PathVariable(required = true) String fcmToken,
       int page, int size) {
 
     NotificationListDto notificationListDto = notificationService.getNotificationList(memberInfoDto,
-        fcmToken, page, size);
+        page, size);
     return BaseResponse.success(NOTIFICATION_LIST_SUCCESS, notificationListDto);
   }
 
