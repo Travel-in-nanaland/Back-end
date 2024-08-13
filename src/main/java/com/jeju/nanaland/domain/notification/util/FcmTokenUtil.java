@@ -1,9 +1,8 @@
 package com.jeju.nanaland.domain.notification.util;
 
-import com.google.firebase.FirebaseException;
-import com.google.firebase.auth.FirebaseAuth;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,7 +20,8 @@ public class FcmTokenUtil {
     fcmTokenRepository.delete(fcmToken);
   }
 
-  public void verifyFcmToken(FcmToken fcmToken) throws FirebaseException {
-    FirebaseAuth.getInstance().verifyIdToken(fcmToken.getToken());
+  public boolean isFcmTokenExpired(FcmToken fcmToken) {
+    LocalDateTime now = LocalDateTime.now();
+    return fcmToken.getTimestamp().isBefore(now.minusMonths(2));
   }
 }

@@ -16,7 +16,7 @@ public class FirebaseConfig {
   public void init() {
     try {
       FileInputStream serviceAccount =
-          new FileInputStream("src/main/resources/nanalandTestAccountKey.json");
+          new FileInputStream("src/main/resources/firebase/nanaland-firebase-key.json");
       FirebaseOptions options = FirebaseOptions.builder()
           .setCredentials(GoogleCredentials.fromStream(serviceAccount))
           .build();

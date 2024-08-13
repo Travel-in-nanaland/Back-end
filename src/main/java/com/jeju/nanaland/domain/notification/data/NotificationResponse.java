@@ -28,7 +28,6 @@ public class NotificationResponse {
     private Long notificationId;
 
     @Schema(
-        name = "클릭 이벤트",
         allowableValues = {
             "POST", "NOTICE", "NONE"
         },

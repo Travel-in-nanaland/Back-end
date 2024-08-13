@@ -27,7 +27,7 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
   public Page<NanalandNotification> findAllNotificationByMember(Member member, Pageable pageable) {
     List<NanalandNotification> resultDto = queryFactory
         .selectFrom(nanalandNotification)
-        .innerJoin(memberNotification.nanalandNotification, nanalandNotification)
+        .innerJoin(nanalandNotification.memberNotificationList, memberNotification)
         .innerJoin(QMember.member)
         .on(QMember.member.id.eq(memberNotification.memberId))
         .orderBy(nanalandNotification.createdAt.desc())
@@ -38,7 +38,7 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
     JPAQuery<Long> countQuery = queryFactory
         .select(nanalandNotification.count())
         .from(nanalandNotification)
-        .innerJoin(memberNotification.nanalandNotification, nanalandNotification)
+        .innerJoin(nanalandNotification.memberNotificationList, memberNotification)
         .innerJoin(QMember.member)
         .on(QMember.member.id.eq(memberNotification.memberId));
 
@@ -70,7 +70,7 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
             nanalandNotification.content.eq(content)
         )
         .fetchOne();
-    
-    return Optional.of(result);
+
+    return Optional.ofNullable(result);
   }
 }

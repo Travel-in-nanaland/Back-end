@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.notification.service;
 
 import com.google.api.core.ApiFuture;
-import com.google.firebase.FirebaseException;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
@@ -89,13 +88,12 @@ public class NotificationService {
     Language language = notificationDto.getLanguage();
 
     // 알림 전송 요청 언어를 사용하는 모든 토큰 조회, 검증
-    List<FcmToken> verifiedTokenList = fcmTokenRepository.findAllByMemberLanguage(language)
+    List<FcmToken> validTokenList = fcmTokenRepository.findAllByMemberLanguage(language)
         .stream()
         .filter(fcmToken -> {
-          try {
-            fcmTokenUtil.verifyFcmToken(fcmToken);
+          if (!fcmTokenUtil.isFcmTokenExpired(fcmToken)) {
             return true;
-          } catch (FirebaseException e) {
+          } else {
             // 검증에 실패한 토큰 삭제
             fcmTokenUtil.deleteFcmToken(fcmToken);
             log.info("Invalid fcm token deleted: {}", fcmToken.getToken());
@@ -105,7 +103,7 @@ public class NotificationService {
         .toList();
 
     // 한번에 전송 가능한 단위인 500개로 분할
-    List<List<FcmToken>> splitedTokenList = splitTokenList(verifiedTokenList);
+    List<List<FcmToken>> splitedTokenList = splitTokenList(validTokenList);
 
     // 동일한 알림 정보가 있다면 가져오고 없다면 생성
     NanalandNotification nanalandNotification = getNanalandNotification(notificationDto);
@@ -157,14 +155,13 @@ public class NotificationService {
         .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
 
     // FCM 토큰 검증
-    try {
-      fcmTokenUtil.verifyFcmToken(fcmToken);
+    if (!fcmTokenUtil.isFcmTokenExpired(fcmToken)) {
       log.info("FCM 토큰 검증 성공");
-    } catch (FirebaseException e) {
+    } else {
       log.error("FCM 토큰 검증 실패: {}", fcmToken.getToken());
       // 해당 토큰 삭제
       fcmTokenUtil.deleteFcmToken(fcmToken);
-      throw new BadRequestException(e.getMessage());
+      throw new BadRequestException("FCM 토큰 만료됨.");
     }
 
     // 동일한 알림 정보가 있다면 가져오고 없다면 생성
@@ -215,7 +212,6 @@ public class NotificationService {
     // 알림id, memberId, contentCategory, contentId 모두 조회
     List<MemberNotificationCompose> memberNotificationComposes =
         nanalandNotificationRepository.findAllMemberNotificationCompose();
-
   }
 
   private MulticastMessage makeMulticastMessage(List<FcmToken> tokenList,

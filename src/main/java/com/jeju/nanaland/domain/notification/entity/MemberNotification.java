@@ -26,6 +26,6 @@ public class MemberNotification {
   private Long memberId;
 
   @ManyToOne
-  @JoinColumn(name = "notification_id", nullable = false)
+  @JoinColumn(name = "nanaland_notification_id", nullable = false)
   private NanalandNotification nanalandNotification;
 }

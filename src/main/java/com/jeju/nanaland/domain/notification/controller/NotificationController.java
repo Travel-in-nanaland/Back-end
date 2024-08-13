@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -43,7 +44,8 @@ public class NotificationController {
   @GetMapping("/list")
   public BaseResponse<NotificationResponse.NotificationListDto> getNotificationList(
       @AuthMember MemberInfoDto memberInfoDto,
-      int page, int size) {
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "12") int size) {
 
     NotificationListDto notificationListDto = notificationService.getNotificationList(memberInfoDto,
         page, size);
