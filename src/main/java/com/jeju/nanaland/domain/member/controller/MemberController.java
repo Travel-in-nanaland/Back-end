@@ -282,7 +282,7 @@ public class MemberController {
       @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 겨 ㅇ우", content = @Content)
   })
   @GetMapping("/validateNickname")
-  public BaseResponse<Null> getMemberProfile(
+  public BaseResponse<Null> validateNickname(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(required = false) String nickname) {
     memberProfileService.validateNickname(nickname, memberInfoDto.getMember());
