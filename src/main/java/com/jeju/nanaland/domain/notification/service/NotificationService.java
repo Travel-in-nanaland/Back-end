@@ -31,7 +31,6 @@ import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
 import com.jeju.nanaland.domain.notification.repository.NanalandNotificationRepository;
 import com.jeju.nanaland.domain.notification.util.FavoriteNotificationUtil;
-import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
@@ -53,7 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class NotificationService {
 
-  private final FcmTokenUtil fcmTokenUtil;
+  private final FcmTokenService fcmTokenService;
   private final FavoriteNotificationUtil favoriteNotificationUtil;
   private final NanalandNotificationRepository nanalandNotificationRepository;
   private final MemberNotificationRepository memberNotificationRepository;
@@ -95,11 +94,11 @@ public class NotificationService {
     List<FcmToken> validTokenList = fcmTokenRepository.findAllByMemberLanguage(language)
         .stream()
         .filter(fcmToken -> {
-          if (!fcmTokenUtil.isFcmTokenExpired(fcmToken)) {
+          if (!fcmTokenService.isFcmTokenExpired(fcmToken)) {
             return true;
           } else {
             // 검증에 실패한 토큰 삭제
-            fcmTokenUtil.deleteFcmToken(fcmToken);
+            fcmTokenService.deleteFcmToken(fcmToken);
             log.info("Invalid fcm token deleted: {}", fcmToken.getToken());
             return false;
           }
@@ -159,12 +158,12 @@ public class NotificationService {
         .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
 
     // FCM 토큰 검증
-    if (!fcmTokenUtil.isFcmTokenExpired(fcmToken)) {
+    if (!fcmTokenService.isFcmTokenExpired(fcmToken)) {
       log.info("FCM 토큰 검증 성공");
     } else {
       log.error("FCM 토큰 검증 실패: {}", fcmToken.getToken());
       // 해당 토큰 삭제
-      fcmTokenUtil.deleteFcmToken(fcmToken);
+      fcmTokenService.deleteFcmToken(fcmToken);
       throw new BadRequestException("FCM 토큰 만료됨.");
     }
 
@@ -184,7 +183,7 @@ public class NotificationService {
       log.info("알림 전송 성공 {}", response);
     } catch (FirebaseMessagingException e) {
       log.error("알림 전송 실패 {}: {}", e.getErrorCode(), e.getMessage());
-      fcmTokenUtil.deleteFcmToken(fcmToken);
+      fcmTokenService.deleteFcmToken(fcmToken);
       throw new RuntimeException(e);
     }
 
