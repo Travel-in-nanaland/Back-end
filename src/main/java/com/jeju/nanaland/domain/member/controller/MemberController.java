@@ -9,6 +9,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUC
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_CONSENT_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.VALID_NICKNAME_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
@@ -271,5 +272,20 @@ public class MemberController {
   ) {
     memberLoginService.forceWithdrawal(accessToken);
     return BaseResponse.success(WITHDRAWAL_SUCCESS);
+  }
+
+  @Operation(
+      summary = "닉네임 중복 확인")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 겨 ㅇ우", content = @Content)
+  })
+  @GetMapping("/validateNickname")
+  public BaseResponse<ProfileDto> getMemberProfile(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(required = false) String nickname) {
+    memberProfileService.validateNickname(nickname, memberInfoDto.getMember());
+    return BaseResponse.success(VALID_NICKNAME_SUCCESS);
   }
 }

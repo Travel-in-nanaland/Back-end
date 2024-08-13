@@ -60,7 +60,7 @@ public class MemberProfileService {
     member.updateProfile(profileUpdateDto);
   }
 
-  private void validateNickname(String nickname, Member member) {
+  public void validateNickname(String nickname, Member member) {
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
     if (memberOptional.isPresent() && !memberOptional.get().equals(member)) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
