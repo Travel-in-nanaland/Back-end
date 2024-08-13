@@ -224,6 +224,7 @@ public class NotificationService {
                 .map(FcmToken::getToken)
                 .toList())
         // 알림 내용 정보 - data
+        .putData("clickAction", notificationDto.getCategory().getClickEvent().name())
         .putData("category", notificationDto.getCategory().name())
         .putData("contentId", notificationDto.getContentId().toString())
         // 공통 알림 정보 - notification
@@ -257,6 +258,7 @@ public class NotificationService {
         // 수신 측 토큰 정보 - token
         .setToken(notificationWithTargetDto.getTargetToken())
         // 알림 내용 정보 - data
+        .putData("clickAction", notificationDto.getCategory().getClickEvent().name())
         .putData("category", notificationDto.getCategory().name())
         .putData("contentId", notificationDto.toString())
         // 공통 알림 정보 - notification
