@@ -75,6 +75,7 @@ public enum SuccessCode {
   REVIEW_LIST_SUCCESS(OK, "리뷰 리스트 조회 성공"),
   REVIEW_CREATED_SUCCESS(OK, "리뷰 생성 성공"),
   REVIEW_HEART_SUCCESS(OK, "리뷰 좋아요 토글 요청 성공"),
+  REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS(OK, "리뷰 작성위한 post 조회 성공"),
   MY_REVIEW_DETAIL_SUCCESS(OK, "직접 작성한 리뷰 조회 성공"),
   REVIEW_DELETE_SUCCESS(NO_CONTENT, "리뷰 삭제 성공"),
   REVIEW_UPDATE_SUCCESS(OK, "리뷰 수정 성공"),

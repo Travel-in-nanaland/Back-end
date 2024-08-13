@@ -5,6 +5,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_CREATED_SUCC
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_DELETE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_UPDATE_SUCCESS;
 
 import com.jeju.nanaland.domain.common.data.Category;
@@ -187,7 +188,7 @@ public class ReviewController {
   public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam String keyword) {
-    return BaseResponse.success(REVIEW_HEART_SUCCESS,
+    return BaseResponse.success(REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS,
         reviewService.getAutoCompleteSearchResultForReview(
             memberInfoDto, keyword));
   }

@@ -523,7 +523,7 @@ public class ReviewService {
   private List<SearchPostForReviewDto> searchByKeyword(Map<String, SearchPostForReviewDto> redisMap,
       String keyword) {
     return redisMap.entrySet().stream()
-        .filter(entry -> entry.getKey().contains(keyword))
+        .filter(entry -> entry.getKey().toLowerCase().contains(keyword.toLowerCase()))
         .map(Map.Entry::getValue)
         .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
         .toList();
@@ -536,7 +536,8 @@ public class ReviewService {
   private List<SearchPostForReviewDto> searchByKeywordList(
       Map<String, SearchPostForReviewDto> redisMap, List<String> keywords) {
     return redisMap.entrySet().stream()
-        .filter(entry -> keywords.stream().anyMatch(entry.getKey()::contains))
+        .filter(entry -> keywords.stream()
+            .anyMatch(keyword -> entry.getKey().toLowerCase().contains(keyword.toLowerCase())))
         .map(Map.Entry::getValue)
         .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
         .toList();
