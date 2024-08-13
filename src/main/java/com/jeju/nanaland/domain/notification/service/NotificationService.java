@@ -11,7 +11,9 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -28,6 +30,7 @@ import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
 import com.jeju.nanaland.domain.notification.repository.NanalandNotificationRepository;
+import com.jeju.nanaland.domain.notification.util.FavoriteNotificationUtil;
 import com.jeju.nanaland.domain.notification.util.FcmTokenUtil;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
@@ -51,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final FcmTokenUtil fcmTokenUtil;
+  private final FavoriteNotificationUtil favoriteNotificationUtil;
   private final NanalandNotificationRepository nanalandNotificationRepository;
   private final MemberNotificationRepository memberNotificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
@@ -59,7 +63,7 @@ public class NotificationService {
   public NotificationResponse.NotificationListDto getNotificationList(MemberInfoDto memberInfoDto,
       int page, int size) {
 
-    // 알림 리스트 조회
+    // 회원과 연결된 알림 리스트 조회
     Pageable pageable = PageRequest.of(page, size);
     Page<NanalandNotification> resultPage =
         nanalandNotificationRepository.findAllNotificationByMember(memberInfoDto.getMember(),
@@ -196,6 +200,8 @@ public class NotificationService {
   @Transactional
   @Scheduled(cron = "0 0 10 * * *")
   public void sendMyFavoriteNotification() {
+
+    LocalDateTime now = LocalDateTime.now();
     List<Favorite> allFavorites = favoriteRepository.findAll();
 
     // 한 달 이상 전에 생성되었고, 생성된 이후 같은 게시물에 대해 5개 이상의 좋아요가 있을 때
@@ -204,11 +210,35 @@ public class NotificationService {
               LocalDateTime createdAt = favorite.getCreatedAt();
               Long postId = favorite.getPost().getId();
 
-              return favorite.getCreatedAt().isBefore(LocalDateTime.now()) &&
+              return favorite.getCreatedAt().isBefore(now.minusMonths(1)) &&
                   countSamePostIdCreatedAfter(allFavorites, createdAt, postId) >= 5;
             }
         ).toList();
 
+    for (Favorite favorite : filteredFavorites) {
+      Long postId = favorite.getPost().getId();
+      Category category = favorite.getCategory();
+      Member member = favorite.getMember();
+      Language language = member.getLanguage();
+
+      ThumbnailDto thumbnailDto = switch (category) {
+        case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, language);
+        case NATURE -> favoriteRepository.findNatureThumbnailByPostId(member, postId, language);
+        case MARKET -> favoriteRepository.findMarketThumbnailByPostId(member, postId, language);
+        case EXPERIENCE ->
+            favoriteRepository.findExperienceThumbnailByPostId(member, postId, language);
+        case FESTIVAL -> favoriteRepository.findFestivalThumbnailByPostId(member, postId, language);
+        case RESTAURANT ->
+            favoriteRepository.findRestaurantThumbnailByPostId(member, postId, language);
+        default -> null;
+      };
+
+      if (thumbnailDto != null) {
+        String title = thumbnailDto.getTitle();
+        String notificationTitle = favoriteNotificationUtil.getNotificationTitle(title, language);
+      }
+
+    }
     // 알림id, memberId, contentCategory, contentId 모두 조회
     List<MemberNotificationCompose> memberNotificationComposes =
         nanalandNotificationRepository.findAllMemberNotificationCompose();
