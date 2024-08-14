@@ -77,6 +77,8 @@ public class MemberResponse {
     List<ConsentItemResponse> consentItems;
     @Schema(description = "내 프로필인지 확인 여부")
     private boolean isMyProfile;
+    @Schema(description = "유저 Id")
+    private Long memberId;
     @Schema(description = "이메일")
     private String email;
     @Schema(description = "회원가입 형태", example = "KAKAO, GOOGLE, APPLE")

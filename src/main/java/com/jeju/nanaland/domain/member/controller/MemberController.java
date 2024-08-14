@@ -279,13 +279,17 @@ public class MemberController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
-      @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 겨 ㅇ우", content = @Content)
+      @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 경우", content = @Content)
   })
   @GetMapping("/validateNickname")
   public BaseResponse<Null> validateNickname(
-      @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam(required = false) String nickname) {
-    memberProfileService.validateNickname(nickname, memberInfoDto.getMember());
+      @RequestParam String nickname,
+      @RequestParam(required = false) Long memberId) {
+    if (memberId == null) {
+      memberLoginService.validateNickname(nickname);
+    } else {
+      memberProfileService.validateNickname(nickname, memberId);
+    }
     return BaseResponse.success(VALID_NICKNAME_SUCCESS);
   }
 }

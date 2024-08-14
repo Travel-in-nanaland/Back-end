@@ -56,7 +56,8 @@ public class MemberLoginService {
       throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
     }
 
-    String nickname = validateNickname(joinDto);
+    String nickname = determineNickname(joinDto);
+    validateNickname(nickname);
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
     if (!member.getProvider().equals(Provider.GUEST)) {
@@ -65,17 +66,18 @@ public class MemberLoginService {
     return getJwtDto(member);
   }
 
-  private String validateNickname(JoinDto joinDto) {
-    String nickname = joinDto.getNickname();
+  private String determineNickname(JoinDto joinDto) {
     if (Provider.valueOf(joinDto.getProvider()) == Provider.GUEST) {
-      nickname = UUID.randomUUID().toString().substring(0, 12);
+      return UUID.randomUUID().toString().substring(0, 12);
     }
+    return joinDto.getNickname();
+  }
 
+  public void validateNickname(String nickname) {
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
     if (memberOptional.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
-    return nickname;
   }
 
   private ImageFile getProfileImageFile(MultipartFile multipartFile) {
