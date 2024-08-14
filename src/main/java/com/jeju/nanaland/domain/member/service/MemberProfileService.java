@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.member.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
 import com.jeju.nanaland.domain.common.data.Language;
@@ -99,6 +100,7 @@ public class MemberProfileService {
     return MemberResponse.ProfileDto.builder()
         .isMyProfile(isMyProfile)
         .consentItems(consentItemResponses)
+        .memberId(member.getId())
         .email(member.getEmail())
         .provider(member.getProvider().name())
         .profileImage(new ImageFileDto(
@@ -117,5 +119,11 @@ public class MemberProfileService {
     Language language = Language.valueOf(languageUpdateDto.getLocale());
 
     memberInfoDto.getMember().updateLanguage(language);
+  }
+
+  public void validateNickname(String nickname, Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+    validateNickname(nickname, member);
   }
 }
