@@ -152,7 +152,7 @@ class ReportServiceTest {
     // when
     // then
     assertThatThrownBy(
-        () -> reportService.postInfoFixReport(memberInfoDto, infoFixDto, new ArrayList<>())
+        () -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, new ArrayList<>())
     ).isInstanceOf(NotFoundException.class);
   }
 
@@ -173,7 +173,7 @@ class ReportServiceTest {
     // when
     // then
     assertThatThrownBy(
-        () -> reportService.postInfoFixReport(memberInfoDto, infoFixDto, new ArrayList<>())
+        () -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, new ArrayList<>())
     ).isInstanceOf(BadRequestException.class);
   }
 
@@ -200,7 +200,7 @@ class ReportServiceTest {
 
     // when
     // then
-    reportService.postInfoFixReport(memberInfoDto, infoFixDto, List.of(mock(MultipartFile.class)));
+    reportService.requestPostInfoFix(memberInfoDto, infoFixDto, List.of(mock(MultipartFile.class)));
   }
 
   @Test

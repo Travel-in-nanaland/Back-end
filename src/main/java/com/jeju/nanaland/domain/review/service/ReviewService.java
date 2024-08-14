@@ -222,7 +222,7 @@ public class ReviewService {
         .build();
   }
 
-  public MyReviewDetailDto getMyReviewById(MemberInfoDto memberInfoDto, Long reviewId) {
+  public MyReviewDetailDto getMyReviewDetail(MemberInfoDto memberInfoDto, Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
         NOT_FOUND_EXCEPTION.getMessage()));
     List<MyReviewImageDto> reviewImageList = reviewImageFileRepository.findAllByReview(review)
@@ -250,7 +250,7 @@ public class ReviewService {
       myReviewDetail = reviewRepository.findRestaurantMyReviewDetail(
           review.getId(), memberInfoDto);
     } else {
-      throw new RuntimeException(NOT_FOUND_EXCEPTION.getMessage());
+      throw new NotFoundException(NOT_FOUND_EXCEPTION.getMessage());
     }
     myReviewDetail.setImages(reviewImageList);
     myReviewDetail.setReviewKeywords(reviewKeywordStringList);
@@ -261,13 +261,13 @@ public class ReviewService {
   }
 
   @Transactional
-  public void deleteMyReviewById(MemberInfoDto memberInfoDto, Long reviewId) {
+  public void deleteMyReview(MemberInfoDto memberInfoDto, Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
         REVIEW_NOT_FOUND.getMessage()));
 
     // 삭제하려는 리뷰가 본인의 리뷰인지 체크
     if (!review.getMember().equals(memberInfoDto.getMember())) {
-      throw new RuntimeException(NOT_MY_REVIEW.getMessage());
+      throw new BadRequestException(NOT_MY_REVIEW.getMessage());
     }
 
     // s3에서 삭제하기 위해 reviewImageFile의 imageFile 추출
@@ -448,7 +448,7 @@ public class ReviewService {
     // 수정된 리뷰에 이미지가 있을 경우
     // MultipartFile 이미지 리스트의 크기와 editImageInfo의 newImage가 true인 것의 수가 같은지 비교
     if ((editImages != null) && (totalNewImage != editImages.size())) {
-      throw new RuntimeException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
+      throw new BadRequestException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
     }
 
     // 기존 ReviewImageFile들의 id를 저장

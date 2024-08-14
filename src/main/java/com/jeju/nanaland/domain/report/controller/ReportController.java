@@ -53,7 +53,7 @@ public class ReportController {
       )
       @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> imageList) {
 
-    reportService.postInfoFixReport(memberInfoDto, reqDto, imageList);
+    reportService.requestPostInfoFix(memberInfoDto, reqDto, imageList);
     return BaseResponse.success(POST_INFO_FIX_REPORT_SUCCESS);
   }
 

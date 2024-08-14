@@ -60,11 +60,9 @@ public class SearchService {
   private final FavoriteService favoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
-  public SearchResponse.AllCategoryDto searchAllResultDto(MemberInfoDto memberInfoDto,
-      String keyword) {
+  public SearchResponse.AllCategoryDto searchAll(MemberInfoDto memberInfoDto, String keyword) {
 
     Language locale = memberInfoDto.getLanguage();
-    Member member = memberInfoDto.getMember();
 
     // Redis에 해당 검색어 count + 1
     updateSearchCountV1(keyword, locale);
@@ -73,20 +71,17 @@ public class SearchService {
     int page = 0;
     int size = 2;
     return SearchResponse.AllCategoryDto.builder()
-        .nature(searchNatureResultDto(memberInfoDto, keyword, page, size))
-        .festival(searchFestivalResultDto(memberInfoDto, keyword, page, size))
-        .market(searchMarketResultDto(memberInfoDto, keyword, page, size))
-        .experience(searchExperienceResultDto(memberInfoDto, keyword, page, size))
-        .restaurant(searchRestaurantResultDto(memberInfoDto, keyword, page, size))
-        .nana(searchNanaResultDto(memberInfoDto, keyword, page, size))
+        .nature(searchNature(memberInfoDto, keyword, page, size))
+        .festival(searchFestival(memberInfoDto, keyword, page, size))
+        .market(searchMarket(memberInfoDto, keyword, page, size))
+        .experience(searchExperience(memberInfoDto, keyword, page, size))
+        .restaurant(searchRestaurant(memberInfoDto, keyword, page, size))
+        .nana(searchNana(memberInfoDto, keyword, page, size))
         .build();
   }
 
-  public SearchResponse.ResultDto searchNatureResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -115,11 +110,8 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchFestivalResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  public SearchResponse.ResultDto searchFestival(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -148,11 +140,8 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchExperienceResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -181,11 +170,8 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchMarketResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -213,11 +199,8 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchRestaurantResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -245,11 +228,8 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchNanaResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  public SearchResponse.ResultDto searchNana(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();

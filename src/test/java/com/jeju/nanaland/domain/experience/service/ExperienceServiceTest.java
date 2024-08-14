@@ -70,7 +70,7 @@ class ExperienceServiceTest {
         .findPostImageFiles(postId);
 
     // when
-    ExperienceDetailDto result = experienceService.getExperienceDetails(memberInfoDto, postId,
+    ExperienceDetailDto result = experienceService.getExperienceDetail(memberInfoDto, postId,
         false);
 
     // then

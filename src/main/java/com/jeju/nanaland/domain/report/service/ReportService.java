@@ -88,7 +88,7 @@ public class ReportService {
   private final SpringTemplateEngine templateEngine;
 
   @Transactional
-  public void postInfoFixReport(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
+  public void requestPostInfoFix(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
       List<MultipartFile> imageList) {
 
     Category category = Category.valueOf(reqDto.getCategory());

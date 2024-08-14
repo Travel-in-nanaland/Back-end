@@ -67,7 +67,7 @@ public class RestaurantService {
         .build();
   }
 
-  public RestaurantDetailDto getRestaurantDetails(MemberInfoDto memberInfoDto, Long postId,
+  public RestaurantDetailDto getRestaurantDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();

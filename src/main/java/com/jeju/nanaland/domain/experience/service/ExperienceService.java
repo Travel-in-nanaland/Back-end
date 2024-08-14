@@ -67,7 +67,7 @@ public class ExperienceService {
         .build();
   }
 
-  public ExperienceDetailDto getExperienceDetails(MemberInfoDto memberInfoDto, Long postId,
+  public ExperienceDetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();

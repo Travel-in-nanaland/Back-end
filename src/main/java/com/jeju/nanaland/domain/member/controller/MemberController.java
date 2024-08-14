@@ -154,7 +154,7 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommended")
-  public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
+  public BaseResponse<List<RecommendPostDto>> getRecommendPostsByType(
       @AuthMember MemberInfoDto memberInfoDto) {
 
     List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
