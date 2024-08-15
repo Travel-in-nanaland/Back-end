@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -187,7 +188,7 @@ public class ReviewController {
   @GetMapping("/search/auto-complete")
   public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam String keyword) {
+      @RequestParam String keyword) throws ExecutionException, InterruptedException {
     return BaseResponse.success(REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS,
         reviewService.getAutoCompleteSearchResultForReview(
             memberInfoDto, keyword));

@@ -51,12 +51,13 @@ import com.jeju.nanaland.global.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,7 @@ public class ReviewService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
+  private final ReviewAsyncService reviewAsyncService;
 
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
@@ -152,7 +154,7 @@ public class ReviewService {
   }
 
   public List<SearchPostForReviewDto> getAutoCompleteSearchResultForReview(
-      MemberInfoDto memberInfoDto, String keyword) {
+      MemberInfoDto memberInfoDto, String keyword) throws ExecutionException, InterruptedException {
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
     Map<String, SearchPostForReviewDto> redisMap = hashOperations.entries(
         SEARCH_AUTO_COMPLETE_HASH_KEY + memberInfoDto.getLanguage()
@@ -164,12 +166,36 @@ public class ReviewService {
     String mergedKeyword = String.join("", splitKeywordList);
 
     // 레디스에서 기존 keyword, 공백 없앤 keyword, 공백으로 분리한 keywordList로 검색한 값 title기준으로 사전 정렬
-    List<SearchPostForReviewDto> keywordSearch = new ArrayList<>(
-        searchByKeyword(redisMap, keyword));
-    List<SearchPostForReviewDto> mergedKeywordSearch = new ArrayList<>(
-        searchByKeyword(redisMap, mergedKeyword));
-    List<SearchPostForReviewDto> splitKeywordSearch = new ArrayList<>(
-        searchByKeywordList(redisMap, splitKeywordList));
+    CompletableFuture<List<SearchPostForReviewDto>> keywordCompletableFuture = reviewAsyncService.searchByKeyword(
+        redisMap, keyword);
+    CompletableFuture<List<SearchPostForReviewDto>> mergedKeywordCompletableFuture = reviewAsyncService.searchByKeyword(
+        redisMap, mergedKeyword);
+    CompletableFuture<List<SearchPostForReviewDto>> splitKeywordCompletableFuture = reviewAsyncService.searchByKeywordList(
+        redisMap, splitKeywordList);
+
+    List<SearchPostForReviewDto> keywordSearch = keywordCompletableFuture.handle(
+        (result, exception) -> {
+          if (exception != null) {
+            throw new RuntimeException(exception.getMessage());
+          }
+          return result;
+        }).get();
+
+    List<SearchPostForReviewDto> mergedKeywordSearch = mergedKeywordCompletableFuture.handle(
+        (result, exception) -> {
+          if (exception != null) {
+            throw new RuntimeException(exception.getMessage());
+          }
+          return result;
+        }).get();
+
+    List<SearchPostForReviewDto> splitKeywordSearch = splitKeywordCompletableFuture.handle(
+        (result, exception) -> {
+          if (exception != null) {
+            throw new RuntimeException(exception.getMessage());
+          }
+          return result;
+        }).get();
 
     // keywordSearch에 존재하지 않을 경우에만 결과에 추가 (중복 제거)
     for (SearchPostForReviewDto dto : mergedKeywordSearch) {
@@ -516,31 +542,31 @@ public class ReviewService {
 
   }
 
-  /**
-   * redis에서 모든 값 가져온 후 key가 keyword를 포함한 것 찾기 찾은 것들에 value->(SearchPostForReviewDto) 가져오기 title로
-   * 정렬
-   */
-  private List<SearchPostForReviewDto> searchByKeyword(Map<String, SearchPostForReviewDto> redisMap,
-      String keyword) {
-    return redisMap.entrySet().stream()
-        .filter(entry -> entry.getKey().toLowerCase().contains(keyword.toLowerCase()))
-        .map(Map.Entry::getValue)
-        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
-        .toList();
-  }
-
-  /**
-   * redis에서 모든 값 가져온 후 List<> keyword를 stream돌려서 key가 keyword를 포함한 것 찾기 찾은 것들에
-   * value->(SearchPostForReviewDto) 가져오기 title로 정렬
-   */
-  private List<SearchPostForReviewDto> searchByKeywordList(
-      Map<String, SearchPostForReviewDto> redisMap, List<String> keywords) {
-    return redisMap.entrySet().stream()
-        .filter(entry -> keywords.stream()
-            .anyMatch(keyword -> entry.getKey().toLowerCase().contains(keyword.toLowerCase())))
-        .map(Map.Entry::getValue)
-        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
-        .toList();
-  }
+//  /**
+//   * redis에서 모든 값 가져온 후 key가 keyword를 포함한 것 찾기 찾은 것들에 value->(SearchPostForReviewDto) 가져오기 title로
+//   * 정렬
+//   */
+//  private List<SearchPostForReviewDto> searchByKeyword(Map<String, SearchPostForReviewDto> redisMap,
+//      String keyword) {
+//    return redisMap.entrySet().stream()
+//        .filter(entry -> entry.getKey().toLowerCase().contains(keyword.toLowerCase()))
+//        .map(Map.Entry::getValue)
+//        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
+//        .toList();
+//  }
+//
+//  /**
+//   * redis에서 모든 값 가져온 후 List<> keyword를 stream돌려서 key가 keyword를 포함한 것 찾기 찾은 것들에
+//   * value->(SearchPostForReviewDto) 가져오기 title로 정렬
+//   */
+//  private List<SearchPostForReviewDto> searchByKeywordList(
+//      Map<String, SearchPostForReviewDto> redisMap, List<String> keywords) {
+//    return redisMap.entrySet().stream()
+//        .filter(entry -> keywords.stream()
+//            .anyMatch(keyword -> entry.getKey().toLowerCase().contains(keyword.toLowerCase())))
+//        .map(Map.Entry::getValue)
+//        .sorted(Comparator.comparing(SearchPostForReviewDto::getTitle))
+//        .toList();
+//  }
 
 }
