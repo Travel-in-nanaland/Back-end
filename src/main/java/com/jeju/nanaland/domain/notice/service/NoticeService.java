@@ -21,6 +21,7 @@ public class NoticeService {
 
   private final NoticeRepository noticeRepository;
 
+  // 공지사항 리스트 조회
   public NoticeListDto getNoticeList(MemberInfoDto memberInfoDto, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
 
@@ -33,6 +34,7 @@ public class NoticeService {
         .build();
   }
 
+  // 공지사항 상세 조회
   public NoticeDetailDto getNoticeDetail(MemberInfoDto memberInfoDto, Long id) {
     // 공지사항이 존재하는지 확인
     noticeRepository.findById(id)

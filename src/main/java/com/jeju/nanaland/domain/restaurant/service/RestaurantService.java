@@ -41,6 +41,7 @@ public class RestaurantService {
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
 
+  // 맛집 리스트 조회
   public RestaurantThumbnailDto getRestaurantList(MemberInfoDto memberInfoDto,
       List<RestaurantTypeKeyword> keywordFilterList, List<String> addressFilterList,
       int page, int size) {
@@ -54,6 +55,7 @@ public class RestaurantService {
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<RestaurantThumbnail> data = restaurantThumbnailPage.getContent();
+
     // 좋아요 여부, 리뷰 평균 추가
     for (RestaurantThumbnail restaurantThumbnail : data) {
       Long postId = restaurantThumbnail.getId();
@@ -67,6 +69,7 @@ public class RestaurantService {
         .build();
   }
 
+  // 맛집 상세 정보 조회
   public RestaurantDetailDto getRestaurantDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 

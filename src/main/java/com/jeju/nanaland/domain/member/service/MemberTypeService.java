@@ -29,6 +29,7 @@ public class MemberTypeService {
   private final RecommendRepository recommendRepository;
   private final FavoriteRepository favoriteRepository;
 
+  // 유저 타입 갱신
   @Transactional
   public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
 
@@ -38,6 +39,7 @@ public class MemberTypeService {
     member.updateTravelType(TravelType.valueOf(newTravelType));
   }
 
+  // 추천 게시물 2개 반환
   public List<RecommendPostDto> getRecommendPostsByType(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
@@ -69,6 +71,7 @@ public class MemberTypeService {
     return result;
   }
 
+  // 랜덤 추천 게시물 2개 반환
   public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
@@ -95,6 +98,7 @@ public class MemberTypeService {
     return result;
   }
 
+  // RecommendPostDto 반환
   private RecommendPostDto getRecommendPostDto(Member member, Long postId, Language locale,
       TravelType travelType, Category category) {
 
@@ -128,6 +132,7 @@ public class MemberTypeService {
     return recommendPostDto;
   }
 
+  // TravelType 랜덤
   private TravelType getRandomTravelType() {
     Random random = new Random();
     List<TravelType> values = new ArrayList<>(List.of(TravelType.values()));

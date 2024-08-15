@@ -21,6 +21,7 @@ public class HashtagService {
   private final KeywordRepository keywordRepository;
   private final HashtagRepository hashtagRepository;
 
+  // 해시태그 생성
   @Transactional
   public void registerHashtag(List<String> stringKeywordList, Language language, Category category,
       Post post) {
@@ -36,8 +37,8 @@ public class HashtagService {
       } else {
         keyword = keywordRepository.findByContent(stringKeyword)
             .orElseThrow(() -> new NotFoundException("존재하지 않는 keyword 입니다."));
-
       }
+
       //Hashtag 생성
       hashtagList.add(Hashtag.builder()
           .category(category)
@@ -51,6 +52,7 @@ public class HashtagService {
     hashtagRepository.saveAll(hashtagList);
   }
 
+  // 해시태그 존재 여부
   private boolean existKeyword(String content) {
     return keywordRepository.existsByContent(content);
   }

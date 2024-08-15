@@ -55,7 +55,7 @@ public enum ErrorCode {
   CATEGORY_NOT_FOUND(NOT_FOUND, "존재하는 카테고리를 찾을 수 없습니다."),
   REVIEW_NOT_FOUND(NOT_FOUND, "존재하는 리뷰를 찾을 수 없습니다."),
   MEMBER_REVIEW_NOT_FOUND(NOT_FOUND, "유저가 작성한 리뷰를 찾을 수 없습니다."),
-  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다."),
+  POST_NOT_FOUND(NOT_FOUND, "존재하는 게시물을 찾을 수 없습니다."),
   IMAGE_FILE_NOT_FOUND(NOT_FOUND, "존재하는 이미지를 찾을 수 없습니다."),
   NOTICE_NOT_FOUND(NOT_FOUND, "존재하는 공지사항을 찾을 수 없습니다."),
 

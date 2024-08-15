@@ -108,7 +108,7 @@ public class MemberController {
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
 
-  @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
+  @Operation(summary = "JWT 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
       + "header에 AccessToken이 아닌 RefreshToken을 담아 요청해주세요.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),

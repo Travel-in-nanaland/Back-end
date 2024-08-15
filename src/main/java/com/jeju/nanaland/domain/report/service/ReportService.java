@@ -87,6 +87,7 @@ public class ReportService {
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
 
+  // 정보 수정 제안
   @Transactional
   public void requestPostInfoFix(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
       List<MultipartFile> imageList) {
@@ -144,6 +145,7 @@ public class ReportService {
     };
   }
 
+  // 신고 기능
   @Transactional
   public void requestClaimReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
       List<MultipartFile> fileList) {
@@ -195,6 +197,7 @@ public class ReportService {
     sendEmailReport(reqDto.getEmail(), claimReport, combinedUrlList);
   }
 
+  // 상황별 요청 유효 확인
   private void validateReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
     ReportType reportType = ReportType.valueOf(reqDto.getReportType());
     // 리뷰를 신고하는 경우 - 리뷰 데이터 조회, 본인이 작성한 것인지 확인
@@ -215,8 +218,8 @@ public class ReportService {
     }
   }
 
+  // 이미 신고한 적이 있는지 확인
   private void checkExistingReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
-    // 이미 신고한 적이 있는지 확인
     Optional<ClaimReport> claimReportOptional = claimReportRepository.findByMemberAndIdAndReportType(
         memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
 
@@ -225,6 +228,7 @@ public class ReportService {
     }
   }
 
+  // 이미지 저장
   private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
       String directory) {
     List<String> imageUrlList = new ArrayList<>();
@@ -274,6 +278,7 @@ public class ReportService {
     return imageFileList;
   }
 
+  // 동영상 저장
   private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ClaimReport report,
       String directory) {
     List<String> videoUrlList = new ArrayList<>();
@@ -306,6 +311,7 @@ public class ReportService {
     return videoFileList;
   }
 
+  // 메이 전송
   private void sendEmailReport(String email, Object report, List<String> imageUrlList) {
     try {
       MimeMessage mimeMessage = createReportMail(email, report, imageUrlList);
@@ -316,6 +322,7 @@ public class ReportService {
     }
   }
 
+  // 메일 생성
   private MimeMessage createReportMail(String memberEmail, Object report, List<String> imageUrlList)
       throws MessagingException, UnsupportedEncodingException {
     MimeMessage message = javaMailSender.createMimeMessage();

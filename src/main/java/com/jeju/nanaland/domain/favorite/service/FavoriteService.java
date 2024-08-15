@@ -36,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class FavoriteService {
 
   private final FavoriteRepository favoriteRepository;
-
   private final NanaRepository nanaRepository;
   private final NatureRepository natureRepository;
   private final ExperienceRepository experienceRepository;
@@ -44,6 +43,7 @@ public class FavoriteService {
   private final MarketRepository marketRepository;
   private final RestaurantRepository restaurantRepository;
 
+  // 전체 찜리스트 조회
   public FavoriteThumbnailDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page, int size) {
 
     Member member = memberInfoDto.getMember();
@@ -69,6 +69,7 @@ public class FavoriteService {
         .build();
   }
 
+  // 카테고리별 찜리스트 조회
   public FavoriteThumbnailDto getCategoryFavoriteList(MemberInfoDto memberInfoDto,
       Category categoryContent, int page, int size) {
 
@@ -87,6 +88,7 @@ public class FavoriteService {
         .build();
   }
 
+  // 좋아요 토글
   @Transactional
   public FavoriteResponse.StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto,
       FavoriteRequest.LikeToggleDto likeToggleDto) {
@@ -134,6 +136,7 @@ public class FavoriteService {
     return favorites.stream().map(favorite -> favorite.getPost().getId()).toList();
   }
 
+  // 좋아요 여부 조회
   public boolean isPostInFavorite(Member member, Category category, Long id) {
     Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
         member, category, id);
@@ -141,6 +144,7 @@ public class FavoriteService {
     return favoriteOptional.isPresent();
   }
 
+  // 카테고리별 게시물 썸네일 정보 조회
   private ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
       Category category) {
     return switch (category) {
@@ -154,6 +158,7 @@ public class FavoriteService {
     };
   }
 
+  // 카테고리별 게시물 썸네일 정보 조회 (페이징)
   private Page<ThumbnailDto> getThumbnailDtoPage(Member member, Language locale, Pageable pageable,
       Category categoryContent) {
     return switch (categoryContent) {
@@ -167,6 +172,7 @@ public class FavoriteService {
     };
   }
 
+  // 게시물 조회
   private Post findPostIfExist(Long postId, Category category) {
     return switch (category) {
       case NANA -> nanaRepository.findById(postId)

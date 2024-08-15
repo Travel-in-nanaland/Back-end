@@ -47,8 +47,7 @@ public class EnumValidator implements ConstraintValidator<EnumValid, Object> {
 
   private boolean isValidStringValue(String value) {
     if (ignoreCase) {
-      return acceptedValues.stream()
-          .anyMatch(enumValue -> enumValue.equalsIgnoreCase(value));
+      return acceptedValues.stream().anyMatch(enumValue -> enumValue.equalsIgnoreCase(value));
     } else {
       return acceptedValues.contains(value);
     }

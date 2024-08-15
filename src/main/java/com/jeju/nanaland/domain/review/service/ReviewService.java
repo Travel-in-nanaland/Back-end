@@ -85,6 +85,7 @@ public class ReviewService {
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
 
+  // 게시물 별 리뷰 리스트 조회
   public ReviewListDto getReviewList(MemberInfoDto memberInfoDto, Category category, Long id,
       int page, int size) {
     if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
@@ -95,6 +96,7 @@ public class ReviewService {
     Page<ReviewDetailDto> reviewListByPostId = reviewRepository.findReviewListByPostId(
         memberInfoDto, category, id, pageable);
 
+    // 게시물 전체 평균 점수
     Double totalAvgRating = reviewRepository.findTotalRatingAvg(category, id);
 
     return ReviewListDto.builder()
@@ -104,6 +106,7 @@ public class ReviewService {
         .build();
   }
 
+  // 리뷰 생성
   @Transactional
   public void saveReview(MemberInfoDto memberInfoDto, Long id, Category category,
       CreateReviewDto createReviewDto,
@@ -151,6 +154,7 @@ public class ReviewService {
     }
   }
 
+  // 리뷰를 위한 게시글 검색 자동완성
   public List<SearchPostForReviewDto> getAutoCompleteSearchResultForReview(
       MemberInfoDto memberInfoDto, String keyword) {
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
@@ -158,7 +162,7 @@ public class ReviewService {
         SEARCH_AUTO_COMPLETE_HASH_KEY + memberInfoDto.getLanguage()
             .name()); // 여기 KEY를 나중에 language를 붙이면 될듯
 
-    // 태호 박물관 -> {"태호", "박물관"}
+    // 태호 박물관 -> "태호", "박물관"
     List<String> splitKeywordList = Arrays.asList(keyword.split(" "));
     // 태호 박물관 -> 태호박물관
     String mergedKeyword = String.join("", splitKeywordList);
@@ -185,7 +189,7 @@ public class ReviewService {
     return keywordSearch;
   }
 
-
+  // 리뷰 좋아요 토글
   @Transactional
   public ReviewStatusDto toggleReviewHeart(MemberInfoDto memberInfoDto, Long id) {
 
@@ -222,6 +226,7 @@ public class ReviewService {
         .build();
   }
 
+  // 내가 쓴 리뷰 상세 조회
   public MyReviewDetailDto getMyReviewDetail(MemberInfoDto memberInfoDto, Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
         NOT_FOUND_EXCEPTION.getMessage()));
@@ -237,18 +242,15 @@ public class ReviewService {
     List<ReviewTypeKeyword> reviewKeywordStringList = reviewKeywordRepository.findAllByReview(
             review)
         .stream()
-        .map(
-            ReviewKeyword::getReviewTypeKeyword)
+        .map(ReviewKeyword::getReviewTypeKeyword)
         .toList();
     Category category = review.getCategory();
     MyReviewDetailDto myReviewDetail;
 
     if (category.equals(Category.EXPERIENCE)) {
-      myReviewDetail = reviewRepository.findExperienceMyReviewDetail(
-          review.getId(), memberInfoDto);
+      myReviewDetail = reviewRepository.findExperienceMyReviewDetail(review.getId(), memberInfoDto);
     } else if (category.equals(Category.RESTAURANT)) {
-      myReviewDetail = reviewRepository.findRestaurantMyReviewDetail(
-          review.getId(), memberInfoDto);
+      myReviewDetail = reviewRepository.findRestaurantMyReviewDetail(review.getId(), memberInfoDto);
     } else {
       throw new NotFoundException(NOT_FOUND_EXCEPTION.getMessage());
     }
@@ -256,10 +258,9 @@ public class ReviewService {
     myReviewDetail.setReviewKeywords(reviewKeywordStringList);
 
     return myReviewDetail;
-
-
   }
 
+  // 내가 쓴 리뷰 삭제
   @Transactional
   public void deleteMyReview(MemberInfoDto memberInfoDto, Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException(
@@ -291,13 +292,13 @@ public class ReviewService {
     }
   }
 
+  // 내가 쓴 리뷰 수정
   @Transactional
   public void updateMyReview(MemberInfoDto memberInfoDto, Long reviewId,
       List<MultipartFile> imageList, EditReviewDto editReviewDto) {
     // 유저가 쓴 리뷰 조회
     Review review = reviewRepository.findReviewByIdAndMember(reviewId, memberInfoDto.getMember())
-        .orElseThrow(() -> new NotFoundException(
-            MEMBER_REVIEW_NOT_FOUND.getMessage()));
+        .orElseThrow(() -> new NotFoundException(MEMBER_REVIEW_NOT_FOUND.getMessage()));
 
     // rating 업데이트 되었으면 수정
     if (review.getRating() != editReviewDto.getRating()) {
@@ -315,6 +316,7 @@ public class ReviewService {
     updateReviewImages(review, editReviewDto, imageList);
   }
 
+  // 회원 별 리뷰 리스트 조회
   public MemberReviewListDto getReviewListByMember(MemberInfoDto memberInfoDto, Long memberId,
       int page, int size) {
     Member member = memberInfoDto.getMember();
@@ -338,6 +340,7 @@ public class ReviewService {
         .build();
   }
 
+  // 회원 별 리뷰 썸네일 리스트 조회
   public MemberReviewPreviewDto getReviewPreviewByMember(MemberInfoDto memberInfoDto,
       Long memberId) {
     Member member = memberInfoDto.getMember();

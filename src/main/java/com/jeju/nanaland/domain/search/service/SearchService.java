@@ -60,6 +60,7 @@ public class SearchService {
   private final FavoriteService favoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
+  // 카테고리 검색
   public SearchResponse.AllCategoryDto searchAll(MemberInfoDto memberInfoDto, String keyword) {
 
     Language locale = memberInfoDto.getLanguage();
@@ -80,6 +81,7 @@ public class SearchService {
         .build();
   }
 
+  // 자연 검색
   public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -110,6 +112,7 @@ public class SearchService {
         .build();
   }
 
+  // 축제 검색
   public SearchResponse.ResultDto searchFestival(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -140,6 +143,7 @@ public class SearchService {
         .build();
   }
 
+  // 이색체험 검색
   public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -170,6 +174,7 @@ public class SearchService {
         .build();
   }
 
+  // 전통시장 검색
   public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -199,6 +204,7 @@ public class SearchService {
         .build();
   }
 
+  // 제주 맛집 검색
   public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -228,6 +234,7 @@ public class SearchService {
         .build();
   }
 
+  // 나나스픽 검색
   public SearchResponse.ResultDto searchNana(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -257,6 +264,7 @@ public class SearchService {
         .build();
   }
 
+  // 인기 검색어 조회
   public List<String> getPopularSearch(Language locale) {
     String language = locale.name();
 
@@ -328,6 +336,7 @@ public class SearchService {
     redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
   }
 
+  // 검색량 UP 게시물 조회
   public List<SearchVolumeDto> getTopSearchVolumePosts(MemberInfoDto memberInfoDto) {
     List<String> topSearchVolumeList = getTopSearchVolumeList();
 

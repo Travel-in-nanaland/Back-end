@@ -3,7 +3,6 @@ package com.jeju.nanaland.domain.market.service;
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
@@ -31,22 +30,22 @@ public class MarketService {
   private final MarketRepository marketRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
-  private final ImageFileRepository imageFileRepository;
   private final ImageFileService imageFileService;
 
+  // 전통시장 리스트 조회
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList, int page, int size) {
 
-    // default : page = 0, size = 12
     Pageable pageable = PageRequest.of(page, size);
     Language locale = memberInfoDto.getLanguage();
     Page<MarketThumbnail> marketThumbnailPage = marketRepository.findMarketThumbnails(locale,
         addressFilterList, pageable);
 
+    // 좋아요 여부
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
-
     List<MarketThumbnail> data = marketThumbnailPage.getContent();
+
     // favorite에 해당 id가 존재하면 isFavorite 필드 true, 아니라면 false
     for (MarketThumbnail marketThumbnail : data) {
       marketThumbnail.setFavorite(favoriteIds.contains(marketThumbnail.getId()));
@@ -58,6 +57,7 @@ public class MarketService {
         .build();
   }
 
+  // 전통시장 상세 정보 조회
   public MarketResponse.MarketDetailDto getMarketDetail(MemberInfoDto memberInfoDto, Long id,
       boolean isSearch) {
 

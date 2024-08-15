@@ -38,6 +38,7 @@ public class MemberProfileService {
   private final S3ImageService s3ImageService;
   private final MemberRepository memberRepository;
 
+  // 유저 프로필 수정
   @Transactional
   public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
       MultipartFile multipartFile) {
@@ -61,6 +62,7 @@ public class MemberProfileService {
     member.updateProfile(profileUpdateDto);
   }
 
+  // 닉네임 중복 확인
   public void validateNickname(String nickname, Member member) {
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
     if (memberOptional.isPresent() && !memberOptional.get().equals(member)) {
@@ -68,8 +70,9 @@ public class MemberProfileService {
     }
   }
 
+  // 유저 프로필 조회
   public MemberResponse.ProfileDto getMemberProfile(MemberInfoDto memberInfoDto, Long id) {
-
+    // id가 본인과 일치하지 않는다면, 타인 프로필 조회
     Member member = memberInfoDto.getMember();
     boolean isMyProfile = true;
     if (id != null) {
@@ -80,6 +83,7 @@ public class MemberProfileService {
       }
     }
 
+    // 해시태그 조회
     TravelType travelType = member.getTravelType();
     Language language = member.getLanguage();
     String typeName = travelType.getTypeNameWithLocale(language);
@@ -88,6 +92,7 @@ public class MemberProfileService {
       hashtags = travelType.getHashtagsWithLanguage(language);
     }
 
+    // 이용약관 동의 여부 조회
     List<ConsentItemResponse> consentItemResponses = new ArrayList<>();
     if (isMyProfile) {
       consentItemResponses = memberRepository.findMemberConsentByMember(
@@ -114,6 +119,7 @@ public class MemberProfileService {
         .build();
   }
 
+  // 언어 설정 변경
   @Transactional
   public void updateLanguage(MemberInfoDto memberInfoDto, LanguageUpdateDto languageUpdateDto) {
     Language language = Language.valueOf(languageUpdateDto.getLocale());
@@ -121,6 +127,7 @@ public class MemberProfileService {
     memberInfoDto.getMember().updateLanguage(language);
   }
 
+  // 닉네임 중복 확인
   public void validateNickname(String nickname, Long memberId) {
     Member member = memberRepository.findById(memberId)
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));

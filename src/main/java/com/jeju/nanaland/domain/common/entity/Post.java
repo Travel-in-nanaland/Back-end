@@ -28,7 +28,7 @@ public abstract class Post extends BaseEntity {
   @NotNull
   private Long priority;
 
-  public Post(ImageFile firstImageFile, Long priority) {
+  protected Post(ImageFile firstImageFile, Long priority) {
     this.firstImageFile = firstImageFile;
     this.priority = priority;
   }
