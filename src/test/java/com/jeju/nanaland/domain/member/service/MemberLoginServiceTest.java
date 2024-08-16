@@ -411,7 +411,7 @@ class MemberLoginServiceTest {
     doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
 
     // when
-    memberLoginService.logout(memberInfoDto, "bearer refreshToken", "");
+    memberLoginService.logout(memberInfoDto, "bearer refreshToken", "token");
 
     // then
     verify(jwtUtil, times(1)).resolveToken(any());
