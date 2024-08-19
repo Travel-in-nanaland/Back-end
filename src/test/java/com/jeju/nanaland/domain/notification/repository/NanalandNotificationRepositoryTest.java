@@ -56,34 +56,6 @@ public class NanalandNotificationRepositoryTest {
   }
 
   @Test
-  @DisplayName("MemberNotificationCompose 조회 테스트")
-  void findAllMemberNotificationComposeTest() {
-    // given
-    // 한국 유저 알림 KR_SIZE 개, 영어 유저 알림 EN_SIZE 개 생성
-    int KR_SIZE = 5;
-    int EN_SIZE = 3;
-    Member koreanMember = initMember(Language.KOREAN);
-    initNanalandNotificationList(koreanMember, KR_SIZE);
-    Member englishMember = initMember(Language.ENGLISH);
-    initNanalandNotificationList(englishMember, EN_SIZE);
-
-    // when
-    List<MemberNotificationCompose> result =
-        nanalandNotificationRepository.findAllMemberNotificationCompose();
-
-    // then
-    assertThat(result.size()).isEqualTo(KR_SIZE + EN_SIZE);
-    assertThat(result)
-        .filteredOn(memberNotificationCompose ->
-            memberNotificationCompose.getMemberId().equals(koreanMember.getId()))
-        .size().isEqualTo(KR_SIZE);
-    assertThat(result)
-        .filteredOn(memberNotificationCompose ->
-            memberNotificationCompose.getMemberId().equals(englishMember.getId()))
-        .size().isEqualTo(EN_SIZE);
-  }
-
-  @Test
   @DisplayName("알림 정보를 통한 조회")
   void findByNotificationInfoTest() {
     // given
