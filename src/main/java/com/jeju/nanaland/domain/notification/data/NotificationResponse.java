@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.notification.data;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,5 +54,8 @@ public class NotificationResponse {
 
     @Schema(description = "알림 내용")
     private String content;
+
+    @Schema(description = "생성 시간")
+    private LocalDateTime createdAt;
   }
 }

@@ -67,6 +67,7 @@ public class NotificationService {
             .contentId(notification.getContentId())
             .title(notification.getTitle())
             .content(notification.getContent())
+            .createdAt(notification.getCreatedAt())
             .build()
         ).toList();
 
