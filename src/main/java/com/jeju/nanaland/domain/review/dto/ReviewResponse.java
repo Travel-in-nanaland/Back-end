@@ -43,6 +43,8 @@ public class ReviewResponse {
     private Long id;
     @Schema(description = "작성자 id")
     private Long memberId;
+    @Schema(description = "본인이 쓴 리뷰인지")
+    private boolean isMyReview;
     @Schema(description = "작성자 닉네임")
     private String nickname;
     @Schema(description = "작성자 프로필 사진")
@@ -65,8 +67,8 @@ public class ReviewResponse {
     private Set<String> reviewTypeKeywords;
 
     @QueryProjection
-    public ReviewDetailDto(Long id, Long memberId, String nickname, ImageFileDto imageFileDto,
-        Long memberReviewCount, Integer rating, String content,
+    public ReviewDetailDto(Long id, Long memberId, String nickname,
+        ImageFileDto imageFileDto, Long memberReviewCount, Integer rating, String content,
         LocalDateTime createdAt, Long heartCount, boolean isReviewHeart) {
       this.id = id;
       this.memberId = memberId;

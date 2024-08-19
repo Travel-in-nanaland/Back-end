@@ -1,5 +1,11 @@
 package com.jeju.nanaland.domain.report.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_ALREADY_REPORTED;
+import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOWED;
+
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
@@ -11,26 +17,27 @@ import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.report.dto.ReportRequest;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.ReviewReportDto;
+import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.InfoFixReportImageFile;
-import com.jeju.nanaland.domain.report.entity.review.ClaimType;
-import com.jeju.nanaland.domain.report.entity.review.ReviewReport;
-import com.jeju.nanaland.domain.report.entity.review.ReviewReportImageFile;
-import com.jeju.nanaland.domain.report.entity.review.ReviewReportVideoFile;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportImageFile;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportVideoFile;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
+import com.jeju.nanaland.domain.report.entity.claim.ReportType;
+import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
+import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
+import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
-import com.jeju.nanaland.domain.report.repository.ReviewReportImageFileRepository;
-import com.jeju.nanaland.domain.report.repository.ReviewReportRepository;
-import com.jeju.nanaland.domain.report.repository.ReviewReportVideoFileRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import jakarta.mail.Message.RecipientType;
@@ -40,6 +47,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,10 +68,11 @@ public class ReportService {
   // TODO: 관리자 계정으로 바꾸기
   private static final String ADMIN_EMAIL = "jyajoo1020@gmail.com";
   private static final String INFO_FIX_REPORT_IMAGE_DIRECTORY = "/info_fix_report_images";
-  private static final String REVIEW_REPORT_IMAGE_DIRECTORY = "/review_report_files";
-  private final ReviewReportVideoFileRepository reviewReportVideoFileRepository;
-  private final ReviewReportRepository reviewReportRepository;
-  private final ReviewReportImageFileRepository reviewReportImageFileRepository;
+  private static final String CLAIM_REPORT_FILE_DIRECTORY = "/claim_report_files";
+  private final MemberRepository memberRepository;
+  private final ClaimReportVideoFileRepository claimReportVideoFileRepository;
+  private final ClaimReportRepository claimReportRepository;
+  private final ClaimReportImageFileRepository claimReportImageFileRepository;
   private final ReviewRepository reviewRepository;
   private final InfoFixReportRepository infoFixReportRepository;
   private final InfoFixReportImageFileRepository infoFixReportImageFileRepository;
@@ -90,7 +99,7 @@ public class ReportService {
 
     // 이미지 5장 이상 전처리
     if (imageList != null && imageList.size() > MAX_IMAGE_COUNT) {
-      throw new BadRequestException(ErrorCode.IMAGE_BAD_REQUEST.getMessage());
+      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
     }
 
     // 해당 게시물 정보 가져오기
@@ -136,25 +145,25 @@ public class ReportService {
   }
 
   @Transactional
-  public void requestReviewReport(MemberInfoDto memberInfoDto, ReviewReportDto reqDto,
+  public void requestClaimReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
       List<MultipartFile> fileList) {
-    // 리뷰 조회
-    Review review = reviewRepository.findById(reqDto.getReviewId())
-        .orElseThrow(() -> new NotFoundException(ErrorCode.REVIEW_NOT_FOUND.getMessage()));
+    validateReportRequest(memberInfoDto, reqDto);
+    checkExistingReport(memberInfoDto, reqDto);
 
     // 파일 개수 확인
     if (fileList != null && fileList.size() > MAX_IMAGE_COUNT) {
-      throw new BadRequestException(ErrorCode.IMAGE_BAD_REQUEST.getMessage());
+      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
     }
 
-    // reviewReport 저장
-    ReviewReport reviewReport = ReviewReport.builder()
+    // claimReport 저장
+    ClaimReport claimReport = ClaimReport.builder()
         .member(memberInfoDto.getMember())
-        .review(review)
+        .referenceId(reqDto.getId())
+        .reportType(ReportType.valueOf(reqDto.getReportType()))
         .claimType(ClaimType.valueOf(reqDto.getClaimType()))
         .content(reqDto.getContent())
         .build();
-    reviewReportRepository.save(reviewReport);
+    claimReportRepository.save(claimReport);
 
     // 이미지, 동영상 분리
     List<MultipartFile> imageFiles = new ArrayList<>();
@@ -172,18 +181,48 @@ public class ReportService {
       }
     }
 
-    // reviewReportImageFile 이미지 저장
-    List<String> imageUrlList = saveImagesAndGetUrls(imageFiles, reviewReport,
-        REVIEW_REPORT_IMAGE_DIRECTORY);
+    // claimReportImageFile 이미지 저장
+    List<String> imageUrlList = saveImagesAndGetUrls(imageFiles, claimReport,
+        CLAIM_REPORT_FILE_DIRECTORY);
 
-    // reviewReportVideoFile 동영상 저장
-    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, reviewReport,
-        REVIEW_REPORT_IMAGE_DIRECTORY);
+    // claimReportVideoFile 동영상 저장
+    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, claimReport,
+        CLAIM_REPORT_FILE_DIRECTORY);
 
     // 이메일 전송
     List<String> combinedUrlList = new ArrayList<>(imageUrlList);
     combinedUrlList.addAll(videoUrlList);
-    sendEmailReport(reqDto.getEmail(), reviewReport, combinedUrlList);
+    sendEmailReport(reqDto.getEmail(), claimReport, combinedUrlList);
+  }
+
+  private void validateReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
+    ReportType reportType = ReportType.valueOf(reqDto.getReportType());
+    // 리뷰를 신고하는 경우 - 리뷰 데이터 조회, 본인이 작성한 것인지 확인
+    if (reportType == ReportType.REVIEW) {
+      Review review = reviewRepository.findById(reqDto.getId())
+          .orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND.getMessage()));
+      if (review.getMember().equals(memberInfoDto.getMember())) {
+        throw new BadRequestException(SELF_REPORT_NOT_ALLOWED.getMessage());
+      }
+    }
+    // 유저를 신고하는 경우 - 본인을 신고하는 것인지 확인, 유저 데이터 조회
+    else if (reportType == ReportType.MEMBER) {
+      if (memberInfoDto.getMember().getId().equals(reqDto.getId())) {
+        throw new BadRequestException(SELF_REPORT_NOT_ALLOWED.getMessage());
+      }
+      memberRepository.findById(reqDto.getId())
+          .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+    }
+  }
+
+  private void checkExistingReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
+    // 이미 신고한 적이 있는지 확인
+    Optional<ClaimReport> claimReportOptional = claimReportRepository.findByMemberAndIdAndReportType(
+        memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
+
+    if (claimReportOptional.isPresent()) {
+      throw new BadRequestException(REVIEW_ALREADY_REPORTED.getMessage());
+    }
   }
 
   private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
@@ -201,11 +240,11 @@ public class ReportService {
         imageUrlList = infoFixReportImageFiles.stream()
             .map(file -> file.getImageFile().getOriginUrl())
             .collect(Collectors.toList());
-      } else if (report instanceof ReviewReport) {
-        List<ReviewReportImageFile> reviewReportImageFiles = saveImageFiles.stream()
-            .map(o -> (ReviewReportImageFile) o).collect(Collectors.toList());
-        reviewReportImageFileRepository.saveAll(reviewReportImageFiles);
-        imageUrlList = reviewReportImageFiles.stream()
+      } else if (report instanceof ClaimReport) {
+        List<ClaimReportImageFile> claimReportImageFiles = saveImageFiles.stream()
+            .map(o -> (ClaimReportImageFile) o).collect(Collectors.toList());
+        claimReportImageFileRepository.saveAll(claimReportImageFiles);
+        imageUrlList = claimReportImageFiles.stream()
             .map(file -> file.getImageFile().getOriginUrl())
             .collect(Collectors.toList());
       }
@@ -225,27 +264,27 @@ public class ReportService {
             .imageFile(imageFile)
             .infoFixReport(infoFixReport)
             .build());
-      } else if (report instanceof ReviewReport reviewReport) {
-        imageFileList.add(ReviewReportImageFile.builder()
+      } else if (report instanceof ClaimReport claimReport) {
+        imageFileList.add(ClaimReportImageFile.builder()
             .imageFile(imageFile)
-            .reviewReport(reviewReport)
+            .claimReport(claimReport)
             .build());
       }
     }
     return imageFileList;
   }
 
-  private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ReviewReport report,
+  private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ClaimReport report,
       String directory) {
     List<String> videoUrlList = new ArrayList<>();
     if (videoFiles != null) {
       // 동영상 파일 저장
-      List<ReviewReportVideoFile> reviewReportImageFiles = saveVideoFiles(videoFiles, report,
+      List<ClaimReportVideoFile> claimReportVideoFiles = saveVideoFiles(videoFiles, report,
           directory);
 
       // 동영상 연관 관계 저장 && url 반환
-      reviewReportVideoFileRepository.saveAll(reviewReportImageFiles);
-      videoUrlList = reviewReportImageFiles.stream()
+      claimReportVideoFileRepository.saveAll(claimReportVideoFiles);
+      videoUrlList = claimReportVideoFiles.stream()
           .map(file -> file.getVideoFile().getOriginUrl())
           .collect(Collectors.toList());
     }
@@ -253,15 +292,15 @@ public class ReportService {
   }
 
   // 동영상 파일 저장 && 동영상 연관 관계 생성
-  private List<ReviewReportVideoFile> saveVideoFiles(List<MultipartFile> videoFiles,
-      ReviewReport report, String directory) {
-    List<ReviewReportVideoFile> videoFileList = new ArrayList<>();
+  private List<ClaimReportVideoFile> saveVideoFiles(List<MultipartFile> videoFiles,
+      ClaimReport report, String directory) {
+    List<ClaimReportVideoFile> videoFileList = new ArrayList<>();
     for (MultipartFile video : videoFiles) {
       VideoFile videoFile = videoFileService.uploadAndSaveVideoFile(video, directory);
 
-      videoFileList.add(ReviewReportVideoFile.builder()
+      videoFileList.add(ClaimReportVideoFile.builder()
           .videoFile(videoFile)
-          .reviewReport(report)
+          .claimReport(report)
           .build());
     }
     return videoFileList;
@@ -295,14 +334,14 @@ public class ReportService {
       context.setVariable("content", infoFixReport.getContent());
       context.setVariable("email", infoFixReport.getEmail());
       templateName = "info-fix-report";
-    } else if (report instanceof ReviewReport reviewReport) {
+    } else if (report instanceof ClaimReport claimReport) {
       message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
-      context.setVariable("claim_type", reviewReport.getClaimType());
-      context.setVariable("review_id", reviewReport.getReview().getId());
-      context.setVariable("review_content", reviewReport.getReview().getContent());
-      context.setVariable("content", reviewReport.getContent());
+      context.setVariable("report_type", claimReport.getReportType());
+      context.setVariable("claim_type", claimReport.getClaimType());
+      context.setVariable("id", claimReport.getId());
+      context.setVariable("content", claimReport.getContent());
       context.setVariable("email", memberEmail);
-      templateName = "review-report";
+      templateName = "claim-report";
     }
 
     for (int i = 0; i < imageUrlList.size(); i++) {

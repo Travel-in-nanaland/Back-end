@@ -34,7 +34,7 @@ public enum SuccessCode {
   REISSUE_TOKEN_SUCCESS(OK, "AccessToken, RefreshToken이 재발급되었습니다."),
   LOGOUT_SUCCESS(OK, "로그아웃 성공"),
   WITHDRAWAL_SUCCESS(OK, "회원 탈퇴 성공"),
-
+  VALID_NICKNAME_SUCCESS(OK, "닉네임이 유효합니다."),
   UPDATE_MEMBER_CONSENT_SUCCESS(OK, "이용약관 업데이트 성공"),
 
   // nana

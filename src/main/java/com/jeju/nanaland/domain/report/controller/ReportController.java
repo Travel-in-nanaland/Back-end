@@ -4,8 +4,8 @@ import static com.jeju.nanaland.global.exception.SuccessCode.POST_INFO_FIX_REPOR
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_REVIEW_REPORT_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.ReviewReportDto;
 import com.jeju.nanaland.domain.report.service.ReportService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -57,24 +57,24 @@ public class ReportController {
     return BaseResponse.success(POST_INFO_FIX_REPORT_SUCCESS);
   }
 
-  @Operation(summary = "리뷰 신고 기능")
+  @Operation(summary = "신고 기능")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "사진파일 업로드 실패 또는 관리자에게로 메일 전송 실패", content = @Content)
   })
-  @PostMapping(value = "/review",
+  @PostMapping(value = "/claim",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<String> requestReviewReport(
+  public BaseResponse<String> requestClaimReport(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart("reqDto") @Valid ReviewReportDto reqDto,
+      @RequestPart("reqDto") @Valid ClaimReportDto reqDto,
       @Parameter(
-          description = "리뷰 신고 요청 파일 리스트",
+          description = "신고 요청 파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
       )
       @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> fileList) {
-    reportService.requestReviewReport(memberInfoDto, reqDto, fileList);
+    reportService.requestClaimReport(memberInfoDto, reqDto, fileList);
     return BaseResponse.success(POST_REVIEW_REPORT_SUCCESS);
   }
 }
