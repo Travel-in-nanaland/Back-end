@@ -41,8 +41,8 @@ public class NotificationRequest {
   public static class NotificationWithTargetDto {
 
     @NotNull
-    @Schema(description = "타겟 fcm 토큰")
-    private String targetToken;
+    @Schema(description = "타겟 memberId")
+    private Long memberId;
 
     @NotNull
     @Schema(description = "알림 정보")

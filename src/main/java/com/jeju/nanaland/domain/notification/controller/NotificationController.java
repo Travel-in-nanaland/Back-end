@@ -61,10 +61,10 @@ public class NotificationController {
       @ApiResponse(responseCode = "500", description = "FCM을 통한 알림 전송 실패")
   })
   @PostMapping("/send/all")
-  public BaseResponse<String> sendNotificationToAllMember(
+  public BaseResponse<String> sendNotificationToAll(
       @RequestBody @Valid NotificationRequest.NotificationDto notificationDto) {
 
-    notificationService.sendPushNotificationToAllMembers(notificationDto);
+    notificationService.sendPushNotificationToAll(notificationDto);
     return BaseResponse.success(SEND_NOTIFICATION_SUCCESS);
   }
 
@@ -80,7 +80,7 @@ public class NotificationController {
   public BaseResponse<String> sendNotificationToAllMember(
       @RequestBody @Valid NotificationRequest.NotificationWithTargetDto reqDto) {
 
-    notificationService.sendPushNotificationToTarget(reqDto);
+    notificationService.sendPushNotificationToSingleTarget(reqDto);
     return BaseResponse.success(SEND_NOTIFICATION_SUCCESS);
   }
 }

@@ -5,8 +5,6 @@ import static com.jeju.nanaland.domain.notification.entity.QNanalandNotification
 
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.QMember;
-import com.jeju.nanaland.domain.notification.data.MemberNotificationCompose;
-import com.jeju.nanaland.domain.notification.data.QMemberNotificationCompose;
 import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.entity.eums.NotificationCategory;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -43,20 +41,6 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
         .on(QMember.member.id.eq(memberNotification.memberId));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
-  }
-
-  @Override
-  public List<MemberNotificationCompose> findAllMemberNotificationCompose() {
-    return queryFactory
-        .select(new QMemberNotificationCompose(
-            memberNotification.id,
-            memberNotification.memberId,
-            nanalandNotification.notificationCategory,
-            nanalandNotification.contentId
-        ))
-        .from(memberNotification)
-        .innerJoin(memberNotification.nanalandNotification, nanalandNotification)
-        .fetch();
   }
 
   @Override

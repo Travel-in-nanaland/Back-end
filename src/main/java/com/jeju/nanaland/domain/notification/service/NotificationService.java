@@ -7,18 +7,13 @@ import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
-import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.notification.data.MemberNotificationCompose;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationWithTargetDto;
 import com.jeju.nanaland.domain.notification.data.NotificationResponse;
@@ -30,8 +25,6 @@ import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
 import com.jeju.nanaland.domain.notification.repository.NanalandNotificationRepository;
-import com.jeju.nanaland.domain.notification.util.FavoriteNotificationUtil;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -43,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,11 +45,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final FcmTokenService fcmTokenService;
-  private final FavoriteNotificationUtil favoriteNotificationUtil;
+  private final MemberRepository memberRepository;
   private final NanalandNotificationRepository nanalandNotificationRepository;
   private final MemberNotificationRepository memberNotificationRepository;
   private final FcmTokenRepository fcmTokenRepository;
-  private final FavoriteRepository favoriteRepository;
 
   public NotificationResponse.NotificationListDto getNotificationList(MemberInfoDto memberInfoDto,
       int page, int size) {
@@ -86,7 +77,7 @@ public class NotificationService {
   }
 
   @Transactional
-  public void sendPushNotificationToAllMembers(NotificationDto notificationDto) {
+  public void sendPushNotificationToAll(NotificationDto notificationDto) {
 
     Language language = notificationDto.getLanguage();
 
@@ -136,35 +127,41 @@ public class NotificationService {
           }
         }
       }
-      // ApiFuture 에러 처리
-      catch (ExecutionException e) {
+      // ApiFuture 에러 처리, 쓰레드 인터럽트 에러 처리
+      catch (ExecutionException | InterruptedException e) {
         log.error("알림 전송 실패: {}", e.getMessage());
         throw new RuntimeException(e);
       }
-      // 쓰레드 인터럽트 에러 처리
-      catch (InterruptedException e) {
-        log.error("알림 전송 실패: {}", e.getMessage());
-        throw new RuntimeException(e);
-      }
+
     }
   }
 
   @Transactional
-  public void sendPushNotificationToTarget(NotificationWithTargetDto notificationWithTargetDto) {
+  public void sendPushNotificationToSingleTarget(
+      NotificationWithTargetDto notificationWithTargetDto) {
 
     // 타겟 토큰 조회
-    String targetToken = notificationWithTargetDto.getTargetToken();
-    FcmToken fcmToken = fcmTokenRepository.findByToken(targetToken)
-        .orElseThrow(() -> new NotFoundException("해당 토큰 정보가 없습니다."));
+    Long memberId = notificationWithTargetDto.getMemberId();
+    Member member = memberRepository.findMemberById(memberId)
+        .orElseThrow(() -> new NotFoundException("해당 유저가 없습니다."));
+    List<FcmToken> fcmTokenList = fcmTokenRepository.findAllByMember(member);
 
     // FCM 토큰 검증
-    if (!fcmTokenService.isFcmTokenExpired(fcmToken)) {
-      log.info("FCM 토큰 검증 성공");
-    } else {
-      log.error("FCM 토큰 검증 실패: {}", fcmToken.getToken());
-      // 해당 토큰 삭제
-      fcmTokenService.deleteFcmToken(fcmToken);
-      throw new BadRequestException("FCM 토큰 만료됨.");
+    List<FcmToken> validTokenList = fcmTokenList
+        .stream()
+        .filter(fcmToken -> {
+          if (!fcmTokenService.isFcmTokenExpired(fcmToken)) {
+            return true;
+          } else {
+            // 검증에 실패한 토큰 삭제
+            fcmTokenService.deleteFcmToken(fcmToken);
+            log.info("Invalid fcm token deleted: {}", fcmToken.getToken());
+            return false;
+          }
+        })
+        .toList();
+    if (fcmTokenList.isEmpty()) {
+      throw new NotFoundException("해당 유저의 유효한 fcm 토큰 정보가 없습니다.");
     }
 
     // 동일한 알림 정보가 있다면 가져오고 없다면 생성
@@ -175,72 +172,26 @@ public class NotificationService {
     }
 
     // 메세지 만들기
-    Message message = makeMessage(notificationWithTargetDto);
+    MulticastMessage message = makeMulticastMessage(validTokenList, notificationDto);
 
     // 메세지 전송
     try {
-      String response = FirebaseMessaging.getInstance().send(message);
-      log.info("알림 전송 성공 {}", response);
-    } catch (FirebaseMessagingException e) {
-      log.error("알림 전송 실패 {}: {}", e.getErrorCode(), e.getMessage());
-      fcmTokenService.deleteFcmToken(fcmToken);
+      ApiFuture<BatchResponse> responseApiFuture = FirebaseMessaging.getInstance()
+          .sendEachForMulticastAsync(message);
+      BatchResponse batchResponse = responseApiFuture.get();
+      int successCount = batchResponse.getSuccessCount();
+      log.info("알림 전송 성공: {}개", successCount);
+    }
+    // ApiFuture 에러 처리, 쓰레드 인터럽트 에러 처리
+    catch (ExecutionException | InterruptedException e) {
+      log.error("알림 전송 실패: {}", e.getMessage());
       throw new RuntimeException(e);
     }
 
-    // 전송한 알림 정보를 유저와 매핑
-    Member member = fcmToken.getMember();
     // 전송한 알림이 매핑이 안되어 있다면 추가
     if (getMemberNotification(member, nanalandNotification) == null) {
       saveMemberNotification(member, nanalandNotification);
     }
-  }
-
-  // 매일 10시에 나의 찜 알림 대상에게 알림 전송
-  @Transactional
-  @Scheduled(cron = "0 0 10 * * *")
-  public void sendMyFavoriteNotification() {
-
-    LocalDateTime now = LocalDateTime.now();
-    List<Favorite> allFavorites = favoriteRepository.findAll();
-
-    // 한 달 이상 전에 생성되었고, 생성된 이후 같은 게시물에 대해 5개 이상의 좋아요가 있을 때
-    List<Favorite> filteredFavorites = allFavorites.stream()
-        .filter(favorite -> {
-              LocalDateTime createdAt = favorite.getCreatedAt();
-              Long postId = favorite.getPost().getId();
-
-              return favorite.getCreatedAt().isBefore(now.minusMonths(1)) &&
-                  countSamePostIdCreatedAfter(allFavorites, createdAt, postId) >= 5;
-            }
-        ).toList();
-
-    for (Favorite favorite : filteredFavorites) {
-      Long postId = favorite.getPost().getId();
-      Category category = favorite.getCategory();
-      Member member = favorite.getMember();
-      Language language = member.getLanguage();
-
-      ThumbnailDto thumbnailDto = switch (category) {
-        case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, language);
-        case NATURE -> favoriteRepository.findNatureThumbnailByPostId(member, postId, language);
-        case MARKET -> favoriteRepository.findMarketThumbnailByPostId(member, postId, language);
-        case EXPERIENCE ->
-            favoriteRepository.findExperienceThumbnailByPostId(member, postId, language);
-        case FESTIVAL -> favoriteRepository.findFestivalThumbnailByPostId(member, postId, language);
-        case RESTAURANT ->
-            favoriteRepository.findRestaurantThumbnailByPostId(member, postId, language);
-        default -> null;
-      };
-
-      if (thumbnailDto != null) {
-        String title = thumbnailDto.getTitle();
-        String notificationTitle = favoriteNotificationUtil.getNotificationTitle(title, language);
-      }
-
-    }
-    // 알림id, memberId, contentCategory, contentId 모두 조회
-    List<MemberNotificationCompose> memberNotificationComposes =
-        nanalandNotificationRepository.findAllMemberNotificationCompose();
   }
 
   private MulticastMessage makeMulticastMessage(List<FcmToken> tokenList,
@@ -256,40 +207,6 @@ public class NotificationService {
         .putData("clickEvent", notificationDto.getCategory().getClickEvent().name())
         .putData("category", notificationDto.getCategory().name())
         .putData("contentId", notificationDto.getContentId().toString())
-        // 공통 알림 정보 - notification
-        .setNotification(
-            Notification.builder()
-                .setTitle(notificationDto.getTitle())
-                .setBody(notificationDto.getContent())
-                .build())
-        // Android 전용 설정 - android
-        .setAndroidConfig(
-            AndroidConfig.builder()
-                .setNotification(
-                    AndroidNotification.builder()
-                        .build()
-                ).build())
-        // IOS 전용 설정 - apns
-        .setApnsConfig(
-            ApnsConfig.builder()
-                .setAps(
-                    Aps.builder()
-                        .build()
-                ).build())
-        .build();
-  }
-
-  private Message makeMessage(NotificationWithTargetDto notificationWithTargetDto) {
-
-    NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
-
-    return Message.builder()
-        // 수신 측 토큰 정보 - token
-        .setToken(notificationWithTargetDto.getTargetToken())
-        // 알림 내용 정보 - data
-        .putData("clickEvent", notificationDto.getCategory().getClickEvent().name())
-        .putData("category", notificationDto.getCategory().name())
-        .putData("contentId", notificationDto.toString())
         // 공통 알림 정보 - notification
         .setNotification(
             Notification.builder()
