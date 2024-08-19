@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.entity;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -31,5 +32,6 @@ public class RecommendTrans extends BaseEntity {
   private Language language;
 
   @NotNull
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String introduction;
 }
