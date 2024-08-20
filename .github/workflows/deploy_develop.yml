@@ -51,6 +51,13 @@ jobs:
           echo "${{ secrets.DEV_EXECUTE_DEPLOY_SH }}" > scripts/execute-deploy.sh
           cat scripts/execute-deploy.sh
           
+      # 2.5) secret 설정한 firesbase json key 등록
+      - name: Set firebase json key
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_JSON_KEY }}" | base64 --decode > src/main/resources/firebase/nanaland-firebase-key.json
+          find src
+          
           
           # - name: Set up MariaDB 10
           #   uses: getong/mariadb-action@v1.1
