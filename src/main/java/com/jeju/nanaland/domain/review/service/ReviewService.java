@@ -5,7 +5,6 @@ import static com.jeju.nanaland.global.exception.ErrorCode.EDIT_REVIEW_IMAGE_INF
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_MY_REVIEW;
-import static com.jeju.nanaland.global.exception.ErrorCode.POST_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
@@ -386,12 +385,12 @@ public class ReviewService {
     switch (category) {
       case EXPERIENCE -> {
         return experienceRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+            .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
       }
 
       case RESTAURANT -> {
         return restaurantRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(POST_NOT_FOUND.getMessage()));
+            .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
       }
 
       default -> throw new BadRequestException(CATEGORY_NOT_FOUND.getMessage());
@@ -462,10 +461,8 @@ public class ReviewService {
         .collect(Collectors.toSet());
 
     int newImageIdx = 0;
-    for (int i = 0; i < editImageInfoList.size(); i++) {
+    for (EditImageInfoDto editImageInfo : editImageInfoList) {
       // 수정 제출된 이미지가
-      EditImageInfoDto editImageInfo = editImageInfoList.get(i);
-
       if (editImageInfo.isNewImage()) { // 새로 제출된 이미지라면 저장
         reviewImageFileRepository.save(ReviewImageFile.builder()
             .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(newImageIdx++), true))

@@ -1,5 +1,7 @@
 package com.jeju.nanaland.domain.nana.entity;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.INFO_TYPE_NOT_FOUND;
+
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import lombok.Getter;
@@ -41,7 +43,7 @@ public enum InfoType {
         return infoType;
       }
     }
-    throw new NotFoundException("일치하는 InfoType이 없습니다.");
+    throw new NotFoundException(INFO_TYPE_NOT_FOUND.getMessage());
   }
 
   public String getValueByLocale(Language locale) {

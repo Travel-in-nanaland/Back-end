@@ -55,7 +55,7 @@ public class MemberProfileService {
         profileImageFile.updateImageFile(s3ImageDto);
       } catch (IOException e) {
         log.error("S3 image upload error : {}", e.getMessage());
-        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
       }
     }
 

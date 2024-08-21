@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 public enum ReviewTypeKeyword {
 
+  // TODO : 리뷰 해시태그 번역 별로  수정하기
   ANNIVERSARY(Type.MOOD, "기념일에 가면 좋아요", "enAn", "zhAn", "msAn", "viAn"),
   CUTE(Type.MOOD, "아기자기해요", "enCu", "zhCu", "msCu", "viCu"),
   LUXURY(Type.MOOD, "고급스러워요", "enLu", "zhLu", "msLu", "viLu"),

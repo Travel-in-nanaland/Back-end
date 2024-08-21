@@ -1,5 +1,8 @@
 package com.jeju.nanaland.domain.favorite.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
+
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.Post;
@@ -18,7 +21,6 @@ import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -168,7 +170,7 @@ public class FavoriteService {
       case MARKET -> favoriteRepository.findMarketThumbnails(member, locale, pageable);
       case FESTIVAL -> favoriteRepository.findFestivalThumbnails(member, locale, pageable);
       case RESTAURANT -> favoriteRepository.findRestaurantThumbnails(member, locale, pageable);
-      default -> throw new ServerErrorException("해당하는 카테고리가 없습니다.");
+      default -> throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage());
     };
   }
 
@@ -176,24 +178,24 @@ public class FavoriteService {
   private Post findPostIfExist(Long postId, Category category) {
     return switch (category) {
       case NANA -> nanaRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException("해당 id의 나나스픽 게시물이 존재하지 않습니다."));
+          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
 
       case NATURE -> natureRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException("해당 id의 7대자연 게시물이 존재하지 않습니다."));
+          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
 
       case EXPERIENCE -> experienceRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException("해당 id의 이색체험 게시물이 존재하지 않습니다."));
+          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
 
       case MARKET -> marketRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException("해당 id의 전통시장 게시물이 존재하지 않습니다."));
+          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
 
       case FESTIVAL -> festivalRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
+          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
 
       case RESTAURANT -> restaurantRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException("해당 id의 축제 게시물이 존재하지 않습니다."));
+          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
 
-      default -> throw new NotFoundException("해당 id의 게시물이 존재하지 않습니다.");
+      default -> throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage());
     };
   }
 }

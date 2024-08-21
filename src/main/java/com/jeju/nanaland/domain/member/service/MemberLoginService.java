@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
-import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WTIHDRAWAL_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WITHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
 import com.jeju.nanaland.domain.common.data.Language;
@@ -145,7 +145,7 @@ public class MemberLoginService {
       member.updateStatus(Status.ACTIVE);
 
       MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
-          .orElseThrow(() -> new NotFoundException(MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage()));
+          .orElseThrow(() -> new NotFoundException(MEMBER_WITHDRAWAL_NOT_FOUND.getMessage()));
       memberWithdrawal.updateStatus(Status.INACTIVE);
     }
   }
@@ -234,7 +234,7 @@ public class MemberLoginService {
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
     MemberWithdrawal memberWithdrawal = memberWithdrawalRepository.findByMember(member)
-        .orElseThrow(() -> new NotFoundException(MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage()));
+        .orElseThrow(() -> new NotFoundException(MEMBER_WITHDRAWAL_NOT_FOUND.getMessage()));
     memberWithdrawal.updateWithdrawalDate(); // 탈퇴일을 4개월 전으로 변경
     deleteWithdrawalMemberInfo();
   }

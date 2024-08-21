@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum RestaurantTypeKeyword {
-
+  // TODO : 맛집 번역별로 수정하기
   KOREAN("한식", "enAn", "zhAn", "msAn", "viAn"),
   CHINESE("중식", "enCu", "zhCu", "msCu", "viCu"),
   JAPANESE("일식", "enLu", "zhLu", "msLu", "viLu"),

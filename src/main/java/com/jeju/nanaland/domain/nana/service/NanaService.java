@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.nana.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
+import static com.jeju.nanaland.global.exception.ErrorCode.NANA_TITLE_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -109,7 +110,7 @@ public class NanaService {
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+        .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
 
     NanaTitle koreanNanaTitle;
     List<NanaContent> nanaContentList;
@@ -121,7 +122,7 @@ public class NanaService {
       koreanNanaContentList = nanaContentList;
     } else {
       koreanNanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, Language.KOREAN)
-          .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+          .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
       nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle);
       koreanNanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
           koreanNanaTitle);
@@ -143,7 +144,7 @@ public class NanaService {
           nanaContent.getId()));
 
       if (contentImageFiles.isEmpty()) {// 사진 없으면 서버 에러
-        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
       }
       nanaContentImageList.add(contentImageFiles);
     }
@@ -218,6 +219,7 @@ public class NanaService {
   }
 
   // 나나스픽 생성
+  // TODO : 모듈화한 부분이니 제거해도 괜찮을 것 같아보임
   @Transactional
   public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
     try {
@@ -240,7 +242,6 @@ public class NanaService {
         }
         // nana 생성해서 저장하기
         nana = createNanaByNanaUploadDto(nanaUploadDto);
-        nanaId = nanaRepository.save(nana).getId();
       } else {// 이미 존재하는 nana인 경우
         nana = getNanaById(nanaId);
 
@@ -254,7 +255,7 @@ public class NanaService {
           existNanaContentImages = true;
         }
 
-        /**
+        /*
          * 이미 존재하는 경우 한국어 버전 NanaContent의 수와 비교한다.
          * (nanaContent들은 KOREAN nana Content의 사진들 공유 하기 때문에 기준은 KOREAN 버전)
          * 기존의 content 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
@@ -384,7 +385,7 @@ public class NanaService {
 
   private int countKoreanNanaContents(Nana nana) {
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, Language.KOREAN)
-        .orElseThrow(() -> new ServerErrorException("나나's pick 생성 중 존재하는 NanaTitle 찾지 못함"));
+        .orElseThrow(() -> new ServerErrorException(NANA_TITLE_NOT_FOUND.getMessage()));
     return nanaContentRepository.countNanaContentByNanaTitle(nanaTitle);
   }
 

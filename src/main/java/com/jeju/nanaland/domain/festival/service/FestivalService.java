@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.festival.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
+import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 
 import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -233,7 +234,7 @@ public class FestivalService {
       case "summer" -> "여름";
       case "autumn" -> "가을";
       case "winter" -> "겨울";
-      default -> throw new BadRequestException("계절 정보 오류");
+      default -> throw new BadRequestException(REQUEST_VALIDATION_EXCEPTION.getMessage());
     };
   }
 

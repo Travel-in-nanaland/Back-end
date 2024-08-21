@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum Category {
+  // TODO : 카테고리 번역 별로 수정하기
   NANA("나나's pick", "enNana", "viNana", "msNana", "zaNana"),
   NANA_CONTENT("나나 상세", "enNanaContent", "vienNanaContent", "msenNanaContent", "zhenNanaContent"),
   EXPERIENCE("이색 체험", "enExperience", "viExperience", "msExperience", "zhExperience"),
