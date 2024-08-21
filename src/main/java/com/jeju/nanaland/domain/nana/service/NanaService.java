@@ -33,7 +33,6 @@ import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -408,12 +407,10 @@ public class NanaService {
   }
 
   // new 태그 붙일지 말지 결정
-  // 이번 달에 생성된 게시글이면 new
+  // 가장 최신 게시물에 new
   private void markNewestThumbnails(List<NanaThumbnail> thumbnails) {
-    LocalDate now = LocalDate.now();
     thumbnails.stream()
-        .filter(thumbnail -> (thumbnail.getCreatedAt().getYear() == now.getYear()) && (
-            thumbnail.getCreatedAt().getMonth() == now.getMonth()))
-        .forEach(thumbnail -> thumbnail.setNewest(true));
+        .max(Comparator.comparing(NanaThumbnail::getCreatedAt))
+        .ifPresent(thumbnail -> thumbnail.setNewest(true));
   }
 }
