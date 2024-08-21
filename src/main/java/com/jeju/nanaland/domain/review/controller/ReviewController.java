@@ -69,7 +69,7 @@ public class ReviewController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
-//      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping(value = "/{id}",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

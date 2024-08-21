@@ -191,8 +191,7 @@ public class ReportService {
         CLAIM_REPORT_FILE_DIRECTORY);
 
     // claimReportVideoFile 동영상 저장
-    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, claimReport
-    );
+    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, claimReport);
 
     // 이메일 전송
     List<String> combinedUrlList = new ArrayList<>(imageUrlList);
@@ -286,8 +285,7 @@ public class ReportService {
     List<String> videoUrlList = new ArrayList<>();
     if (videoFiles != null) {
       // 동영상 파일 저장
-      List<ClaimReportVideoFile> claimReportVideoFiles = saveVideoFiles(videoFiles, report
-      );
+      List<ClaimReportVideoFile> claimReportVideoFiles = saveVideoFiles(videoFiles, report);
 
       // 동영상 연관 관계 저장 && url 반환
       claimReportVideoFileRepository.saveAll(claimReportVideoFiles);
@@ -314,7 +312,7 @@ public class ReportService {
     return videoFileList;
   }
 
-  // 메이 전송
+  // 메일 전송
   private void sendEmailReport(String email, Object report, List<String> imageUrlList) {
     try {
       MimeMessage mimeMessage = createReportMail(email, report, imageUrlList);
