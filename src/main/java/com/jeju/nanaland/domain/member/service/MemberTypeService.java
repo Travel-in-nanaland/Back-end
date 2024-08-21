@@ -77,8 +77,8 @@ public class MemberTypeService {
     Member member = memberInfoDto.getMember();
     Language locale = memberInfoDto.getLanguage();
 
-    // 이색체험 제외하고 모두 조회
-    List<Recommend> recommends = recommendRepository.findAllWithoutExperience();
+    // 랜덤으로 추천 게시물 2개 조회
+    List<Recommend> recommends = recommendRepository.findRandomTwoRecommends();
     if (recommends == null || recommends.size() < 2) {
       String errorMessage = "추천 게시물이 없거나 너무 적습니다.";
       log.error(errorMessage);
