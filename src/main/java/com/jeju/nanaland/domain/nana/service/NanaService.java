@@ -183,6 +183,7 @@ public class NanaService {
     }
 
     return NanaResponse.NanaDetailDto.builder()
+        .id(nana.getId())
         .firstImage(new ImageFileDto(nana.getFirstImageFile().getOriginUrl(),
             nana.getFirstImageFile().getThumbnailUrl()))
         .subHeading(nanaTitle.getSubHeading())
