@@ -73,6 +73,9 @@ public class NanaResponse {
   @Schema(description = "나나's pick 개별 상세 조회 DTO")
   public static class NanaDetailDto {
 
+    @Schema(description = "게시물 ID")
+    private Long id;
+    
     @Schema(description = "사진에 들어갈 부제목 ex) 제주 야경 봤슴무언?")
     private String subHeading;
 
