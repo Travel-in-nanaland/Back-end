@@ -151,7 +151,7 @@ public class FavoriteService {
     return favoriteOptional.isPresent();
   }
 
-  private ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
+  public ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
       Category category) {
     return switch (category) {
       case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, locale);

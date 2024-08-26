@@ -19,9 +19,12 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.dto.QFavoriteResponse_ThumbnailDto;
+import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -413,5 +416,24 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
         .innerJoin(restaurant.firstImageFile, imageFile)
         .where(favorite.post.id.eq(postId))
         .fetchOne();
+  }
+
+  @Override
+  public List<Favorite> findAllFavoriteToSendNotification() {
+    return queryFactory
+        .selectFrom(favorite)
+        .where(favoriteNotificationAfter3MonthsCondition().or(
+            favoriteNotificationAfter2WeeksCondition()))
+        .fetch();
+  }
+
+  private BooleanExpression favoriteNotificationAfter3MonthsCondition() {
+    return favorite.notificationCount.eq(1)
+        .and(favorite.createdAt.before(LocalDateTime.now().minusMonths(3)));
+  }
+
+  private BooleanExpression favoriteNotificationAfter2WeeksCondition() {
+    return favorite.notificationCount.eq(0)
+        .and(favorite.createdAt.before(LocalDateTime.now().minusWeeks(2)));
   }
 }
