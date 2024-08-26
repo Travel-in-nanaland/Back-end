@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.member.entity.Member;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -48,4 +49,22 @@ public class Favorite extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "post_id", nullable = false)
   private Post post;
+
+  @Column(nullable = false, columnDefinition = "TINYINT default 0")
+  private int notificationCount;  // 알림 전송 횟수
+
+  @Column(nullable = false, columnDefinition = "VARCHAR(8) default 'ACTIVE'")
+  private String status;
+
+  public boolean isStatusActive() {
+    return this.status.equals("ACTIVE");
+  }
+
+  public void setStatusActive() {
+    this.status = "ACTIVE";
+  }
+
+  public void setStatusInactive() {
+    this.status = "INACTIVE";
+  }
 }

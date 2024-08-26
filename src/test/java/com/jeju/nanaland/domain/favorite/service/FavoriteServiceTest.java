@@ -57,7 +57,7 @@ class FavoriteServiceTest {
     Page<Favorite> favoritePage = new PageImpl<>(favoriteList);
 
     doReturn(favoritePage).when(favoriteRepository)
-        .findAllByMemberOrderByCreatedAtDesc(memberInfoDto.getMember(), pageable);
+        .findAllByMemberAndStatusActiveOrderByCreatedAtDesc(memberInfoDto.getMember(), pageable);
 
     // when
     FavoriteThumbnailDto result = favoriteService.getAllFavoriteList(memberInfoDto, 0, 12);
