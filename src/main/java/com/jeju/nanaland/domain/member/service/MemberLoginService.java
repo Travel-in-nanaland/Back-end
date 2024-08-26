@@ -68,7 +68,9 @@ public class MemberLoginService {
     }
 
     // fcm 토큰 저장
-    fcmTokenService.saveFcmToken(member, joinDto.getFcmToken());
+    if (joinDto.getFcmToken() != null) {
+      fcmTokenService.saveFcmToken(member, joinDto.getFcmToken());
+    }
 
     return getJwtDto(member);
   }
@@ -124,10 +126,10 @@ public class MemberLoginService {
 
     // fcm 토큰이 없다면 생성, timestamp 갱신
     FcmToken fcmToken = fcmTokenService.getFcmToken(member, loginDto.getFcmToken());
-    if (fcmToken == null) {
+    if (fcmToken == null && loginDto.getFcmToken() != null) {
       fcmToken = fcmTokenService.saveFcmToken(member, loginDto.getFcmToken());
+      fcmToken.updateTimestampToNow();
     }
-    fcmToken.updateTimestampToNow();
 
     return getJwtDto(member);
   }
@@ -183,10 +185,10 @@ public class MemberLoginService {
 
     // fcm 토큰이 없다면 생성, timestamp 갱신
     FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(member, fcmToken);
-    if (fcmTokenInstance == null) {
+    if (fcmTokenInstance == null && fcmToken != null) {
       fcmTokenInstance = fcmTokenService.saveFcmToken(member, fcmToken);
+      fcmTokenInstance.updateTimestampToNow();
     }
-    fcmTokenInstance.updateTimestampToNow();
 
     return getJwtDto(member);
   }

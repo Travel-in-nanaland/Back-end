@@ -239,6 +239,8 @@ public class FavoriteRepositoryTest {
           .post(post)
           .member(member)
           .category(category)
+          .status("ACTIVE")
+          .notificationCount(0)
           .build();
       em.persist(favorite);
     }

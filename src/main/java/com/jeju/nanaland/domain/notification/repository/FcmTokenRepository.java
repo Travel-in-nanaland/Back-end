@@ -8,7 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface FcmTokenRepository extends JpaRepository<FcmToken, Long>,
     FcmTokenRepositoryCustom {
 
-  Optional<FcmToken> findByToken(String token);
-
   Optional<FcmToken> findByMemberAndToken(Member member, String token);
 }

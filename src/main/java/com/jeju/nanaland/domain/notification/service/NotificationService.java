@@ -10,7 +10,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
@@ -26,7 +25,6 @@ import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
 import com.jeju.nanaland.domain.notification.repository.NanalandNotificationRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -244,15 +242,6 @@ public class NotificationService {
     }
 
     return splitedTokenList;
-  }
-
-  private long countSamePostIdCreatedAfter(List<Favorite> favoriteList, LocalDateTime localDateTime,
-      Long postId) {
-
-    return favoriteList.stream()
-        .filter(favorite -> favorite.getPost().getId().equals(postId) &&
-            favorite.getCreatedAt().isAfter(localDateTime))
-        .toList().size();
   }
 
   private NanalandNotification getNanalandNotification(NotificationDto notificationDto) {

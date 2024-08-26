@@ -66,7 +66,6 @@ public class MemberRequest {
     private String nickname;
 
     @Schema(description = "fcm 토큰")
-    @NotBlank
     private String fcmToken;
   }
 
@@ -97,7 +96,6 @@ public class MemberRequest {
     private String providerId;
 
     @Schema(description = "fcm 토큰")
-    @NotBlank
     private String fcmToken;
   }
 
