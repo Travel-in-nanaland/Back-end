@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.notification.service.FavoriteNotificationService;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -43,6 +44,7 @@ public class FavoriteService {
   private final FestivalRepository festivalRepository;
   private final MarketRepository marketRepository;
   private final RestaurantRepository restaurantRepository;
+  private final FavoriteNotificationService favoriteNotificationService;
 
   public FavoriteThumbnailDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page, int size) {
 
@@ -104,6 +106,9 @@ public class FavoriteService {
       // 좋아요 삭제
       favoriteRepository.delete(favorite);
 
+      // 찜 알림 상태 INACTIVE 로 변경
+      favoriteNotificationService.setFavoriteNotificationStatusInactive(favorite);
+
       return FavoriteResponse.StatusDto.builder()
           .isFavorite(false)
           .build();
@@ -121,6 +126,12 @@ public class FavoriteService {
 
       // 좋아요 추가
       favoriteRepository.save(favorite);
+
+      // 찜 알림 정보가 없다면 생성, 있다면 ACTIVE로 변경
+      if (favoriteNotificationService.getFavoriteNotification(favorite).isEmpty()) {
+        favoriteNotificationService.createFavoriteNotification(favorite);
+      }
+      favoriteNotificationService.setFavoriteNotificationStatusActive(favorite);
 
       return FavoriteResponse.StatusDto.builder()
           .isFavorite(true)

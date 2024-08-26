@@ -81,7 +81,11 @@ public enum SuccessCode {
 
   // notice
   NOTICE_LIST_SUCCESS(OK, "공지사항 리스트 조회 성공"),
-  NOTICE_DETAIL_SUCCESS(OK, "공지사항 상세 조회 성공");
+  NOTICE_DETAIL_SUCCESS(OK, "공지사항 상세 조회 성공"),
+
+  // notification
+  NOTIFICATION_LIST_SUCCESS(OK, "알림 조회 성공"),
+  SEND_NOTIFICATION_SUCCESS(CREATED, "알림 전송 성공");
 
   private final HttpStatus httpStatus;
   private final String message;
