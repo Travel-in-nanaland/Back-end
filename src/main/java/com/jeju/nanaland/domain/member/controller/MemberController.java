@@ -103,8 +103,9 @@ public class MemberController {
   @PostMapping("/logout")
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
       @Parameter(name = "accessToken", hidden = true)
-      @RequestHeader("Authorization") String accessToken) {
-    memberLoginService.logout(memberInfoDto, accessToken);
+      @RequestHeader("Authorization") String accessToken,
+      @RequestParam(required = false) String fcmToken) {
+    memberLoginService.logout(memberInfoDto, accessToken, fcmToken);
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
 
@@ -118,8 +119,9 @@ public class MemberController {
   @GetMapping("/reissue")
   public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-    JwtDto jwtDto = memberLoginService.reissue(refreshToken);
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken,
+      @RequestParam(required = false) String fcmToken) {
+    JwtDto jwtDto = memberLoginService.reissue(refreshToken, fcmToken);
     return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }
 
