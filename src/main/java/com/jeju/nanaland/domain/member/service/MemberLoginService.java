@@ -19,6 +19,8 @@ import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
+import com.jeju.nanaland.domain.notification.entity.FcmToken;
+import com.jeju.nanaland.domain.notification.service.FcmTokenService;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -45,6 +47,7 @@ public class MemberLoginService {
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
+  private final FcmTokenService fcmTokenService;
 
   @Transactional
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
@@ -56,26 +59,35 @@ public class MemberLoginService {
       throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
     }
 
-    String nickname = validateNickname(joinDto);
+    String nickname = determineNickname(joinDto);
+    validateNickname(nickname);
     ImageFile profileImageFile = getProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
     if (!member.getProvider().equals(Provider.GUEST)) {
       memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
     }
+
+    // fcm 토큰 저장
+    if (joinDto.getFcmToken() != null) {
+      // TODO: 알림 동의 여부 관리?
+      fcmTokenService.saveFcmToken(member, joinDto.getFcmToken());
+    }
+
     return getJwtDto(member);
   }
 
-  private String validateNickname(JoinDto joinDto) {
-    String nickname = joinDto.getNickname();
+  private String determineNickname(JoinDto joinDto) {
     if (Provider.valueOf(joinDto.getProvider()) == Provider.GUEST) {
-      nickname = UUID.randomUUID().toString().substring(0, 12);
+      return UUID.randomUUID().toString().substring(0, 12);
     }
+    return joinDto.getNickname();
+  }
 
+  public void validateNickname(String nickname) {
     Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
     if (memberOptional.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
-    return nickname;
   }
 
   private ImageFile getProfileImageFile(MultipartFile multipartFile) {
@@ -112,6 +124,14 @@ public class MemberLoginService {
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
     updateMemberActive(member);
     updateLanguageDifferent(loginDto, member);
+
+    // fcm 토큰이 없다면 생성, timestamp 갱신
+    FcmToken fcmToken = fcmTokenService.getFcmToken(member, loginDto.getFcmToken());
+    if (fcmToken == null && loginDto.getFcmToken() != null) {
+      fcmToken = fcmTokenService.saveFcmToken(member, loginDto.getFcmToken());
+      fcmToken.updateTimestampToNow();
+    }
+
     return getJwtDto(member);
   }
 
@@ -146,7 +166,7 @@ public class MemberLoginService {
     }
   }
 
-  public JwtDto reissue(String bearerRefreshToken) {
+  public JwtDto reissue(String bearerRefreshToken, String fcmToken) {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
     if (!jwtUtil.verifyRefreshToken(refreshToken)) {
@@ -164,16 +184,31 @@ public class MemberLoginService {
     Member member = memberRepository.findById(Long.valueOf(memberId))
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
+    // fcm 토큰이 없다면 생성, timestamp 갱신
+    FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(member, fcmToken);
+    if (fcmTokenInstance == null && fcmToken != null) {
+      fcmTokenInstance = fcmTokenService.saveFcmToken(member, fcmToken);
+      fcmTokenInstance.updateTimestampToNow();
+    }
+
     return getJwtDto(member);
   }
 
-  public void logout(MemberInfoDto memberInfoDto, String bearerAccessToken) {
+  @Transactional
+  public void logout(MemberInfoDto memberInfoDto, String bearerAccessToken, String fcmToken) {
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
     jwtUtil.setBlackList(accessToken);
     String memberId = String.valueOf(memberInfoDto.getMember().getId());
     if (jwtUtil.findRefreshTokenById(memberId) != null) {
       jwtUtil.deleteRefreshToken(memberId);
     }
+
+    // fcm 토큰 삭제
+    FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(memberInfoDto.getMember(), fcmToken);
+    if (fcmTokenInstance != null) {
+      fcmTokenService.deleteFcmToken(fcmTokenInstance);
+    }
+    ;
   }
 
   @Transactional

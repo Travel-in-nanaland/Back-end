@@ -25,6 +25,8 @@ import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
+import com.jeju.nanaland.domain.notification.entity.FcmToken;
+import com.jeju.nanaland.domain.notification.service.FcmTokenService;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -64,6 +66,8 @@ class MemberLoginServiceTest {
   private ImageFileService imageFileService;
   @Mock
   private MemberConsentService memberConsentService;
+  @Mock
+  private FcmTokenService fcmTokenService;
   @InjectMocks
   private MemberLoginService memberLoginService;
 
@@ -123,6 +127,7 @@ class MemberLoginServiceTest {
     loginDto.setLocale(locale);
     loginDto.setProvider("GOOGLE");
     loginDto.setProviderId("123");
+    loginDto.setFcmToken("test");
     return loginDto;
   }
 
@@ -249,6 +254,8 @@ class MemberLoginServiceTest {
     doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
     doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
     doReturn(1L).when(member).getId();
+    doReturn(FcmToken.builder().build())
+        .when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
 
     // when
     JwtDto jwtDto = memberLoginService.login(loginDto);
@@ -324,7 +331,7 @@ class MemberLoginServiceTest {
 
     // when
     UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
-        () -> memberLoginService.reissue("bearer RefreshToken"));
+        () -> memberLoginService.reissue("bearer RefreshToken", ""));
 
     // then
     assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
@@ -344,7 +351,7 @@ class MemberLoginServiceTest {
 
     // when
     UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
-        () -> memberLoginService.reissue("bearer RefreshToken"));
+        () -> memberLoginService.reissue("bearer RefreshToken", ""));
 
     // then
     assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
@@ -371,9 +378,11 @@ class MemberLoginServiceTest {
     doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
     doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
     doReturn(1L).when(member).getId();
+    doReturn(FcmToken.builder().build())
+        .when(fcmTokenService).getFcmToken(member, "token");
 
     // when
-    JwtDto jwtDto = memberLoginService.reissue("bearer RefreshToken");
+    JwtDto jwtDto = memberLoginService.reissue("bearer RefreshToken", "token");
 
     // then
     assertThat(jwtDto).isNotNull();
@@ -402,7 +411,7 @@ class MemberLoginServiceTest {
     doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
 
     // when
-    memberLoginService.logout(memberInfoDto, "bearer refreshToken");
+    memberLoginService.logout(memberInfoDto, "bearer refreshToken", "token");
 
     // then
     verify(jwtUtil, times(1)).resolveToken(any());

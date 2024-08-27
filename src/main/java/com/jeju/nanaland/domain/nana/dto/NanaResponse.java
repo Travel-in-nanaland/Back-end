@@ -73,6 +73,9 @@ public class NanaResponse {
   @Schema(description = "나나's pick 개별 상세 조회 DTO")
   public static class NanaDetailDto {
 
+    @Schema(description = "게시물 ID")
+    private Long id;
+
     @Schema(description = "사진에 들어갈 부제목 ex) 제주 야경 봤슴무언?")
     private String subHeading;
 
@@ -132,7 +135,7 @@ public class NanaResponse {
   public static class NanaAdditionalInfo {
 
     @Schema(description = "이모지 구분을 위한 필드 /"
-        + " ADDRESS, PARKING, SPECIAL, AMENITY, WEBSITE, RESERVATION_LINK, AGE, TIME, FEE, DATE, DESCRIPTION")
+        + "ADDRESS, PARKING, SPECIAL, AMENITY, WEBSITE, RESERVATION_LINK, AGE, TIME, FEE, DATE, DESCRIPTION, ETC")
     public String infoEmoji;
 
     @Schema(description = "부가 정보 key 값 ex: 주차정보, 스페셜, 예약링크,,")

@@ -51,8 +51,8 @@ public class FavoriteService {
     Pageable pageable = PageRequest.of(page, size);
 
     // Favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
-    Page<Favorite> favorites = favoriteRepository.findAllByMemberOrderByCreatedAtDesc(member,
-        pageable);
+    Page<Favorite> favorites = favoriteRepository
+        .findAllByMemberAndStatusOrderByCreatedAtDesc(member, "ACTIVE", pageable);
     List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
 
     // Favorite의 postId, 카테고리 정보를 통해 썸네일 정보 조회
@@ -97,18 +97,28 @@ public class FavoriteService {
     Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
         memberInfoDto.getMember(), category, postId);
 
-    // 좋아요 상태일 때
+    // favorite 엔티티에 존재
     if (favoriteOptional.isPresent()) {
       Favorite favorite = favoriteOptional.get();
 
-      // 좋아요 삭제
-      favoriteRepository.delete(favorite);
+      // 찜 상태라면 찜 취소
+      if (favorite.isStatusActive()) {
+        favorite.setStatusInactive();
 
-      return FavoriteResponse.StatusDto.builder()
-          .isFavorite(false)
-          .build();
+        return FavoriteResponse.StatusDto.builder()
+            .isFavorite(false)
+            .build();
+      }
+      // 찜 취소 상태라면 찜 등록
+      else {
+        favorite.setStatusActive();
+
+        return FavoriteResponse.StatusDto.builder()
+            .isFavorite(true)
+            .build();
+      }
     }
-    // 좋아요 상태가 아닐 때
+    // favorite 엔티티에 존재하지 않음: 처음 찜 목록에 추가하는 경우
     else {
       // 해당 카테고리에 해당하는 id의 게시물이 없다면 NotFoundException
       Post post = findPostIfExist(postId, category);
@@ -130,18 +140,18 @@ public class FavoriteService {
 
   // 해당 유저의 찜리스트에 있는 postId 리스트 반환
   public List<Long> getFavoritePostIdsWithMember(Member member) {
-    List<Favorite> favorites = favoriteRepository.findAllByMember(member);
+    List<Favorite> favorites = favoriteRepository.findAllByMemberAndStatus(member, "ACTIVE");
     return favorites.stream().map(favorite -> favorite.getPost().getId()).toList();
   }
 
   public boolean isPostInFavorite(Member member, Category category, Long id) {
-    Optional<Favorite> favoriteOptional = favoriteRepository.findByMemberAndCategoryAndPostId(
-        member, category, id);
+    Optional<Favorite> favoriteOptional = favoriteRepository
+        .findByMemberAndCategoryAndPostIdAndStatus(member, category, id, "ACTIVE");
 
     return favoriteOptional.isPresent();
   }
 
-  private ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
+  public ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
       Category category) {
     return switch (category) {
       case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, locale);

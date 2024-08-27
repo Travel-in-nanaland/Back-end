@@ -15,7 +15,11 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long>,
   Optional<Favorite> findByMemberAndCategoryAndPostId(Member member, Category category,
       Long postId);
 
-  List<Favorite> findAllByMember(Member member);
+  Optional<Favorite> findByMemberAndCategoryAndPostIdAndStatus(Member member,
+      Category category, Long postId, String status);
 
-  Page<Favorite> findAllByMemberOrderByCreatedAtDesc(Member member, Pageable pageable);
+  List<Favorite> findAllByMemberAndStatus(Member member, String status);
+
+  Page<Favorite> findAllByMemberAndStatusOrderByCreatedAtDesc(Member member, String status,
+      Pageable pageable);
 }

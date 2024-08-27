@@ -9,6 +9,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUC
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_CONSENT_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.VALID_NICKNAME_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
@@ -102,8 +103,9 @@ public class MemberController {
   @PostMapping("/logout")
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
       @Parameter(name = "accessToken", hidden = true)
-      @RequestHeader("Authorization") String accessToken) {
-    memberLoginService.logout(memberInfoDto, accessToken);
+      @RequestHeader("Authorization") String accessToken,
+      @RequestParam(required = false) String fcmToken) {
+    memberLoginService.logout(memberInfoDto, accessToken, fcmToken);
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
 
@@ -117,8 +119,9 @@ public class MemberController {
   @GetMapping("/reissue")
   public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-    JwtDto jwtDto = memberLoginService.reissue(refreshToken);
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken,
+      @RequestParam(required = false) String fcmToken) {
+    JwtDto jwtDto = memberLoginService.reissue(refreshToken, fcmToken);
     return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }
 
@@ -271,5 +274,24 @@ public class MemberController {
   ) {
     memberLoginService.forceWithdrawal(accessToken);
     return BaseResponse.success(WITHDRAWAL_SUCCESS);
+  }
+
+  @Operation(
+      summary = "닉네임 중복 확인")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 경우", content = @Content)
+  })
+  @GetMapping("/validateNickname")
+  public BaseResponse<Null> validateNickname(
+      @RequestParam String nickname,
+      @RequestParam(required = false) Long memberId) {
+    if (memberId == null) {
+      memberLoginService.validateNickname(nickname);
+    } else {
+      memberProfileService.validateNickname(nickname, memberId);
+    }
+    return BaseResponse.success(VALID_NICKNAME_SUCCESS);
   }
 }
