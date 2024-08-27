@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "notificationUniqueConstraint",
-            columnNames = {"notification_category, content_id, title, content"}
+            columnNames = {"notification_category", "content_id", "title", "content"}
         )
     }
 )
@@ -31,11 +31,15 @@ public class NanalandNotification extends BaseEntity {
 
   @OneToMany(mappedBy = "nanalandNotification", cascade = CascadeType.ALL)
   List<MemberNotification> memberNotificationList;
+
   @NotNull
   private NotificationCategory notificationCategory;
+
   private Long contentId;
+
   @NotNull
   private String title;
+
   @NotNull
   private String content;
 
