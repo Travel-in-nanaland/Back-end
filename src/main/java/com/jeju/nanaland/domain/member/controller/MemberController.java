@@ -104,7 +104,7 @@ public class MemberController {
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
       @Parameter(name = "accessToken", hidden = true)
       @RequestHeader("Authorization") String accessToken,
-      @RequestParam String fcmToken) {
+      @RequestParam(required = false) String fcmToken) {
     memberLoginService.logout(memberInfoDto, accessToken, fcmToken);
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
@@ -120,7 +120,7 @@ public class MemberController {
   public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
       @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken,
-      @RequestParam String fcmToken) {
+      @RequestParam(required = false) String fcmToken) {
     JwtDto jwtDto = memberLoginService.reissue(refreshToken, fcmToken);
     return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }

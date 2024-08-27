@@ -69,6 +69,7 @@ public class MemberLoginService {
 
     // fcm 토큰 저장
     if (joinDto.getFcmToken() != null) {
+      // TODO: 알림 동의 여부 관리?
       fcmTokenService.saveFcmToken(member, joinDto.getFcmToken());
     }
 
@@ -204,7 +205,10 @@ public class MemberLoginService {
 
     // fcm 토큰 삭제
     FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(memberInfoDto.getMember(), fcmToken);
-    fcmTokenService.deleteFcmToken(fcmTokenInstance);
+    if (fcmTokenInstance != null) {
+      fcmTokenService.deleteFcmToken(fcmTokenInstance);
+    }
+    ;
   }
 
   @Transactional

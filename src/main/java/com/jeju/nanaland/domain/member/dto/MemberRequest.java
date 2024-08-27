@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 
 public class MemberRequest {
@@ -100,6 +101,7 @@ public class MemberRequest {
   }
 
   @Data
+  @Builder
   public static class ConsentItem {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
