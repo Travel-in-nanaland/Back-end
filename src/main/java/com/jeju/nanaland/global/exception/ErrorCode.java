@@ -59,6 +59,7 @@ public enum ErrorCode {
   NOTICE_NOT_FOUND(NOT_FOUND, "존재하는 공지사항을 찾을 수 없습니다."),
   KEYWORD_NOT_FOUND(NOT_FOUND, "존재하지 않는 키워드 입니다."),
   INFO_TYPE_NOT_FOUND(NOT_FOUND, "존재하지 않는 InfoType 입니다."),
+  LANGUAGE_NOT_FOUND(NOT_FOUND, "지원하지 않는 언어입니다."),
 
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
@@ -67,6 +68,7 @@ public enum ErrorCode {
 
   // FORBIDDEN
   NANA_INFO_FIX_FORBIDDEN(FORBIDDEN, "나나스픽 게시물은 정보 수정 요청이 불가능합니다."),
+  FORBIDDEN_EXCEPTION(FORBIDDEN, "접근 권한이 없습니다."),
   REVIEW_SELF_LIKE_FORBIDDEN(FORBIDDEN, "본인의 리뷰는 좋아요를 누를 수 없습니다.");
 
   private final HttpStatus httpStatus;

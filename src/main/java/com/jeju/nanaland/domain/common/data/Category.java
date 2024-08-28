@@ -4,14 +4,13 @@ import lombok.Getter;
 
 @Getter
 public enum Category {
-  // TODO : 카테고리 번역 별로 수정하기
-  NANA("나나's pick", "enNana", "viNana", "msNana", "zaNana"),
+  NANA("나나's Pick", "Nana’s Pick", "Lựa chọn của Nana", "Pilihan Nana", "Nana精选"),
   NANA_CONTENT("나나 상세", "enNanaContent", "vienNanaContent", "msenNanaContent", "zhenNanaContent"),
-  EXPERIENCE("이색 체험", "enExperience", "viExperience", "msExperience", "zhExperience"),
-  FESTIVAL("축제", "enFestival", "viFestival", "msFestival", "zhFestival"),
-  NATURE("7대 자연", "enNature", "viNature", "msNature", "zhNature"),
-  MARKET("전통시장", "enMarket", "viMarket", "msMarket", "zhMarket"),
-  RESTAURANT("제주 맛집", "enRestaurant", "viRestaurant", "msRestaurant", "zhRestaurant");
+  EXPERIENCE("이색 체험", "Unique experience", "Trải nghiệm độc đáo", "Pengalaman unik", "独特体验"),
+  FESTIVAL("축제", "Festivities", "Lễ hội", "Perayaan", "庆典"),
+  NATURE("7대 자연", "7 natural wonders", "7 kỳ quan thiên nhiên", "7 keajaiban alam", "七大自然奇观"),
+  MARKET("전통시장", "Traditional market", "Chợ truyền thống", "Pasar tradisional", "传统市场"),
+  RESTAURANT("제주 맛집", "Restaurants", "Nhà hàng", "Restoran", "餐馆");
 
   private final String kr;
   private final String en; //영어
