@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum ExperienceTypeKeyword {
-
+  // TODO : 이색체험 타입 번역별로 수정하기
   LAND_LEISURE(ExperienceType.ACTIVITY, "지상레저", "enAn", "zhAn", "msAn", "viAn"),
   WATER_LEISURE(ExperienceType.ACTIVITY, "수상레저", "enCu", "zhCu", "msCu", "viCu"),
   AIR_LEISURE(ExperienceType.ACTIVITY, "항공레저", "enLu", "zhLu", "msLu", "viLu"),

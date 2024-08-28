@@ -1,5 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
+
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
@@ -26,9 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MemberTypeService {
 
+  private static final Random RANDOM = new Random();
   private final RecommendRepository recommendRepository;
   private final FavoriteRepository favoriteRepository;
 
+  // 유저 타입 갱신
   @Transactional
   public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
 
@@ -38,6 +42,7 @@ public class MemberTypeService {
     member.updateTravelType(TravelType.valueOf(newTravelType));
   }
 
+  // 추천 게시물 2개 반환
   public List<RecommendPostDto> getRecommendPostsByType(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
@@ -69,6 +74,7 @@ public class MemberTypeService {
     return result;
   }
 
+  // 랜덤 추천 게시물 2개 반환
   public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
@@ -95,6 +101,7 @@ public class MemberTypeService {
     return result;
   }
 
+  // RecommendPostDto 반환
   private RecommendPostDto getRecommendPostDto(Member member, Long postId, Language locale,
       TravelType travelType, Category category) {
 
@@ -110,7 +117,7 @@ public class MemberTypeService {
 
       case NANA -> recommendRepository.findNanaRecommendPostDto(postId, locale, travelType);
 
-      default -> throw new NotFoundException("해당 추천 게시물 정보가 존재하지 않습니다.");
+      default -> throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage());
     };
 
     if (recommendPostDto == null) {
@@ -128,12 +135,12 @@ public class MemberTypeService {
     return recommendPostDto;
   }
 
+  // TravelType 랜덤
   private TravelType getRandomTravelType() {
-    Random random = new Random();
     List<TravelType> values = new ArrayList<>(List.of(TravelType.values()));
     values.remove(TravelType.NONE);
 
-    return values.get(random.nextInt(values.size()));
+    return values.get(RANDOM.nextInt(values.size()));
   }
 
   // 타입 별 추천 게시물 개수가 많아질 경우에 사용
@@ -144,12 +151,11 @@ public class MemberTypeService {
 
     int randomIdx;
     List<Recommend> result = new ArrayList<>();
-    Random random = new Random();
-    randomIdx = random.nextInt(recommends.size());
+    randomIdx = RANDOM.nextInt(recommends.size());
     result.add(recommends.get(randomIdx));
     recommends.remove(randomIdx);
 
-    randomIdx = random.nextInt(recommends.size());
+    randomIdx = RANDOM.nextInt(recommends.size());
     result.add(recommends.get(randomIdx));
 
     return result;

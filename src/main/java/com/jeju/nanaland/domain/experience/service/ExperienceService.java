@@ -40,12 +40,14 @@ public class ExperienceService {
   private final SearchService searchService;
   private final ReviewRepository reviewRepository;
 
+  // 이색체험 리스트 조회
   public ExperienceThumbnailDto getExperienceList(MemberInfoDto memberInfoDto,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, int page, int size) {
 
     Language language = memberInfoDto.getLanguage();
     Pageable pageable = PageRequest.of(page, size);
+
     // experienceType(액티비티, 문화예술)에 따른 이색체험 조회
     Page<ExperienceThumbnail> experienceThumbnailPage = experienceRepository.findExperienceThumbnails(
         language, experienceType, keywordFilterList, addressFilterList, pageable);
@@ -54,6 +56,7 @@ public class ExperienceService {
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<ExperienceThumbnail> data = experienceThumbnailPage.getContent();
+
     // 좋아요 여부, 리뷰 평균 추가
     for (ExperienceThumbnail experienceThumbnail : data) {
       Long postId = experienceThumbnail.getId();
@@ -67,7 +70,8 @@ public class ExperienceService {
         .build();
   }
 
-  public ExperienceDetailDto getExperienceDetails(MemberInfoDto memberInfoDto, Long postId,
+  // 이색체험 상세 정보 조회
+  public ExperienceDetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();

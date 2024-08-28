@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.nana.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
+import static com.jeju.nanaland.global.exception.ErrorCode.NANA_TITLE_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -38,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,7 +68,7 @@ public class NanaService {
   private final ImageFileRepository imageFileRepository;
   private final PostImageFileRepository postImageFileRepository;
 
-  //메인페이지에 보여지는 4개의 nana
+  // 메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
@@ -80,7 +82,7 @@ public class NanaService {
   }
 
 
-  //나나's pick 썸네일 리스트 조회
+  // 나나's pick 썸네일 리스트 조회
   public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
@@ -106,23 +108,21 @@ public class NanaService {
     Nana nana = getNanaById(postId);
 
     // nanaTitle 찾아서
-    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
-            language)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)
+        .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
 
     NanaTitle koreanNanaTitle;
     List<NanaContent> nanaContentList;
     List<NanaContent> koreanNanaContentList;
+
     // korean nanaTitle 찾기 -> nanaContent의 이미지는 korean nanaContent의 이미지를 공유하기 때문에 찾아놔야함
     if (language == Language.KOREAN) {
-      nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
-          nanaTitle);
+      nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle);
       koreanNanaContentList = nanaContentList;
     } else {
       koreanNanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, Language.KOREAN)
-          .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
-      nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
-          nanaTitle);
+          .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
+      nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle);
       koreanNanaContentList = nanaContentRepository.findAllByNanaTitleOrderByPriority(
           koreanNanaTitle);
     }
@@ -138,18 +138,17 @@ public class NanaService {
 
     for (NanaContent nanaContent : koreanNanaContentList) { // 각 korean nanaContent에 맞는 사진들 가져오기
 
-      // content의  이미지 postImageFile에서 여러 개 찾아오기
+      // content의 이미지 postImageFile에서 여러 개 찾아오기
       List<ImageFileDto> contentImageFiles = new ArrayList<>(imageFileRepository.findPostImageFiles(
           nanaContent.getId()));
 
       if (contentImageFiles.isEmpty()) {// 사진 없으면 서버 에러
-        throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
       }
-
       nanaContentImageList.add(contentImageFiles);
     }
 
-    // 서버 오류 체크 (밑에 나오느 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
+    // 서버 오류 체크 (밑에 나오는 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
     if (nanaContentList.size() != nanaContentImageList.size()) {
       throw new ServerErrorException("나나's pick의 content와 image의 수가 일치하지 않습니다.");
     }
@@ -197,7 +196,7 @@ public class NanaService {
   }
 
   // upload 하는 페이지에서 존재하는 나나스핔 id - 언어별 보여주기
-  public HashMap<Long, List<String>> getExistNanaListInfo() {
+  public Map<Long, List<String>> getExistNanaListInfo() {
     // id - List<Language> 형태의 해쉬
     HashMap<Long, List<String>> result = new HashMap<>();
     List<NanaTitle> nanaTitles = nanaTitleRepository.findAll();
@@ -219,6 +218,8 @@ public class NanaService {
     return result;
   }
 
+  // 나나스픽 생성
+  // TODO : 모듈화한 부분이니 제거해도 괜찮을 것 같아보임
   @Transactional
   public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
     try {
@@ -241,7 +242,6 @@ public class NanaService {
         }
         // nana 생성해서 저장하기
         nana = createNanaByNanaUploadDto(nanaUploadDto);
-        nanaId = nanaRepository.save(nana).getId();
       } else {// 이미 존재하는 nana인 경우
         nana = getNanaById(nanaId);
 
@@ -255,7 +255,7 @@ public class NanaService {
           existNanaContentImages = true;
         }
 
-        /**
+        /*
          * 이미 존재하는 경우 한국어 버전 NanaContent의 수와 비교한다.
          * (nanaContent들은 KOREAN nana Content의 사진들 공유 하기 때문에 기준은 KOREAN 버전)
          * 기존의 content 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
@@ -347,6 +347,7 @@ public class NanaService {
     return result;
   }
 
+  // 키워드 리스트 반환
   private List<String> getStringKeywordListFromHashtagList(List<Hashtag> hashtagList) {
     return hashtagList.stream()
         .map(hashtag -> hashtag.getKeyword().getContent())
@@ -384,7 +385,7 @@ public class NanaService {
 
   private int countKoreanNanaContents(Nana nana) {
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, Language.KOREAN)
-        .orElseThrow(() -> new ServerErrorException("나나's pick 생성 중 존재하는 NanaTitle 찾지 못함"));
+        .orElseThrow(() -> new ServerErrorException(NANA_TITLE_NOT_FOUND.getMessage()));
     return nanaContentRepository.countNanaContentByNanaTitle(nanaTitle);
   }
 

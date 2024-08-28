@@ -44,7 +44,8 @@ public class FestivalController {
   @Parameter(name = "startDate", description = "날짜는 yyyyMMdd 형태 ex) 20240430 / endDate도 동일,"
       + " 날짜 선택 안했을 경우 startDate, endDate 파라미터에 추가 안해주시면 됩니다.(이 경우 오늘 날짜 포함한 축제 반환)")
   @GetMapping("/this-month")
-  public BaseResponse<FestivalThumbnailDto> getFestival(@AuthMember MemberInfoDto memberInfoDto,
+  public BaseResponse<FestivalThumbnailDto> getThisMonthFestivalList(
+      @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
       @RequestParam(defaultValue = "") List<String> addressFilterList,
@@ -63,7 +64,8 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/past")
-  public BaseResponse<FestivalThumbnailDto> getPastFestival(@AuthMember MemberInfoDto memberInfoDto,
+  public BaseResponse<FestivalThumbnailDto> getPastFestivalList(
+      @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
       @RequestParam(defaultValue = "") List<String> addressFilterList) {
@@ -80,7 +82,7 @@ public class FestivalController {
   })
   @Parameter(name = "season", description = "spring, summer, autumn, winter 형태로 입력 받음. (default 값은 따로 없으며 프론트에서 월로 구분하여 초기 값 세팅 해주어야 합니다.)")
   @GetMapping("/season")
-  public BaseResponse<FestivalThumbnailDto> getSeasonFestival(
+  public BaseResponse<FestivalThumbnailDto> getSeasonFestivalList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
@@ -99,7 +101,7 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<FestivalDetailDto> getNatureDetail(
+  public BaseResponse<FestivalDetailDto> getFestivalDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam(defaultValue = "false") boolean isSearch) {

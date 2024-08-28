@@ -1,5 +1,7 @@
 package com.jeju.nanaland.global.image_upload;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.EXTRACT_NAME_ERROR;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
@@ -14,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -57,20 +58,6 @@ public class S3ImageService {
     }
   }
 
-  /*
-  TODO
-  dto 생성하면 인풋 수정.
-   */
-  @Transactional
-  public List<S3ImageDto> uploadAndSaveImages(List<MultipartFile> multipartFileList,
-      boolean autoThumbnail, String directory) throws IOException {
-    List<S3ImageDto> imageFileList = new ArrayList<>();
-    for (MultipartFile multipartFile : multipartFileList) {
-      imageFileList.add(uploadImageToS3(multipartFile, autoThumbnail, directory));
-    }
-    return imageFileList;
-  }
-
   private String generateUniqueFileName(String extension) {
     // 오늘 날짜 yyMMdd 포맷으로 string 타입 생성
     String uniqueId = UUID.randomUUID().toString().substring(0, 16);
@@ -107,12 +94,10 @@ public class S3ImageService {
     String originalImageUrl = uploadImage(multipartFile, directory, uploadImageName);
 
     //true, false로 구분해서 썸네일 만들고 안만들고 동작.
-    String thumbnailImageUrl = "";
+    String thumbnailImageUrl = originalImageUrl;
     if (autoThumbnail) {
       //섬네일 생성 후 저장
       thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
-    } else {
-      thumbnailImageUrl = originalImageUrl;
     }
 
     return S3ImageDto.builder()
@@ -218,7 +203,7 @@ public class S3ImageService {
       // "images/" 다음의 부분 추출
       return parts[1];
     } else {
-      throw new ServerErrorException("이미지 파일 이름 추출 에러");
+      throw new ServerErrorException(EXTRACT_NAME_ERROR.getMessage());
     }
   }
 

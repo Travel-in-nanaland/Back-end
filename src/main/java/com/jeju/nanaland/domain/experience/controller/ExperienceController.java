@@ -41,7 +41,7 @@ public class ExperienceController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<ExperienceThumbnailDto> getCultureAndArtsList(
+  public BaseResponse<ExperienceThumbnailDto> getExperienceList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
       @RequestParam(defaultValue = "") List<ExperienceTypeKeyword> keywordFilterList,
@@ -64,13 +64,13 @@ public class ExperienceController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<ExperienceDetailDto> getMarketDetail(
+  public BaseResponse<ExperienceDetailDto> getExperienceDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam(defaultValue = "false") boolean isSearch) {
 
-    ExperienceDetailDto experienceDetails = experienceService.getExperienceDetails(memberInfoDto,
+    ExperienceDetailDto experienceDetail = experienceService.getExperienceDetail(memberInfoDto,
         id, isSearch);
-    return BaseResponse.success(EXPERIENCE_DETAIL_SUCCESS, experienceDetails);
+    return BaseResponse.success(EXPERIENCE_DETAIL_SUCCESS, experienceDetail);
   }
 }

@@ -60,11 +60,10 @@ public class SearchService {
   private final FavoriteService favoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
-  public SearchResponse.AllCategoryDto searchAllResultDto(MemberInfoDto memberInfoDto,
-      String keyword) {
+  // 카테고리 검색
+  public SearchResponse.AllCategoryDto searchAll(MemberInfoDto memberInfoDto, String keyword) {
 
     Language locale = memberInfoDto.getLanguage();
-    Member member = memberInfoDto.getMember();
 
     // Redis에 해당 검색어 count + 1
     updateSearchCountV1(keyword, locale);
@@ -73,20 +72,18 @@ public class SearchService {
     int page = 0;
     int size = 2;
     return SearchResponse.AllCategoryDto.builder()
-        .nature(searchNatureResultDto(memberInfoDto, keyword, page, size))
-        .festival(searchFestivalResultDto(memberInfoDto, keyword, page, size))
-        .market(searchMarketResultDto(memberInfoDto, keyword, page, size))
-        .experience(searchExperienceResultDto(memberInfoDto, keyword, page, size))
-        .restaurant(searchRestaurantResultDto(memberInfoDto, keyword, page, size))
-        .nana(searchNanaResultDto(memberInfoDto, keyword, page, size))
+        .nature(searchNature(memberInfoDto, keyword, page, size))
+        .festival(searchFestival(memberInfoDto, keyword, page, size))
+        .market(searchMarket(memberInfoDto, keyword, page, size))
+        .experience(searchExperience(memberInfoDto, keyword, page, size))
+        .restaurant(searchRestaurant(memberInfoDto, keyword, page, size))
+        .nana(searchNana(memberInfoDto, keyword, page, size))
         .build();
   }
 
-  public SearchResponse.ResultDto searchNatureResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 자연 검색
+  public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -115,11 +112,9 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchFestivalResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 축제 검색
+  public SearchResponse.ResultDto searchFestival(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -148,11 +143,9 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchExperienceResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 이색체험 검색
+  public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -181,11 +174,9 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchMarketResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 전통시장 검색
+  public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -213,11 +204,9 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchRestaurantResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 제주 맛집 검색
+  public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -245,11 +234,9 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchNanaResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 나나스픽 검색
+  public SearchResponse.ResultDto searchNana(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -277,6 +264,7 @@ public class SearchService {
         .build();
   }
 
+  // 인기 검색어 조회
   public List<String> getPopularSearch(Language locale) {
     String language = locale.name();
 
@@ -348,6 +336,7 @@ public class SearchService {
     redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
   }
 
+  // 검색량 UP 게시물 조회
   public List<SearchVolumeDto> getTopSearchVolumePosts(MemberInfoDto memberInfoDto) {
     List<String> topSearchVolumeList = getTopSearchVolumeList();
 

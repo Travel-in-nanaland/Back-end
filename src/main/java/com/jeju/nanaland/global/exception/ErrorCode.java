@@ -3,6 +3,7 @@ package com.jeju.nanaland.global.exception;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
@@ -22,7 +23,6 @@ public enum ErrorCode {
   REVIEW_IMAGE_BAD_REQUEST(BAD_REQUEST, "리뷰 이미지는 최대 5장까지 가능합니다."),
   START_DATE_AFTER_END_DATE(BAD_REQUEST, "endDate가 startDate보다 앞서 있습니다."),
   INVALID_EXPERIENCE_TYPE(BAD_REQUEST, "이색체험 타입은 ACTIVITY, CULTURE_AND_ARTS 만 가능합니다."),
-  INVALID_EXPERIENCE_KEYWORD_TYPE(BAD_REQUEST, "잘못된 이색체험 키워드입니다."),
   INVALID_RESTAURANT_KEYWORD_TYPE(BAD_REQUEST, "잘못된 맛집 키워드입니다."),
   REVIEW_INVALID_CATEGORY(BAD_REQUEST, "해당 카테고리는 리뷰를 제공하지 않습니다."),
   REVIEW_KEYWORD_DUPLICATION(BAD_REQUEST, "리뷰 카테고리가 중복 되었습니다."),
@@ -33,8 +33,9 @@ public enum ErrorCode {
   REVIEW_ALREADY_REPORTED(BAD_REQUEST, "이미 신고된 리뷰입니다."),
 
   //INTERNAL_SERVER_ERROR
-  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버측 에러입니다."),
-  DAY_OF_WEEK_MAPPING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "나라별 요일 추출 에러입니다."),
+  SERVER_ERROR(INTERNAL_SERVER_ERROR, "서버측 에러입니다."),
+  EXTRACT_NAME_ERROR(INTERNAL_SERVER_ERROR, "이미지 파일 이름 추출 에러"),
+  MAIL_FAIL_ERROR(INTERNAL_SERVER_ERROR, "메일 전송 실패"),
 
   //UNAUTHORIZED
   UNAUTHORIZED_USER(UNAUTHORIZED, "access token이 존재하지 않습니다."),
@@ -51,13 +52,13 @@ public enum ErrorCode {
   NANA_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana 입니다."),
   NANA_TITLE_NOT_FOUND(NOT_FOUND, "존재하지 않는 Nana Title 입니다."),
   MEMBER_CONSENT_NOT_FOUND(NOT_FOUND, "존재하는 이용약관 동의 여부를 찾을 수 없습니다"),
-  MEMBER_WTIHDRAWAL_NOT_FOUND(NOT_FOUND, "존재하는 회원의 탈퇴 상태를 찾을 수 없습니다"),
+  MEMBER_WITHDRAWAL_NOT_FOUND(NOT_FOUND, "존재하는 회원의 탈퇴 상태를 찾을 수 없습니다"),
   CATEGORY_NOT_FOUND(NOT_FOUND, "존재하는 카테고리를 찾을 수 없습니다."),
   REVIEW_NOT_FOUND(NOT_FOUND, "존재하는 리뷰를 찾을 수 없습니다."),
   MEMBER_REVIEW_NOT_FOUND(NOT_FOUND, "유저가 작성한 리뷰를 찾을 수 없습니다."),
-  POST_NOT_FOUND(NOT_FOUND, "존재하는 post를 찾을 수 없습니다."),
-  IMAGE_FILE_NOT_FOUND(NOT_FOUND, "존재하는 이미지를 찾을 수 없습니다."),
   NOTICE_NOT_FOUND(NOT_FOUND, "존재하는 공지사항을 찾을 수 없습니다."),
+  KEYWORD_NOT_FOUND(NOT_FOUND, "존재하지 않는 키워드 입니다."),
+  INFO_TYPE_NOT_FOUND(NOT_FOUND, "존재하지 않는 InfoType 입니다."),
   LANGUAGE_NOT_FOUND(NOT_FOUND, "지원하지 않는 언어입니다."),
 
   // CONFLICT
@@ -66,6 +67,7 @@ public enum ErrorCode {
   NICKNAME_DUPLICATE(CONFLICT, "해당 닉네임은 다른 사용자가 사용 중입니다."),
 
   // FORBIDDEN
+  NANA_INFO_FIX_FORBIDDEN(FORBIDDEN, "나나스픽 게시물은 정보 수정 요청이 불가능합니다."),
   FORBIDDEN_EXCEPTION(FORBIDDEN, "접근 권한이 없습니다."),
   REVIEW_SELF_LIKE_FORBIDDEN(FORBIDDEN, "본인의 리뷰는 좋아요를 누를 수 없습니다.");
 

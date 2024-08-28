@@ -286,7 +286,7 @@ class MemberLoginServiceTest {
 
     // then
     assertThat(notFoundException.getMessage()).isEqualTo(
-        ErrorCode.MEMBER_WTIHDRAWAL_NOT_FOUND.getMessage());
+        ErrorCode.MEMBER_WITHDRAWAL_NOT_FOUND.getMessage());
   }
 
   @Test
@@ -313,7 +313,6 @@ class MemberLoginServiceTest {
     Language language = Language.KOREAN;
     Member member = createMember(language);
     LoginDto loginDto = createLoginDto(Language.ENGLISH.name());
-    Language languageEnglish = Language.ENGLISH;
 
     // when
     memberLoginService.updateLanguageDifferent(loginDto, member);

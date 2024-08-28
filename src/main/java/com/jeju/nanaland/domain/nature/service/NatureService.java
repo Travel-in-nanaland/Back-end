@@ -31,7 +31,7 @@ public class NatureService {
   private final SearchService searchService;
   private final ImageFileService imageFileService;
 
-
+  // 7대 자연 리스트 조회
   public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList, String keyword, int page, int size) {
 
@@ -39,6 +39,7 @@ public class NatureService {
     Page<NatureThumbnail> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
         memberInfoDto.getLanguage(), addressFilterList, keyword, pageable);
 
+    // 좋아요 여부
     List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
@@ -53,6 +54,7 @@ public class NatureService {
         .build();
   }
 
+  // 7대 자연 상세 정보 조회
   public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
     NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage());
@@ -61,10 +63,12 @@ public class NatureService {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
 
+    // 검색을 통해 요청되었다면 count
     if (isSearch) {
       searchService.updateSearchVolumeV1(NATURE, id);
     }
 
+    // 좋아요 여부 확인
     boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
         id);
 

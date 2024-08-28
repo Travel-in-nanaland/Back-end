@@ -32,7 +32,7 @@ public class VideoFileService {
       return saveS3VideoFile(s3VideoDto);
     } catch (IOException e) {
       e.printStackTrace();
-      throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+      throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
     }
   }
 }
