@@ -5,9 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum NoticeCategory {
-  // TODO : 공지사항 카테고리 번역 별로 수정하기
-  NOTICE("공지 사항", "enNo", "zhNo", "msNo", "viNo"),
-  UPDATE("개편 사항", "enUp", "zhUp", "msUp", "viUp");
+  NOTICE("공지사항", "Announcement", "公告", "Pengumuman", "Thông báo"),
+  UPDATE("개편사항", "Reorganization matters", "项目变更", "Hal penyusunan semula", "Vấn đề tái tổ chức");
 
   private final String kr;
   private final String en; //영어
