@@ -18,7 +18,6 @@ public enum ExperienceTypeKeyword {
       "Pengalaman luar bandar", "Trải nghiệm nông thôn"),
   HEALING_THERAPY(ExperienceType.ACTIVITY, "힐링테라피", "Healing Therapy", "治愈疗法",
       "Terapi Penyembuhan", "Liệu pháp chữa lành"),
-
   HISTORY(ExperienceType.CULTURE_AND_ARTS, "역사", "History", "历史", "Sejarah", "Lịch sử"),
   EXHIBITION(ExperienceType.CULTURE_AND_ARTS, "전시회", "Exhibition", "展览", "Pameran", "Triển lãm"),
   WORKSHOP(ExperienceType.CULTURE_AND_ARTS, "공방", "Experience Workshop", "体验工艺坊",

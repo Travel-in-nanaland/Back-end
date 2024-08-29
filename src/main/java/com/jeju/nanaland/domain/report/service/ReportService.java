@@ -1,7 +1,10 @@
 package com.jeju.nanaland.domain.report.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.MAIL_FAIL_ERROR;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_ALREADY_REPORTED;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOWED;
@@ -87,14 +90,15 @@ public class ReportService {
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
 
+  // 정보 수정 제안
   @Transactional
-  public void postInfoFixReport(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
+  public void requestPostInfoFix(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
       List<MultipartFile> imageList) {
 
     Category category = Category.valueOf(reqDto.getCategory());
     // 나나스픽 전처리
     if (List.of(Category.NANA, Category.NANA_CONTENT).contains(category)) {
-      throw new BadRequestException("나나스픽 게시물은 정보 수정 요청이 불가능합니다.");
+      throw new BadRequestException(NANA_INFO_FIX_FORBIDDEN.getMessage());
     }
 
     // 이미지 5장 이상 전처리
@@ -107,7 +111,7 @@ public class ReportService {
     Language language = memberInfoDto.getLanguage();
     CompositeDto compositeDto = findCompositeDto(category, postId, language);
     if (compositeDto == null) {
-      throw new NotFoundException("해당 축제 게시물이 없습니다.");
+      throw new NotFoundException(NOT_FOUND_EXCEPTION.getMessage());
     }
 
     // InfoFixReport 저장
@@ -144,6 +148,7 @@ public class ReportService {
     };
   }
 
+  // 신고 기능
   @Transactional
   public void requestClaimReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
       List<MultipartFile> fileList) {
@@ -186,8 +191,7 @@ public class ReportService {
         CLAIM_REPORT_FILE_DIRECTORY);
 
     // claimReportVideoFile 동영상 저장
-    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, claimReport,
-        CLAIM_REPORT_FILE_DIRECTORY);
+    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, claimReport);
 
     // 이메일 전송
     List<String> combinedUrlList = new ArrayList<>(imageUrlList);
@@ -195,6 +199,7 @@ public class ReportService {
     sendEmailReport(reqDto.getEmail(), claimReport, combinedUrlList);
   }
 
+  // 상황별 요청 유효 확인
   private void validateReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
     ReportType reportType = ReportType.valueOf(reqDto.getReportType());
     // 리뷰를 신고하는 경우 - 리뷰 데이터 조회, 본인이 작성한 것인지 확인
@@ -215,8 +220,8 @@ public class ReportService {
     }
   }
 
+  // 이미 신고한 적이 있는지 확인
   private void checkExistingReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
-    // 이미 신고한 적이 있는지 확인
     Optional<ClaimReport> claimReportOptional = claimReportRepository.findByMemberAndIdAndReportType(
         memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
 
@@ -225,6 +230,7 @@ public class ReportService {
     }
   }
 
+  // 이미지 저장
   private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
       String directory) {
     List<String> imageUrlList = new ArrayList<>();
@@ -274,13 +280,12 @@ public class ReportService {
     return imageFileList;
   }
 
-  private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ClaimReport report,
-      String directory) {
+  // 동영상 저장
+  private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ClaimReport report) {
     List<String> videoUrlList = new ArrayList<>();
     if (videoFiles != null) {
       // 동영상 파일 저장
-      List<ClaimReportVideoFile> claimReportVideoFiles = saveVideoFiles(videoFiles, report,
-          directory);
+      List<ClaimReportVideoFile> claimReportVideoFiles = saveVideoFiles(videoFiles, report);
 
       // 동영상 연관 관계 저장 && url 반환
       claimReportVideoFileRepository.saveAll(claimReportVideoFiles);
@@ -293,10 +298,11 @@ public class ReportService {
 
   // 동영상 파일 저장 && 동영상 연관 관계 생성
   private List<ClaimReportVideoFile> saveVideoFiles(List<MultipartFile> videoFiles,
-      ClaimReport report, String directory) {
+      ClaimReport report) {
     List<ClaimReportVideoFile> videoFileList = new ArrayList<>();
     for (MultipartFile video : videoFiles) {
-      VideoFile videoFile = videoFileService.uploadAndSaveVideoFile(video, directory);
+      VideoFile videoFile = videoFileService.uploadAndSaveVideoFile(video,
+          ReportService.CLAIM_REPORT_FILE_DIRECTORY);
 
       videoFileList.add(ClaimReportVideoFile.builder()
           .videoFile(videoFile)
@@ -306,16 +312,18 @@ public class ReportService {
     return videoFileList;
   }
 
+  // 메일 전송
   private void sendEmailReport(String email, Object report, List<String> imageUrlList) {
     try {
       MimeMessage mimeMessage = createReportMail(email, report, imageUrlList);
       javaMailSender.send(mimeMessage);
     } catch (Exception e) {
       log.error(e.getMessage());
-      throw new ServerErrorException("메일 전송 실패");
+      throw new ServerErrorException(MAIL_FAIL_ERROR.getMessage());
     }
   }
 
+  // 메일 생성
   private MimeMessage createReportMail(String memberEmail, Object report, List<String> imageUrlList)
       throws MessagingException, UnsupportedEncodingException {
     MimeMessage message = javaMailSender.createMimeMessage();

@@ -41,7 +41,7 @@ public class ImageFileService {
       return saveS3ImageFile(s3ImageDto);
     } catch (IOException e) {
       e.printStackTrace();
-      throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+      throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
     }
   }
 
@@ -54,7 +54,7 @@ public class ImageFileService {
       return saveS3ImageFile(s3ImageDto);
     } catch (IOException e) {
       e.printStackTrace();
-      throw new ServerErrorException(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+      throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
     }
   }
 

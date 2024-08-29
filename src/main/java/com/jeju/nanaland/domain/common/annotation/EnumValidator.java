@@ -36,10 +36,10 @@ public class EnumValidator implements ConstraintValidator<EnumValid, Object> {
       return true;
     }
 
-    if (value instanceof String) { //단일 String일경우
-      return isValidStringValue((String) value);
-    } else if (value instanceof List) { // List일 경우
-      return isValidListValue((List<?>) value);
+    if (value instanceof String string) { // 단일 String일 경우
+      return isValidStringValue(string);
+    } else if (value instanceof List<?> list) { // List일 경우
+      return isValidListValue(list);
     } else {
       return false;
     }
@@ -47,8 +47,7 @@ public class EnumValidator implements ConstraintValidator<EnumValid, Object> {
 
   private boolean isValidStringValue(String value) {
     if (ignoreCase) {
-      return acceptedValues.stream()
-          .anyMatch(enumValue -> enumValue.equalsIgnoreCase(value));
+      return acceptedValues.stream().anyMatch(enumValue -> enumValue.equalsIgnoreCase(value));
     } else {
       return acceptedValues.contains(value);
     }

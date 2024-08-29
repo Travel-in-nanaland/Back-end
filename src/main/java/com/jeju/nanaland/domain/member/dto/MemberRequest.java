@@ -64,6 +64,9 @@ public class MemberRequest {
     @NotBlank
     @Size(max = 12, message = "닉네임 최대 길이 초과")
     private String nickname;
+
+    @Schema(description = "fcm 토큰")
+    private String fcmToken;
   }
 
   @Data
@@ -91,6 +94,9 @@ public class MemberRequest {
     @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
     @NotBlank
     private String providerId;
+
+    @Schema(description = "fcm 토큰")
+    private String fcmToken;
   }
 
   @Data

@@ -103,12 +103,13 @@ public class MemberController {
   @PostMapping("/logout")
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
       @Parameter(name = "accessToken", hidden = true)
-      @RequestHeader("Authorization") String accessToken) {
-    memberLoginService.logout(memberInfoDto, accessToken);
+      @RequestHeader("Authorization") String accessToken,
+      @RequestParam(required = false) String fcmToken) {
+    memberLoginService.logout(memberInfoDto, accessToken, fcmToken);
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
 
-  @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
+  @Operation(summary = "JWT 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
       + "header에 AccessToken이 아닌 RefreshToken을 담아 요청해주세요.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
@@ -118,8 +119,9 @@ public class MemberController {
   @GetMapping("/reissue")
   public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-    JwtDto jwtDto = memberLoginService.reissue(refreshToken);
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken,
+      @RequestParam(required = false) String fcmToken) {
+    JwtDto jwtDto = memberLoginService.reissue(refreshToken, fcmToken);
     return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }
 
@@ -154,7 +156,7 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommended")
-  public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
+  public BaseResponse<List<RecommendPostDto>> getRecommendPostsByType(
       @AuthMember MemberInfoDto memberInfoDto) {
 
     List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);

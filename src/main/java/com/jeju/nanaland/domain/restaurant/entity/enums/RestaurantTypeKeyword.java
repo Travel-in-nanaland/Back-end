@@ -25,7 +25,6 @@ public enum RestaurantTypeKeyword {
       "Quán cà phê/Món tráng miệng"),
   PUB_FOOD_PUB("펍/요리주점", "Pub/Restaurant", "酒吧/餐厅", "Pub/Restoran", "Quán rượu/Nhà hàng");
 
-
   private final String kr;
   private final String en; //영어
   private final String zh; //중국어

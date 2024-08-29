@@ -69,11 +69,11 @@ public class ReviewController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
-//      @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping(value = "{id}",
+  @PostMapping(value = "/{id}",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<String> uploadReview(
+  public BaseResponse<String> saveReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
@@ -105,7 +105,7 @@ public class ReviewController {
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
   @GetMapping("/preview")
-  public BaseResponse<MemberReviewPreviewDto> getReviewList(
+  public BaseResponse<MemberReviewPreviewDto> getReviewPreviewByMember(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(required = false) Long memberId
   ) {
@@ -121,7 +121,7 @@ public class ReviewController {
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<MemberReviewListDto> getReviewList(
+  public BaseResponse<MemberReviewListDto> getReviewListByMember(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(required = false) Long memberId,
       @RequestParam(defaultValue = "0") int page,
@@ -143,7 +143,7 @@ public class ReviewController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
     return BaseResponse.success(MY_REVIEW_DETAIL_SUCCESS,
-        reviewService.getMyReviewById(memberInfoDto, id));
+        reviewService.getMyReviewDetail(memberInfoDto, id));
   }
 
   @Operation(summary = "내가 쓴 리뷰 수정")
@@ -154,7 +154,7 @@ public class ReviewController {
   })
   @PutMapping(value = "/my/{id}",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<String> editMyReviewDetail(
+  public BaseResponse<String> updateMyReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestPart(required = false) List<MultipartFile> imageList,
@@ -173,7 +173,7 @@ public class ReviewController {
   public BaseResponse<String> deleteMyReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    reviewService.deleteMyReviewById(memberInfoDto, id);
+    reviewService.deleteMyReview(memberInfoDto, id);
     return BaseResponse.success(REVIEW_DELETE_SUCCESS);
   }
 
@@ -184,13 +184,11 @@ public class ReviewController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/search/auto-complete")
-  public BaseResponse<List<SearchPostForReviewDto>> toggleReviewHeart(
+  public BaseResponse<List<SearchPostForReviewDto>> getAutoCompleteSearchResultForReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam String keyword) {
     return BaseResponse.success(REVIEW_HEART_SUCCESS,
         reviewService.getAutoCompleteSearchResultForReview(
             memberInfoDto, keyword));
   }
-
-
 }

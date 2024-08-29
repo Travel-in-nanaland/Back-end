@@ -2,7 +2,9 @@ package com.jeju.nanaland.domain.favorite.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
+import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -31,4 +33,6 @@ public interface FavoriteRepositoryCustom {
   Page<ThumbnailDto> findRestaurantThumbnails(Member member, Language language, Pageable pageable);
 
   ThumbnailDto findRestaurantThumbnailByPostId(Member member, Long postId, Language language);
+
+  List<Favorite> findAllFavoriteToSendNotification();
 }

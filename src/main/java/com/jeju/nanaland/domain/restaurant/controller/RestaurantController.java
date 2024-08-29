@@ -67,8 +67,8 @@ public class RestaurantController {
       @PathVariable Long id,
       @RequestParam(defaultValue = "false") boolean isSearch) {
 
-    RestaurantDetailDto restaurantDetails = restaurantService.getRestaurantDetails(memberInfoDto,
+    RestaurantDetailDto restaurantDetail = restaurantService.getRestaurantDetail(memberInfoDto,
         id, isSearch);
-    return BaseResponse.success(RESTAURANT_DETAIL_SUCCESS, restaurantDetails);
+    return BaseResponse.success(RESTAURANT_DETAIL_SUCCESS, restaurantDetail);
   }
 }

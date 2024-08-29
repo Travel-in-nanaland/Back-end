@@ -24,8 +24,8 @@ public class CompositeDto {
 
   @QueryProjection
   public CompositeDto(Long id, String originUrl, String thumbnailUrl, String contact,
-      Language locale, String title, String content, String address,
-      String addressTag, String time) {
+      Language locale, String title, String content, String address, String addressTag,
+      String time) {
     this.id = id;
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
     this.contact = contact;

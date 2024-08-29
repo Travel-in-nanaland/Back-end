@@ -29,6 +29,7 @@ public class MemberConsentService {
   private final MemberConsentRepository memberConsentRepository;
   private final MemberRepository memberRepository;
 
+  // 이용약관 생성
   public void createMemberConsents(Member member, List<ConsentItem> consentItems) {
     Map<ConsentType, Boolean> consentItemMap = consentItems.stream()
         .collect(Collectors.toMap(
@@ -36,6 +37,7 @@ public class MemberConsentService {
             ConsentItem::getConsent
         ));
 
+    // 필수 이용약관이 false인 경우
     Boolean termsOfUseConsent = consentItemMap.get(ConsentType.TERMS_OF_USE);
     if (termsOfUseConsent == null || !termsOfUseConsent) {
       throw new BadRequestException(ErrorCode.MEMBER_CONSENT_BAD_REQUEST.getMessage());
@@ -54,6 +56,7 @@ public class MemberConsentService {
     memberConsentRepository.saveAll(memberConsents);
   }
 
+  // 매일, 동의일로부터 1년 6개월이 지난 경우, 동의 여부를 false로 변환
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   public void checkTermsValidity() {
@@ -63,6 +66,7 @@ public class MemberConsentService {
     }
   }
 
+  // 이용약관 동의 여부 수정
   @Transactional
   public void updateMemberConsent(MemberInfoDto memberInfoDto, ConsentUpdateDto consentUpdateDto) {
     MemberConsent memberConsent = memberConsentRepository.findByConsentTypeAndMember(

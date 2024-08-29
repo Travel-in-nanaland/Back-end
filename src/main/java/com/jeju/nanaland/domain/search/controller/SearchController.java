@@ -42,11 +42,11 @@ public class SearchController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/all")
-  public BaseResponse<AllCategoryDto> searchCategory(
+  public BaseResponse<AllCategoryDto> searchAll(
       @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword) {
 
-    SearchResponse.AllCategoryDto result = searchService.searchAllResultDto(memberInfoDto, keyword);
+    SearchResponse.AllCategoryDto result = searchService.searchAll(memberInfoDto, keyword);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -63,7 +63,7 @@ public class SearchController {
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
-    ResultDto result = searchService.searchNatureResultDto(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchNature(memberInfoDto, keyword, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -81,7 +81,7 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchFestivalResultDto(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchFestival(memberInfoDto, keyword, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -99,7 +99,7 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchExperienceResultDto(memberInfoDto, keyword, page,
+    ResultDto result = searchService.searchExperience(memberInfoDto, keyword, page,
         size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
@@ -118,7 +118,7 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchMarketResultDto(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchMarket(memberInfoDto, keyword, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -136,7 +136,7 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchNanaResultDto(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchNana(memberInfoDto, keyword, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -154,7 +154,7 @@ public class SearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchRestaurantResultDto(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchRestaurant(memberInfoDto, keyword, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 

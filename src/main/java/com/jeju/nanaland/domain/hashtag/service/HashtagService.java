@@ -7,6 +7,7 @@ import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.hashtag.repository.KeywordRepository;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class HashtagService {
   private final KeywordRepository keywordRepository;
   private final HashtagRepository hashtagRepository;
 
+  // 해시태그 생성
   @Transactional
   public void registerHashtag(List<String> stringKeywordList, Language language, Category category,
       Post post) {
@@ -35,9 +37,9 @@ public class HashtagService {
             .build());
       } else {
         keyword = keywordRepository.findByContent(stringKeyword)
-            .orElseThrow(() -> new NotFoundException("존재하지 않는 keyword 입니다."));
-
+            .orElseThrow(() -> new NotFoundException(ErrorCode.KEYWORD_NOT_FOUND.getMessage()));
       }
+
       //Hashtag 생성
       hashtagList.add(Hashtag.builder()
           .category(category)
@@ -51,6 +53,7 @@ public class HashtagService {
     hashtagRepository.saveAll(hashtagList);
   }
 
+  // 해시태그 존재 여부
   private boolean existKeyword(String content) {
     return keywordRepository.existsByContent(content);
   }

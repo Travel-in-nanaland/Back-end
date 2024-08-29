@@ -11,10 +11,6 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum SuccessCode {
-  // api 만들고 수정하기
-  CUSTOM_SUCCESS(OK, "~~ 조회에 성공했습니다."),
-  CUSTOM_CREATED_SUCCESS(CREATED, "~ 생성에 성공했습니다."),
-
   // member type service
   UPDATE_MEMBER_TYPE_SUCCESS(OK, "사용자 타입 업데이트에 성공했습니다."),
   GET_RECOMMENDED_POSTS_SUCCESS(OK, "사용자 추천 게시물 조회에 성공했습니다."),
@@ -81,7 +77,11 @@ public enum SuccessCode {
 
   // notice
   NOTICE_LIST_SUCCESS(OK, "공지사항 리스트 조회 성공"),
-  NOTICE_DETAIL_SUCCESS(OK, "공지사항 상세 조회 성공");
+  NOTICE_DETAIL_SUCCESS(OK, "공지사항 상세 조회 성공"),
+
+  // notification
+  NOTIFICATION_LIST_SUCCESS(OK, "알림 조회 성공"),
+  SEND_NOTIFICATION_SUCCESS(CREATED, "알림 전송 성공");
 
   private final HttpStatus httpStatus;
   private final String message;

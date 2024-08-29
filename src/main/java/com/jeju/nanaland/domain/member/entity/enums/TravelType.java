@@ -8,9 +8,10 @@ import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.SEN
 import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.THEME_PARK;
 import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.TOURIST_SPOT;
 import static com.jeju.nanaland.domain.member.entity.enums.TravelTypeHashtag.TRADITION;
+import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.exception.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,9 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Slf4j
 public enum TravelType {
-  /**
-   * TODO: 언어 별 번역된 타입 값 수정
-   */
+  // TODO: 언어 별 번역된 타입 값 수정
   NONE(null, null, null, null, null, null),
   GAMGYUL_ICECREAM(
       "감귤 아이스크림", "Mandarin ice cream", "Ais Krim  Mandarin", "zh", "vi",
@@ -100,11 +99,6 @@ public enum TravelType {
       case CHINESE -> this.zh;
       case MALAYSIA -> this.ms;
       case VIETNAMESE -> this.vi;
-      default -> {
-        String errorMessage = locale.name() + "에 해당하는 언어 정보가 없습니다.";
-        log.error(errorMessage);
-        throw new ServerErrorException(errorMessage);
-      }
     };
   }
 
@@ -138,11 +132,7 @@ public enum TravelType {
           result.add(hashtag.getVi());
         }
       }
-      default -> {
-        String errorMessage = language.name() + "에 해당하는 언어 정보가 없습니다.";
-        log.error(errorMessage);
-        throw new ServerErrorException(errorMessage);
-      }
+      default -> throw new BadRequestException(REQUEST_VALIDATION_EXCEPTION.getMessage());
     }
 
     return result;
