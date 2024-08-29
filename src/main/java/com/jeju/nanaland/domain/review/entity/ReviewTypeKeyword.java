@@ -6,25 +6,24 @@ import lombok.Getter;
 @Getter
 public enum ReviewTypeKeyword {
 
-  // TODO : 리뷰 해시태그 번역 별로  수정하기
-  ANNIVERSARY(Type.MOOD, "기념일에 가면 좋아요", "enAn", "zhAn", "msAn", "viAn"),
-  CUTE(Type.MOOD, "아기자기해요", "enCu", "zhCu", "msCu", "viCu"),
-  LUXURY(Type.MOOD, "고급스러워요", "enLu", "zhLu", "msLu", "viLu"),
-  SCENERY(Type.MOOD, "풍경이 예뻐요", "enSc", "zhSc", "msSc", "viSc"),
-  KIND(Type.MOOD, "친절해요", "enKi", "zhKi", "msKi", "viKi"),
+  ANNIVERSARY(Type.MOOD, "기념일에 가면 좋아요", "Good for anniversaries", "适合于纪念日", "Sesuai untuk ulang tahun", "Phù hợp cho kỷ niệm"),
+  CUTE(Type.MOOD, "아기자기해요", "It's cute", "小巧可爱", "Ia comel", "Nó dễ thương"),
+  LUXURY(Type.MOOD, "고급스러워요", "It's luxurious", "很高档", "Ia mewah", "Nó sang trọng"),
+  SCENERY(Type.MOOD, "풍경이 예뻐요", "The scenery is pretty", "风景很美", "Pemandangannya cantik", "Phong cảnh đẹp"),
+  KIND(Type.MOOD, "친절해요", "You are kind.", "好亲切", "Anda baik hati.", "Bạn rất tốt bụng."),
 
-  CHILDREN(Type.COMPANION, "자녀", "enCh", "zhCh", "msCh", "viCh"),
-  FRIEND(Type.COMPANION, "친구", "enFr", "zhFr", "msFr", "viFr"),
-  PARENTS(Type.COMPANION, "부모님", "enPa", "zhPa", "msPa", "viPa"),
-  ALONE(Type.COMPANION, "혼자", "enAl", "zhAl", "msAl", "viAl"),
-  HALF(Type.COMPANION, "연인/배우자", "enHa", "zhHa", "msHa", "viHa"),
-  RELATIVE(Type.COMPANION, "친척/형제", "enRe", "zhRe", "msRe", "viRe"),
-  PET(Type.COMPANION, "반려동물", "enPe", "zhPe", "msPe", "viPe"),
+  CHILDREN(Type.COMPANION, "자녀", "Children", "子女", "Kanak-kanak", "Trẻ em"),
+  FRIEND(Type.COMPANION, "친구", "Friend", "朋友", "Kawan", "Bạn bè"),
+  PARENTS(Type.COMPANION, "부모님", "Parents", "父母", "Ibu bapa", "Cha mẹ"),
+  ALONE(Type.COMPANION, "혼자", "Alone", "单独", "Bersendirian", "Một mình"),
+  HALF(Type.COMPANION, "연인/배우자", "Lover/Spouse", "爱人/配偶", "Kekasih/Pasangan", "Người yêu/Vợ chồng"),
+  RELATIVE(Type.COMPANION, "친척/형제", "Relative/Sibling", "亲戚/兄弟姐妹", "Saudara-mara/Adik-beradik", "Người thân/Anh chị em"),
+  PET(Type.COMPANION, "반려동물", "Pet", "宠物", "Haiwan peliharaan", "Thú cưng"),
 
-  OUTLET(Type.AMENITIES, "콘센트 사용 가능", "enOu", "zhOu", "msOu", "viOu"),
-  LARGE(Type.AMENITIES, "넓은 장소", "enLa", "zhLa", "msLa", "viLa"),
-  PARK(Type.AMENITIES, "주차장", "enPa", "zhPa", "msPa", "viPa"),
-  BATHROOM(Type.AMENITIES, "깨끗한 화장실", "enBa", "zhBa", "msBa", "viBa");
+  OUTLET(Type.AMENITIES, "콘센트 사용 가능", "Outlet available", "提供电源插座", "Soket tersedia", "Có ổ cắm điện"),
+  LARGE(Type.AMENITIES, "넓은 장소", "Wide", "宽敞", "Luas", "Rộng rãi"),
+  PARK(Type.AMENITIES, "주차장", "Parking lot", "停车场", "Tempat letak kereta", "Bãi đậu xe"),
+  BATHROOM(Type.AMENITIES, "깨끗한 화장실", "Clean toilet", "洁净的卫生间", "Tandas bersih", "Nhà vệ sinh sạch sẽ");
 
   private final Type type;
   private final String kr;
