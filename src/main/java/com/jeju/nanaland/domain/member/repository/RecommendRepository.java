@@ -9,6 +9,4 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long>,
     RecommendRepositoryCustom {
 
   List<Recommend> findAllByTravelType(TravelType travelType);
-
-  List<Long> findAllIds();
 }

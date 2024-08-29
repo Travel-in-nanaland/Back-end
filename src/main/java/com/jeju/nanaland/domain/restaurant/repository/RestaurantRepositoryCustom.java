@@ -24,6 +24,8 @@ public interface RestaurantRepositoryCustom {
 
   Page<RestaurantCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable);
-  
+
   List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
+
+  List<Long> findAllIds();
 }

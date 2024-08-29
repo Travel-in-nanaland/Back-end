@@ -25,4 +25,6 @@ public interface ExperienceRepositoryCustom {
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSet(Long postId);
 
   List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
+
+  List<Long> findAllIds();
 }
