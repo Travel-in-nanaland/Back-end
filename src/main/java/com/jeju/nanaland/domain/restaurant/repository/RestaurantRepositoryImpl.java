@@ -230,4 +230,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .where(restaurantTrans.language.eq(language))
         .fetch();
   }
+
+  @Override
+  public List<Long> findAllIds() {
+    return queryFactory
+        .select(restaurant.id)
+        .from(restaurant)
+        .fetch();
+  }
 }

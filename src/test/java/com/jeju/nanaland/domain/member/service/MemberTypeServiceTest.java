@@ -13,7 +13,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.experience.entity.Experience;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -24,7 +24,6 @@ import com.jeju.nanaland.domain.member.repository.RecommendRepository;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +47,7 @@ class MemberTypeServiceTest {
   RecommendRepository recommendRepository;
 
   @Mock
-  FavoriteRepository favoriteRepository;
+  FavoriteService favoriteService;
 
   @DisplayName("타입 수정 - NONE 타입이 아닐 때")
   @ParameterizedTest
@@ -85,9 +84,8 @@ class MemberTypeServiceTest {
     when(recommendRepository.findExperienceRecommendPostDto(null, locale, travelType))
         .thenReturn(RecommendPostDto.builder().build());
     when(
-        favoriteRepository.findByMemberAndCategoryAndPostId(eq(member), any(Category.class),
-            eq(null)))
-        .thenReturn(Optional.empty());
+        favoriteService.isPostInFavorite(eq(member), any(Category.class), eq(null)))
+        .thenReturn(true);
 
     // when
     List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
@@ -102,8 +100,8 @@ class MemberTypeServiceTest {
         .findNatureRecommendPostDto(null, locale, travelType);
     verify(recommendRepository, times(1))
         .findExperienceRecommendPostDto(null, locale, travelType);
-    verify(favoriteRepository, times(2))
-        .findByMemberAndCategoryAndPostId(eq(member), any(Category.class), eq(null));
+    verify(favoriteService, times(2))
+        .isPostInFavorite(eq(member), any(Category.class), eq(null));
   }
 
   @DisplayName("추천 게시물 반환 - NONE 타입일 때")
@@ -126,9 +124,8 @@ class MemberTypeServiceTest {
         any(TravelType.class)))
         .thenReturn(RecommendPostDto.builder().build());
     when(
-        favoriteRepository.findByMemberAndCategoryAndPostId(eq(member), any(Category.class),
-            eq(null)))
-        .thenReturn(Optional.empty());
+        favoriteService.isPostInFavorite(eq(member), any(Category.class), eq(null)))
+        .thenReturn(true);
 
     // when
     List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
@@ -143,8 +140,8 @@ class MemberTypeServiceTest {
         .findNatureRecommendPostDto(eq(null), eq(locale), any(TravelType.class));
     verify(recommendRepository, times(1))
         .findExperienceRecommendPostDto(eq(null), eq(locale), any(TravelType.class));
-    verify(favoriteRepository, times(2))
-        .findByMemberAndCategoryAndPostId(eq(member), any(Category.class), eq(null));
+    verify(favoriteService, times(2))
+        .isPostInFavorite(eq(member), any(Category.class), eq(null));
   }
 
   @DisplayName("추천 게시물 반환 - 추천 게시물이 너무 적을 때")

@@ -181,6 +181,14 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetch();
   }
 
+  @Override
+  public List<Long> findAllIds() {
+    return queryFactory
+        .select(experience.id)
+        .from(experience)
+        .fetch();
+  }
+
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(experience.id)
