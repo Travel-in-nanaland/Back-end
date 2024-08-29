@@ -131,6 +131,8 @@ public class FavoriteService {
           .member(memberInfoDto.getMember())
           .category(category)
           .post(post)
+          .status("ACTIVE")
+          .notificationCount(0)
           .build();
 
       // 좋아요 추가
