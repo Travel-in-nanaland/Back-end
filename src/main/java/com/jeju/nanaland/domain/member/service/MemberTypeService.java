@@ -4,8 +4,9 @@ import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.favorite.entity.Favorite;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
+import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -13,10 +14,11 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.RecommendRepository;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,9 @@ public class MemberTypeService {
 
   private static final Random RANDOM = new Random();
   private final RecommendRepository recommendRepository;
-  private final FavoriteRepository favoriteRepository;
+  private final FavoriteService favoriteService;
+  private final RestaurantRepository restaurantRepository;
+  private final ExperienceRepository experienceRepository;
 
   // 유저 타입 갱신
   @Transactional
@@ -78,24 +82,49 @@ public class MemberTypeService {
   public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
 
     // 랜덤으로 추천 게시물 2개 조회
-    List<Recommend> recommends = recommendRepository.findRandomTwoRecommends();
-    if (recommends == null || recommends.size() < 2) {
-      String errorMessage = "추천 게시물이 없거나 너무 적습니다.";
-      log.error(errorMessage);
-      throw new NotFoundException(errorMessage);
-    }
+    int totalCount = 0;
+    List<Long> recommendIds = recommendRepository.findAllIds();
+    List<Long> experienceIds = experienceRepository.findAllIds();
+    List<Long> restaurantIds = restaurantRepository.findAllIds();
+    totalCount += recommendIds.size();
+    totalCount += experienceIds.size();
+    totalCount += restaurantIds.size();
 
-    // Recommend 정보를 RecommendPostDto 형태로 변환
+    int index1 = RANDOM.nextInt(totalCount);
+    int index2;
+    do {
+      index2 = RANDOM.nextInt(totalCount);
+    } while (index1 == index2);
+    List<Integer> indexList = List.of(index1, index2);
+
     List<RecommendPostDto> result = new ArrayList<>();
-    for (Recommend recommend : recommends) {
-      Long postId = recommend.getPost().getId();
-      Category category = recommend.getCategory();
-      TravelType travelType = recommend.getTravelType();
+    for (Integer randomIndex : indexList) {
+      // 랜덤 게시물이 recommend 에 있는 경우
+      if (randomIndex < recommendIds.size()) {
+        Recommend recommend = recommendRepository.findById(recommendIds.get(randomIndex))
+            .orElseThrow(() -> new NotFoundException("해당 추천 게시물이 존재하지 않습니다."));
 
-      result.add(getRecommendPostDto(member, postId, locale, travelType, category));
+        Long postId = recommend.getPost().getId();
+        TravelType travelType = recommend.getTravelType();
+        Category category = recommend.getCategory();
+        result.add(getRecommendPostDto(member, postId, language, travelType, category));
+      }
+      // 랜덤 게시물이 이색체험인 경우
+      else if (randomIndex < recommendIds.size() + experienceIds.size()) {
+        randomIndex -= recommendIds.size();
+        Long postId = experienceIds.get(randomIndex);
+        result.add(getExperiencePostDto(member, postId, language));
+      }
+      // 랜덤 게시물이 맛집인 경우
+      else {
+        randomIndex -= recommendIds.size();
+        randomIndex -= experienceIds.size();
+        Long postId = restaurantIds.get(randomIndex);
+        result.add(getRestaurantPostDto(member, postId, language));
+      }
     }
 
     return result;
@@ -126,11 +155,42 @@ public class MemberTypeService {
       throw new NotFoundException(errorMessage);
     }
 
-    Optional<Favorite> favorite = favoriteRepository.findByMemberAndCategoryAndPostId(member,
-        category, postId);
-    if (favorite.isPresent()) {
-      recommendPostDto.setFavorite(true);
-    }
+    // 좋아요 여부 체크
+    recommendPostDto.setFavorite(favoriteService.isPostInFavorite(member, category, postId));
+
+    return recommendPostDto;
+  }
+
+  private RecommendPostDto getExperiencePostDto(Member member, Long postId, Language language) {
+    ExperienceCompositeDto compositeDto = experienceRepository.findCompositeDtoById(postId,
+        language);
+    RecommendPostDto recommendPostDto = RecommendPostDto.builder()
+        .id(compositeDto.getId())
+        .category(Category.EXPERIENCE.name())
+        .title(compositeDto.getTitle())
+        .firstImage(compositeDto.getFirstImage())
+        .build();
+
+    // 좋아요 여부 체크
+    recommendPostDto.setFavorite(
+        favoriteService.isPostInFavorite(member, Category.EXPERIENCE, postId));
+
+    return recommendPostDto;
+  }
+
+  private RecommendPostDto getRestaurantPostDto(Member member, Long postId, Language language) {
+    RestaurantCompositeDto compositeDto = restaurantRepository.findCompositeDtoById(postId,
+        language);
+    RecommendPostDto recommendPostDto = RecommendPostDto.builder()
+        .id(compositeDto.getId())
+        .category(Category.RESTAURANT.name())
+        .title(compositeDto.getTitle())
+        .firstImage(compositeDto.getFirstImage())
+        .build();
+
+    // 좋아요 여부 체크
+    recommendPostDto.setFavorite(
+        favoriteService.isPostInFavorite(member, Category.RESTAURANT, postId));
 
     return recommendPostDto;
   }
