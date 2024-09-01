@@ -177,6 +177,7 @@ public class MemberLoginService {
     }
   }
 
+  @Transactional
   public JwtDto reissue(String bearerRefreshToken, String fcmToken) {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
