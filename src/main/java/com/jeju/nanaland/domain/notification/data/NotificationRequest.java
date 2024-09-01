@@ -4,13 +4,17 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.notification.entity.eums.NotificationCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class NotificationRequest {
 
   @Getter
   @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Schema(description = "알림 정보")
   public static class NotificationDto {
 

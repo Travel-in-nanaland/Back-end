@@ -56,7 +56,7 @@ public class NotificationController {
       summary = "알림 전체 전송 - ADMIN 권한의 토큰 필요",
       description = "모든 유저에게 알림 전송 - ADMIN 권한의 토큰 필요")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "201", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "FCM을 통한 알림 전송 실패")
   })

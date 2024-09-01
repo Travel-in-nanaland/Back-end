@@ -5,6 +5,73 @@
   <title>Nanaland Admin Page</title>
 </head>
 <body>
+<ul id="linkList">
+  <!-- 링크 리스트가 자바스크립트로 동적으로 생성됩니다. -->
+</ul>
 
+<script>
+  // 현재 도메인 및 프로토콜 가져오기
+  const domain = window.location.origin;
+
+  // ADMIN 인증 정보 확인
+  const accessToken = localStorage.getItem('accessToken');
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (!accessToken || !refreshToken) {
+    window.location.href = '/admin/login';
+  }
+
+  // 토큰 갱신 API 요청
+  const reissuePath = domain + '/member/reissue';
+  fetch(reissuePath, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ` + refreshToken,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status == 200) {
+      // accessToken, refreshToken 정보 갱신
+      localStorage.setItem('accessToken', data.data.accessToken);
+      localStorage.setItem('refreshToken', data.data.refreshToken);
+    }
+    // refreshToken 만료됨
+    else {
+      window.location.href = '/admin/login';
+    }
+  })
+  .catch(error => {
+    window.location.href = '/admin/login';
+  })
+
+  // 상대 경로 리스트
+  const links = [
+    {name: "모든 유저에게 알림 전송", path: "/admin/notification"},
+    {name: "개별 유저에게 알림 전송", path: "/admin/notification"},
+  ];
+
+  // 링크 리스트 요소 가져오기
+  const linkList = document.getElementById('linkList');
+
+  // 경로와 도메인을 결합하여 링크 생성 및 리스트에 추가
+  links.forEach(link => {
+    const fullUrl = link.path.startsWith("http") ? link.path : domain + link.path;
+
+    // li 요소 생성
+    const listItem = document.createElement('li');
+
+    // a 요소 생성 및 설정
+    const anchor = document.createElement('a');
+    anchor.href = fullUrl;
+    anchor.textContent = link.name;
+
+    // li 요소에 a 요소 추가
+    listItem.appendChild(anchor);
+
+    // ul 요소에 li 요소 추가
+    linkList.appendChild(listItem);
+  });
+</script>
 </body>
 </html>
