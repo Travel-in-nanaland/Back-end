@@ -47,7 +47,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(authHttpRequests -> authHttpRequests
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/favicon.ico",
                 "/member/join", "/member/login", "/member/reissue", "/share/**",
-                "member/forceWithdrawal", "nana/upload", "/notification/**")
+                "member/forceWithdrawal", "nana/upload", "/admin", "/admin/login")
             .permitAll()
             .requestMatchers("/favorite/**")
             .hasAnyRole("MEMBER", "ADMIN")
@@ -55,7 +55,7 @@ public class SecurityConfig {
             .hasAnyRole("MEMBER", "ADMIN")
             .requestMatchers(HttpMethod.POST, "/nana/upload")
             .permitAll()
-            .requestMatchers("/notification/send/*")
+            .requestMatchers("/notification/send/*", "/admin/**")
             .hasRole("ADMIN")
             .anyRequest().authenticated());
 

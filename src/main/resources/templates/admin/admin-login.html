@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Nanaland Admin Login</title>
+  <style>
+    .error-message {
+      color: red;
+      margin-bottom: 10px;
+    }
+  </style>
+  <script>
+    function handleLogin(event) {
+      event.preventDefault();
+      form = event.target;
+      const formData = {
+        locale: document.querySelector('select[name="locale"]').value,
+        provider: document.querySelector('select[name="provider"]').value,
+        providerId: document.querySelector('input[name="providerId"]').value,
+      };
+
+      console.log(formData)
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // 응답 데이터에서 status 확인
+        if (data.status === 200) {
+          // accessToken과 refreshToken을 로컬 스토리지에 저장
+          localStorage.setItem('accessToken', data.data.accessToken);
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+
+          // 로그인 성공 후 리다이렉트
+          window.location.href = '/admin';
+        } else {
+          // 로그인 실패 처리 (예: status가 200이 아닌 경우)
+          document.getElementById('formErrors').textContent = 'Login failed: ' + data.message;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('formErrors').textContent = 'An unexpected error occurred.';
+      });
+    }
+  </script>
+</head>
+<body>
+<div class="login-container">
+  <h2>Admin Login</h2>
+  <!-- 에러 메시지를 표시할 요소 -->
+  <div class="error-message" id="formErrors"></div>
+  <div class="error-message" id="loginError"></div>
+  <form method="post" onsubmit="handleLogin(event)" th:action="@{/admin/login}"
+        th:object="${loginDto}">
+
+    <select name="locale" th:field="*{locale}">
+      <option value="KOREAN">KOREAN</option>
+      <option value="ENGLISH">ENGLISH</option>
+      <option value="CHINESE">CHINESE</option>
+      <option value="MALAYSIA">MALAYSIA</option>
+      <option value="VIETNAMESE">VIETNAMESE</option>
+    </select>
+
+    <select name="provider" th:field="*{provider}">
+      <option value="KAKAO">KAKAO</option>
+      <option value="GOOGLE">GOOGLE</option>
+      <option value="APPLE">APPLE</option>
+      <option value="GUEST">GUEST</option>
+    </select>
+
+    <input autofocus name="providerId" placeholder="providerId" required th:field="*{providerId}"
+           type="text">
+
+    <button type="submit">Login</button>
+  </form>
+</div>
+</body>
+</html>
