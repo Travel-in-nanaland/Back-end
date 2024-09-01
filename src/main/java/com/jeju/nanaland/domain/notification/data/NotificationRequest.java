@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class NotificationRequest {
 
@@ -40,7 +41,10 @@ public class NotificationRequest {
   }
 
   @Getter
+  @Setter
   @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Schema(description = "특정 유저에게 알림 요청")
   public static class NotificationWithTargetDto {
 

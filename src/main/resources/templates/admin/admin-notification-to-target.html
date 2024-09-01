@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>전체 알림 전송</title>
+  <title>개별 알림 전송</title>
   <style>
     .error-message {
       color: red;
@@ -15,15 +15,18 @@
     }
   </style>
   <script>
-    function sendNotificationToAll(event) {
+    function sendNotificationToTarget(event) {
       event.preventDefault();
       form = event.target;
       const formData = {
-        category: document.querySelector('select[name="category"]').value,
-        contentId: document.querySelector('input[name="contentId"]').value,
-        title: document.querySelector('input[name="title"]').value,
-        content: document.querySelector('input[name="content"]').value,
-        language: document.querySelector('select[name="language"]').value,
+        memberId: document.querySelector('input[name="memberId"]').value,
+        notificationDto: {
+          category: document.querySelector('select[name="category"]').value,
+          contentId: document.querySelector('input[name="contentId"]').value,
+          title: document.querySelector('input[name="title"]').value,
+          content: document.querySelector('input[name="content"]').value,
+          language: document.querySelector('select[name="language"]').value,
+        }
       };
 
       console.log(formData)
@@ -90,14 +93,17 @@
   </script>
 </head>
 <body>
-<form method="post" onsubmit="sendNotificationToAll(event)" th:action="@{/notification/send/all}"
-      th:object="${notificationDto}">
+<form method="post" onsubmit="sendNotificationToTarget(event)" th:action="@{/notification/send}"
+      th:object="${reqDto}">
 
-  <h2>전체 알림 전송</h2>
+  <h2>개별 알림 전송</h2>
   <hr>
   <br>
 
-  <select name="category" th:field="*{category}">
+  <input name="memberId" placeholder="memberId" required th:field="*{memberId}"
+         type="number">
+
+  <select name="category" th:field="*{notificationDto.category}">
     <option value="NANA">NANA</option>
     <option value="EXPERIENCE">EXPERIENCE</option>
     <option value="FESTIVAL">FESTIVAL</option>
@@ -108,16 +114,16 @@
     <option value="NONE">NONE</option>
   </select>
 
-  <input name="contentId" placeholder="contentId" required th:field="*{contentId}"
+  <input name="contentId" placeholder="contentId" required th:field="*{notificationDto.contentId}"
          type="number">
 
-  <input name="title" placeholder="title" required th:field="*{title}"
+  <input name="title" placeholder="title" required th:field="*{notificationDto.title}"
          type="text">
 
-  <input name="content" placeholder="content" required th:field="*{content}"
+  <input name="content" placeholder="content" required th:field="*{notificationDto.content}"
          type="text">
 
-  <select name="language" th:field="*{language}">
+  <select name="language" th:field="*{notificationDto.language}">
     <option value="KOREAN">KOREAN</option>
     <option value="ENGLISH">ENGLISH</option>
     <option value="CHINESE">CHINESE</option>
