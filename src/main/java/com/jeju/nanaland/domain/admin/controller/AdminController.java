@@ -27,13 +27,13 @@ public class AdminController {
 
   @GetMapping("")
   public String home() {
-    return "/admin/admin-home.html";
+    return "admin/admin-home.html";
   }
 
   @GetMapping("/login")
   public String loginPage(Model model) {
     model.addAttribute("loginDto", new LoginDto());
-    return "/admin/admin-login.html";
+    return "admin/admin-login.html";
   }
 
   @ResponseBody
