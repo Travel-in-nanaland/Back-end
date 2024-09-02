@@ -3,6 +3,7 @@ package com.jeju.nanaland.global.exception;
 import static com.jeju.nanaland.global.exception.ErrorCode.BAD_REQUEST_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.CONFLICT_DATA;
 import static com.jeju.nanaland.global.exception.ErrorCode.EXPIRED_TOKEN;
+import static com.jeju.nanaland.global.exception.ErrorCode.FORBIDDEN_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.SERVER_ERROR;
@@ -59,6 +60,13 @@ public class ControllerAdvice {
   @ExceptionHandler(UnauthorizedException.class)
   public BaseResponse<String> handleUnauthorizedException(UnauthorizedException e) {
     return BaseResponse.error(EXPIRED_TOKEN, e.getMessage());
+  }
+
+  // 403에러
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ExceptionHandler(ForbiddenException.class)
+  public BaseResponse<String> handleForbiddenException(ForbiddenException e) {
+    return BaseResponse.error(FORBIDDEN_EXCEPTION, e.getMessage());
   }
 
   // 404에러

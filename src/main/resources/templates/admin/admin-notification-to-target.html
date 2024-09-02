@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>개별 알림 전송</title>
+  <style>
+    .error-message {
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .success-message {
+      color: blue;
+      margin-bottom: 10px;
+    }
+  </style>
+  <script>
+    function sendNotificationToTarget(event) {
+      event.preventDefault();
+      form = event.target;
+      const formData = {
+        memberId: document.querySelector('input[name="memberId"]').value,
+        notificationDto: {
+          category: document.querySelector('select[name="category"]').value,
+          contentId: document.querySelector('input[name="contentId"]').value,
+          title: document.querySelector('input[name="title"]').value,
+          content: document.querySelector('input[name="content"]').value,
+          language: document.querySelector('select[name="language"]').value,
+        }
+      };
+
+      console.log(formData)
+
+      // 현재 도메인 및 프로토콜 가져오기
+      const domain = window.location.origin;
+
+      // ADMIN 인증 정보 확인
+      const accessToken = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!accessToken || !refreshToken) {
+        window.location.href = '/admin/login';
+      }
+
+      // 토큰 갱신 API 요청
+      const reissuePath = domain + '/member/reissue';
+      fetch(reissuePath, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ` + refreshToken,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status == 200) {
+          // accessToken, refreshToken 정보 갱신
+          localStorage.setItem('accessToken', data.data.accessToken);
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+        }
+        // refreshToken 만료됨
+        else {
+          window.location.href = '/admin/login';
+        }
+      })
+      .catch(error => {
+        window.location.href = '/admin/login';
+      })
+
+      // 알림 전송 API 호출
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ` + accessToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // 응답 데이터에서 status 확인
+        if (data.status === 201) {
+          document.getElementById('sendSuccess').textContent = '알림 전송 성공';
+        } else {
+          // 로그인 실패 처리 (예: status가 200이 아닌 경우)
+          document.getElementById('sendError').textContent = '전송 실패: ' + data.message;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('sendError').textContent = 'An unexpected error occurred.';
+      });
+    }
+  </script>
+</head>
+<body>
+<form method="post" onsubmit="sendNotificationToTarget(event)" th:action="@{/notification/send}"
+      th:object="${reqDto}">
+
+  <h2>개별 알림 전송</h2>
+  <hr>
+  <br>
+
+  <input name="memberId" placeholder="memberId" required th:field="*{memberId}"
+         type="number">
+
+  <select name="category" th:field="*{notificationDto.category}">
+    <option value="NANA">NANA</option>
+    <option value="EXPERIENCE">EXPERIENCE</option>
+    <option value="FESTIVAL">FESTIVAL</option>
+    <option value="NATURE">NATURE</option>
+    <option value="MARKET">MARKET</option>
+    <option value="RESTAURANT">RESTAURANT</option>
+    <option value="NOTICE">NOTICE</option>
+    <option value="NONE">NONE</option>
+  </select>
+
+  <input name="contentId" placeholder="contentId" required th:field="*{notificationDto.contentId}"
+         type="number">
+
+  <input name="title" placeholder="title" required th:field="*{notificationDto.title}"
+         type="text">
+
+  <input name="content" placeholder="content" required th:field="*{notificationDto.content}"
+         type="text">
+
+  <select name="language" th:field="*{notificationDto.language}">
+    <option value="KOREAN">KOREAN</option>
+    <option value="ENGLISH">ENGLISH</option>
+    <option value="CHINESE">CHINESE</option>
+    <option value="MALAYSIA">MALAYSIA</option>
+    <option value="VIETNAMESE">VIETNAMESE</option>
+  </select>
+
+  <br>
+
+  <!-- 에러 메시지를 표시할 요소 -->
+  <div class="error-message" id="sendError"></div>
+  <!-- 성공 메시지를 표시할 요소 -->
+  <div class="success-message" id="sendSuccess"></div>
+  <button type="submit">알림 전송</button>
+</form>
+</body>
+</html>
