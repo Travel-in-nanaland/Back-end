@@ -5,6 +5,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_CREATED_SUCC
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_DELETE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_HEART_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_LIST_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REVIEW_UPDATE_SUCCESS;
 
 import com.jeju.nanaland.domain.common.data.Category;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -186,8 +188,8 @@ public class ReviewController {
   @GetMapping("/search/auto-complete")
   public BaseResponse<List<SearchPostForReviewDto>> getAutoCompleteSearchResultForReview(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam String keyword) {
-    return BaseResponse.success(REVIEW_HEART_SUCCESS,
+      @RequestParam String keyword) throws ExecutionException, InterruptedException {
+    return BaseResponse.success(REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS,
         reviewService.getAutoCompleteSearchResultForReview(
             memberInfoDto, keyword));
   }
