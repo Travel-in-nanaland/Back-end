@@ -14,12 +14,12 @@ public class AdminNotificationController {
   @GetMapping("/all")
   public String notificationToAll(Model model) {
     model.addAttribute("notificationDto", new NotificationDto());
-    return "/admin/admin-notification-to-all.html";
+    return "admin/admin-notification-to-all.html";
   }
 
   @GetMapping("/target")
   public String notificationToTarget(Model model) {
     model.addAttribute("reqDto", new NotificationWithTargetDto());
-    return "/admin/admin-notification-to-target.html";
+    return "admin/admin-notification-to-target.html";
   }
 }
