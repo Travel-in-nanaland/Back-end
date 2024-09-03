@@ -48,7 +48,13 @@ public class S3ImageService {
   @Value("thumbnail_")
   private String thumbnailPrefix;
 
-  public void verifyExtension(MultipartFile multipartFile) throws UnsupportedFileFormatException {
+  /**
+   * multipartFile의 확장자 검사
+   *
+   * @param multipartFile 확장자 검사를 받을 파일
+   * @throws UnsupportedFileFormatException 확장자가 jpeg, png, jpg, webp가 아닌 경우
+   */
+  private void verifyExtension(MultipartFile multipartFile) throws UnsupportedFileFormatException {
     String contentType = multipartFile.getContentType();
 
     if (ObjectUtils.isEmpty(contentType) ||
@@ -58,6 +64,12 @@ public class S3ImageService {
     }
   }
 
+  /**
+   * 파일 이름 생성기
+   *
+   * @param extension 전달받은 확장자
+   * @return uuid + "_" + formatted_date + extension -> 랜덤 값 + 생성시간 + 확장자
+   */
   private String generateUniqueFileName(String extension) {
     // 오늘 날짜 yyMMdd 포맷으로 string 타입 생성
     String uniqueId = UUID.randomUUID().toString().substring(0, 16);
@@ -65,12 +77,30 @@ public class S3ImageService {
     return uniqueId + "_" + formattedDate + extension;
   }
 
+  // TODO 이미지 별 디릭토리 추가?? - Enum으로 디렉토리 관리? 음 근데 코드로 업로드할 일이 있으려나
+  //                            이미지 저장을 기본 디렉토리인 /images 로 고정
+
+  /**
+   * @param multipartFile s3에 업로드 할 파일
+   * @param autoThumbnail 썸네일 생성 여부
+   * @return originUrl, thumbnailUrl을 갖는 S3ImageDto
+   * @throws IOException multipartFile 문제가 있을 경우
+   */
   @Transactional
   public S3ImageDto uploadOriginImageToS3(MultipartFile multipartFile, boolean autoThumbnail)
       throws IOException {
     return uploadImageToS3(multipartFile, autoThumbnail, imageDirectory);
   }
 
+  // TODO 저장 장소를 매개변수로 받음. 위에 uploadOriginImageToS3랑 합쳐야 할듯.
+
+  /**
+   * @param multipartFile s3에 업로드 할 파일
+   * @param autoThumbnail 썸네일 생성 여부
+   * @param directory     S3 저장소 접두사
+   * @return originUrl, thumbnailUrl을 갖는 S3ImageDto
+   * @throws IOException
+   */
   @Transactional
   public S3ImageDto uploadImageToS3(MultipartFile multipartFile, boolean autoThumbnail,
       String directory)
@@ -91,11 +121,11 @@ public class S3ImageService {
     String uploadImageName = generateUniqueFileName(extension);
 
     //S3에 사진 올리기
-    String originalImageUrl = uploadImage(multipartFile, directory, uploadImageName);
+    String originalImageUrl = uploadOriginImage(multipartFile, directory, uploadImageName);
 
     //true, false로 구분해서 썸네일 만들고 안만들고 동작.
     String thumbnailImageUrl = originalImageUrl;
-    if (autoThumbnail) {
+    if (autoThumbnail) { // autoThumbnail이 True인 경우 thumbnailImageUrl 갱신
       //섬네일 생성 후 저장
       thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
     }
@@ -106,7 +136,16 @@ public class S3ImageService {
         .build();
   }
 
-  public String uploadImage(MultipartFile multipartFile, String directory, String imageName)
+  /**
+   * s3에 원본 이미지 저장
+   *
+   * @param multipartFile s3에 업로드할 이미지
+   * @param directory     S3 저장소 접두사
+   * @param imageName     저장할 이미지 이름
+   * @return 저장된 이미지 URL
+   * @throws IOException
+   */
+  private String uploadOriginImage(MultipartFile multipartFile, String directory, String imageName)
       throws IOException {
     //메타데이터 설정
     ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -117,6 +156,14 @@ public class S3ImageService {
     return amazonS3Client.getUrl(bucketName + directory, imageName).toString();
   }
 
+  /**
+   * @param multipartFile
+   * @param objectMetadata
+   * @param imageName
+   * @return
+   * @throws IOException
+   * @deprecated 직접 썸네일 올리는 경우 없음.
+   */
   // 자동 생성 아닌 직접 썸네일 올릴 때만 사용
   public String uploadImageToDirectory(MultipartFile multipartFile, ObjectMetadata objectMetadata,
       String imageName)
@@ -126,7 +173,16 @@ public class S3ImageService {
     return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
   }
 
-  public String makeThumbnailImageAndUpload(MultipartFile multipartFile, String originImageFileName)
+  /**
+   * orignImage resize하여 썸네일 생성 후 s3에 저장
+   *
+   * @param multipartFile       썸네일 만들기 전 원본 이미지
+   * @param originImageFileName 원본 이미지 파일 이름 (썸네일 이름 접두사 + 원본 이미지 파일이름으로 썸네일 생성)
+   * @return 저장된 썸네일 url
+   * @throws IOException
+   */
+  private String makeThumbnailImageAndUpload(MultipartFile multipartFile,
+      String originImageFileName)
       throws IOException {
     String uploadThumbnailImageName = thumbnailPrefix + originImageFileName;
     BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
@@ -161,6 +217,11 @@ public class S3ImageService {
         .toString();
   }
 
+  /**
+   * imageFile 객체로 이미지 S3에서 삭제
+   *
+   * @param imageFile 삭제할 ImageFile 객체
+   */
   // 이미지 여러 개 삭제 필요시 추후 별도 메서드 생성 예정.
   @Transactional
   public void deleteImageS3(ImageFile imageFile) {
@@ -179,6 +240,11 @@ public class S3ImageService {
     }
   }
 
+  /**
+   * url로 이미지 삭제
+   *
+   * @param originUrl 저장된 사진 url로 s3에서 이미지 삭제
+   */
   @Transactional
   public void deleteImageS3ByOriginUrl(String originUrl) {
     // 원본 파일 이름 찾기
@@ -196,8 +262,13 @@ public class S3ImageService {
     }
   }
 
+  // TODO 여기 images/를 기준으로 split?? 해도되나???
 
-  public String extractFileName(String accessUrl) {
+  /**
+   * @param accessUrl
+   * @return
+   */
+  private String extractFileName(String accessUrl) {
     String[] parts = accessUrl.split("images/");
     if (parts.length > 1) {
       // "images/" 다음의 부분 추출
@@ -207,6 +278,12 @@ public class S3ImageService {
     }
   }
 
+  // TODO 멤버 사진을 디렉토리로 나눈다면 수정 필요. (ImageFileService로 옮기는 것이 좋을 듯)
+
+  /**
+   * @param profileImageFile 사용자 프로필 사진
+   * @return defaultProfileImage이면 True, 커스텀 프로필 이미지이면 False
+   */
   public boolean isDefaultProfileImage(ImageFile profileImageFile) {
     List<String> defaultProfile = Arrays.asList("LightPurple.png", "LightGray.png", "Gray.png",
         "DeepBlue.png");
@@ -214,6 +291,12 @@ public class S3ImageService {
     return defaultProfile.contains(fileName);
   }
 
+  // TODO 이것도 디렉토리를 나누다면 수정 필요
+
+  /**
+   * @param imageName 이미지 이름
+   * @return
+   */
   public S3ImageDto getS3Urls(String imageName) {
     String originUrl = amazonS3Client.getUrl(bucketName + imageDirectory,
         imageName).toString();
@@ -226,6 +309,14 @@ public class S3ImageService {
         .build();
   }
 
+  /**
+   * 썸네일 생성을 위한 이미지 height resize resize된 크기 width: 600px 고정 height: 원본이 가로로 길었다면 450px 고정, 세로로 길면
+   * (원본 세로) / (원본 가로) * 600
+   *
+   * @param file 이미지 원본
+   * @return
+   * @throws IOException
+   */
   private int getResizeImageHeight(MultipartFile file) throws IOException {
     BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
 
