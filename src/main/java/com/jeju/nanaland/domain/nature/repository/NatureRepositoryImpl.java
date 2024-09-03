@@ -18,7 +18,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -142,21 +141,20 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Optional<PostCardDto> findPostCardDto(Long postId, Language language) {
-    return Optional.ofNullable(
-        queryFactory
-            .select(new QPostCardDto(
-                nature.id,
-                natureTrans.title,
-                imageFile.originUrl,
-                imageFile.thumbnailUrl
-            ))
-            .from(nature)
-            .innerJoin(nature.natureTrans, natureTrans)
-            .innerJoin(nature.firstImageFile, imageFile)
-            .where(nature.id.eq(postId),
-                natureTrans.language.eq(language))
-            .fetchOne());
+  public PostCardDto findPostCardDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostCardDto(
+            nature.id,
+            natureTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(nature)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(nature.id.eq(postId),
+            natureTrans.language.eq(language))
+        .fetchOne();
   }
 
   private BooleanExpression addressTagCondition(List<String> addressFilterList) {
