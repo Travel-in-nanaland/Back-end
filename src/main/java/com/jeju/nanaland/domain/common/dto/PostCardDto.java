@@ -24,11 +24,10 @@ public class PostCardDto {
   private ImageFileDto firstImage;
 
   @QueryProjection
-  public PostCardDto(Long id, String title, String category, String originUrl,
+  public PostCardDto(Long id, String title, String originUrl,
       String thumbnailUrl) {
     this.id = id;
     this.title = title;
-    this.category = category;
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
   }
 }

@@ -12,20 +12,20 @@ public class FavoriteResponse {
 
   @Data
   @Builder
-  @Schema(description = "찜리스트 조회 결과")
-  public static class FavoriteThumbnailDto {
+  @Schema(name = "FavoriteThumbnailsDto", description = "찜리스트 조회 결과")
+  public static class ThumbnailsDto {
 
     @Schema(description = "총 찜 리스트 개수")
     private Long totalElements;
 
     @Schema(description = "찜 리스트 데이터 리스트")
-    private List<ThumbnailDto> data;
+    private List<Thumbnail> data;
   }
 
   @Data
   @Builder
   @AllArgsConstructor
-  public static class ThumbnailDto {
+  public static class Thumbnail {
 
     @Schema(description = "게시물 id")
     private Long id;
@@ -40,7 +40,7 @@ public class FavoriteResponse {
     private ImageFileDto firstImage;
 
     @QueryProjection
-    public ThumbnailDto(Long id, String title, String category, String originUrl,
+    public Thumbnail(Long id, String title, String category, String originUrl,
         String thumbnailUrl) {
       this.id = id;
       this.title = title;

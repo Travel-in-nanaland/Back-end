@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.notification.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.Thumbnail;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
@@ -41,7 +41,7 @@ public class FavoriteNotificationService {
       Long postId = favorite.getPost().getId();
       Language language = member.getLanguage();
 
-      ThumbnailDto thumbnailDto = favoriteService.getThumbnailDto(member, postId, language,
+      Thumbnail thumbnailDto = favoriteService.getThumbnail(member, postId, language,
           category);
       String postTitle = thumbnailDto.getTitle();
       String notificationTitle = getFavoriteNotificationTitle(postTitle, member.getNickname(),

@@ -9,8 +9,7 @@ import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteThumbnailDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.Thumbnail;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
@@ -46,7 +45,8 @@ public class FavoriteService {
   private final RestaurantRepository restaurantRepository;
 
   // 전체 찜리스트 조회
-  public FavoriteThumbnailDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page, int size) {
+  public FavoriteResponse.ThumbnailsDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page,
+      int size) {
 
     Member member = memberInfoDto.getMember();
     Language language = memberInfoDto.getLanguage();
@@ -55,24 +55,24 @@ public class FavoriteService {
     // Favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
     Page<Favorite> favorites = favoriteRepository
         .findAllByMemberAndStatusOrderByCreatedAtDesc(member, "ACTIVE", pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    List<FavoriteResponse.Thumbnail> thumbnails = new ArrayList<>();
 
     // Favorite의 postId, 카테고리 정보를 통해 썸네일 정보 조회
     for (Favorite favorite : favorites) {
       Category category = favorite.getCategory();
       Long postId = favorite.getPost().getId();
 
-      thumbnailDtoList.add(getThumbnailDto(member, postId, language, category));
+      thumbnails.add(getThumbnail(member, postId, language, category));
     }
 
-    return FavoriteThumbnailDto.builder()
+    return FavoriteResponse.ThumbnailsDto.builder()
         .totalElements(favorites.getTotalElements())
-        .data(thumbnailDtoList)
+        .data(thumbnails)
         .build();
   }
 
   // 카테고리별 찜리스트 조회
-  public FavoriteThumbnailDto getCategoryFavoriteList(MemberInfoDto memberInfoDto,
+  public FavoriteResponse.ThumbnailsDto getCategoryFavoriteList(MemberInfoDto memberInfoDto,
       Category categoryContent, int page, int size) {
 
     Member member = memberInfoDto.getMember();
@@ -80,11 +80,11 @@ public class FavoriteService {
     Pageable pageable = PageRequest.of(page, size);
 
     // 해당 카테고리의 찜리스트 조회
-    Page<ThumbnailDto> thumbnails = getThumbnailDtoPage(member, language, pageable,
+    Page<FavoriteResponse.Thumbnail> thumbnails = getThumbnailDtoPage(member, language, pageable,
         categoryContent);
-    List<ThumbnailDto> thumbnailDtoList = thumbnails.getContent();
+    List<Thumbnail> thumbnailDtoList = thumbnails.getContent();
 
-    return FavoriteThumbnailDto.builder()
+    return FavoriteResponse.ThumbnailsDto.builder()
         .totalElements(thumbnails.getTotalElements())
         .data(thumbnailDtoList)
         .build();
@@ -159,7 +159,7 @@ public class FavoriteService {
   }
 
   // 카테고리별 게시물 썸네일 정보 조회
-  public ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
+  public FavoriteResponse.Thumbnail getThumbnail(Member member, Long postId, Language locale,
       Category category) {
     return switch (category) {
       case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, locale);
@@ -173,7 +173,8 @@ public class FavoriteService {
   }
 
   // 카테고리별 게시물 썸네일 정보 조회 (페이징)
-  private Page<ThumbnailDto> getThumbnailDtoPage(Member member, Language locale, Pageable pageable,
+  private Page<FavoriteResponse.Thumbnail> getThumbnailDtoPage(Member member, Language locale,
+      Pageable pageable,
       Category categoryContent) {
     return switch (categoryContent) {
       case NANA -> favoriteRepository.findNanaThumbnails(member, locale, pageable);

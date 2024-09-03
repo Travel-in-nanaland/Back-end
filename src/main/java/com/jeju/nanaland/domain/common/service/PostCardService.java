@@ -5,5 +5,5 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 
 public interface PostCardService {
 
-  public PostCardDto getPostCardDto(String postId, Language language);
+  PostCardDto getPostCardDto(Long postId, Language language);
 }
