@@ -156,7 +156,9 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .from(nana)
         .innerJoin(nanaTitle).on(nana.eq(nanaTitle.nana))
         .innerJoin(nana.firstImageFile, imageFile)
-        .where(nanaTitle.language.eq(language))
+        .where(
+            nana.id.eq(postId),
+            nanaTitle.language.eq(language))
         .fetchOne();
   }
 
