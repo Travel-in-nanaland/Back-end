@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.favorite.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.service.PostSearchServiceImpl;
 import com.jeju.nanaland.domain.favorite.dto.FavoritePostCardDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
@@ -27,6 +28,7 @@ public class FavoriteService {
 
   private final FavoritePostCardService favoritePostCardService;
   private final FavoriteRepository favoriteRepository;
+  private final PostSearchServiceImpl postSearchService;
 
   // 전체 찜리스트 조회
   @Transactional(readOnly = true)
@@ -117,8 +119,7 @@ public class FavoriteService {
       Favorite favorite = Favorite.builder()
           .member(memberInfoDto.getMember())
           .category(category)
-          // TODO
-          //.post()
+          .post(postSearchService.getPost(postId, category))
           .status("ACTIVE")
           .notificationCount(0)
           .build();
