@@ -54,6 +54,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -70,8 +71,10 @@ public class ReportService {
   private static final int MAX_IMAGE_COUNT = 5;
   // TODO: 관리자 계정으로 바꾸기
   private static final String ADMIN_EMAIL = "jyajoo1020@gmail.com";
-  private static final String INFO_FIX_REPORT_IMAGE_DIRECTORY = "/info_fix_report_images";
-  private static final String CLAIM_REPORT_FILE_DIRECTORY = "/claim_report_files";
+  @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
+  private String INFO_FIX_REPORT_IMAGE_DIRECTORY;
+  @Value("${cloud.aws.s3.claimReportFileDirectory}")
+  private String CLAIM_REPORT_FILE_DIRECTORY;
   private final MemberRepository memberRepository;
   private final ClaimReportVideoFileRepository claimReportVideoFileRepository;
   private final ClaimReportRepository claimReportRepository;

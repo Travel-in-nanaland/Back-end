@@ -36,17 +36,19 @@ public class S3ImageService {
 
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.s3.bucket}")
-  private String bucketName;
+  private String BUCKET_NAME;
 
+  @Value("${cloud.aws.s3.memberProfileDirectory}")
+  private String MEMBER_PROFILE_DIRECTORY;
   // 원본 사진 저장
   @Value("/images")
-  private String imageDirectory;
+  private String IMAGE_DIRECTORY;
 
   @Value("/thumbnail_images")
-  private String thumbnailDirectory;
+  private String THUMBNAIL_DIRECTORY;
 
   @Value("thumbnail_")
-  private String thumbnailPrefix;
+  private String THUMBNAIL_PREFIX;
 
   /**
    * multipartFile의 확장자 검사
@@ -76,23 +78,6 @@ public class S3ImageService {
     String formattedDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
     return uniqueId + "_" + formattedDate + extension;
   }
-
-  // TODO 이미지 별 디릭토리 추가?? - Enum으로 디렉토리 관리? 음 근데 코드로 업로드할 일이 있으려나
-  //                            이미지 저장을 기본 디렉토리인 /images 로 고정
-
-  /**
-   * @param multipartFile s3에 업로드 할 파일
-   * @param autoThumbnail 썸네일 생성 여부
-   * @return originUrl, thumbnailUrl을 갖는 S3ImageDto
-   * @throws IOException multipartFile 문제가 있을 경우
-   */
-  @Transactional
-  public S3ImageDto uploadOriginImageToS3(MultipartFile multipartFile, boolean autoThumbnail)
-      throws IOException {
-    return uploadImageToS3(multipartFile, autoThumbnail, imageDirectory);
-  }
-
-  // TODO 저장 장소를 매개변수로 받음. 위에 uploadOriginImageToS3랑 합쳐야 할듯.
 
   /**
    * @param multipartFile s3에 업로드 할 파일
@@ -151,9 +136,9 @@ public class S3ImageService {
     ObjectMetadata objectMetadata = new ObjectMetadata();
     objectMetadata.setContentType(multipartFile.getContentType());
     objectMetadata.setContentLength(multipartFile.getInputStream().available());
-    amazonS3Client.putObject(bucketName + directory, imageName, multipartFile.getInputStream(),
+    amazonS3Client.putObject(BUCKET_NAME + directory, imageName, multipartFile.getInputStream(),
         objectMetadata);
-    return amazonS3Client.getUrl(bucketName + directory, imageName).toString();
+    return amazonS3Client.getUrl(BUCKET_NAME + directory, imageName).toString();
   }
 
   /**
@@ -168,9 +153,10 @@ public class S3ImageService {
   public String uploadImageToDirectory(MultipartFile multipartFile, ObjectMetadata objectMetadata,
       String imageName)
       throws IOException {
-    amazonS3Client.putObject(bucketName + imageDirectory, imageName, multipartFile.getInputStream(),
+    amazonS3Client.putObject(BUCKET_NAME + IMAGE_DIRECTORY, imageName,
+        multipartFile.getInputStream(),
         objectMetadata);
-    return amazonS3Client.getUrl(bucketName + imageDirectory, imageName).toString();
+    return amazonS3Client.getUrl(BUCKET_NAME + IMAGE_DIRECTORY, imageName).toString();
   }
 
   /**
@@ -184,7 +170,7 @@ public class S3ImageService {
   private String makeThumbnailImageAndUpload(MultipartFile multipartFile,
       String originImageFileName)
       throws IOException {
-    String uploadThumbnailImageName = thumbnailPrefix + originImageFileName;
+    String uploadThumbnailImageName = THUMBNAIL_PREFIX + originImageFileName;
     BufferedImage bufferImage = ImageIO.read(multipartFile.getInputStream());
 
     //일단 width: 600px 으로 섬네일 제작. 기획과 상의 후 크기 수정.
@@ -206,13 +192,13 @@ public class S3ImageService {
 
     //S3에 사진 올리기
     InputStream thumbInput = new ByteArrayInputStream(thumbBytes);
-    amazonS3Client.putObject(bucketName + thumbnailDirectory, uploadThumbnailImageName,
+    amazonS3Client.putObject(BUCKET_NAME + THUMBNAIL_DIRECTORY, uploadThumbnailImageName,
         thumbInput, objectMetadata);
 
     thumbInput.close();
     thumbOutput.close();
 
-    return amazonS3Client.getUrl(bucketName + thumbnailDirectory,
+    return amazonS3Client.getUrl(BUCKET_NAME + THUMBNAIL_DIRECTORY,
             uploadThumbnailImageName)
         .toString();
   }
@@ -220,56 +206,34 @@ public class S3ImageService {
   /**
    * imageFile 객체로 이미지 S3에서 삭제
    *
-   * @param imageFile 삭제할 ImageFile 객체
+   * @param imageFile     삭제할 ImageFile 객체
+   * @param directoryPath 이미지 저장된 path
    */
   // 이미지 여러 개 삭제 필요시 추후 별도 메서드 생성 예정.
   @Transactional
-  public void deleteImageS3(ImageFile imageFile) {
+  public void deleteImageS3(ImageFile imageFile, String directoryPath) {
     // 원본 파일 이름 찾기
-    String filename = extractFileName(imageFile.getOriginUrl());
+    String filename = extractFileName(imageFile.getOriginUrl(), directoryPath);
 
     // 원본 이미지 삭제
-    amazonS3Client.deleteObject(bucketName + imageDirectory, filename);
+    amazonS3Client.deleteObject(BUCKET_NAME + directoryPath, filename);
 
-    if (amazonS3Client.doesObjectExist(bucketName + thumbnailDirectory,
-        thumbnailPrefix + filename)) { // 썸네일 이미지가 있으면
-      log.info("섬네일 존재");
-
+    if (amazonS3Client.doesObjectExist(BUCKET_NAME + THUMBNAIL_DIRECTORY,
+        THUMBNAIL_PREFIX + filename)) { // 썸네일 이미지가 있으면
       //썸네일 이미지 삭제
-      amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
+      amazonS3Client.deleteObject(BUCKET_NAME + THUMBNAIL_DIRECTORY, THUMBNAIL_PREFIX + filename);
     }
   }
 
   /**
-   * url로 이미지 삭제
+   * 파일 이름 추출
    *
-   * @param originUrl 저장된 사진 url로 s3에서 이미지 삭제
+   * @param accessUrl     이미지 url
+   * @param directoryPath 이미지 저장된 path
+   * @return path 제거한 파일 이름
    */
-  @Transactional
-  public void deleteImageS3ByOriginUrl(String originUrl) {
-    // 원본 파일 이름 찾기
-    String filename = extractFileName(originUrl);
-
-    // 원본 이미지 삭제
-    amazonS3Client.deleteObject(bucketName + imageDirectory, filename);
-
-    if (amazonS3Client.doesObjectExist(bucketName + thumbnailDirectory,
-        thumbnailPrefix + filename)) { // 썸네일 이미지가 있으면
-      log.info("섬네일 존재");
-
-      //썸네일 이미지 삭제
-      amazonS3Client.deleteObject(bucketName + thumbnailDirectory, thumbnailPrefix + filename);
-    }
-  }
-
-  // TODO 여기 images/를 기준으로 split?? 해도되나???
-
-  /**
-   * @param accessUrl
-   * @return
-   */
-  private String extractFileName(String accessUrl) {
-    String[] parts = accessUrl.split("images/");
+  private String extractFileName(String accessUrl, String directoryPath) {
+    String[] parts = accessUrl.split(directoryPath + "/");
     if (parts.length > 1) {
       // "images/" 다음의 부분 추출
       return parts[1];
@@ -287,21 +251,22 @@ public class S3ImageService {
   public boolean isDefaultProfileImage(ImageFile profileImageFile) {
     List<String> defaultProfile = Arrays.asList("LightPurple.png", "LightGray.png", "Gray.png",
         "DeepBlue.png");
-    String fileName = extractFileName(profileImageFile.getOriginUrl());
+    String fileName = extractFileName(profileImageFile.getOriginUrl(), MEMBER_PROFILE_DIRECTORY);
     return defaultProfile.contains(fileName);
   }
 
-  // TODO 이것도 디렉토리를 나누다면 수정 필요
-
   /**
-   * @param imageName 이미지 이름
+   * get s3 url
+   *
+   * @param imageName     이미지 이름
+   * @param directoryPath 이미지 저장된 path
    * @return
    */
-  public S3ImageDto getS3Urls(String imageName) {
-    String originUrl = amazonS3Client.getUrl(bucketName + imageDirectory,
+  public S3ImageDto getS3Urls(String imageName, String directoryPath) {
+    String originUrl = amazonS3Client.getUrl(BUCKET_NAME + directoryPath,
         imageName).toString();
-    String thumbnailUrl = amazonS3Client.getUrl(bucketName + thumbnailDirectory,
-            thumbnailPrefix + imageName)
+    String thumbnailUrl = amazonS3Client.getUrl(BUCKET_NAME + THUMBNAIL_DIRECTORY,
+            THUMBNAIL_PREFIX + imageName)
         .toString();
     return S3ImageDto.builder()
         .originUrl(originUrl)

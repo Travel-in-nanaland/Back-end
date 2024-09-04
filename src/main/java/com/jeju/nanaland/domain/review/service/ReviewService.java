@@ -60,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -74,6 +75,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ReviewService {
 
+  @Value("${cloud.aws.s3.reviewDirectory}")
+  private String reviewImageDirectoryPath;
   private static final String SEARCH_AUTO_COMPLETE_HASH_KEY = "REVIEW AUTO COMPLETE:";
   private final ReviewRepository reviewRepository;
   private final ExperienceRepository experienceRepository;
@@ -147,7 +150,8 @@ public class ReviewService {
     if (imageList != null) {
       imageList.forEach(image ->
           reviewImageFileRepository.save(ReviewImageFile.builder()
-              .imageFile(imageFileService.uploadAndSaveImageFile(image, true))
+              .imageFile(
+                  imageFileService.uploadAndSaveImageFile(image, true, reviewImageDirectoryPath))
               .review(review)
               .build())
       );
@@ -287,7 +291,7 @@ public class ReviewService {
 
     // s3에서도 이미지 삭제
     for (ImageFile imageFile : imageFileList) {
-      imageFileService.deleteImageFileInS3ByImageFile(imageFile);
+      imageFileService.deleteImageFileInS3ByImageFile(imageFile, reviewImageDirectoryPath);
     }
   }
 
@@ -465,7 +469,8 @@ public class ReviewService {
       // 수정 제출된 이미지가
       if (editImageInfo.isNewImage()) { // 새로 제출된 이미지라면 저장
         reviewImageFileRepository.save(ReviewImageFile.builder()
-            .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(newImageIdx++), true))
+            .imageFile(imageFileService.uploadAndSaveImageFile(editImages.get(newImageIdx++), true,
+                reviewImageDirectoryPath))
             .review(review)
             .build());
       } else { // 원래 있던 이미지라면
@@ -478,14 +483,17 @@ public class ReviewService {
 
     // 삭제되어야할 reviewImageFile
     List<ReviewImageFile> allById = reviewImageFileRepository.findAllById(existImageIds);
-    List<String> originUrlList = allById.stream()
+    List<ImageFile> deleteImageFiles = allById.stream()
         .filter(reviewImageFile -> existImageIds.contains(reviewImageFile.getId()))
-        .map(reviewImageFile -> reviewImageFile.getImageFile().getOriginUrl()).toList();
+        .map(ReviewImageFile::getImageFile).toList();
 
     // reviewImageFile 삭제 -> cascade remove로 imageFile도 삭제됨
     reviewImageFileRepository.deleteAll(allById);
+
     // s3에서 삭제
-    originUrlList.forEach(imageFileService::deleteImageFileInS3ByOriginUrl);
+    deleteImageFiles.forEach(
+        deleteImageFile -> imageFileService.deleteImageFileInS3ByImageFile(deleteImageFile,
+            reviewImageDirectoryPath));
 
   }
 
