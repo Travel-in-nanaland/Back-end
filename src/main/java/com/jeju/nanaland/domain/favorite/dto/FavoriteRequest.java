@@ -4,12 +4,14 @@ import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 public class FavoriteRequest {
 
   @Schema(description = "좋아요 토글 요청 Dto")
   @Data
+  @Builder
   public static class LikeToggleDto {
 
     @NotNull
