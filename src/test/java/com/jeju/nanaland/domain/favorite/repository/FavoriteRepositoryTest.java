@@ -25,7 +25,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,7 +51,6 @@ public class FavoriteRepositoryTest {
   FavoriteRepository favoriteRepository;
   private Map<Category, Function<Integer, List<? extends Post>>> functionMap;
 
-  @PostConstruct
   void initMap() {
     functionMap = new HashMap<>();
     functionMap.put(Category.NANA, this::createNanas);
@@ -127,6 +125,7 @@ public class FavoriteRepositoryTest {
     Pageable pageable = PageRequest.of(0, total);
 
     // 카테고리에 해당하는 게시물 생성
+    initMap();
     List<? extends Post> activePosts = functionMap.get(category).apply(activeRandomSize);
     List<? extends Post> inactivePosts = functionMap.get(category).apply(inactiveRandomSize);
 

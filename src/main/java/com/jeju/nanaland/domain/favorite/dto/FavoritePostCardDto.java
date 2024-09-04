@@ -13,7 +13,7 @@ public class FavoritePostCardDto extends PostCardDto {
   public FavoritePostCardDto(PostCardDto postCardDto) {
     super(postCardDto.getId(),
         postCardDto.getTitle(),
-        postCardDto.getFirstImage().getOriginUrl(),
-        postCardDto.getFirstImage().getThumbnailUrl());
+        postCardDto.getCategory(),
+        postCardDto.getFirstImage());
   }
 }

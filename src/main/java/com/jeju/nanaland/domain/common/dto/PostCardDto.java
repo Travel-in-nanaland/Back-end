@@ -2,13 +2,11 @@ package com.jeju.nanaland.domain.common.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
-@AllArgsConstructor
 public class PostCardDto {
 
   @Schema(description = "게시물 id")
@@ -24,10 +22,16 @@ public class PostCardDto {
   private ImageFileDto firstImage;
 
   @QueryProjection
-  public PostCardDto(Long id, String title, String originUrl,
-      String thumbnailUrl) {
+  public PostCardDto(Long id, String title, String originUrl, String thumbnailUrl) {
     this.id = id;
     this.title = title;
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
+  }
+
+  public PostCardDto(Long id, String title, String category, ImageFileDto firstImage) {
+    this.id = id;
+    this.title = title;
+    this.category = category;
+    this.firstImage = firstImage;
   }
 }
