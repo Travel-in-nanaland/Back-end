@@ -18,6 +18,7 @@ public class RestaurantCardService implements PostCardService {
 
   @Override
   public PostCardDto getPostCardDto(Long postId, Language language) {
+
     PostCardDto postCardDto = restaurantRepository.findPostCardDto(postId, language);
     Optional.ofNullable(postCardDto)
         .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));

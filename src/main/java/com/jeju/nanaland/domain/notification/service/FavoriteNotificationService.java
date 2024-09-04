@@ -2,10 +2,10 @@ package com.jeju.nanaland.domain.notification.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.Thumbnail;
+import com.jeju.nanaland.domain.favorite.dto.FavoritePostCardDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.FavoritePostCardService;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationWithTargetDto;
@@ -24,8 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class FavoriteNotificationService {
 
   private final NotificationService notificationService;
+  private final FavoritePostCardService favoritePostCardService;
   private final FavoriteRepository favoriteRepository;
-  private final FavoriteService favoriteService;
 
 
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
@@ -41,9 +41,9 @@ public class FavoriteNotificationService {
       Long postId = favorite.getPost().getId();
       Language language = member.getLanguage();
 
-      Thumbnail thumbnailDto = favoriteService.getThumbnail(member, postId, language,
-          category);
-      String postTitle = thumbnailDto.getTitle();
+      FavoritePostCardDto favoritePostCardDto =
+          favoritePostCardService.getFavoritePostCardDto(postId, language, category);
+      String postTitle = favoritePostCardDto.getTitle();
       String notificationTitle = getFavoriteNotificationTitle(postTitle, member.getNickname(),
           language);
       String content = "";
