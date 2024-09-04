@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.member.entity.WithdrawalType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;

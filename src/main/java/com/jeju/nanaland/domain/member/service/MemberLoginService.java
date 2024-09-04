@@ -14,7 +14,7 @@ import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
-import com.jeju.nanaland.domain.member.entity.WithdrawalType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
