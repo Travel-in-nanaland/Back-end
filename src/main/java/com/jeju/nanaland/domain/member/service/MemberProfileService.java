@@ -9,7 +9,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.ConsentItemResponse;
+import com.jeju.nanaland.domain.member.dto.MemberResponse.ConsentItem;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -64,8 +64,8 @@ public class MemberProfileService {
 
   // 닉네임 중복 확인
   public void validateNickname(String nickname, Member member) {
-    Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
-    if (memberOptional.isPresent() && !memberOptional.get().equals(member)) {
+    Optional<Member> savedMember = memberRepository.findByNickname(nickname);
+    if (savedMember.isPresent() && !savedMember.get().equals(member)) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
   }
@@ -93,18 +93,20 @@ public class MemberProfileService {
     }
 
     // 이용약관 동의 여부 조회
-    List<ConsentItemResponse> consentItemResponses = new ArrayList<>();
+    List<ConsentItem> consentItems = new ArrayList<>();
     if (isMyProfile) {
-      consentItemResponses = memberRepository.findMemberConsentByMember(
-          member).stream().map(memberConsent -> ConsentItemResponse.builder()
-          .consentType(memberConsent.getConsentType().name())
-          .consent(memberConsent.getConsent())
-          .build()).toList();
+      consentItems = memberRepository.findMemberConsentByMember(member)
+          .stream().map(
+              memberConsent -> ConsentItem.builder()
+                  .consentType(memberConsent.getConsentType().name())
+                  .consent(memberConsent.getConsent())
+                  .build()
+          ).toList();
     }
 
     return MemberResponse.ProfileDto.builder()
         .isMyProfile(isMyProfile)
-        .consentItems(consentItemResponses)
+        .consentItems(consentItems)
         .memberId(member.getId())
         .email(member.getEmail())
         .provider(member.getProvider().name())

@@ -195,8 +195,8 @@ class MemberLoginServiceTest {
     doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
     doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean());
     doReturn(member).when(memberRepository).save(any());
-    doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
-    doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
+    doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
+    doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
     doReturn(1L).when(member).getId();
 
     // when
@@ -217,8 +217,8 @@ class MemberLoginServiceTest {
     verify(imageFileService, times(1)).getRandomProfileImageFile();
     verify(imageFileService, times(1)).uploadAndSaveImageFile(any(), anyBoolean());
     verify(memberRepository, times(2)).save(any());
-    verify(jwtUtil, times(2)).getAccessToken(any(), any());
-    verify(jwtUtil, times(2)).getRefreshToken(any(), any());
+    verify(jwtUtil, times(2)).createAccessToken(any(), any());
+    verify(jwtUtil, times(2)).createRefreshToken(any(), any());
     verify(member, times(4)).getId();
   }
 
@@ -251,8 +251,8 @@ class MemberLoginServiceTest {
 
     doReturn(Optional.of(member))
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-    doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
-    doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
+    doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
+    doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
     doReturn(1L).when(member).getId();
     doReturn(FcmToken.builder().build())
         .when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
@@ -266,8 +266,8 @@ class MemberLoginServiceTest {
     assertThat(jwtDto.getRefreshToken()).isEqualTo("refreshToken");
 
     verify(memberRepository, times(1)).findByProviderAndProviderId(any(Provider.class), any());
-    verify(jwtUtil, times(1)).getAccessToken(any(), any());
-    verify(jwtUtil, times(1)).getRefreshToken(any(), any());
+    verify(jwtUtil, times(1)).createAccessToken(any(), any());
+    verify(jwtUtil, times(1)).createRefreshToken(any(), any());
     verify(member, times(2)).getId();
   }
 
@@ -346,7 +346,7 @@ class MemberLoginServiceTest {
     doReturn("refreshToken").when(jwtUtil).resolveToken(any());
     doReturn(true).when(jwtUtil).verifyRefreshToken(any());
     doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
-    doReturn("refreshToken2").when(jwtUtil).findRefreshTokenById(any());
+    doReturn("refreshToken2").when(jwtUtil).findRefreshToken(any());
 
     // when
     UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
@@ -358,7 +358,7 @@ class MemberLoginServiceTest {
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
     verify(jwtUtil, times(1)).getMemberIdFromRefresh(any());
-    verify(jwtUtil, times(1)).findRefreshTokenById(any());
+    verify(jwtUtil, times(1)).findRefreshToken(any());
     verify(jwtUtil, times(1)).deleteRefreshToken(any());
   }
 
@@ -372,10 +372,10 @@ class MemberLoginServiceTest {
     doReturn("refreshToken").when(jwtUtil).resolveToken(any());
     doReturn(true).when(jwtUtil).verifyRefreshToken(any());
     doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
-    doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
+    doReturn("refreshToken").when(jwtUtil).findRefreshToken(any());
     doReturn(Optional.of(member)).when(memberRepository).findById(any());
-    doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
-    doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
+    doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
+    doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
     doReturn(1L).when(member).getId();
     doReturn(FcmToken.builder().build())
         .when(fcmTokenService).getFcmToken(member, "token");
@@ -391,10 +391,10 @@ class MemberLoginServiceTest {
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).verifyRefreshToken(any());
     verify(jwtUtil, times(1)).getMemberIdFromRefresh(any());
-    verify(jwtUtil, times(1)).findRefreshTokenById(any());
+    verify(jwtUtil, times(1)).findRefreshToken(any());
     verify(memberRepository, times(1)).findById(any());
-    verify(jwtUtil, times(1)).getAccessToken(any(), any());
-    verify(jwtUtil, times(1)).getRefreshToken(any(), any());
+    verify(jwtUtil, times(1)).createAccessToken(any(), any());
+    verify(jwtUtil, times(1)).createRefreshToken(any(), any());
     verify(member, times(2)).getId();
   }
 
@@ -407,7 +407,7 @@ class MemberLoginServiceTest {
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
 
     doReturn("accessToken").when(jwtUtil).resolveToken(any());
-    doReturn("refreshToken").when(jwtUtil).findRefreshTokenById(any());
+    doReturn("refreshToken").when(jwtUtil).findRefreshToken(any());
 
     // when
     memberLoginService.logout(memberInfoDto, "bearer refreshToken", "token");
@@ -415,7 +415,7 @@ class MemberLoginServiceTest {
     // then
     verify(jwtUtil, times(1)).resolveToken(any());
     verify(jwtUtil, times(1)).setBlackList(any());
-    verify(jwtUtil, times(1)).findRefreshTokenById(any());
+    verify(jwtUtil, times(1)).findRefreshToken(any());
     verify(jwtUtil, times(1)).deleteRefreshToken(any());
   }
 

@@ -30,22 +30,23 @@ public class MemberConsentService {
   private final MemberRepository memberRepository;
 
   // 이용약관 생성
+  @Transactional
   public void createMemberConsents(Member member, List<ConsentItem> consentItems) {
-    Map<ConsentType, Boolean> consentItemMap = consentItems.stream()
+    Map<ConsentType, Boolean> consentStates = consentItems.stream()
         .collect(Collectors.toMap(
             consentItem -> ConsentType.valueOf(consentItem.getConsentType()),
             ConsentItem::getConsent
         ));
 
     // 필수 이용약관이 false인 경우
-    Boolean termsOfUseConsent = consentItemMap.get(ConsentType.TERMS_OF_USE);
+    Boolean termsOfUseConsent = consentStates.get(ConsentType.TERMS_OF_USE);
     if (termsOfUseConsent == null || !termsOfUseConsent) {
       throw new BadRequestException(ErrorCode.MEMBER_CONSENT_BAD_REQUEST.getMessage());
     }
 
     List<MemberConsent> memberConsents = Arrays.stream(ConsentType.values())
         .map(consentType -> {
-          Boolean consent = consentItemMap.get(consentType);
+          Boolean consent = consentStates.get(consentType);
           return MemberConsent.builder()
               .member(member)
               .consentType(consentType)

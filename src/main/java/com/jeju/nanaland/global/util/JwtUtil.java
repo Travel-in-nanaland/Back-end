@@ -48,7 +48,7 @@ public class JwtUtil {
     return secretKey2;
   }
 
-  public String getAccessToken(String memberId, Set<Role> roleSet) {
+  public String createAccessToken(String memberId, Set<Role> roleSet) {
     Claims claims = Jwts.claims().setSubject(memberId);
     String authorities = roleSet.stream()
         .map(Enum::name)
@@ -65,7 +65,7 @@ public class JwtUtil {
         .compact();
   }
 
-  public String getRefreshToken(String memberId, Set<Role> roleSet) {
+  public String createRefreshToken(String memberId, Set<Role> roleSet) {
     Claims claims = Jwts.claims().setSubject(memberId);
     String authorities = roleSet.stream()
         .map(Enum::name)
@@ -141,7 +141,7 @@ public class JwtUtil {
     }
   }
 
-  public String findRefreshTokenById(String memberId) {
+  public String findRefreshToken(String memberId) {
     return redisUtil.getRecentDataFromList(REFRESH_KEY + memberId);
   }
 

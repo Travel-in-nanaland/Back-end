@@ -52,18 +52,18 @@ public class MemberLoginService {
   // 회원 가입
   @Transactional
   public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
-    Optional<Member> memberOptional = memberRepository.findByProviderAndProviderId(
+    Optional<Member> savedMember = memberRepository.findByProviderAndProviderId(
         Provider.valueOf(joinDto.getProvider()),
         joinDto.getProviderId());
 
     // 이미 가입한 경우
-    if (memberOptional.isPresent()) {
+    if (savedMember.isPresent()) {
       throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
     }
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = getProfileImageFile(multipartFile);
+    ImageFile profileImageFile = createProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
     // GUEST가 아닌 경우, 이용약관 저장
     if (!member.getProvider().equals(Provider.GUEST)) {
@@ -72,8 +72,7 @@ public class MemberLoginService {
 
     // fcm 토큰 저장
     if (joinDto.getFcmToken() != null) {
-      // TODO: 알림 동의 여부 관리?
-      fcmTokenService.saveFcmToken(member, joinDto.getFcmToken());
+      fcmTokenService.createFcmToken(member, joinDto.getFcmToken());
     }
 
     return getJwtDto(member);
@@ -89,14 +88,14 @@ public class MemberLoginService {
 
   // 닉네임 중복 확인
   public void validateNickname(String nickname) {
-    Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
-    if (memberOptional.isPresent()) {
+    Optional<Member> savedMember = memberRepository.findByNickname(nickname);
+    if (savedMember.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
   }
 
   // 프로필 이미지 파일 설정
-  private ImageFile getProfileImageFile(MultipartFile multipartFile) {
+  private ImageFile createProfileImageFile(MultipartFile multipartFile) {
     if (multipartFile == null) {
       return imageFileService.getRandomProfileImageFile();
     }
@@ -136,7 +135,7 @@ public class MemberLoginService {
     // fcm 토큰이 없다면 생성, timestamp 갱신
     FcmToken fcmToken = fcmTokenService.getFcmToken(member, loginDto.getFcmToken());
     if (fcmToken == null && loginDto.getFcmToken() != null) {
-      fcmToken = fcmTokenService.saveFcmToken(member, loginDto.getFcmToken());
+      fcmToken = fcmTokenService.createFcmToken(member, loginDto.getFcmToken());
       fcmToken.updateTimestampToNow();
     }
 
@@ -145,9 +144,9 @@ public class MemberLoginService {
 
   // JWT 생성
   private JwtDto getJwtDto(Member member) {
-    String accessToken = jwtUtil.getAccessToken(String.valueOf(member.getId()),
+    String accessToken = jwtUtil.createAccessToken(String.valueOf(member.getId()),
         member.getRoleSet());
-    String refreshToken = jwtUtil.getRefreshToken(String.valueOf(member.getId()),
+    String refreshToken = jwtUtil.createRefreshToken(String.valueOf(member.getId()),
         member.getRoleSet());
 
     return JwtDto.builder()
@@ -186,7 +185,7 @@ public class MemberLoginService {
     }
 
     String memberId = jwtUtil.getMemberIdFromRefresh(refreshToken);
-    String savedRefreshToken = jwtUtil.findRefreshTokenById(memberId);
+    String savedRefreshToken = jwtUtil.findRefreshToken(memberId);
 
     // 기존에 지정된 RefreshToken과 일치하지 않는 경우(재사용된 refreshToken인 경우)
     if (!refreshToken.equals(savedRefreshToken)) {
@@ -201,7 +200,7 @@ public class MemberLoginService {
     // fcm 토큰이 없다면 생성, timestamp 갱신
     FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(member, fcmToken);
     if (fcmTokenInstance == null && fcmToken != null) {
-      fcmTokenInstance = fcmTokenService.saveFcmToken(member, fcmToken);
+      fcmTokenInstance = fcmTokenService.createFcmToken(member, fcmToken);
       fcmTokenInstance.updateTimestampToNow();
     }
 
@@ -216,7 +215,7 @@ public class MemberLoginService {
     String memberId = String.valueOf(memberInfoDto.getMember().getId());
 
     // refreshToken 삭제
-    if (jwtUtil.findRefreshTokenById(memberId) != null) {
+    if (jwtUtil.findRefreshToken(memberId) != null) {
       jwtUtil.deleteRefreshToken(memberId);
     }
 
@@ -225,7 +224,6 @@ public class MemberLoginService {
     if (fcmTokenInstance != null) {
       fcmTokenService.deleteFcmToken(fcmTokenInstance);
     }
-    ;
   }
 
   // 회원 탈퇴
