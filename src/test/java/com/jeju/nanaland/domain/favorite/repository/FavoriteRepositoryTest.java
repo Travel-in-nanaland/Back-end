@@ -119,8 +119,8 @@ public class FavoriteRepositoryTest {
   void findAllFavoritesOrderByCreatedAtDescTest(Category category) {
     // given
     Member member = createMember(Language.KOREAN);
-    int activeRandomSize = random.nextInt(10);
-    int inactiveRandomSize = random.nextInt(10);
+    int activeRandomSize = random.nextInt(10) + 1;
+    int inactiveRandomSize = random.nextInt(10) + 1;
     int total = activeRandomSize + inactiveRandomSize;
     Pageable pageable = PageRequest.of(0, total);
 
