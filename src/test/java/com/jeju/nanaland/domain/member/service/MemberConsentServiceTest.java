@@ -175,13 +175,13 @@ class MemberConsentServiceTest {
         createMemberConsent(ConsentType.MARKETING)
     );
 
-    doReturn(memberConsents).when(memberRepository).findExpiredMemberConsent();
+    doReturn(memberConsents).when(memberRepository).findAllExpiredMemberConsent();
 
     // when
     memberConsentService.checkTermsValidity();
 
     // then
-    verify(memberRepository, times(1)).findExpiredMemberConsent();
+    verify(memberRepository, times(1)).findAllExpiredMemberConsent();
     assertThat(memberConsents)
         .allSatisfy(memberConsent -> assertThat(memberConsent.getConsent()).isFalse());
   }

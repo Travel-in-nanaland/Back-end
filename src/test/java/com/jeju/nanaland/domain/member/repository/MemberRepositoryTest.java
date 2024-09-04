@@ -110,7 +110,7 @@ class MemberRepositoryTest {
     Member member = createMember(language);
 
     // when
-    MemberInfoDto memberWithLanguage = memberRepository.findMemberWithLanguage(member.getId());
+    MemberInfoDto memberWithLanguage = memberRepository.findMemberInfoDto(member.getId());
 
     // then
     assertThat(memberWithLanguage).isNotNull();
@@ -131,7 +131,7 @@ class MemberRepositoryTest {
     createMemberConsent(ConsentType.LOCATION_SERVICE, false, pastDate, member);
 
     // when
-    List<MemberConsent> expiredMemberConsent = memberRepository.findExpiredMemberConsent();
+    List<MemberConsent> expiredMemberConsent = memberRepository.findAllExpiredMemberConsent();
 
     // then
     assertThat(expiredMemberConsent).hasSize(1);
@@ -146,7 +146,7 @@ class MemberRepositoryTest {
     createMemberWithdrawal(member);
 
     // when
-    List<Member> inactiveMembersForWithdrawalDate = memberRepository.findInactiveMembersForWithdrawalDate();
+    List<Member> inactiveMembersForWithdrawalDate = memberRepository.findAllInactiveMember();
 
     // then
     assertThat(inactiveMembersForWithdrawalDate).hasSize(1);
@@ -162,7 +162,7 @@ class MemberRepositoryTest {
     createMemberConsent(ConsentType.LOCATION_SERVICE, false, null, member);
 
     // when
-    List<MemberConsent> memberConsentByMember = memberRepository.findMemberConsentByMember(member);
+    List<MemberConsent> memberConsentByMember = memberRepository.findAllMemberConsent(member);
 
     // then
     assertThat(memberConsentByMember).hasSize(2);

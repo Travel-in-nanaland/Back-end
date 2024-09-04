@@ -60,7 +60,7 @@ public class MemberConsentService {
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   public void checkTermsValidity() {
-    List<MemberConsent> memberConsents = memberRepository.findExpiredMemberConsent();
+    List<MemberConsent> memberConsents = memberRepository.findAllExpiredMemberConsent();
     if (!memberConsents.isEmpty()) {
       memberConsents.forEach(memberConsent -> memberConsent.updateConsent(false));
     }

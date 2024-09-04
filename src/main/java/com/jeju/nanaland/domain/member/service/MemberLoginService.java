@@ -241,7 +241,7 @@ public class MemberLoginService {
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   public void deleteWithdrawalMemberInfo() {
-    List<Member> members = memberRepository.findInactiveMembersForWithdrawalDate();
+    List<Member> members = memberRepository.findAllInactiveMember();
 
     if (!members.isEmpty()) {
       members.forEach(Member::updatePersonalInfo);

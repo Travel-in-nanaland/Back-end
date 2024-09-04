@@ -444,7 +444,7 @@ class MemberLoginServiceTest {
     Language language = Language.KOREAN;
     Member member = createMember(language);
 
-    doReturn(List.of(member)).when(memberRepository).findInactiveMembersForWithdrawalDate();
+    doReturn(List.of(member)).when(memberRepository).findAllInactiveMember();
 
     // when
     memberLoginService.deleteWithdrawalMemberInfo();

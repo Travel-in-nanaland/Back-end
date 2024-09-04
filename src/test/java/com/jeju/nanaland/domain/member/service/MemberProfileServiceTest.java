@@ -187,7 +187,7 @@ class MemberProfileServiceTest {
         createMemberConsent(ConsentType.LOCATION_SERVICE, member)
     );
     doReturn(1L).when(member).getId();
-    doReturn(memberConsents).when(memberRepository).findMemberConsentByMember(member);
+    doReturn(memberConsents).when(memberRepository).findAllMemberConsent(member);
 
     // when
     ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, null);
@@ -215,7 +215,7 @@ class MemberProfileServiceTest {
         member.getTravelType().getTypeNameWithLocale(language));
     assertThat(profileDto2.getHashtags()).hasSize(3);
 
-    verify(memberRepository, times(2)).findMemberConsentByMember(any());
+    verify(memberRepository, times(2)).findAllMemberConsent(any());
   }
 
   @Test
@@ -246,7 +246,7 @@ class MemberProfileServiceTest {
         member2.getTravelType().getTypeNameWithLocale(language2));
     assertThat(profileDto.getHashtags()).hasSize(3);
 
-    verify(memberRepository, times(0)).findMemberConsentByMember(any());
+    verify(memberRepository, times(0)).findAllMemberConsent(any());
   }
 
   @Test

@@ -21,7 +21,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public MemberInfoDto findMemberWithLanguage(Long memberId) {
+  public MemberInfoDto findMemberInfoDto(Long memberId) {
 
     return queryFactory
         .select(new QMemberResponse_MemberInfoDto(
@@ -33,7 +33,18 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   }
 
   @Override
-  public List<Member> findInactiveMembersForWithdrawalDate() {
+  public List<MemberConsent> findAllExpiredMemberConsent() {
+    LocalDate expirationDate = LocalDate.now().minusYears(1).minusMonths(6);
+
+    return queryFactory
+        .selectFrom(memberConsent)
+        .where(memberConsent.consent.eq(true)
+            .and(memberConsent.consentDate.before(expirationDate.atStartOfDay())))
+        .fetch();
+  }
+
+  @Override
+  public List<Member> findAllInactiveMember() {
     LocalDate threeMonthsAgo = LocalDate.now().minusMonths(3);
 
     return queryFactory
@@ -48,22 +59,11 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   }
 
   @Override
-  public List<MemberConsent> findMemberConsentByMember(Member member) {
+  public List<MemberConsent> findAllMemberConsent(Member member) {
     return queryFactory
         .selectFrom(memberConsent)
         .where(memberConsent.consentType.ne(ConsentType.TERMS_OF_USE)
             .and(memberConsent.member.eq(member)))
-        .fetch();
-  }
-
-  @Override
-  public List<MemberConsent> findExpiredMemberConsent() {
-    LocalDate expirationDate = LocalDate.now().minusYears(1).minusMonths(6);
-
-    return queryFactory
-        .selectFrom(memberConsent)
-        .where(memberConsent.consent.eq(true)
-            .and(memberConsent.consentDate.before(expirationDate.atStartOfDay())))
         .fetch();
   }
 }
