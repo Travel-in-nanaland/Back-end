@@ -46,7 +46,7 @@ public class MemberRequest {
     private String providerId;
 
     @Schema(description = "언어(필수)", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
         enumClass = Language.class,
@@ -74,7 +74,7 @@ public class MemberRequest {
   public static class LoginDto {
 
     @Schema(description = "언어", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
         enumClass = Language.class,
@@ -100,6 +100,7 @@ public class MemberRequest {
   }
 
   @Data
+  @Schema(description = "이용약관 동의 여부")
   public static class ConsentItem {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
@@ -117,6 +118,7 @@ public class MemberRequest {
   }
 
   @Data
+  @Schema(description = "이용약관 수정 요청 DTO")
   public static class ConsentUpdateDto {
 
     @Schema(description = "이용약관", example = "MARKETING",
@@ -190,7 +192,7 @@ public class MemberRequest {
   public static class LanguageUpdateDto {
 
     @Schema(description = "언어", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
         enumClass = Language.class,
