@@ -22,7 +22,7 @@ public class PostSearchServiceImpl implements PostSearchService {
   private final ExperienceSearchService experienceSearchService;
   private final RestaurantSearchService restaurantSearchService;
 
-  private final Map<Category, PostSearchService> searchServiceMap;
+  private final Map<Category, PostSearchService> searchServiceMap = new HashMap<>();
 
   public PostSearchServiceImpl(NanaSearchService nanaSearchService,
       NatureSearchService natureSearchService, MarketSearchService marketSearchService,
@@ -35,7 +35,6 @@ public class PostSearchServiceImpl implements PostSearchService {
     this.experienceSearchService = experienceSearchService;
     this.restaurantSearchService = restaurantSearchService;
 
-    searchServiceMap = new HashMap<>();
     searchServiceMap.put(Category.NANA, nanaSearchService);
     searchServiceMap.put(Category.NATURE, natureSearchService);
     searchServiceMap.put(Category.MARKET, marketSearchService);
