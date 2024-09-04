@@ -305,7 +305,7 @@ public class ReportService {
     List<ClaimReportVideoFile> videoFileList = new ArrayList<>();
     for (MultipartFile video : videoFiles) {
       VideoFile videoFile = videoFileService.uploadAndSaveVideoFile(video,
-          ReportService.CLAIM_REPORT_FILE_DIRECTORY);
+          CLAIM_REPORT_FILE_DIRECTORY);
 
       videoFileList.add(ClaimReportVideoFile.builder()
           .videoFile(videoFile)
