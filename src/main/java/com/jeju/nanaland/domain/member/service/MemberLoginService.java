@@ -8,15 +8,13 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
-import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.MemberWithdrawalRepository;
 import com.jeju.nanaland.domain.notification.entity.FcmToken;
@@ -51,7 +49,7 @@ public class MemberLoginService {
 
   // 회원 가입
   @Transactional
-  public JwtDto join(JoinDto joinDto, MultipartFile multipartFile) {
+  public JwtDto join(MemberRequest.JoinDto joinDto, MultipartFile multipartFile) {
     Optional<Member> savedMember = memberRepository.findByProviderAndProviderId(
         Provider.valueOf(joinDto.getProvider()),
         joinDto.getProviderId());
@@ -79,7 +77,7 @@ public class MemberLoginService {
   }
 
   // 랜덤 닉네임 설정
-  private String determineNickname(JoinDto joinDto) {
+  private String determineNickname(MemberRequest.JoinDto joinDto) {
     if (Provider.valueOf(joinDto.getProvider()) == Provider.GUEST) {
       return UUID.randomUUID().toString().substring(0, 12);
     }
@@ -103,7 +101,7 @@ public class MemberLoginService {
   }
 
   // 회원 생성
-  private Member createMember(JoinDto joinDto, ImageFile imageFile, String nickname) {
+  private Member createMember(MemberRequest.JoinDto joinDto, ImageFile imageFile, String nickname) {
 
     Language language = Language.valueOf(joinDto.getLocale());
     TravelType noneTravelType = TravelType.NONE;
@@ -124,7 +122,7 @@ public class MemberLoginService {
 
   // 로그인
   @Transactional
-  public JwtDto login(LoginDto loginDto) {
+  public JwtDto login(MemberRequest.LoginDto loginDto) {
 
     Member member = memberRepository.findByProviderAndProviderId(
             Provider.valueOf(loginDto.getProvider()), loginDto.getProviderId())
@@ -169,7 +167,7 @@ public class MemberLoginService {
 
   // 언어 설정 변경
   @Transactional
-  public void updateLanguageDifferent(LoginDto loginDto, Member member) {
+  public void updateLanguageDifferent(MemberRequest.LoginDto loginDto, Member member) {
     Language language = Language.valueOf(loginDto.getLocale());
     if (!member.getLanguage().equals(language)) {
       member.updateLanguage(language);
@@ -228,7 +226,7 @@ public class MemberLoginService {
 
   // 회원 탈퇴
   @Transactional
-  public void withdrawal(MemberInfoDto memberInfoDto, WithdrawalDto withdrawalType) {
+  public void withdrawal(MemberInfoDto memberInfoDto, MemberRequest.WithdrawalDto withdrawalType) {
 
     memberInfoDto.getMember().updateStatus(Status.INACTIVE);
 

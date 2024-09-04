@@ -7,9 +7,9 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -38,7 +38,8 @@ public class MemberTypeService {
 
   // 유저 타입 갱신
   @Transactional
-  public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
+  public void updateMemberType(MemberInfoDto memberInfoDto,
+      MemberRequest.UpdateTypeDto updateTypeDto) {
 
     Member member = memberInfoDto.getMember();
     String newTravelType = updateTypeDto.getType();
@@ -47,7 +48,8 @@ public class MemberTypeService {
   }
 
   // 추천 게시물 2개 반환
-  public List<RecommendPostDto> getRecommendPostsByType(MemberInfoDto memberInfoDto) {
+  public List<MemberResponse.RecommendPostDto> getRecommendPostsByType(
+      MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
     Language locale = memberInfoDto.getLanguage();
@@ -67,7 +69,7 @@ public class MemberTypeService {
     }
 
     // Recommend 정보를 RecommendPostDto 형태로 변환
-    List<RecommendPostDto> result = new ArrayList<>();
+    List<MemberResponse.RecommendPostDto> result = new ArrayList<>();
     for (Recommend recommend : recommends) {
       Long postId = recommend.getPost().getId();
       Category category = recommend.getCategory();
@@ -79,7 +81,8 @@ public class MemberTypeService {
   }
 
   // 랜덤 추천 게시물 2개 반환
-  public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
+  public List<MemberResponse.RecommendPostDto> getRandomRecommendedPosts(
+      MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
     Language language = memberInfoDto.getLanguage();
@@ -100,7 +103,7 @@ public class MemberTypeService {
     } while (index1 == index2);
     List<Integer> indexList = List.of(index1, index2);
 
-    List<RecommendPostDto> result = new ArrayList<>();
+    List<MemberResponse.RecommendPostDto> result = new ArrayList<>();
     for (Integer randomIndex : indexList) {
       // 랜덤 게시물이 recommend 에 있는 경우
       if (randomIndex < recommendIds.size()) {
@@ -131,10 +134,10 @@ public class MemberTypeService {
   }
 
   // RecommendPostDto 반환
-  private RecommendPostDto getRecommendPostDto(Member member, Long postId, Language locale,
-      TravelType travelType, Category category) {
+  private MemberResponse.RecommendPostDto getRecommendPostDto(Member member, Long postId,
+      Language locale, TravelType travelType, Category category) {
 
-    RecommendPostDto recommendPostDto = switch (category) {
+    MemberResponse.RecommendPostDto recommendPostDto = switch (category) {
       case NATURE -> recommendRepository.findNatureRecommendPostDto(postId, locale, travelType);
 
       case FESTIVAL -> recommendRepository.findFestivalRecommendPostDto(postId, locale, travelType);
@@ -161,10 +164,11 @@ public class MemberTypeService {
     return recommendPostDto;
   }
 
-  private RecommendPostDto getExperiencePostDto(Member member, Long postId, Language language) {
+  private MemberResponse.RecommendPostDto getExperiencePostDto(Member member, Long postId,
+      Language language) {
     ExperienceCompositeDto compositeDto = experienceRepository.findCompositeDtoById(postId,
         language);
-    RecommendPostDto recommendPostDto = RecommendPostDto.builder()
+    MemberResponse.RecommendPostDto recommendPostDto = MemberResponse.RecommendPostDto.builder()
         .id(compositeDto.getId())
         .category(Category.EXPERIENCE.name())
         .title(compositeDto.getTitle())
@@ -178,10 +182,11 @@ public class MemberTypeService {
     return recommendPostDto;
   }
 
-  private RecommendPostDto getRestaurantPostDto(Member member, Long postId, Language language) {
+  private MemberResponse.RecommendPostDto getRestaurantPostDto(Member member, Long postId,
+      Language language) {
     RestaurantCompositeDto compositeDto = restaurantRepository.findCompositeDtoById(postId,
         language);
-    RecommendPostDto recommendPostDto = RecommendPostDto.builder()
+    MemberResponse.RecommendPostDto recommendPostDto = MemberResponse.RecommendPostDto.builder()
         .id(compositeDto.getId())
         .category(Category.RESTAURANT.name())
         .title(compositeDto.getTitle())

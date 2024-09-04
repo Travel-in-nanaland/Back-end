@@ -2,8 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_CONSENT_NOT_FOUND;
 
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentItem;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
@@ -31,11 +30,11 @@ public class MemberConsentService {
 
   // 이용약관 생성
   @Transactional
-  public void createMemberConsents(Member member, List<ConsentItem> consentItems) {
+  public void createMemberConsents(Member member, List<MemberRequest.ConsentItem> consentItems) {
     Map<ConsentType, Boolean> consentStates = consentItems.stream()
         .collect(Collectors.toMap(
             consentItem -> ConsentType.valueOf(consentItem.getConsentType()),
-            ConsentItem::getConsent
+            MemberRequest.ConsentItem::getConsent
         ));
 
     // 필수 이용약관이 false인 경우
@@ -69,7 +68,8 @@ public class MemberConsentService {
 
   // 이용약관 동의 여부 수정
   @Transactional
-  public void updateMemberConsent(MemberInfoDto memberInfoDto, ConsentUpdateDto consentUpdateDto) {
+  public void updateMemberConsent(MemberInfoDto memberInfoDto,
+      MemberRequest.ConsentUpdateDto consentUpdateDto) {
     MemberConsent memberConsent = memberConsentRepository.findByConsentTypeAndMember(
             ConsentType.valueOf(consentUpdateDto.getConsentType()),
             memberInfoDto.getMember())

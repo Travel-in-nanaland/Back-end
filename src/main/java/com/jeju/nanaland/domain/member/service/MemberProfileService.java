@@ -6,10 +6,8 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.ConsentItem;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -40,8 +38,8 @@ public class MemberProfileService {
 
   // 유저 프로필 수정
   @Transactional
-  public void updateProfile(MemberInfoDto memberInfoDto, ProfileUpdateDto profileUpdateDto,
-      MultipartFile multipartFile) {
+  public void updateProfile(MemberInfoDto memberInfoDto,
+      MemberRequest.ProfileUpdateDto profileUpdateDto, MultipartFile multipartFile) {
 
     Member member = memberInfoDto.getMember();
     validateNickname(profileUpdateDto.getNickname(), member);
@@ -93,11 +91,11 @@ public class MemberProfileService {
     }
 
     // 이용약관 동의 여부 조회
-    List<ConsentItem> consentItems = new ArrayList<>();
+    List<MemberResponse.ConsentItem> consentItems = new ArrayList<>();
     if (isMyProfile) {
       consentItems = memberRepository.findMemberConsentByMember(member)
           .stream().map(
-              memberConsent -> ConsentItem.builder()
+              memberConsent -> MemberResponse.ConsentItem.builder()
                   .consentType(memberConsent.getConsentType().name())
                   .consent(memberConsent.getConsent())
                   .build()
@@ -123,7 +121,8 @@ public class MemberProfileService {
 
   // 언어 설정 변경
   @Transactional
-  public void updateLanguage(MemberInfoDto memberInfoDto, LanguageUpdateDto languageUpdateDto) {
+  public void updateLanguage(MemberInfoDto memberInfoDto,
+      MemberRequest.LanguageUpdateDto languageUpdateDto) {
     Language language = Language.valueOf(languageUpdateDto.getLocale());
 
     memberInfoDto.getMember().updateLanguage(language);
