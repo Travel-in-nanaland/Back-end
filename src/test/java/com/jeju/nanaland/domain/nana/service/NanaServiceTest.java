@@ -1,14 +1,19 @@
 package com.jeju.nanaland.domain.nana.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -28,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -51,7 +57,7 @@ public class NanaServiceTest {
   @Mock
   private NanaContentRepository nanaContentRepository;
   @Mock
-  private FavoriteService favoriteService;
+  private MemberFavoriteService memberFavoriteService;
   @Mock
   private HashtagRepository hashtagRepository;
   @Mock
@@ -59,6 +65,49 @@ public class NanaServiceTest {
   @InjectMocks
   private NanaService nanaService;
 
+  @Test
+  @DisplayName("나나스픽 카드 정보 조회")
+  void getPostCardDtoTest() {
+    // given
+    ImageFile imageFile = createImageFile(1);
+    Nana nana = createNana(1, imageFile);
+    NanaTitle nanaTitle = createNanaTitle(1, nana, Language.KOREAN);
+    PostCardDto postCardDto = PostCardDto.builder()
+        .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
+        .title(nanaTitle.getHeading())
+        .id(nana.getId())
+        .category(Category.NANA.toString())
+        .build();
+    when(nanaRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postCardDto);
+
+    // when
+    PostCardDto result =
+        nanaService.getPostCardDto(postCardDto.getId(), Category.NANA, Language.KOREAN);
+
+    // then
+    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+  }
+
+  @Test
+  @DisplayName("나나스픽 Post 조회")
+  void getPostTest() {
+    // given
+    ImageFile imageFile = createImageFile(1);
+    Nana nana = Nana.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+    when(nanaRepository.findById(nullable(Long.class)))
+        .thenReturn(Optional.ofNullable(nana));
+
+    // when
+    Post post = nanaService.getPost(1L, Category.NANA);
+
+    // then
+    assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
+  }
 
   @Test
   void getNanaThumbnails() {
@@ -139,7 +188,7 @@ public class NanaServiceTest {
         nanaContentImages.get(1));
     when(imageFileRepository.findPostImageFiles(nanaContentList.get(2).getId())).thenReturn(
         nanaContentImages.get(2));
-    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
+    when(memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);
 
     // When

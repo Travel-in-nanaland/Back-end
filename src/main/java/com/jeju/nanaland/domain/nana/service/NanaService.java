@@ -4,12 +4,17 @@ import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
 import static com.jeju.nanaland.global.exception.ErrorCode.NANA_TITLE_NOT_FOUND;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.PostImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.hashtag.service.HashtagService;
@@ -37,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -47,19 +53,54 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class NanaService {
+public class NanaService implements PostService {
 
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
   private final HashtagRepository hashtagRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
   private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
   private final HashtagService hashtagService;
   private final ImageFileRepository imageFileRepository;
   private final PostImageFileRepository postImageFileRepository;
+
+  /**
+   * Nana 객체 조회
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @return Post
+   * @throws NotFoundException 게시물 id에 해당하는 나나스픽 게시물이 존재하지 않는 경우
+   */
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return nanaRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  /**
+   * 카드 정보 조회 - (postId, category, imageFile, title)
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @param language 언어 정보
+   * @return PostCardDto
+   * @throws NotFoundException (게시물 id, langugae)를 가진 나나스픽 정보가 존재하지 않는 경우
+   */
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+    PostCardDto postCardDto = nanaRepository.findPostCardDto(postId, language);
+
+    // 게시물 정보가 없는 경우 에러처리
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.NANA.toString());
+    return postCardDto;
+  }
 
   // 메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {
@@ -146,8 +187,8 @@ public class NanaService {
       throw new ServerErrorException("나나's pick의 content와 image의 수가 일치하지 않습니다.");
     }
 
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
-        nanaTitle.getNana().getId());
+    boolean isPostInFavorite = memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(),
+        NANA, nanaTitle.getNana().getId());
 
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
     int nanaContentImageIdx = 0;

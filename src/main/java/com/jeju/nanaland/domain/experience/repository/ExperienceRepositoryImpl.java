@@ -8,6 +8,8 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
@@ -187,6 +189,24 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .select(experience.id)
         .from(experience)
         .fetch();
+  }
+
+  @Override
+  public PostCardDto findPostCardDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostCardDto(
+            experience.id,
+            experienceTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(experience)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .innerJoin(experience.firstImageFile, imageFile)
+        .where(
+            experience.id.eq(postId),
+            experienceTrans.language.eq(language))
+        .fetchOne();
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {

@@ -5,8 +5,6 @@ import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Long>,
@@ -19,7 +17,4 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long>,
       Category category, Long postId, String status);
 
   List<Favorite> findAllByMemberAndStatus(Member member, String status);
-
-  Page<Favorite> findAllByMemberAndStatusOrderByCreatedAtDesc(Member member, String status,
-      Pageable pageable);
 }

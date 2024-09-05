@@ -9,6 +9,8 @@ import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restau
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantResponse_RestaurantMenuDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantResponse_RestaurantThumbnail;
@@ -176,6 +178,24 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
             .or(restaurant.id.in(idListContainAllHashtags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public PostCardDto findPostCardDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostCardDto(
+            restaurant.id,
+            restaurantTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(restaurant)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .innerJoin(restaurant.firstImageFile, imageFile)
+        .where(
+            restaurant.id.eq(postId),
+            restaurantTrans.language.eq(language))
+        .fetchOne();
   }
 
   private BooleanExpression addressTagCondition(List<String> addressFilterList) {

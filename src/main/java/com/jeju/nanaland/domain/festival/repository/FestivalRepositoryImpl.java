@@ -8,6 +8,8 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -296,6 +298,24 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public PostCardDto findPostCardDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostCardDto(
+            festival.id,
+            festivalTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(festival)
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .innerJoin(festival.firstImageFile, imageFile)
+        .where(
+            festival.id.eq(postId),
+            festivalTrans.language.eq(language))
+        .fetchOne();
   }
 
   private BooleanExpression addressTagCondition(List<String> addressFilterList) {
