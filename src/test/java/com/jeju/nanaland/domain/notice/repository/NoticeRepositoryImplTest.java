@@ -9,9 +9,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeContentDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeTitleDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import com.jeju.nanaland.domain.notice.entity.Notice;
 import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
 import com.jeju.nanaland.domain.notice.entity.NoticeContent;
@@ -128,7 +126,7 @@ class NoticeRepositoryImplTest {
     Pageable pageable = PageRequest.of(0, 2);
 
     // when
-    Page<NoticeTitleDto> noticeList = noticeRepository.findNoticeList(
+    Page<NoticeResponse.TitleDto> noticeList = noticeRepository.findNoticeList(
         memberInfoDto.getLanguage(), pageable);
 
     // then
@@ -147,7 +145,7 @@ class NoticeRepositoryImplTest {
     createNoticeContent(noticeTitle, createImageFile());
 
     // when
-    NoticeDetailDto noticeDetail = noticeRepository.getNoticeDetail(memberInfoDto.getLanguage(),
+    NoticeResponse.DetailDto noticeDetail = noticeRepository.getNoticeDetail(memberInfoDto.getLanguage(),
         notice.getId());
 
     // then
@@ -165,7 +163,7 @@ class NoticeRepositoryImplTest {
     NoticeContent noticeContent2 = createNoticeContent(noticeTitle, null);
 
     // when
-    List<NoticeContentDto> noticeContents = noticeRepository.getNoticeContents(
+    List<NoticeResponse.ContentDto> noticeContents = noticeRepository.getNoticeContents(
         memberInfoDto.getLanguage(), notice.getId());
 
     // then

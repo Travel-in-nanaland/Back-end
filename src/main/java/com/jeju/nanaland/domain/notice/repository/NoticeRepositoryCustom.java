@@ -1,18 +1,16 @@
 package com.jeju.nanaland.domain.notice.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeContentDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeTitleDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface NoticeRepositoryCustom {
 
-  Page<NoticeTitleDto> findNoticeList(Language language, Pageable pageable);
+  Page<NoticeResponse.TitleDto> findNoticeList(Language language, Pageable pageable);
 
-  NoticeDetailDto getNoticeDetail(Language language, Long id);
+  NoticeResponse.DetailDto getNoticeDetail(Language language, Long id);
 
-  List<NoticeContentDto> getNoticeContents(Language language, Long id);
+  List<NoticeResponse.ContentDto> getNoticeContents(Language language, Long id);
 }

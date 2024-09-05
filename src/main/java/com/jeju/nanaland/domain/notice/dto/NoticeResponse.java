@@ -14,19 +14,20 @@ public class NoticeResponse {
 
   @Data
   @Builder
-  @Schema(description = "공지사항 전체 리스트 조회 DTO")
-  public static class NoticeListDto {
+  @Schema(name = "NoticeCardDto", description = "공지사항 전체 리스트 조회 DTO")
+  public static class CardDto {
 
     @Schema(description = "총 조회 개수")
     private Long totalElements;
 
     @Schema(description = "결과 데이터")
-    private List<NoticeTitleDto> data;
+    private List<TitleDto> data;
   }
 
   @Data
   @Builder
-  public static class NoticeTitleDto {
+  @Schema(name = "NoticeTitleDto", description = "공지사항 제목 DTO")
+  public static class TitleDto {
 
     @Schema(description = "공지사항 id")
     private Long id;
@@ -38,7 +39,7 @@ public class NoticeResponse {
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public NoticeTitleDto(Long id, String noticeCategory, String title, LocalDateTime createdAt) {
+    public TitleDto(Long id, String noticeCategory, String title, LocalDateTime createdAt) {
       this.id = id;
       this.noticeCategory = noticeCategory;
       this.title = title;
@@ -49,17 +50,18 @@ public class NoticeResponse {
   @Data
   @Builder
   @AllArgsConstructor
-  public static class NoticeDetailDto {
+  @Schema(name = "NoticeDetailDto", description = "공지사항 상세 DTO")
+  public static class DetailDto {
 
     @Schema(description = "제목")
     private String title;
     @Schema(description = "생성일")
     private LocalDate createdAt;
     @Schema(description = "내용 리스트")
-    private List<NoticeContentDto> noticeContents;
+    private List<ContentDto> noticeContents;
 
     @QueryProjection
-    public NoticeDetailDto(String title, LocalDateTime createdAt) {
+    public DetailDto(String title, LocalDateTime createdAt) {
       this.title = title;
       this.createdAt = createdAt.toLocalDate();
     }
@@ -67,7 +69,8 @@ public class NoticeResponse {
 
   @Data
   @Builder
-  public static class NoticeContentDto {
+  @Schema(name = "NoticeContentDto", description = "공지사항 내용 DTO")
+  public static class ContentDto {
 
     @Schema(description = "이미지")
     private ImageFileDto image;
@@ -75,7 +78,7 @@ public class NoticeResponse {
     private String content;
 
     @QueryProjection
-    public NoticeContentDto(ImageFileDto imageFileDto, String content) {
+    public ContentDto(ImageFileDto imageFileDto, String content) {
       if (imageFileDto.getThumbnailUrl() == null && imageFileDto.getOriginUrl() == null) {
         imageFileDto = null;
       }

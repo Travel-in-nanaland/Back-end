@@ -13,10 +13,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeContentDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeListDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeTitleDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import com.jeju.nanaland.domain.notice.entity.Notice;
 import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
 import com.jeju.nanaland.domain.notice.repository.NoticeRepository;
@@ -89,11 +86,11 @@ class NoticeServiceTest {
         .build();
   }
 
-  private Page<NoticeTitleDto> createNoticeTitles() {
-    List<NoticeTitleDto> noticeTitleDtos = new ArrayList<>();
+  private Page<NoticeResponse.TitleDto> createNoticeTitles() {
+    List<NoticeResponse.TitleDto> noticeTitleDtos = new ArrayList<>();
     for (int i = 1; i < 3; i++) {
       noticeTitleDtos.add(
-          NoticeTitleDto.builder()
+          NoticeResponse.TitleDto.builder()
               .noticeCategory(NoticeCategory.NOTICE.name())
               .title("title")
               .build());
@@ -108,17 +105,17 @@ class NoticeServiceTest {
         .build();
   }
 
-  private NoticeDetailDto createNoticeDetail() {
-    return NoticeDetailDto.builder()
+  private NoticeResponse.DetailDto createNoticeDetail() {
+    return NoticeResponse.DetailDto.builder()
         .title("title")
         .build();
   }
 
-  private List<NoticeContentDto> createNoticeContents() {
-    List<NoticeContentDto> noticeContents = new ArrayList<>();
+  private List<NoticeResponse.ContentDto> createNoticeContents() {
+    List<NoticeResponse.ContentDto> noticeContents = new ArrayList<>();
     for (int i = 1; i < 3; i++) {
       noticeContents.add(
-          NoticeContentDto.builder()
+          NoticeResponse.ContentDto.builder()
               .image(new ImageFileDto("origin", "thumbnail"))
               .content("content")
               .build());
@@ -131,17 +128,17 @@ class NoticeServiceTest {
   @DisplayName("공지사항 리스트 조회 성공")
   void getNoticeList() {
     // given
-    Page<NoticeTitleDto> noticeTitleDtos = createNoticeTitles();
+    Page<NoticeResponse.TitleDto> noticeTitleDtos = createNoticeTitles();
     doReturn(noticeTitleDtos).when(noticeRepository).findNoticeList(any(Language.class), any());
 
     // when
-    NoticeListDto noticeList = noticeService.getNoticeList(memberInfoDto, 0, 12);
+    NoticeResponse.CardDto noticeCardDto = noticeService.getNoticeCard(memberInfoDto, 0, 12);
 
     // then
-    assertThat(noticeList).isNotNull();
-    assertThat(noticeList.getTotalElements()).isEqualTo(
+    assertThat(noticeCardDto).isNotNull();
+    assertThat(noticeCardDto.getTotalElements()).isEqualTo(
         noticeTitleDtos.getTotalElements());
-    assertThat(noticeList.getData()).hasSameSizeAs(noticeTitleDtos.getContent());
+    assertThat(noticeCardDto.getData()).hasSameSizeAs(noticeTitleDtos.getContent());
   }
 
   @Test
@@ -181,15 +178,15 @@ class NoticeServiceTest {
   void getNoticeDetailSuccess() {
     // given
     Notice notice = createNotice();
-    NoticeDetailDto noticeDetail = createNoticeDetail();
-    List<NoticeContentDto> noticeContents = createNoticeContents();
+    NoticeResponse.DetailDto noticeDetail = createNoticeDetail();
+    List<NoticeResponse.ContentDto> noticeContents = createNoticeContents();
 
     doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
     doReturn(noticeDetail).when(noticeRepository).getNoticeDetail(any(Language.class), any());
     doReturn(noticeContents).when(noticeRepository).getNoticeContents(any(Language.class), any());
 
     // when
-    NoticeDetailDto result = noticeService.getNoticeDetail(memberInfoDto, 1L);
+    NoticeResponse.DetailDto result = noticeService.getNoticeDetail(memberInfoDto, 1L);
 
     // then
     assertThat(result).isNotNull();

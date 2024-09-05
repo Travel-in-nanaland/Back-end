@@ -4,8 +4,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.NOTICE_DETAIL_SUCCE
 import static com.jeju.nanaland.global.exception.SuccessCode.NOTICE_LIST_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeListDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import com.jeju.nanaland.domain.notice.service.NoticeService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -35,13 +34,13 @@ public class NoticeController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
   })
   @GetMapping("/list")
-  public BaseResponse<NoticeListDto> getNoticeList(
+  public BaseResponse<NoticeResponse.CardDto> getNoticeCard(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size
   ) {
-    NoticeListDto noticeList = noticeService.getNoticeList(memberInfoDto, page, size);
-    return BaseResponse.success(NOTICE_LIST_SUCCESS, noticeList);
+    NoticeResponse.CardDto result = noticeService.getNoticeCard(memberInfoDto, page, size);
+    return BaseResponse.success(NOTICE_LIST_SUCCESS, result);
   }
 
   @Operation(summary = "공지사항 상세 조회")
@@ -51,10 +50,10 @@ public class NoticeController {
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<NoticeDetailDto> getNoticeDetail(
+  public BaseResponse<NoticeResponse.DetailDto> getNoticeDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id) {
-    NoticeDetailDto noticeDetailDto = noticeService.getNoticeDetail(memberInfoDto, id);
-    return BaseResponse.success(NOTICE_DETAIL_SUCCESS, noticeDetailDto);
+    NoticeResponse.DetailDto result = noticeService.getNoticeDetail(memberInfoDto, id);
+    return BaseResponse.success(NOTICE_DETAIL_SUCCESS, result);
   }
 }

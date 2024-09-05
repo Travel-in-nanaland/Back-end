@@ -7,12 +7,10 @@ import static com.jeju.nanaland.domain.notice.entity.QNoticeTitle.noticeTitle;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.QImageFileDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeContentDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeTitleDto;
-import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_NoticeContentDto;
-import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_NoticeTitleDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
+import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_ContentDto;
+import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_DetailDto;
+import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_TitleDto;
 import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -28,9 +26,9 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public Page<NoticeTitleDto> findNoticeList(Language language, Pageable pageable) {
-    List<NoticeTitleDto> resultDto = queryFactory
-        .select(new QNoticeResponse_NoticeTitleDto(
+  public Page<NoticeResponse.TitleDto> findNoticeList(Language language, Pageable pageable) {
+    List<NoticeResponse.TitleDto> resultDto = queryFactory
+        .select(new QNoticeResponse_TitleDto(
                 notice.id,
                 notice.noticeCategory.stringValue(),
                 noticeTitle.title,
@@ -64,9 +62,9 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
   }
 
   @Override
-  public NoticeDetailDto getNoticeDetail(Language language, Long id) {
+  public NoticeResponse.DetailDto getNoticeDetail(Language language, Long id) {
     return queryFactory
-        .select(new QNoticeResponse_NoticeDetailDto(
+        .select(new QNoticeResponse_DetailDto(
             noticeTitle.title,
             notice.createdAt
         ))
@@ -78,10 +76,10 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
   }
 
   @Override
-  public List<NoticeContentDto> getNoticeContents(Language language, Long id) {
+  public List<NoticeResponse.ContentDto> getNoticeContents(Language language, Long id) {
     return queryFactory
         .select(
-            new QNoticeResponse_NoticeContentDto(
+            new QNoticeResponse_ContentDto(
                 new QImageFileDto(
                     imageFile.originUrl,
                     imageFile.thumbnailUrl
