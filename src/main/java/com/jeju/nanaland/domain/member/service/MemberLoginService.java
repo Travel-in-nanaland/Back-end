@@ -70,6 +70,7 @@ public class MemberLoginService {
     validateNickname(nickname);
     ImageFile profileImageFile = createProfileImageFile(multipartFile);
     Member member = createMember(joinDto, profileImageFile, nickname);
+
     // GUEST가 아닌 경우, 이용약관 저장
     if (!member.getProvider().equals(Provider.GUEST)) {
       memberConsentService.createMemberConsents(member, joinDto.getConsentItems());
@@ -100,6 +101,7 @@ public class MemberLoginService {
   /**
    * 닉네임 중복 확인
    * 회원 가입 하기 전에 사용되는 메서드로, 본인 닉네임과 비교하지 않음
+   *
    * @param nickname 닉네임
    * @throws ConflictException 닉네임이 중복되는 경우
    */
@@ -113,6 +115,7 @@ public class MemberLoginService {
   /**
    * 프로필 사진 업로드 및 저장
    * 프로필 사진이 없는 경우엔, 랜덤 프로필 사진 저장
+   *
    * @param multipartFile 프로필 사진
    * @return 저장된 이미지 파일 또는 랜덤 프로필 사진 파일
    */
@@ -155,6 +158,7 @@ public class MemberLoginService {
    * 회원의 상태(Status)가 INACTIVE라면, ACTIVE로 수정
    * 회원의 언어(Language)가 다르다면, 언어 수정
    * FcmToken이 없다면, 생성 및 timestamp 갱신
+   *
    * @param loginDto 로그인 정보
    * @return JWT
    * @throws NotFoundException 존재하는 회원이 없는 경우
@@ -271,6 +275,7 @@ public class MemberLoginService {
    * 로그아웃
    * accessToken의 재사용 방지를 위해 블랙리스트에 추가한다.
    * RefreshToken과 FcmToken을 삭제한다.
+   *
    * @param memberInfoDto 회원 정보
    * @param bearerAccessToken Bearer RefreshToken
    * @param fcmToken FcmToken
@@ -296,6 +301,7 @@ public class MemberLoginService {
   /**
    * 회원 탈퇴
    * 회원의 상태(Status)를 INACTIVE로 변환하고, 회원 탈퇴 정보를 저장한다.
+   *
    * @param memberInfoDto 회원 정보
    * @param withdrawalDto 회원 탈퇴 요청 정보
    */
@@ -328,6 +334,7 @@ public class MemberLoginService {
   /**
    * 강제 회원 탈퇴
    * 회원의 탈퇴일을 4개월 전으로 수정 후, 회원 탈퇴 스케줄러를 실행한다.
+   *
    * @param bearerAccessToken Bearer AccessToken
    * @throws NotFoundException 존재하는 회원이 없거나, 존재하는 회원 탈퇴 정보가 없는 경우
    */

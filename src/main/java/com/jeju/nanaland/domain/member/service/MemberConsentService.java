@@ -80,6 +80,7 @@ public class MemberConsentService {
    *
    * @param memberInfoDto 회원 정보
    * @param consentUpdateDto 이용약관 수정 정보
+   * @throws NotFoundException 존재하는 이용약관이 없는 경우
    */
   @Transactional
   public void updateMemberConsent(MemberInfoDto memberInfoDto,

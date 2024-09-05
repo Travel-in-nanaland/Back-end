@@ -86,6 +86,7 @@ public class MemberProfileService {
    * memberId가 본인과 일치하지 않으면, 타인 프로필 조회
    * 기본 프로필 정보 조회
    * 본인 프로필을 조회하는 경우, 이용약관 추가 조회
+   *
    * @param memberInfoDto 회원 정보
    * @param memberId 조회한 회원의 ID
    * @return 프로필 정보
@@ -160,6 +161,7 @@ public class MemberProfileService {
   /**
    * 닉네임 중복 확인
    * 본인 닉네임과 중복되는지 확인하기 위해 필요한 Member 조회 후, validate 과정 진행
+   *
    * @param nickname 닉네임
    * @param memberId 회원 ID
    */
