@@ -20,24 +20,11 @@ import org.springframework.stereotype.Service;
 @Primary
 public class PostServiceImpl implements PostService {
 
-  private final NanaService nanaService;
-  private final NatureService natureService;
-  private final MarketService marketService;
-  private final FestivalService festivalService;
-  private final ExperienceService experienceService;
-  private final RestaurantService restaurantService;
-
   private final Map<Category, PostService> serviceMap = new HashMap<>();
 
   public PostServiceImpl(NanaService nanaService, NatureService natureService,
       MarketService marketService, FestivalService festivalService,
       ExperienceService experienceService, RestaurantService restaurantService) {
-    this.nanaService = nanaService;
-    this.natureService = natureService;
-    this.marketService = marketService;
-    this.festivalService = festivalService;
-    this.experienceService = experienceService;
-    this.restaurantService = restaurantService;
 
     serviceMap.put(Category.NANA, nanaService);
     serviceMap.put(Category.NATURE, natureService);
