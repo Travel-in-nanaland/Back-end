@@ -6,11 +6,15 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NANA_TITLE_NOT_FOUND;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.entity.PostImageFile;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.PostImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
@@ -41,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +59,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
-public class NanaService {
+public class NanaService implements PostService {
 
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
@@ -67,6 +72,24 @@ public class NanaService {
   private final HashtagService hashtagService;
   private final ImageFileRepository imageFileRepository;
   private final PostImageFileRepository postImageFileRepository;
+
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return nanaRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+    PostCardDto postCardDto = nanaRepository.findPostCardDto(postId, language);
+
+    // 게시물 정보가 없는 경우 에러처리
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.NANA.toString());
+    return postCardDto;
+  }
 
   // 메인페이지에 보여지는 4개의 nana
   public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {

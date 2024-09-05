@@ -4,12 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
@@ -20,12 +27,16 @@ import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
+import com.jeju.nanaland.domain.nature.entity.Nature;
+import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,6 +72,73 @@ class NatureServiceTest {
   @BeforeEach
   void setUp() {
     memberInfoDto = createMemberInfoDto();
+  }
+
+  @Test
+  @DisplayName("7대자연 카드 정보 조회")
+  void getPostCardDtoTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Nature nature = createNature(imageFile);
+    NatureTrans natureTrans = createNatureTrans(nature);
+    PostCardDto postCardDto = PostCardDto.builder()
+        .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
+        .title(natureTrans.getTitle())
+        .id(nature.getId())
+        .category(Category.NATURE.toString())
+        .build();
+    when(natureRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postCardDto);
+
+    // when
+    PostCardDto result =
+        natureService.getPostCardDto(postCardDto.getId(), Category.NATURE, Language.KOREAN);
+
+    // then
+    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+  }
+
+  @Test
+  @DisplayName("7대자연 Post 조회")
+  void getPostTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Nature nature = Nature.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+    when(natureRepository.findById(nullable(Long.class)))
+        .thenReturn(Optional.ofNullable(nature));
+
+    // when
+    Post post = natureService.getPost(1L, Category.NATURE);
+
+    // then
+    assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
+  }
+
+  ImageFile createImageFile() {
+    return ImageFile.builder()
+        .originUrl(UUID.randomUUID().toString())
+        .thumbnailUrl(UUID.randomUUID().toString())
+        .build();
+  }
+
+  Nature createNature(ImageFile imageFile) {
+    return Nature.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+  }
+
+  NatureTrans createNatureTrans(Nature nature) {
+    return NatureTrans.builder()
+        .nature(nature)
+        .language(Language.KOREAN)
+        .title(UUID.randomUUID().toString())
+        .content(UUID.randomUUID().toString())
+        .build();
   }
 
   private MemberInfoDto createMemberInfoDto() {

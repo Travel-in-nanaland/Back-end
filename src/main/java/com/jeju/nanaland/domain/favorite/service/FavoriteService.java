@@ -2,7 +2,8 @@ package com.jeju.nanaland.domain.favorite.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.service.PostSearchServiceImpl;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.dto.FavoritePostCardDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
@@ -26,9 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class FavoriteService {
 
-  private final FavoritePostCardService favoritePostCardService;
   private final FavoriteRepository favoriteRepository;
-  private final PostSearchServiceImpl postSearchService;
+  private final PostService postService;
 
   // 전체 찜리스트 조회
   @Transactional(readOnly = true)
@@ -48,7 +48,8 @@ public class FavoriteService {
         .map(favorite -> {
           Category category = favorite.getCategory();
           Long postId = favorite.getPost().getId();
-          return favoritePostCardService.getFavoritePostCardDto(postId, language, category);
+          PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
+          return new FavoritePostCardDto(postCardDto);
         })
         .collect(Collectors.toList());
 
@@ -72,8 +73,11 @@ public class FavoriteService {
 
     // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
     List<FavoritePostCardDto> favoritePostCardDtos = favoritePage.get()
-        .map(favorite ->
-            favoritePostCardService.getFavoritePostCardDto(favorite.getId(), language, category))
+        .map(favorite -> {
+          Long postId = favorite.getPost().getId();
+          PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
+          return new FavoritePostCardDto(postCardDto);
+        })
         .toList();
 
     return FavoriteResponse.FavoriteCardPageDto.builder()
@@ -119,7 +123,7 @@ public class FavoriteService {
       Favorite favorite = Favorite.builder()
           .member(memberInfoDto.getMember())
           .category(category)
-          .post(postSearchService.getPost(postId, category))
+          .post(postService.getPost(postId, category))
           .status("ACTIVE")
           .notificationCount(0)
           .build();

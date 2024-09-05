@@ -3,11 +3,16 @@ package com.jeju.nanaland.domain.market.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
@@ -15,6 +20,8 @@ import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnailDto;
+import com.jeju.nanaland.domain.market.entity.Market;
+import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -22,6 +29,8 @@ import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +59,50 @@ class MarketServiceTest {
   ImageFileRepository imageFileRepository;
   @Mock
   private ImageFileService imageFileService;
+
+  @Test
+  @DisplayName("전통시장 카드 정보 조회")
+  void getPostCardDtoTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Market market = createMarket(imageFile);
+    MarketTrans marketTrans = createMarketTrans(market);
+    PostCardDto postCardDto = PostCardDto.builder()
+        .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
+        .title(marketTrans.getTitle())
+        .id(market.getId())
+        .category(Category.MARKET.toString())
+        .build();
+    when(marketRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postCardDto);
+
+    // when
+    PostCardDto result =
+        marketService.getPostCardDto(postCardDto.getId(), Category.MARKET, Language.KOREAN);
+
+    // then
+    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+  }
+
+  @Test
+  @DisplayName("전통시장 Post 조회")
+  void getPostTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Market market = Market.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+    when(marketRepository.findById(nullable(Long.class)))
+        .thenReturn(Optional.ofNullable(market));
+
+    // when
+    Post post = marketService.getPost(1L, Category.MARKET);
+
+    // then
+    assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
+  }
 
   @Test
   @DisplayName("전통시장 썸네일 페이징")
@@ -101,6 +154,29 @@ class MarketServiceTest {
 
     // then
     assertThat(result.getImages().size()).isEqualTo(3);
+  }
+
+  ImageFile createImageFile() {
+    return ImageFile.builder()
+        .originUrl(UUID.randomUUID().toString())
+        .thumbnailUrl(UUID.randomUUID().toString())
+        .build();
+  }
+
+  Market createMarket(ImageFile imageFile) {
+    return Market.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+  }
+
+  MarketTrans createMarketTrans(Market market) {
+    return MarketTrans.builder()
+        .market(market)
+        .language(Language.KOREAN)
+        .title(UUID.randomUUID().toString())
+        .content(UUID.randomUUID().toString())
+        .build();
   }
 
   // totalElement: 10, MarketThumbnail 데이터가 2개인 Page 생성

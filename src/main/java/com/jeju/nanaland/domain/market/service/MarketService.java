@@ -2,8 +2,13 @@ package com.jeju.nanaland.domain.market.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
@@ -15,6 +20,7 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,12 +31,28 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MarketService {
+public class MarketService implements PostService {
 
   private final MarketRepository marketRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
+
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return marketRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+    PostCardDto postCardDto = marketRepository.findPostCardDto(postId, language);
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.MARKET.toString());
+    return postCardDto;
+  }
 
   // 전통시장 리스트 조회
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,

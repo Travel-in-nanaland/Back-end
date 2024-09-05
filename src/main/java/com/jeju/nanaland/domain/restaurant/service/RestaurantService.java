@@ -3,9 +3,14 @@ package com.jeju.nanaland.domain.restaurant.service;
 import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
 import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -22,6 +27,7 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +39,30 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantService {
+public class RestaurantService implements PostService {
 
   private final RestaurantRepository restaurantRepository;
   private final FavoriteService favoriteService;
   private final ReviewRepository reviewRepository;
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
+
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return restaurantRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+
+    PostCardDto postCardDto = restaurantRepository.findPostCardDto(postId, language);
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.RESTAURANT.toString());
+    return postCardDto;
+  }
 
   // 맛집 리스트 조회
   public RestaurantThumbnailDto getRestaurantList(MemberInfoDto memberInfoDto,

@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.festival.service;
+package com.jeju.nanaland.domain.restaurant.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -10,9 +10,11 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.festival.entity.Festival;
-import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
-import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.restaurant.entity.Restaurant;
+import com.jeju.nanaland.domain.restaurant.entity.RestaurantTrans;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,37 +27,56 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @Execution(ExecutionMode.CONCURRENT)
-public class FestivalCardServiceTest {
+public class RestaurantServiceTest {
 
   @InjectMocks
-  FestivalCardService festivalCardService;
+  RestaurantService restaurantService;
 
   @Mock
-  FestivalRepository festivalRepository;
+  RestaurantRepository restaurantRepository;
 
   @Test
-  @DisplayName("축제 카드 정보 조회")
+  @DisplayName("맛집 카드 정보 조회")
   void getPostCardDtoTest() {
     // given
     ImageFile imageFile = createImageFile();
-    Festival festival = createFestival(imageFile);
-    FestivalTrans festivalTrans = createFestivalTrans(festival);
+    Restaurant restaurant = createRestaurant(imageFile);
+    RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant);
     PostCardDto postCardDto = PostCardDto.builder()
         .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
-        .title(festivalTrans.getTitle())
-        .id(festival.getId())
-        .category(Category.FESTIVAL.toString())
+        .title(restaurantTrans.getTitle())
+        .id(restaurant.getId())
+        .category(Category.RESTAURANT.toString())
         .build();
-    when(festivalRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
+    when(restaurantRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
         .thenReturn(postCardDto);
 
     // when
-    PostCardDto result = festivalCardService.getPostCardDto(postCardDto.getId(),
-        Language.KOREAN);
+    PostCardDto result =
+        restaurantService.getPostCardDto(postCardDto.getId(), Category.RESTAURANT, Language.KOREAN);
 
     // then
     assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
     assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+  }
+
+  @Test
+  @DisplayName("맛집 Post 조회")
+  void getPostTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Restaurant restaurant = Restaurant.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+    when(restaurantRepository.findById(nullable(Long.class)))
+        .thenReturn(Optional.ofNullable(restaurant));
+
+    // when
+    Post post = restaurantService.getPost(1L, Category.RESTAURANT);
+
+    // then
+    assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
   }
 
   ImageFile createImageFile() {
@@ -65,16 +86,16 @@ public class FestivalCardServiceTest {
         .build();
   }
 
-  Festival createFestival(ImageFile imageFile) {
-    return Festival.builder()
+  Restaurant createRestaurant(ImageFile imageFile) {
+    return Restaurant.builder()
         .priority(0L)
         .firstImageFile(imageFile)
         .build();
   }
 
-  FestivalTrans createFestivalTrans(Festival festival) {
-    return FestivalTrans.builder()
-        .festival(festival)
+  RestaurantTrans createRestaurantTrans(Restaurant restaurant) {
+    return RestaurantTrans.builder()
+        .restaurant(restaurant)
         .language(Language.KOREAN)
         .title(UUID.randomUUID().toString())
         .content(UUID.randomUUID().toString())

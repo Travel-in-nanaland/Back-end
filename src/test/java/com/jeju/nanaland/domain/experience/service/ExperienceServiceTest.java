@@ -1,11 +1,17 @@
 package com.jeju.nanaland.domain.experience.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
@@ -22,6 +28,8 @@ import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +59,50 @@ class ExperienceServiceTest {
   ImageFileRepository imageFileRepository;
   @Mock
   ReviewRepository reviewRepository;
+
+  @Test
+  @DisplayName("이색체험 카드 정보 조회")
+  void getPostCardDtoTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Experience experience = createExperience(imageFile);
+    ExperienceTrans experienceTrans = createExperienceTrans(experience);
+    PostCardDto postCardDto = PostCardDto.builder()
+        .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
+        .title(experienceTrans.getTitle())
+        .id(experience.getId())
+        .category(Category.EXPERIENCE.toString())
+        .build();
+    when(experienceRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postCardDto);
+
+    // when
+    PostCardDto result =
+        experienceService.getPostCardDto(postCardDto.getId(), Category.MARKET, Language.KOREAN);
+
+    // then
+    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+  }
+
+  @Test
+  @DisplayName("이색체험 Post 조회")
+  void getPostTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Experience experience = Experience.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+    when(experienceRepository.findById(nullable(Long.class)))
+        .thenReturn(Optional.ofNullable(experience));
+
+    // when
+    Post post = experienceService.getPost(1L, Category.MARKET);
+
+    // then
+    assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
+  }
 
   @Test
   @DisplayName("액티비티 상세조회")
@@ -117,6 +169,29 @@ class ExperienceServiceTest {
 
     // then
     assertThat(result.getTotalElements()).isEqualTo(2);
+  }
+
+  ImageFile createImageFile() {
+    return ImageFile.builder()
+        .originUrl(UUID.randomUUID().toString())
+        .thumbnailUrl(UUID.randomUUID().toString())
+        .build();
+  }
+
+  Experience createExperience(ImageFile imageFile) {
+    return Experience.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+  }
+
+  ExperienceTrans createExperienceTrans(Experience experience) {
+    return ExperienceTrans.builder()
+        .experience(experience)
+        .language(Language.KOREAN)
+        .title(UUID.randomUUID().toString())
+        .content(UUID.randomUUID().toString())
+        .build();
   }
 
   private MemberInfoDto getMemberInfoDto(Language language, TravelType travelType) {

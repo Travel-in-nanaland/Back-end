@@ -3,10 +3,15 @@ package com.jeju.nanaland.domain.festival.service;
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -24,6 +29,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,12 +41,28 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FestivalService {
+public class FestivalService implements PostService {
 
   private final FestivalRepository festivalRepository;
   private final FavoriteService favoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
+
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return festivalRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+    PostCardDto postCardDto = festivalRepository.findPostCardDto(postId, language);
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.FESTIVAL.toString());
+    return postCardDto;
+  }
 
   // 종료된 축제 리스트 조회
   public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,

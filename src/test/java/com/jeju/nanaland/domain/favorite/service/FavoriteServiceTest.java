@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.common.service.PostSearchServiceImpl;
+import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.experience.entity.Experience;
-import com.jeju.nanaland.domain.favorite.dto.FavoritePostCardDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteCardPageDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
@@ -60,9 +60,7 @@ class FavoriteServiceTest {
   @Mock
   FavoriteRepository favoriteRepository;
   @Mock
-  FavoritePostCardService favoritePostCardService;
-  @Mock
-  PostSearchServiceImpl postSearchService;
+  PostService postService;
 
   Random random = new Random();
 
@@ -123,9 +121,8 @@ class FavoriteServiceTest {
 
     when(favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, pageable))
         .thenReturn(new PageImpl<>(favorites, pageable, favorites.size()));
-    when(favoritePostCardService.getFavoritePostCardDto(nullable(Long.class), eq(Language.KOREAN),
-        any(Category.class)))
-        .thenReturn(FavoritePostCardDto.builder().build());
+    when(postService.getPostCardDto(nullable(Long.class), any(Category.class), eq(Language.KOREAN)))
+        .thenReturn(PostCardDto.builder().build());
 
     // when
     FavoriteCardPageDto result = favoriteService.getAllFavorites(memberInfoDto, 0, total);
@@ -154,9 +151,8 @@ class FavoriteServiceTest {
 
     when(favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, category, pageable))
         .thenReturn(new PageImpl<>(favorites, pageable, favorites.size()));
-    when(favoritePostCardService.getFavoritePostCardDto(nullable(Long.class), eq(Language.KOREAN),
-        any(Category.class)))
-        .thenReturn(FavoritePostCardDto.builder().build());
+    when(postService.getPostCardDto(nullable(Long.class), any(Category.class), eq(Language.KOREAN)))
+        .thenReturn(PostCardDto.builder().build());
 
     // when
     FavoriteCardPageDto result = favoriteService.getAllCategoryFavorites(memberInfoDto, category,
@@ -180,7 +176,7 @@ class FavoriteServiceTest {
     Post post = postMap.get(category);
     when(favoriteRepository.findByMemberAndCategoryAndPostId(member, category, postId))
         .thenReturn(Optional.empty());
-    when(postSearchService.getPost(postId, category))
+    when(postService.getPost(postId, category))
         .thenReturn(post);
     when(favoriteRepository.save(any(Favorite.class)))
         .thenReturn(Favorite.builder().build());
