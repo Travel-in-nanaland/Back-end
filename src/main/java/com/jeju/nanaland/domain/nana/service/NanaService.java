@@ -10,7 +10,6 @@ import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.common.entity.PostImageFile;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.PostImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
@@ -20,7 +19,6 @@ import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.hashtag.service.HashtagService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
@@ -44,7 +42,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,9 +50,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -258,111 +252,111 @@ public class NanaService implements PostService {
     return result;
   }
 
-  // 나나스픽 생성
-  // TODO : 모듈화한 부분이니 제거해도 괜찮을 것 같아보임
-  @Transactional
-  public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
-    try {
-      boolean existNanaContentImages = false;
-      Nana nana;
-      Long nanaId = nanaUploadDto.getPostId();
-      Language language = Language.valueOf(nanaUploadDto.getLanguage());
-      Category category = NANA_CONTENT;
-
-      // 없는 nana이면 nana 만들기
-      if (!existNanaById(nanaId)) {
-
-        // 처음 생성되는 나나's pick이면 KOREAN 버전부터 생성되어야 함
-        if (!Objects.equals(nanaUploadDto.getLanguage(), "KOREAN")) {
-          throw new BadRequestException("처음 생성하는 Nana's pick은 KOREAN 버전부터 입력해야합니다.");
-        }
-        // 처음 생성하는 nana인데 title image 없을 경우 에러
-        if (nanaUploadDto.getNanaTitleImage().isEmpty()) {
-          throw new BadRequestException("처음 생성하는 Nana's pick에는 title 이미지가 필수입니다.");
-        }
-        // nana 생성해서 저장하기
-        nana = createNanaByNanaUploadDto(nanaUploadDto);
-      } else {// 이미 존재하는 nana인 경우
-        nana = getNanaById(nanaId);
-
-        //존재하는 nana일 경우 해당 post가 이미 작성된 language로 요청이 올 경우 에러
-        if (existNanaTitleByNanaAndLanguage(nana, language)) {
-          throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
-        }
-
-        // 이미 nanaTitle이 존재하면 nanaContentImage 추가 생성 필요 없음을 표시
-        if (existNanaTitleByNana(nana)) {
-          existNanaContentImages = true;
-        }
-
-        /*
-         * 이미 존재하는 경우 한국어 버전 NanaContent의 수와 비교한다.
-         * (nanaContent들은 KOREAN nana Content의 사진들 공유 하기 때문에 기준은 KOREAN 버전)
-         * 기존의 content 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
-         */
-        if (countKoreanNanaContents(nana)
-            != nanaUploadDto.getNanaContents().size()) {
-          throw new BadRequestException(
-              "기존의 nana content 수와 현재 요청한 nana content의 수가 일치하지 않습니다.");
-        }
-      }
-
-      NanaTitle nanaTitle = NanaTitle.builder()
-          .nana(nana)
-          .language(language)
-          .subHeading(nanaUploadDto.getSubHeading())
-          .heading(nanaUploadDto.getHeading())
-          .notice(nanaUploadDto.getNotice())
-          .build();
-      nanaTitleRepository.save(nanaTitle);
-
-//      람다 안에서 외부 변수를 사용하기 위해서는 effectively final 변수를 사용해야하므로 선언
-//      존재할 경우 flag -> false / 존재하지 않을 경우 flag -> true
-      boolean createNanaContentsImageFlag = !existNanaContentImages;
-
-      // 람다 시작
-      //content 생성
-      nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
-            NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
-                .nanaTitle(nanaTitle)
-                .priority((long) nanaContentDto.getNumber())
-                .subTitle(nanaContentDto.getSubTitle())
-                .title(nanaContentDto.getTitle())
-                .content(nanaContentDto.getContent())
-                .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
-                    nanaContentDto.getInfoDesc()))
-                .build());
-
-            if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
-              // 람다 안에 들어있으니 nanaContent 1개에 대한 사진 묶음
-              List<MultipartFile> nanaContentImages = nanaContentDto.getNanaContentImages();
-              if (nanaContentImages.isEmpty()) {
-                throw new BadRequestException("처음 생성하는 Nana's pick에는 content 이미지가 필수입니다. ");
-              }
-              // nanaContent 하나 당 여러 개의 이미지 처리
-              List<PostImageFile> postImageFiles = nanaContentImages.stream()
-                  .map(image -> PostImageFile.builder()
-                      .imageFile(imageFileService.uploadAndSaveImageFile(image, false))
-                      .post(nanaContent)
-                      .build())
-                  .collect(Collectors.toList());
-
-              postImageFileRepository.saveAll(postImageFiles);
-            }
-
-            //해시태그 생성
-            hashtagService.registerHashtag(nanaContentDto.getHashtag(),
-                language, category, nanaContent);
-          } // 람다 끝
-      );
-    } catch (Exception e) {
-      // 외부 메서드 호출 시 에러 터지면 롤백
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-      return e.getMessage();
-    }
-    return "성공~";
-
-  }
+//  // 나나스픽 생성
+//  // TODO : 모듈화한 부분이니 제거해도 괜찮을 것 같아보임
+//  @Transactional
+//  public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
+//    try {
+//      boolean existNanaContentImages = false;
+//      Nana nana;
+//      Long nanaId = nanaUploadDto.getPostId();
+//      Language language = Language.valueOf(nanaUploadDto.getLanguage());
+//      Category category = NANA_CONTENT;
+//
+//      // 없는 nana이면 nana 만들기
+//      if (!existNanaById(nanaId)) {
+//
+//        // 처음 생성되는 나나's pick이면 KOREAN 버전부터 생성되어야 함
+//        if (!Objects.equals(nanaUploadDto.getLanguage(), "KOREAN")) {
+//          throw new BadRequestException("처음 생성하는 Nana's pick은 KOREAN 버전부터 입력해야합니다.");
+//        }
+//        // 처음 생성하는 nana인데 title image 없을 경우 에러
+//        if (nanaUploadDto.getNanaTitleImage().isEmpty()) {
+//          throw new BadRequestException("처음 생성하는 Nana's pick에는 title 이미지가 필수입니다.");
+//        }
+//        // nana 생성해서 저장하기
+//        nana = createNanaByNanaUploadDto(nanaUploadDto);
+//      } else {// 이미 존재하는 nana인 경우
+//        nana = getNanaById(nanaId);
+//
+//        //존재하는 nana일 경우 해당 post가 이미 작성된 language로 요청이 올 경우 에러
+//        if (existNanaTitleByNanaAndLanguage(nana, language)) {
+//          throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
+//        }
+//
+//        // 이미 nanaTitle이 존재하면 nanaContentImage 추가 생성 필요 없음을 표시
+//        if (existNanaTitleByNana(nana)) {
+//          existNanaContentImages = true;
+//        }
+//
+//        /*
+//         * 이미 존재하는 경우 한국어 버전 NanaContent의 수와 비교한다.
+//         * (nanaContent들은 KOREAN nana Content의 사진들 공유 하기 때문에 기준은 KOREAN 버전)
+//         * 기존의 content 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
+//         */
+//        if (countKoreanNanaContents(nana)
+//            != nanaUploadDto.getNanaContents().size()) {
+//          throw new BadRequestException(
+//              "기존의 nana content 수와 현재 요청한 nana content의 수가 일치하지 않습니다.");
+//        }
+//      }
+//
+//      NanaTitle nanaTitle = NanaTitle.builder()
+//          .nana(nana)
+//          .language(language)
+//          .subHeading(nanaUploadDto.getSubHeading())
+//          .heading(nanaUploadDto.getHeading())
+//          .notice(nanaUploadDto.getNotice())
+//          .build();
+//      nanaTitleRepository.save(nanaTitle);
+//
+////      람다 안에서 외부 변수를 사용하기 위해서는 effectively final 변수를 사용해야하므로 선언
+////      존재할 경우 flag -> false / 존재하지 않을 경우 flag -> true
+//      boolean createNanaContentsImageFlag = !existNanaContentImages;
+//
+//      // 람다 시작
+//      //content 생성
+//      nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
+//            NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
+//                .nanaTitle(nanaTitle)
+//                .priority((long) nanaContentDto.getNumber())
+//                .subTitle(nanaContentDto.getSubTitle())
+//                .title(nanaContentDto.getTitle())
+//                .content(nanaContentDto.getContent())
+//                .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
+//                    nanaContentDto.getInfoDesc()))
+//                .build());
+//
+//            if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
+//              // 람다 안에 들어있으니 nanaContent 1개에 대한 사진 묶음
+//              List<MultipartFile> nanaContentImages = nanaContentDto.getNanaContentImages();
+//              if (nanaContentImages.isEmpty()) {
+//                throw new BadRequestException("처음 생성하는 Nana's pick에는 content 이미지가 필수입니다. ");
+//              }
+//              // nanaContent 하나 당 여러 개의 이미지 처리
+//              List<PostImageFile> postImageFiles = nanaContentImages.stream()
+//                  .map(image -> PostImageFile.builder()
+//                      .imageFile(imageFileService.uploadAndSaveImageFile(image, false))
+//                      .post(nanaContent)
+//                      .build())
+//                  .collect(Collectors.toList());
+//
+//              postImageFileRepository.saveAll(postImageFiles);
+//            }
+//
+//            //해시태그 생성
+//            hashtagService.registerHashtag(nanaContentDto.getHashtag(),
+//                language, category, nanaContent);
+//          } // 람다 끝
+//      );
+//    } catch (Exception e) {
+//      // 외부 메서드 호출 시 에러 터지면 롤백
+//      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//      return e.getMessage();
+//    }
+//    return "성공~";
+//
+//  }
 
   // nanaContent의 AdditionalInfo dto로 바꾸기
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
@@ -408,14 +402,14 @@ public class NanaService implements PostService {
     return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
   }
 
-  private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
-    return Nana.builder()
-        .version("Nana's Pick vol." + nanaUploadDto.getVersion())
-        .priority((long) nanaUploadDto.getVersion())
-        .firstImageFile(imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(),
-            false))
-        .build();
-  }
+//  private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
+//    return Nana.builder()
+//        .version("Nana's Pick vol." + nanaUploadDto.getVersion())
+//        .priority((long) nanaUploadDto.getVersion())
+//        .firstImageFile(imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(),
+//            false))
+//        .build();
+//  }
 
   private Nana getNanaById(Long id) {
     return nanaRepository.findNanaById(id)

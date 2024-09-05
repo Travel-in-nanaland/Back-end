@@ -193,7 +193,7 @@ class MemberLoginServiceTest {
         .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
     doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
     doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
-    doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean());
+    doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean(), any());
     doReturn(member).when(memberRepository).save(any());
     doReturn("accessToken").when(jwtUtil).getAccessToken(any(), any());
     doReturn("refreshToken").when(jwtUtil).getRefreshToken(any(), any());
@@ -215,7 +215,7 @@ class MemberLoginServiceTest {
     verify(memberRepository, times(2)).findByProviderAndProviderId(any(Provider.class), any());
     verify(memberRepository, times(2)).findByNickname(any());
     verify(imageFileService, times(1)).getRandomProfileImageFile();
-    verify(imageFileService, times(1)).uploadAndSaveImageFile(any(), anyBoolean());
+    verify(imageFileService, times(1)).uploadAndSaveImageFile(any(), anyBoolean(), any());
     verify(memberRepository, times(2)).save(any());
     verify(jwtUtil, times(2)).getAccessToken(any(), any());
     verify(jwtUtil, times(2)).getRefreshToken(any(), any());
