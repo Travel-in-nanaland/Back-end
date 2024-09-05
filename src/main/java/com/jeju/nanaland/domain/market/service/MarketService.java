@@ -9,7 +9,7 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 public class MarketService implements PostService {
 
   private final MarketRepository marketRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
 
@@ -81,7 +81,7 @@ public class MarketService implements PostService {
         addressFilterList, pageable);
 
     // 좋아요 여부
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<MarketThumbnail> data = marketThumbnailPage.getContent();
 
@@ -113,7 +113,8 @@ public class MarketService implements PostService {
     }
 
     // 좋아요 여부 확인
-    boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
+    boolean isFavorite =
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
 
     return MarketResponse.MarketDetailDto.builder()
         .id(marketCompositeDto.getId())

@@ -16,7 +16,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
@@ -47,7 +47,7 @@ class FestivalServiceTest {
   @Mock
   private FestivalRepository festivalRepository;
   @Mock
-  private FavoriteService favoriteService;
+  private MemberFavoriteService memberFavoriteService;
   @Mock
   private ImageFileService imageFileService;
 
@@ -127,7 +127,8 @@ class FestivalServiceTest {
         krMemberInfoDto.getLanguage())).thenReturn(krFestivalCompositeDto);
     when(festivalRepository.findCompositeDtoById(1L,
         msMemberInfoDto.getLanguage())).thenReturn(msFestivalCompositeDto);
-    when(favoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong())).thenReturn(false);
+    when(memberFavoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong()))
+        .thenReturn(false);
 
     // When
     FestivalDetailDto krFestivalDetail = festivalService.getFestivalDetail(krMemberInfoDto, 1L,

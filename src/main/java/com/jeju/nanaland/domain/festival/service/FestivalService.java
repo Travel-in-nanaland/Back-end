@@ -12,7 +12,7 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnail;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
 public class FestivalService implements PostService {
 
   private final FestivalRepository festivalRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
 
@@ -90,7 +90,7 @@ public class FestivalService implements PostService {
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
         memberInfoDto.getLanguage(), pageable, false, addressFilterList);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
     return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
@@ -115,7 +115,7 @@ public class FestivalService implements PostService {
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByMonth(
         memberInfoDto.getLanguage(), pageable, startDate, endDate, addressFilterList);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
     return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
@@ -134,7 +134,7 @@ public class FestivalService implements PostService {
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
         memberInfoDto.getLanguage(), pageable, seasonKoreanValue);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
     return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
@@ -156,8 +156,8 @@ public class FestivalService implements PostService {
       searchService.updateSearchVolumeV1(FESTIVAL, id);
     }
 
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL,
-        id);
+    boolean isPostInFavorite =
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL, id);
 
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())

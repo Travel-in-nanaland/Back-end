@@ -11,7 +11,7 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 public class RestaurantService implements PostService {
 
   private final RestaurantRepository restaurantRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final ReviewRepository reviewRepository;
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
@@ -92,7 +92,7 @@ public class RestaurantService implements PostService {
         language, keywordFilterList, addressFilterList, pageable);
 
     // 좋아요 여부
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<RestaurantThumbnail> data = restaurantThumbnailPage.getContent();
 
@@ -129,7 +129,7 @@ public class RestaurantService implements PostService {
 
     // 좋아요 여부 확인
     Member member = memberInfoDto.getMember();
-    boolean isFavorite = favoriteService.isPostInFavorite(member, RESTAURANT, postId);
+    boolean isFavorite = memberFavoriteService.isPostInFavorite(member, RESTAURANT, postId);
 
     // 이미지
     List<ImageFileDto> images = new ArrayList<>();

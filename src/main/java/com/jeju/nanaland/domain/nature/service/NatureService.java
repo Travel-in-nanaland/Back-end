@@ -9,7 +9,7 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 public class NatureService implements PostService {
 
   private final NatureRepository natureRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
 
@@ -80,7 +80,7 @@ public class NatureService implements PostService {
         memberInfoDto.getLanguage(), addressFilterList, keyword, pageable);
 
     // 좋아요 여부
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
     List<NatureThumbnail> data = natureCompositeDtoPage.getContent();
@@ -109,8 +109,8 @@ public class NatureService implements PostService {
     }
 
     // 좋아요 여부 확인
-    boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE,
-        id);
+    boolean isFavorite =
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, id);
 
     return NatureDetailDto.builder()
         .id(natureCompositeDto.getId())

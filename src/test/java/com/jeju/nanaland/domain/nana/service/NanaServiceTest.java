@@ -13,7 +13,7 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -57,7 +57,7 @@ public class NanaServiceTest {
   @Mock
   private NanaContentRepository nanaContentRepository;
   @Mock
-  private FavoriteService favoriteService;
+  private MemberFavoriteService memberFavoriteService;
   @Mock
   private HashtagRepository hashtagRepository;
   @Mock
@@ -188,7 +188,7 @@ public class NanaServiceTest {
         nanaContentImages.get(1));
     when(imageFileRepository.findPostImageFiles(nanaContentList.get(2).getId())).thenReturn(
         nanaContentImages.get(2));
-    when(favoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
+    when(memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), Category.NANA,
         nanaTitle.getNana().getId())).thenReturn(true);
 
     // When

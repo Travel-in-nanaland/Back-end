@@ -15,7 +15,7 @@ import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.PostImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.hashtag.service.HashtagService;
@@ -65,7 +65,7 @@ public class NanaService implements PostService {
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
   private final HashtagRepository hashtagRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
   private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
@@ -193,8 +193,8 @@ public class NanaService implements PostService {
       throw new ServerErrorException("나나's pick의 content와 image의 수가 일치하지 않습니다.");
     }
 
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
-        nanaTitle.getNana().getId());
+    boolean isPostInFavorite = memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(),
+        NANA, nanaTitle.getNana().getId());
 
     List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
     int nanaContentImageIdx = 0;

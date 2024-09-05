@@ -17,7 +17,7 @@ import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThum
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service;
 public class ExperienceService implements PostService {
 
   private final ExperienceRepository experienceRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final ImageFileRepository imageFileRepository;
   private final SearchService searchService;
   private final ReviewRepository reviewRepository;
@@ -92,7 +92,7 @@ public class ExperienceService implements PostService {
         language, experienceType, keywordFilterList, addressFilterList, pageable);
 
     // 좋아요 여부
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<ExperienceThumbnail> data = experienceThumbnailPage.getContent();
 
@@ -129,7 +129,7 @@ public class ExperienceService implements PostService {
 
     // 좋아요 여부 확인
     Member member = memberInfoDto.getMember();
-    boolean isFavorite = favoriteService.isPostInFavorite(member, EXPERIENCE, postId);
+    boolean isFavorite = memberFavoriteService.isPostInFavorite(member, EXPERIENCE, postId);
 
     // 이미지
     List<ImageFileDto> images = new ArrayList<>();

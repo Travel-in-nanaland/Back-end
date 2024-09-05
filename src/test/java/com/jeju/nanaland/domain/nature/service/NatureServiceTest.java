@@ -19,7 +19,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -60,7 +60,7 @@ class NatureServiceTest {
   @Mock
   private NatureRepository natureRepository;
   @Mock
-  private FavoriteService favoriteService;
+  private MemberFavoriteService memberFavoriteService;
   @Mock
   private SearchService searchService;
   @Mock
@@ -183,7 +183,7 @@ class NatureServiceTest {
 
     doReturn(natureThumbnailList).when(natureRepository)
         .findNatureThumbnails(any(Language.class), anyList(), any(), any());
-    doReturn(new ArrayList<>()).when(favoriteService)
+    doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
@@ -197,7 +197,7 @@ class NatureServiceTest {
 
     verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
         any());
-    verify(favoriteService, times(1)).getFavoritePostIdsWithMember(
+    verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
   }
 
@@ -212,7 +212,7 @@ class NatureServiceTest {
 
     doReturn(emptyNatureThumbnailList).when(natureRepository)
         .findNatureThumbnails(any(Language.class), anyList(), any(), any());
-    doReturn(new ArrayList<>()).when(favoriteService)
+    doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
@@ -225,7 +225,7 @@ class NatureServiceTest {
 
     verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
         any());
-    verify(favoriteService, times(1)).getFavoritePostIdsWithMember(
+    verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
   }
 
@@ -238,7 +238,7 @@ class NatureServiceTest {
 
     doReturn(natureThumbnailList).when(natureRepository)
         .findNatureThumbnails(any(Language.class), anyList(), any(), any());
-    doReturn(favoriteIds).when(favoriteService)
+    doReturn(favoriteIds).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
@@ -253,7 +253,7 @@ class NatureServiceTest {
 
     verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
         any());
-    verify(favoriteService, times(1)).getFavoritePostIdsWithMember(
+    verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
   }
 
@@ -286,7 +286,7 @@ class NatureServiceTest {
     );
 
     doReturn(natureCompositeDto).when(natureRepository).findCompositeDtoById(any(), any());
-    doReturn(true).when(favoriteService).isPostInFavorite(any(), any(), any());
+    doReturn(true).when(memberFavoriteService).isPostInFavorite(any(), any(), any());
     doReturn(images).when(imageFileService)
         .getPostImageFilesByPostIdIncludeFirstImage(1L, natureCompositeDto.getFirstImage());
 
@@ -298,7 +298,7 @@ class NatureServiceTest {
     assertThat(natureDetail.getImages()).hasSize(3);
 
     verify(natureRepository, times(1)).findCompositeDtoById(any(), any());
-    verify(favoriteService, times(1)).isPostInFavorite(any(), any(), any());
+    verify(memberFavoriteService, times(1)).isPostInFavorite(any(), any(), any());
     verify(imageFileService, times(1)).getPostImageFilesByPostIdIncludeFirstImage(1L,
         natureCompositeDto.getFirstImage());
     verify(searchService, times(1)).updateSearchVolumeV1(any(), any());

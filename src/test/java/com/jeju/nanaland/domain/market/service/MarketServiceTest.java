@@ -15,7 +15,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -54,7 +54,7 @@ class MarketServiceTest {
   @Mock
   MarketRepository marketRepository;
   @Mock
-  FavoriteService favoriteService;
+  MemberFavoriteService memberFavoriteService;
   @Mock
   ImageFileRepository imageFileRepository;
   @Mock
@@ -115,7 +115,7 @@ class MarketServiceTest {
 
     doReturn(getMarketThumbnailList()).when(marketRepository)
         .findMarketThumbnails(locale, filterList, pageable);
-    doReturn(new ArrayList<>()).when(favoriteService)
+    doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
@@ -144,7 +144,7 @@ class MarketServiceTest {
 
     doReturn(marketDetailDto).when(marketRepository)
         .findCompositeDtoById(any(Long.class), eq(locale));
-    doReturn(false).when(favoriteService)
+    doReturn(false).when(memberFavoriteService)
         .isPostInFavorite(any(Member.class), any(Category.class), any(Long.class));
     doReturn(images).when(imageFileService)
         .getPostImageFilesByPostIdIncludeFirstImage(1L, marketDetailDto.getFirstImage());

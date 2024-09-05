@@ -12,7 +12,7 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
@@ -57,7 +57,7 @@ public class SearchService {
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
   private final RestaurantRepository restaurantRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
   // 카테고리 검색
@@ -91,7 +91,7 @@ public class SearchService {
     Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
@@ -122,7 +122,7 @@ public class SearchService {
     Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
@@ -153,7 +153,7 @@ public class SearchService {
     Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
@@ -184,7 +184,7 @@ public class SearchService {
     Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (MarketCompositeDto dto : resultPage) {
@@ -214,7 +214,7 @@ public class SearchService {
     Page<RestaurantCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (RestaurantCompositeDto dto : resultPage) {
@@ -244,7 +244,7 @@ public class SearchService {
     Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(member);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NanaThumbnail thumbnail : resultPage) {
@@ -360,7 +360,7 @@ public class SearchService {
               .firstImage(nanaThumbnailPostDto.getFirstImage())
               .category(categoryContent.name())
               .isFavorite(
-                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                  memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
                       nanaThumbnailPostDto.getId()))
               .build());
         }
@@ -410,7 +410,7 @@ public class SearchService {
         .title(compositeDto.getTitle())
         .category(categoryContent.name())
         .isFavorite(
-            favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+            memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
                 compositeDto.getId()))
         .build();
   }
