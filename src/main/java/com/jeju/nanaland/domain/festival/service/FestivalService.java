@@ -48,12 +48,29 @@ public class FestivalService implements PostService {
   private final SearchService searchService;
   private final ImageFileService imageFileService;
 
+  /**
+   * Festival 객체 조회
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @return Post
+   * @throws NotFoundException 게시물 id에 해당하는 축제 게시물이 존재하지 않는 경우
+   */
   @Override
   public Post getPost(Long postId, Category category) {
     return festivalRepository.findById(postId)
         .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
   }
 
+  /**
+   * 카드 정보 조회 - (postId, category, imageFile, title)
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @param language 언어 정보
+   * @return PostCardDto
+   * @throws NotFoundException (게시물 id, langugae)를 가진 축제 정보가 존재하지 않는 경우
+   */
   @Override
   public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
     PostCardDto postCardDto = festivalRepository.findPostCardDto(postId, language);

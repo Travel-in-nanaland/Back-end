@@ -30,7 +30,14 @@ public class FavoriteService {
   private final FavoriteRepository favoriteRepository;
   private final PostService postService;
 
-  // 전체 찜리스트 조회
+  /**
+   * 모든 카테고리의 찜리스트 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 찜 목록 카드 정보 페이지
+   */
   @Transactional(readOnly = true)
   public FavoriteResponse.FavoriteCardPageDto getAllFavorites(MemberInfoDto memberInfoDto, int page,
       int size) {
@@ -59,6 +66,15 @@ public class FavoriteService {
         .build();
   }
 
+  /**
+   * 카테고리별 찜리스트 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param category      게시물 카테고리
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 찜 목록 카드 정보 페이지
+   */
   @Transactional(readOnly = true)
   public FavoriteResponse.FavoriteCardPageDto getAllCategoryFavorites(MemberInfoDto memberInfoDto,
       Category category, int page, int size) {
@@ -86,7 +102,13 @@ public class FavoriteService {
         .build();
   }
 
-  // 좋아요 토글
+  /**
+   * 찜 등록, 취소 토글
+   *
+   * @param memberInfoDto 회원 정보
+   * @param likeToggleDto 찜 요청, 삭제 정보
+   * @return 찜 상태 정보
+   */
   @Transactional
   public FavoriteResponse.StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto,
       FavoriteRequest.LikeToggleDto likeToggleDto) {
@@ -137,16 +159,28 @@ public class FavoriteService {
     }
   }
 
-  // 해당 유저의 찜리스트에 있는 postId 리스트 반환
+  /**
+   * 유저 찜목록에 있는 게시물 id 리스트 조회
+   *
+   * @param member 회원
+   * @return 게시물 id 리스트
+   */
   public List<Long> getFavoritePostIdsWithMember(Member member) {
     List<Favorite> favorites = favoriteRepository.findAllByMemberAndStatus(member, "ACTIVE");
     return favorites.stream().map(favorite -> favorite.getPost().getId()).toList();
   }
 
-  // 좋아요 여부 조회
-  public boolean isPostInFavorite(Member member, Category category, Long id) {
+  /**
+   * 게시물의 찜 여부 확인
+   *
+   * @param member   회원
+   * @param category 게시물 카테고리
+   * @param postId   게시물 id
+   * @return boolean
+   */
+  public boolean isPostInFavorite(Member member, Category category, Long postId) {
     Optional<Favorite> favoriteOptional = favoriteRepository
-        .findByMemberAndCategoryAndPostIdAndStatus(member, category, id, "ACTIVE");
+        .findByMemberAndCategoryAndPostIdAndStatus(member, category, postId, "ACTIVE");
 
     return favoriteOptional.isPresent();
   }
