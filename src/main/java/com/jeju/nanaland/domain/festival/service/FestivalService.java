@@ -144,9 +144,9 @@ public class FestivalService implements PostService {
   }
 
   // 축제 상세 정보 조회
-  public FestivalResponse.DetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long id,
+  public FestivalResponse.DetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
-    FestivalCompositeDto festivalCompositeDto = festivalRepository.findFestivalCompositeDto(id,
+    FestivalCompositeDto festivalCompositeDto = festivalRepository.findFestivalCompositeDto(postId,
         memberInfoDto.getLanguage());
 
     if (festivalCompositeDto == null) {
@@ -154,11 +154,11 @@ public class FestivalService implements PostService {
     }
 
     if (isSearch) {
-      searchService.updateSearchVolumeV1(FESTIVAL, id);
+      searchService.updateSearchVolumeV1(FESTIVAL, postId);
     }
 
     boolean isPostInFavorite =
-        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL, id);
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL, postId);
 
     return FestivalResponse.DetailDto.builder()
         .id(festivalCompositeDto.getId())
@@ -174,7 +174,7 @@ public class FestivalService implements PostService {
             festivalCompositeDto.getStartDate(),
             festivalCompositeDto.getEndDate()))
         .isFavorite(isPostInFavorite)
-        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(postId,
             festivalCompositeDto.getFirstImage()))
         .build();
 
