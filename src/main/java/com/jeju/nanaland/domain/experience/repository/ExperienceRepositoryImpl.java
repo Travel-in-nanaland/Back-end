@@ -8,8 +8,8 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
@@ -192,9 +192,9 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   @Override
-  public PostCardDto findPostCardDto(Long postId, Language language) {
+  public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
     return queryFactory
-        .select(new QPostCardDto(
+        .select(new QPostPreviewDto(
             experience.id,
             experienceTrans.title,
             imageFile.originUrl,

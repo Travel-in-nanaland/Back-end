@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.restaurant.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantMenuDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantThumbnail;
@@ -30,5 +30,5 @@ public interface RestaurantRepositoryCustom {
 
   List<Long> findAllIds();
 
-  PostCardDto findPostCardDto(Long postId, Language language);
+  PostPreviewDto findPostPreviewDto(Long postId, Language language);
 }

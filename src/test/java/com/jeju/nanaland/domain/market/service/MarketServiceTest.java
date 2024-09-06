@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
@@ -61,28 +61,28 @@ class MarketServiceTest {
   private ImageFileService imageFileService;
 
   @Test
-  @DisplayName("전통시장 카드 정보 조회")
+  @DisplayName("전통시장 preview 정보 조회")
   void getPostCardDtoTest() {
     // given
     ImageFile imageFile = createImageFile();
     Market market = createMarket(imageFile);
     MarketTrans marketTrans = createMarketTrans(market);
-    PostCardDto postCardDto = PostCardDto.builder()
+    PostPreviewDto postPreviewDto = PostPreviewDto.builder()
         .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
         .title(marketTrans.getTitle())
         .id(market.getId())
         .category(Category.MARKET.toString())
         .build();
-    when(marketRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
-        .thenReturn(postCardDto);
+    when(marketRepository.findPostPreviewDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postPreviewDto);
 
     // when
-    PostCardDto result =
-        marketService.getPostCardDto(postCardDto.getId(), Category.MARKET, Language.KOREAN);
+    PostPreviewDto result =
+        marketService.getPostPreviewDto(postPreviewDto.getId(), Category.MARKET, Language.KOREAN);
 
     // then
-    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
-    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+    assertThat(result.getFirstImage()).isEqualTo(postPreviewDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postPreviewDto.getTitle());
   }
 
   @Test

@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
@@ -75,28 +75,28 @@ class NatureServiceTest {
   }
 
   @Test
-  @DisplayName("7대자연 카드 정보 조회")
+  @DisplayName("7대자연 preview 정보 조회")
   void getPostCardDtoTest() {
     // given
     ImageFile imageFile = createImageFile();
     Nature nature = createNature(imageFile);
     NatureTrans natureTrans = createNatureTrans(nature);
-    PostCardDto postCardDto = PostCardDto.builder()
+    PostPreviewDto postPreviewDto = PostPreviewDto.builder()
         .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
         .title(natureTrans.getTitle())
         .id(nature.getId())
         .category(Category.NATURE.toString())
         .build();
-    when(natureRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
-        .thenReturn(postCardDto);
+    when(natureRepository.findPostPreviewDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postPreviewDto);
 
     // when
-    PostCardDto result =
-        natureService.getPostCardDto(postCardDto.getId(), Category.NATURE, Language.KOREAN);
+    PostPreviewDto result =
+        natureService.getPostPreviewDto(postPreviewDto.getId(), Category.NATURE, Language.KOREAN);
 
     // then
-    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
-    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+    assertThat(result.getFirstImage()).isEqualTo(postPreviewDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postPreviewDto.getTitle());
   }
 
   @Test
