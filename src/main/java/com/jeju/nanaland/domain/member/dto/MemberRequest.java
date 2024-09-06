@@ -24,7 +24,7 @@ public class MemberRequest {
 
     @Schema(description = "이용약관 동의 여부")
     @Valid
-    List<ConsentItem> consentItems;
+    List<ConsentItemDto> consentItems;
 
     @Schema(description = "이메일(필수) - GUEST이면 GUEST@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
     @Pattern(
@@ -101,7 +101,7 @@ public class MemberRequest {
 
   @Data
   @Schema(description = "이용약관 동의 여부")
-  public static class ConsentItem {
+  public static class ConsentItemDto {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
         allowableValues = {"TERMS_OF_USE", "MARKETING", "LOCATION_SERVICE"})

@@ -90,8 +90,8 @@ class MemberConsentServiceTest {
         .build());
   }
 
-  private MemberRequest.ConsentItem createConsentItem(ConsentType consentType, boolean consent) {
-    MemberRequest.ConsentItem consentItem = new MemberRequest.ConsentItem();
+  private MemberRequest.ConsentItemDto createConsentItem(ConsentType consentType, boolean consent) {
+    MemberRequest.ConsentItemDto consentItem = new MemberRequest.ConsentItemDto();
     consentItem.setConsentType(consentType.name());
     consentItem.setConsent(consent);
     return consentItem;
@@ -128,7 +128,7 @@ class MemberConsentServiceTest {
     void createMemberConsentsFail_termsOfUseFalse() {
 
       // given: TERMS_OF_USE를 false로 설정
-      List<MemberRequest.ConsentItem> consentItems = List.of(
+      List<MemberRequest.ConsentItemDto> consentItems = List.of(
           createConsentItem(ConsentType.TERMS_OF_USE, false),
           createConsentItem(ConsentType.MARKETING, true),
           createConsentItem(ConsentType.LOCATION_SERVICE, false)
@@ -148,7 +148,7 @@ class MemberConsentServiceTest {
     void createMemberConsentsFail_termsOfUseNotProvided() {
 
       // given: TERMS_OF_USE를 포함하지 않도록 설정
-      List<MemberRequest.ConsentItem> consentItems = List.of(
+      List<MemberRequest.ConsentItemDto> consentItems = List.of(
           createConsentItem(ConsentType.MARKETING, true),
           createConsentItem(ConsentType.LOCATION_SERVICE, false)
       );
@@ -167,7 +167,7 @@ class MemberConsentServiceTest {
     void createMemberConsentsSuccess() {
 
       // given: 각 동의 항목을 true로 설정
-      List<MemberRequest.ConsentItem> consentItems = List.of(
+      List<MemberRequest.ConsentItemDto> consentItems = List.of(
           createConsentItem(ConsentType.TERMS_OF_USE, true),
           createConsentItem(ConsentType.MARKETING, true),
           createConsentItem(ConsentType.LOCATION_SERVICE, true)

@@ -36,11 +36,11 @@ public class MemberConsentService {
    * @throws BadRequestException 필수 이용약관 동의가 제공되지 않았거나 동의하지 않은 경우
    */
   @Transactional
-  public void createMemberConsents(Member member, List<MemberRequest.ConsentItem> consentItems) {
+  public void createMemberConsents(Member member, List<MemberRequest.ConsentItemDto> consentItems) {
     Map<ConsentType, Boolean> consentStates = consentItems.stream()
         .collect(Collectors.toMap(
             consentItem -> ConsentType.valueOf(consentItem.getConsentType()),
-            MemberRequest.ConsentItem::getConsent
+            MemberRequest.ConsentItemDto::getConsent
         ));
 
     // 필수 이용약관이 false인 경우

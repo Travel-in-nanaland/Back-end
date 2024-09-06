@@ -75,7 +75,7 @@ public class MemberResponse {
   public static class ProfileDto {
 
     @Schema(description = "이용약관 동의 여부 - 내 프로필인 경우에만 제공")
-    List<ConsentItem> consentItems;
+    List<ConsentItemDto> consentItems;
     @Schema(description = "내 프로필인지 확인 여부")
     private boolean isMyProfile;
     @Schema(description = "유저 Id")
@@ -99,7 +99,7 @@ public class MemberResponse {
   @Data
   @Builder
   @Schema(name = "ConsentItemResponse", description = "이용약관 동의 여부")
-  public static class ConsentItem {
+  public static class ConsentItemDto {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
         allowableValues = {"MARKETING", "LOCATION_SERVICE"})

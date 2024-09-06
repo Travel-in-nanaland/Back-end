@@ -126,11 +126,11 @@ public class MemberProfileService {
     }
 
     // 이용약관 동의 여부 조회
-    List<MemberResponse.ConsentItem> consentItems = new ArrayList<>();
+    List<MemberResponse.ConsentItemDto> consentItems = new ArrayList<>();
     if (isMyProfile) {
       consentItems = memberRepository.findAllMemberConsent(member)
           .stream().map(
-              memberConsent -> MemberResponse.ConsentItem.builder()
+              memberConsent -> MemberResponse.ConsentItemDto.builder()
                   .consentType(memberConsent.getConsentType().name())
                   .consent(memberConsent.getConsent())
                   .build()
