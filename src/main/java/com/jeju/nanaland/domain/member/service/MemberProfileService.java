@@ -96,7 +96,8 @@ public class MemberProfileService {
 
   /**
    * 유저 프로필 조회.
-   * memberId가 본인과 일치하지 않으면, 타인 프로필 조회. 기본 프로필 정보 조회 본인 프로필을 조회하는 경우, 이용약관 추가 조회.
+   * memberId가 본인과 일치하지 않으면, 타인 프로필 조회.
+   * 기본 프로필 정보 조회 본인 프로필을 조회하는 경우, 이용약관 추가 조회.
    *
    * @param memberInfoDto 회원 정보
    * @param memberId      조회한 회원의 ID
