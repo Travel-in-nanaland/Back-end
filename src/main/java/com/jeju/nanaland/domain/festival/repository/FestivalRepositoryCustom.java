@@ -10,18 +10,21 @@ import org.springframework.data.domain.Pageable;
 
 public interface FestivalRepositoryCustom {
 
-  FestivalCompositeDto findCompositeDtoById(Long id, Language locale);
+  FestivalCompositeDto findFestivalCompositeDto(Long id, Language locale);
 
   Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Language locale,
       Pageable pageable);
 
-  Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Language locale, Pageable pageable,
+  Page<FestivalCompositeDto> findAllFestivalCompositDtoOrderByEndDate(Language locale,
+      Pageable pageable,
       boolean onGoing, List<String> addressFilterList);
 
-  Page<FestivalCompositeDto> searchCompositeDtoBySeason(Language locale, Pageable pageable,
+  Page<FestivalCompositeDto> findAllFestivalCompositeDtoOrderByEndDate(Language locale,
+      Pageable pageable,
       String season);
 
-  Page<FestivalCompositeDto> searchCompositeDtoByMonth(Language locale, Pageable pageable,
+  Page<FestivalCompositeDto> findAllFestivalCompositeDtoByEndDate(Language locale,
+      Pageable pageable,
       LocalDate startDate, LocalDate endDate, List<String> addressFilterList);
 
   PostCardDto findPostCardDto(Long postId, Language language);

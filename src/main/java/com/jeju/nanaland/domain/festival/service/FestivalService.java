@@ -86,7 +86,7 @@ public class FestivalService implements PostService {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
-    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.searchCompositeDtoByOnGoing(
+    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.findAllFestivalCompositDtoOrderByEndDate(
         memberInfoDto.getLanguage(), pageable, false, addressFilterList);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
@@ -112,7 +112,7 @@ public class FestivalService implements PostService {
       }
     }
     // compositeDto로 기간에 맞는 festival 가져오기
-    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.searchCompositeDtoByMonth(
+    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.findAllFestivalCompositeDtoByEndDate(
         memberInfoDto.getLanguage(), pageable, startDate, endDate, addressFilterList);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
@@ -132,7 +132,7 @@ public class FestivalService implements PostService {
     String seasonKoreanValue = seasonValueChangeToKorean(season);
 
     // compositeDto로 계절별 festival 가져오기
-    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.searchCompositeDtoBySeason(
+    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.findAllFestivalCompositeDtoOrderByEndDate(
         memberInfoDto.getLanguage(), pageable, seasonKoreanValue);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
@@ -146,7 +146,7 @@ public class FestivalService implements PostService {
   // 축제 상세 정보 조회
   public FestivalResponse.DetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long id,
       boolean isSearch) {
-    FestivalCompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(id,
+    FestivalCompositeDto festivalCompositeDto = festivalRepository.findFestivalCompositeDto(id,
         memberInfoDto.getLanguage());
 
     if (festivalCompositeDto == null) {
@@ -185,7 +185,7 @@ public class FestivalService implements PostService {
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   protected void updateOnGoingToFalse() {
-    List<Festival> finishedFestival = festivalRepository.findAllByOnGoingAndEndDateBefore(
+    List<Festival> finishedFestival = festivalRepository.findAllFestival(
         true, LocalDate.now());
 
     if (!finishedFestival.isEmpty()) {
@@ -197,7 +197,7 @@ public class FestivalService implements PostService {
   @Transactional
   @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
   protected void updateActiveToInActive() {
-    List<Festival> finishedFestival = festivalRepository.findAllByEndDateBefore(
+    List<Festival> finishedFestival = festivalRepository.findAllFestival(
         LocalDate.now().minusYears(2));
 
     if (!finishedFestival.isEmpty()) {

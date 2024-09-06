@@ -123,9 +123,9 @@ class FestivalServiceTest {
     FestivalCompositeDto msFestivalCompositeDto = createFestivalCompositeDto(Language.MALAYSIA,
         startDate, endDate);
 
-    when(festivalRepository.findCompositeDtoById(1L,
+    when(festivalRepository.findFestivalCompositeDto(1L,
         krMemberInfoDto.getLanguage())).thenReturn(krFestivalCompositeDto);
-    when(festivalRepository.findCompositeDtoById(1L,
+    when(festivalRepository.findFestivalCompositeDto(1L,
         msMemberInfoDto.getLanguage())).thenReturn(msFestivalCompositeDto);
     when(memberFavoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong()))
         .thenReturn(false);
