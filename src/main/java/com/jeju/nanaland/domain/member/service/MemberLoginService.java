@@ -299,7 +299,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 회원 탈퇴
+   * 회원 탈퇴(비활성화)
    * 회원의 상태(Status)를 INACTIVE로 변환하고, 회원 탈퇴 정보를 저장한다.
    *
    * @param memberInfoDto 회원 정보
