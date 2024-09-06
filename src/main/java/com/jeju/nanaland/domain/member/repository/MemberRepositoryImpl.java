@@ -75,8 +75,8 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
   }
 
   /**
-   * 회원의 이용약관 조회
-   * 필수 이용약관은 제외
+   * 회원의 이용약관 조회 (필수 이용약관은 제외)
+   *
    * @param member 회원
    * @return 이용약관 리스트
    */

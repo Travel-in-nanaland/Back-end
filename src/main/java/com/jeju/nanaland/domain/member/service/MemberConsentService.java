@@ -31,7 +31,7 @@ public class MemberConsentService {
   /**
    * 이용약관 생성
    *
-   * @param member 회원 객체
+   * @param member       회원 객체
    * @param consentItems 이용약관 동의 여부
    * @throws BadRequestException 필수 이용약관 동의가 제공되지 않았거나 동의하지 않은 경우
    */
@@ -63,8 +63,8 @@ public class MemberConsentService {
   }
 
   /**
-   * 매일 0시 0분 0초에 실행되는 동의 여부 관리 스케줄러
-   * 회원이 동의한 이용약관에 대해, 동의일자가 1년 6개월이 지난 경우, false로 변환
+   * 매일 0시 0분 0초에 실행되는 동의 여부 관리 스케줄러.
+   * 회원이 동의한 이용약관에 대해, 동의일자가 1년 6개월이 지난 경우, false로 변환.
    */
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
@@ -78,7 +78,7 @@ public class MemberConsentService {
   /**
    * 이용약관 동의 여부 수정
    *
-   * @param memberInfoDto 회원 정보
+   * @param memberInfoDto    회원 정보
    * @param consentUpdateDto 이용약관 수정 정보
    * @throws NotFoundException 존재하는 이용약관이 없는 경우
    */

@@ -41,19 +41,19 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class MemberLoginService {
 
-  @Value("${cloud.aws.s3.memberProfileDirectory}")
-  private String MEMBER_PROFILE_DIRECTORY;
   private final MemberRepository memberRepository;
   private final MemberWithdrawalRepository memberWithdrawalRepository;
   private final JwtUtil jwtUtil;
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
   private final FcmTokenService fcmTokenService;
+  @Value("${cloud.aws.s3.memberProfileDirectory}")
+  private String MEMBER_PROFILE_DIRECTORY;
 
   /**
    * 회원 가입
    *
-   * @param joinDto 회원 가입 정보
+   * @param joinDto       회원 가입 정보
    * @param multipartFile 프로필 사진
    * @return JWT
    * @throws ConflictException provider, providerId로 이미 가입된 회원이 존재하는 경우
@@ -88,8 +88,9 @@ public class MemberLoginService {
   }
 
   /**
-   * GUEST 유형의 경우 UUID를 사용하여 랜덤 닉네임 생성
-   * GUEST가 아닌 경우, 제공된 닉네임을 반환
+   * 닉네임 설정.
+   * GUEST 유형의 경우 UUID를 사용하여 랜덤 닉네임 생성.
+   * GUEST가 아닌 경우, 제공된 닉네임을 반환.
    *
    * @param joinDto 회원 가입 정보
    * @return 생성된 닉네임
@@ -102,7 +103,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 닉네임 중복 확인
+   * 닉네임 중복 확인.
    * 회원 가입 하기 전에 사용되는 메서드로, 본인 닉네임과 비교하지 않음
    *
    * @param nickname 닉네임
@@ -116,7 +117,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 프로필 사진 업로드 및 저장
+   * 프로필 사진 업로드 및 저장.
    * 프로필 사진이 없는 경우엔, 랜덤 프로필 사진 저장
    *
    * @param multipartFile 프로필 사진
@@ -132,9 +133,9 @@ public class MemberLoginService {
   /**
    * 회원 객체 생성 및 DB 저장
    *
-   * @param joinDto 회원 가입 정보
+   * @param joinDto   회원 가입 정보
    * @param imageFile 프로필 사진
-   * @param nickname 닉네임
+   * @param nickname  닉네임
    * @return 저장된 회원
    */
   private Member createMember(MemberRequest.JoinDto joinDto, ImageFile imageFile, String nickname) {
@@ -157,10 +158,9 @@ public class MemberLoginService {
   }
 
   /**
-   * 로그인
-   * 회원의 상태(Status)가 INACTIVE라면, ACTIVE로 수정
-   * 회원의 언어(Language)가 다르다면, 언어 수정
-   * FcmToken이 없다면, 생성 및 timestamp 갱신
+   * 로그인.
+   * 회원의 상태(Status)가 INACTIVE라면, ACTIVE로 수정.
+   * 회원의 언어(Language)가 다르다면, 언어 수정 FcmToken이 없다면, 생성 및 timestamp 갱신.
    *
    * @param loginDto 로그인 정보
    * @return JWT
@@ -224,7 +224,7 @@ public class MemberLoginService {
    * 언어 설정 변경
    *
    * @param loginDto 로그인 정보
-   * @param member 회원
+   * @param member   회원
    */
   @Transactional
   public void updateLanguageDifferent(MemberRequest.LoginDto loginDto, Member member) {
@@ -238,10 +238,10 @@ public class MemberLoginService {
    * JWT 재발행
    *
    * @param bearerRefreshToken Bearer RefreshToken
-   * @param fcmToken FcmToken
+   * @param fcmToken           FcmToken
    * @return JWT
    * @throws UnauthorizedException 토큰이 유효하지 않은 경우
-   * @throws NotFoundException 존재하는 회원이 없는 경우
+   * @throws NotFoundException     존재하는 회원이 없는 경우
    */
   @Transactional
   public JwtDto reissue(String bearerRefreshToken, String fcmToken) {
@@ -275,13 +275,13 @@ public class MemberLoginService {
   }
 
   /**
-   * 로그아웃
-   * accessToken의 재사용 방지를 위해 블랙리스트에 추가한다.
-   * RefreshToken과 FcmToken을 삭제한다.
+   * 로그아웃.
+   * accessToken의 재사용 방지를 위해 블랙리스트에 추가.
+   * RefreshToken과 FcmToken 삭제.
    *
-   * @param memberInfoDto 회원 정보
+   * @param memberInfoDto     회원 정보
    * @param bearerAccessToken Bearer RefreshToken
-   * @param fcmToken FcmToken
+   * @param fcmToken          FcmToken
    */
   @Transactional
   public void logout(MemberInfoDto memberInfoDto, String bearerAccessToken, String fcmToken) {
@@ -302,8 +302,8 @@ public class MemberLoginService {
   }
 
   /**
-   * 회원 탈퇴(비활성화)
-   * 회원의 상태(Status)를 INACTIVE로 변환하고, 회원 탈퇴 정보를 저장한다.
+   * 회원 탈퇴(비활성화).
+   * 회원의 상태(Status)를 INACTIVE로 변환, 회원 탈퇴 정보를 저장.
    *
    * @param memberInfoDto 회원 정보
    * @param withdrawalDto 회원 탈퇴 요청 정보
@@ -321,7 +321,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 매일 0시 0분 0초에 실행되는 회원 탈퇴 스케줄러
+   * 매일 0시 0분 0초에 실행되는 회원 탈퇴 스케줄러.
    * 비활성화 후 3개월이 지난 회원 탈퇴 처리
    */
   @Transactional
@@ -335,8 +335,8 @@ public class MemberLoginService {
   }
 
   /**
-   * 강제 회원 탈퇴
-   * 회원의 탈퇴일을 4개월 전으로 수정 후, 회원 탈퇴 스케줄러를 실행한다.
+   * 강제 회원 탈퇴.
+   * 회원의 탈퇴일을 4개월 전으로 수정 후, 회원 탈퇴 스케줄러를 실행.
    *
    * @param bearerAccessToken Bearer AccessToken
    * @throws NotFoundException 존재하는 회원이 없거나, 존재하는 회원 탈퇴 정보가 없는 경우

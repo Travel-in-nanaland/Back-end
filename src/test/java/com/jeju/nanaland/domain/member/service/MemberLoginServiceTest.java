@@ -3,8 +3,10 @@ package com.jeju.nanaland.domain.member.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -34,6 +36,7 @@ import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,6 +93,7 @@ class MemberLoginServiceTest {
     joinDto.setLocale("KOREAN");
     joinDto.setGender("MALE");
     joinDto.setBirthDate(LocalDate.now());
+    joinDto.setConsentItems(new ArrayList<>());
     return joinDto;
   }
 
@@ -149,7 +153,7 @@ class MemberLoginServiceTest {
       Member member = createMember(language, joinDto);
 
       doReturn(Optional.of(member))
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
 
       // when: 회원 가입
       ConflictException conflictException = assertThrows(ConflictException.class,
@@ -168,8 +172,8 @@ class MemberLoginServiceTest {
       Member member = createMember(language, joinDto);
 
       doReturn(Optional.empty())
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn(Optional.of(member)).when(memberRepository).findByNickname(any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn(Optional.of(member)).when(memberRepository).findByNickname(any(String.class));
 
       // when: 회원 가입
       ConflictException conflictException = assertThrows(ConflictException.class,
@@ -187,12 +191,12 @@ class MemberLoginServiceTest {
       Member member = createMember(language, createJoinDto("GOOGLE"));
 
       doReturn(Optional.empty())
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
       doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
-      doReturn(member).when(memberRepository).save(any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+      doReturn(member).when(memberRepository).save(any(Member.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
 
       // when: 회원 가입
       JwtDto result = memberLoginService.join(joinDto, null);
@@ -201,7 +205,7 @@ class MemberLoginServiceTest {
       assertThat(result).isNotNull();
       assertThat(result.getAccessToken()).isEqualTo("accessToken");
       assertThat(result.getRefreshToken()).isEqualTo("refreshToken");
-      verify(memberConsentService).createMemberConsents(any(), any());
+      verify(memberConsentService).createMemberConsents(any(Member.class), anyList());
       verify(memberRepository).save(argThat(savedMember ->
           savedMember.getProfileImageFile().equals(imageFile)));
     }
@@ -214,12 +218,12 @@ class MemberLoginServiceTest {
       Member member = createMember(language, createJoinDto("GUEST"));
 
       doReturn(Optional.empty())
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
       doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
-      doReturn(member).when(memberRepository).save(any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+      doReturn(member).when(memberRepository).save(any(Member.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
 
       // when: 회원 가입
       JwtDto result = memberLoginService.join(joinDto, null);
@@ -228,7 +232,7 @@ class MemberLoginServiceTest {
       assertThat(result).isNotNull();
       assertThat(result.getAccessToken()).isEqualTo("accessToken");
       assertThat(result.getRefreshToken()).isEqualTo("refreshToken");
-      verify(memberConsentService, never()).createMemberConsents(any(), any());
+      verify(memberConsentService, never()).createMemberConsents(any(Member.class), anyList());
       verify(memberRepository).save(argThat(savedMember ->
           savedMember.getProfileImageFile().equals(imageFile)));
     }
@@ -242,12 +246,13 @@ class MemberLoginServiceTest {
       MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
           new byte[0]);
       doReturn(Optional.empty())
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
-      doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean());
-      doReturn(member).when(memberRepository).save(any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
+      doReturn(imageFile).when(imageFileService)
+          .uploadAndSaveImageFile(any(MultipartFile.class), eq(true), any());
+      doReturn(member).when(memberRepository).save(any(Member.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
 
       // when: 회원 가입
       JwtDto result = memberLoginService.join(joinDto, multipartFile);
@@ -256,7 +261,7 @@ class MemberLoginServiceTest {
       assertThat(result).isNotNull();
       assertThat(result.getAccessToken()).isEqualTo("accessToken");
       assertThat(result.getRefreshToken()).isEqualTo("refreshToken");
-      verify(memberConsentService).createMemberConsents(any(), any());
+      verify(memberConsentService).createMemberConsents(any(Member.class), anyList());
       verify(memberRepository).save(argThat(savedMember ->
           savedMember.getProfileImageFile().equals(imageFile)));
     }
@@ -272,12 +277,13 @@ class MemberLoginServiceTest {
       MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
           new byte[0]);
       doReturn(Optional.empty())
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
-      doReturn(imageFile).when(imageFileService).uploadAndSaveImageFile(any(), anyBoolean());
-      doReturn(member).when(memberRepository).save(any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
+      doReturn(imageFile).when(imageFileService)
+          .uploadAndSaveImageFile(any(MultipartFile.class), eq(true), any());
+      doReturn(member).when(memberRepository).save(any(Member.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
 
       // when: 회원 가입
       JwtDto result = memberLoginService.join(joinDto2, multipartFile);
@@ -286,8 +292,8 @@ class MemberLoginServiceTest {
       assertThat(result).isNotNull();
       assertThat(result.getAccessToken()).isEqualTo("accessToken");
       assertThat(result.getRefreshToken()).isEqualTo("refreshToken");
-      verify(memberConsentService).createMemberConsents(any(), any());
-      verify(fcmTokenService).createFcmToken(any(), any());
+      verify(memberConsentService).createMemberConsents(any(Member.class), anyList());
+      verify(fcmTokenService).createFcmToken(any(Member.class), any(String.class));
       verify(memberRepository).save(argThat(savedMember ->
           savedMember.getProfileImageFile().equals(imageFile)));
     }
@@ -303,7 +309,7 @@ class MemberLoginServiceTest {
       MemberRequest.LoginDto loginDto = createLoginDto(Language.KOREAN.name());
 
       doReturn(Optional.empty())
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
 
       // when: 로그인
       NotFoundException notFoundException = assertThrows(NotFoundException.class,
@@ -322,9 +328,9 @@ class MemberLoginServiceTest {
       MemberRequest.LoginDto loginDto = createLoginDto(Language.KOREAN.name());
 
       doReturn(Optional.of(member))
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
       doReturn(1L).when(member).getId();
       doReturn(FcmToken.builder().build())
           .when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
@@ -349,10 +355,10 @@ class MemberLoginServiceTest {
       MemberWithdrawal memberWithdrawal = createMemberWithdrawal(member);
 
       doReturn(Optional.of(member))
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.of(memberWithdrawal)).when(memberWithdrawalRepository).findByMember(member);
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
       doReturn(1L).when(member).getId();
       doReturn(FcmToken.builder().build())
           .when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
@@ -376,9 +382,9 @@ class MemberLoginServiceTest {
       MemberRequest.LoginDto loginDto = createLoginDto(Language.ENGLISH.name());
 
       doReturn(Optional.of(member))
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
       doReturn(1L).when(member).getId();
       doReturn(FcmToken.builder().build())
           .when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
@@ -402,9 +408,9 @@ class MemberLoginServiceTest {
       MemberRequest.LoginDto loginDto = createLoginDto(Language.KOREAN.name());
 
       doReturn(Optional.of(member))
-          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+          .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
       doReturn(1L).when(member).getId();
       doReturn(null)
           .when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
@@ -418,7 +424,7 @@ class MemberLoginServiceTest {
       assertThat(jwtDto).isNotNull();
       assertThat(jwtDto.getAccessToken()).isEqualTo("accessToken");
       assertThat(jwtDto.getRefreshToken()).isEqualTo("refreshToken");
-      verify(fcmTokenService).createFcmToken(any(), any());
+      verify(fcmTokenService).createFcmToken(any(Member.class), any(String.class));
     }
   }
 
@@ -463,21 +469,6 @@ class MemberLoginServiceTest {
     }
   }
 
-  @Test
-  @DisplayName("언어 설정 변경 성공 TEST")
-  void updateLanguageDifferent() {
-    // given: 언어 설정이 변경된 회원 설정
-    Language language = Language.KOREAN;
-    Member member = createMember(language, joinDto);
-    MemberRequest.LoginDto loginDto = createLoginDto(Language.ENGLISH.name());
-
-    // when: 언어 설정 변경
-    memberLoginService.updateLanguageDifferent(loginDto, member);
-
-    // then: 언어 변경 확인
-    assertThat(member.getLanguage()).isEqualTo(Language.ENGLISH);
-  }
-
   @Nested
   @DisplayName("JWT 재발행 TEST")
   class Reissue {
@@ -485,8 +476,8 @@ class MemberLoginServiceTest {
     @DisplayName("실패 - 유효하지 않은 토큰인 경우")
     void reissueFail_invalidToken() {
       // given: 유효하지 않은 토큰 설정
-      doReturn("refreshToken").when(jwtUtil).resolveToken(any());
-      doReturn(false).when(jwtUtil).verifyRefreshToken(any());
+      doReturn("refreshToken").when(jwtUtil).resolveToken(any(String.class));
+      doReturn(false).when(jwtUtil).verifyRefreshToken(any(String.class));
 
       // when: JWT 재발행
       UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
@@ -500,10 +491,10 @@ class MemberLoginServiceTest {
     @DisplayName("실패 - 저장된 토큰과 다른 경우")
     void reissueFail_tokenDifferent() {
       // given: 유효하지만 저장된 토큰과 다른 토큰 설정
-      doReturn("refreshToken").when(jwtUtil).resolveToken(any());
-      doReturn(true).when(jwtUtil).verifyRefreshToken(any());
-      doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
-      doReturn("refreshToken2").when(jwtUtil).findRefreshToken(any());
+      doReturn("refreshToken").when(jwtUtil).resolveToken(any(String.class));
+      doReturn(true).when(jwtUtil).verifyRefreshToken(any(String.class));
+      doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any(String.class));
+      doReturn("refreshToken2").when(jwtUtil).findRefreshToken(any(String.class));
 
       // when: JWT 재발행
       UnauthorizedException unauthorizedException = assertThrows(UnauthorizedException.class,
@@ -511,7 +502,7 @@ class MemberLoginServiceTest {
 
       // then: ErrorCode 검증, RefreshToken 삭제 확인
       assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
-      verify(jwtUtil).deleteRefreshToken(any());
+      verify(jwtUtil).deleteRefreshToken(any(String.class));
     }
 
     @Test
@@ -521,16 +512,16 @@ class MemberLoginServiceTest {
       Language language = Language.KOREAN;
       Member member = createMember(language, joinDto);
 
-      doReturn("refreshToken").when(jwtUtil).resolveToken(any());
-      doReturn(true).when(jwtUtil).verifyRefreshToken(any());
-      doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
-      doReturn("refreshToken").when(jwtUtil).findRefreshToken(any());
+      doReturn("refreshToken").when(jwtUtil).resolveToken(any(String.class));
+      doReturn(true).when(jwtUtil).verifyRefreshToken(any(String.class));
+      doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any(String.class));
+      doReturn("refreshToken").when(jwtUtil).findRefreshToken(any(String.class));
 
-      doReturn(Optional.of(member)).when(memberRepository).findById(any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+      doReturn(Optional.of(member)).when(memberRepository).findById(any(Long.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
       doReturn(1L).when(member).getId();
-      doReturn(FcmToken.builder().build()).when(fcmTokenService).getFcmToken(any(), any());
+      doReturn(FcmToken.builder().build()).when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
 
       // when: JWT 재발행
       JwtDto jwtDto = memberLoginService.reissue("bearer RefreshToken", "token");
@@ -548,17 +539,18 @@ class MemberLoginServiceTest {
       Language language = Language.KOREAN;
       Member member = createMember(language, joinDto);
 
-      doReturn("refreshToken").when(jwtUtil).resolveToken(any());
-      doReturn(true).when(jwtUtil).verifyRefreshToken(any());
-      doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any());
-      doReturn("refreshToken").when(jwtUtil).findRefreshToken(any());
+      doReturn("refreshToken").when(jwtUtil).resolveToken(any(String.class));
+      doReturn(true).when(jwtUtil).verifyRefreshToken(any(String.class));
+      doReturn("1").when(jwtUtil).getMemberIdFromRefresh(any(String.class));
+      doReturn("refreshToken").when(jwtUtil).findRefreshToken(any(String.class));
 
-      doReturn(Optional.of(member)).when(memberRepository).findById(any());
-      doReturn("accessToken").when(jwtUtil).createAccessToken(any(), any());
-      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(), any());
+      doReturn(Optional.of(member)).when(memberRepository).findById(any(Long.class));
+      doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
+      doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
       doReturn(1L).when(member).getId();
-      doReturn(null).when(fcmTokenService).getFcmToken(any(), any());
-      doReturn(FcmToken.builder().build()).when(fcmTokenService).createFcmToken(any(), any());
+      doReturn(null).when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
+      doReturn(FcmToken.builder().build()).when(fcmTokenService)
+          .createFcmToken(any(Member.class), any(String.class));
 
       // when: JWT 재발행
       JwtDto jwtDto = memberLoginService.reissue("bearer RefreshToken", "token");
@@ -567,8 +559,23 @@ class MemberLoginServiceTest {
       assertThat(jwtDto).isNotNull();
       assertThat(jwtDto.getAccessToken()).isEqualTo("accessToken");
       assertThat(jwtDto.getRefreshToken()).isEqualTo("refreshToken");
-      verify(fcmTokenService).createFcmToken(any(), any());
+      verify(fcmTokenService).createFcmToken(any(Member.class), any(String.class));
     }
+  }
+
+  @Test
+  @DisplayName("언어 설정 변경 성공 TEST")
+  void updateLanguageDifferent() {
+    // given: 언어 설정이 변경된 회원 설정
+    Language language = Language.KOREAN;
+    Member member = createMember(language, joinDto);
+    MemberRequest.LoginDto loginDto = createLoginDto(Language.ENGLISH.name());
+
+    // when: 언어 설정 변경
+    memberLoginService.updateLanguageDifferent(loginDto, member);
+
+    // then: 언어 변경 확인
+    assertThat(member.getLanguage()).isEqualTo(Language.ENGLISH);
   }
 
   @Test
@@ -579,17 +586,17 @@ class MemberLoginServiceTest {
     Member member = createMember(language, joinDto);
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
 
-    doReturn("accessToken").when(jwtUtil).resolveToken(any());
-    doReturn("refreshToken").when(jwtUtil).findRefreshToken(any());
-    doReturn(FcmToken.builder().build()).when(fcmTokenService).getFcmToken(any(), any());
+    doReturn("accessToken").when(jwtUtil).resolveToken(any(String.class));
+    doReturn("refreshToken").when(jwtUtil).findRefreshToken(any(String.class));
+    doReturn(FcmToken.builder().build()).when(fcmTokenService).getFcmToken(any(Member.class), any(String.class));
 
     // when: 로그아웃
     memberLoginService.logout(memberInfoDto, "bearer refreshToken", "token");
 
     // then: AccessToken 블랙리스트 지정 확인, RefreshToken과 fcmToken 삭제 확인
-    verify(jwtUtil).setBlackList(any());
-    verify(jwtUtil).deleteRefreshToken(any());
-    verify(fcmTokenService).deleteFcmToken(any());
+    verify(jwtUtil).setBlackList(any(String.class));
+    verify(jwtUtil).deleteRefreshToken(any(String.class));
+    verify(fcmTokenService).deleteFcmToken(any(FcmToken.class));
   }
 
   @Test
@@ -607,8 +614,8 @@ class MemberLoginServiceTest {
 
     // then: 회원의 상태가 INACTIVE인지 확인, 회원 탈퇴 저장 확인
     assertThat(member.getStatus()).isEqualTo(Status.INACTIVE);
-    verify(member).updateStatus(any());
-    verify(memberWithdrawalRepository).save(any());
+    verify(member).updateStatus(any(Status.class));
+    verify(memberWithdrawalRepository).save(any(MemberWithdrawal.class));
   }
 
   @Test

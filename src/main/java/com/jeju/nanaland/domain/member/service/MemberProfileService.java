@@ -34,17 +34,17 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class MemberProfileService {
 
-  @Value("${cloud.aws.s3.memberProfileDirectory}")
-  private String MEMBER_PROFILE_DIRECTORY;
   private final S3ImageService s3ImageService;
   private final MemberRepository memberRepository;
+  @Value("${cloud.aws.s3.memberProfileDirectory}")
+  private String MEMBER_PROFILE_DIRECTORY;
 
   /**
    * 유저 프로필 수정
    *
-   * @param memberInfoDto 회원 정보
+   * @param memberInfoDto    회원 정보
    * @param profileUpdateDto 프로필 수정 정보
-   * @param multipartFile 프로필 사진
+   * @param multipartFile    프로필 사진
    * @throws ServerErrorException 사진 업로드가 실패했을 경우
    */
   @Transactional
@@ -53,29 +53,38 @@ public class MemberProfileService {
 
     Member member = memberInfoDto.getMember();
     validateNickname(profileUpdateDto.getNickname(), member);
-    ImageFile profileImageFile = member.getProfileImageFile();
     if (multipartFile != null) {
-      try {
-        S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true,
-            MEMBER_PROFILE_DIRECTORY);
-        if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
-          s3ImageService.deleteImageS3(profileImageFile, MEMBER_PROFILE_DIRECTORY);
-        }
-        profileImageFile.updateImageFile(s3ImageDto);
-      } catch (IOException e) {
-        log.error("S3 image upload error : {}", e.getMessage());
-        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
-      }
+      updateProfileImage(multipartFile, member);
     }
-
     member.updateProfile(profileUpdateDto);
+  }
+
+  /**
+   * 프로필 사진 업데이트
+   *
+   * @param multipartFile 프로필 사진
+   * @param member        회원
+   */
+  private void updateProfileImage(MultipartFile multipartFile, Member member) {
+    ImageFile profileImageFile = member.getProfileImageFile();
+    try {
+      S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true,
+          MEMBER_PROFILE_DIRECTORY);
+      if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
+        s3ImageService.deleteImageS3(profileImageFile, MEMBER_PROFILE_DIRECTORY);
+      }
+      profileImageFile.updateImageFile(s3ImageDto);
+    } catch (IOException e) {
+      log.error("S3 image upload error : {}", e.getMessage());
+      throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
+    }
   }
 
   /**
    * 닉네임 중복 확인
    *
    * @param nickname 닉네임
-   * @param member 회원
+   * @param member   회원
    * @throws ConflictException 닉네임이 중복되는 경우
    */
   public void validateNickname(String nickname, Member member) {
@@ -86,13 +95,11 @@ public class MemberProfileService {
   }
 
   /**
-   * 유저 프로필 조회
-   * memberId가 본인과 일치하지 않으면, 타인 프로필 조회
-   * 기본 프로필 정보 조회
-   * 본인 프로필을 조회하는 경우, 이용약관 추가 조회
+   * 유저 프로필 조회.
+   * memberId가 본인과 일치하지 않으면, 타인 프로필 조회. 기본 프로필 정보 조회 본인 프로필을 조회하는 경우, 이용약관 추가 조회.
    *
    * @param memberInfoDto 회원 정보
-   * @param memberId 조회한 회원의 ID
+   * @param memberId      조회한 회원의 ID
    * @return 프로필 정보
    * @throws NotFoundException 존재하는 회원이 없는 경우
    */
@@ -149,7 +156,7 @@ public class MemberProfileService {
   /**
    * 언어 설정 변경
    *
-   * @param memberInfoDto 회원 정보
+   * @param memberInfoDto     회원 정보
    * @param languageUpdateDto 언어 수정 정보
    */
   @Transactional
@@ -160,10 +167,8 @@ public class MemberProfileService {
     memberInfoDto.getMember().updateLanguage(language);
   }
 
-  // 닉네임 중복 확인
-
   /**
-   * 닉네임 중복 확인
+   * 닉네임 중복 확인.
    * 본인 닉네임과 중복되는지 확인하기 위해 필요한 Member 조회 후, validate 과정 진행
    *
    * @param nickname 닉네임
