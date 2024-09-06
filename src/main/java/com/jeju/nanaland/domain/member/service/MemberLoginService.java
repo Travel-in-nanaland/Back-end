@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class MemberLoginService {
 
+  @Value("${cloud.aws.s3.memberProfileDirectory}")
+  private String MEMBER_PROFILE_DIRECTORY;
   private final MemberRepository memberRepository;
   private final MemberWithdrawalRepository memberWithdrawalRepository;
   private final JwtUtil jwtUtil;
@@ -123,7 +126,7 @@ public class MemberLoginService {
     if (multipartFile == null) {
       return imageFileService.getRandomProfileImageFile();
     }
-    return imageFileService.uploadAndSaveImageFile(multipartFile, true);
+    return imageFileService.uploadAndSaveImageFile(multipartFile, true, MEMBER_PROFILE_DIRECTORY);
   }
 
   /**

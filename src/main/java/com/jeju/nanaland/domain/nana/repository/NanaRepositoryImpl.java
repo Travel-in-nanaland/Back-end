@@ -8,6 +8,8 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
@@ -140,6 +142,24 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             .or(nanaContent.id.in(idListContainAllHashtags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public PostCardDto findPostCardDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostCardDto(
+            nana.id,
+            nanaTitle.heading,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(nana)
+        .innerJoin(nanaTitle).on(nana.eq(nanaTitle.nana))
+        .innerJoin(nana.firstImageFile, imageFile)
+        .where(
+            nana.id.eq(postId),
+            nanaTitle.language.eq(language))
+        .fetchOne();
   }
 
   public NanaThumbnailPost findNanaThumbnailPostDto(Long id, Language language) {

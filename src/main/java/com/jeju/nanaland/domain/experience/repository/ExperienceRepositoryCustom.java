@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.experience.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
@@ -27,4 +28,6 @@ public interface ExperienceRepositoryCustom {
   List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
 
   List<Long> findAllIds();
+
+  PostCardDto findPostCardDto(Long postId, Language language);
 }

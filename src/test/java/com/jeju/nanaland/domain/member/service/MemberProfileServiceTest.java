@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.member.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -141,7 +142,8 @@ class MemberProfileServiceTest {
         .build();
 
     doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
-    doReturn(s3ImageDto).when(s3ImageService).uploadOriginImageToS3(multipartFile, true);
+    doReturn(s3ImageDto).when(s3ImageService)
+        .uploadImageToS3(any(MultipartFile.class), eq(true), any());
 
     // when
     memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, multipartFile);

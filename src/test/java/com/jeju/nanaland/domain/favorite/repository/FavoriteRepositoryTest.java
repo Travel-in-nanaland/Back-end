@@ -7,24 +7,29 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
+import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.festival.entity.Festival;
-import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.market.entity.Market;
-import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
-import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nature.entity.Nature;
-import com.jeju.nanaland.domain.nature.entity.NatureTrans;
+import com.jeju.nanaland.domain.restaurant.entity.Restaurant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -39,327 +44,255 @@ import org.springframework.data.domain.Pageable;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class FavoriteRepositoryTest {
 
-  final int size = 5;
+  private final Random random = new Random();
   @Autowired
   TestEntityManager em;
   @Autowired
   FavoriteRepository favoriteRepository;
+  private Map<Category, Function<Integer, List<? extends Post>>> functionMap;
 
+  void initMap() {
+    functionMap = new HashMap<>();
+    functionMap.put(Category.NANA, this::createNanas);
+    functionMap.put(Category.NATURE, this::createNatures);
+    functionMap.put(Category.MARKET, this::createMarkets);
+    functionMap.put(Category.FESTIVAL, this::createFestivals);
+    functionMap.put(Category.EXPERIENCE, this::createExperiences);
+    functionMap.put(Category.RESTAURANT, this::createRestaurants);
+  }
+
+  // TODO: Category 에서 NANA_CONTENT 제외
+  @DisplayName("유저 전체 찜리스트 조회, 생성 일자 내림차순 조회")
   @Test
-  @DisplayName("7대자연 찜리스트")
-  void findNatureThumbnailsTest() {
+  void findAllFavoritesOrderByCreatedAtDescTest() {
     // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.NATURE;
-    Pageable pageable = PageRequest.of(0, 12);
+    Member member = createMember(Language.KOREAN);
+    int nanaCount = 2;
+    int natureCount = 3;
+    int marketCount = 4;
+    int festivalCount = 5;
+    int experienceCount = 6;
+    int restaurantCount = 7;
+    int experienceInactiveCount = 1;
+    int restaurantInactiveCount = 2;
+    int totalActiveCount = nanaCount + natureCount + marketCount + festivalCount + experienceCount
+        + restaurantCount;
+    int total = totalActiveCount + experienceInactiveCount + restaurantInactiveCount;
+    Pageable pageable = PageRequest.of(0, total);
 
-    // nature 포스트 size개 생성
-    List<Nature> natureList = getNatureList(korean, size);
-    // favorite에 등록
-    initFavorites(natureList, member, category);
+    // 게시물 생성
+    List<Nana> nanas = createNanas(nanaCount);
+    List<Nature> natures = createNatures(natureCount);
+    List<Market> markets = createMarkets(marketCount);
+    List<Festival> festivals = createFestivals(festivalCount);
+    List<Experience> experiences = createExperiences(experienceCount);
+    List<Restaurant> restaurants = createRestaurants(restaurantCount);
+
+    // 찜리스트에 등록 - ACTIVE
+    List<Favorite> favorites = new ArrayList<>();
+    favorites.addAll(createFavorites(member, nanas, Category.NANA, "ACTIVE"));
+    favorites.addAll(createFavorites(member, natures, Category.NATURE, "ACTIVE"));
+    favorites.addAll(createFavorites(member, markets, Category.MARKET, "ACTIVE"));
+    favorites.addAll(createFavorites(member, festivals, Category.FESTIVAL, "ACTIVE"));
+    favorites.addAll(createFavorites(member, experiences, Category.EXPERIENCE, "ACTIVE"));
+    favorites.addAll(createFavorites(member, restaurants, Category.RESTAURANT, "ACTIVE"));
+
+    // 찜리스트에 등록 - INACTIVE
+    List<Experience> inactiveExperiences = createExperiences(experienceInactiveCount);
+    List<Restaurant> inactiveRestaurants = createRestaurants(restaurantInactiveCount);
+    favorites.addAll(createFavorites(member, inactiveExperiences, Category.EXPERIENCE, "INACTIVE"));
+    favorites.addAll(createFavorites(member, inactiveRestaurants, Category.RESTAURANT, "INACTIVE"));
 
     // when
-    Page<ThumbnailDto> result = favoriteRepository.findNatureThumbnails(member, locale, pageable);
+    Page<Favorite> result = favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(
+        member, pageable);
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(size);
-    assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("nature title " + size);
+    assertThat(result.getTotalElements()).isEqualTo(totalActiveCount);
+    assertThat(result).extracting("status")
+        .allMatch(status -> status.equals("ACTIVE"));
   }
 
-  @Test
-  @DisplayName("postId로 7대자연 썸네일 조회")
-  void findNatureThumbnailByPostIdTest() {
+  @DisplayName("유저 카테고리 찜리스트 생성 일자 내림차순 조회")
+  @ParameterizedTest
+  @EnumSource(value = Category.class, names = "NANA_CONTENT", mode = Mode.EXCLUDE)
+  void findAllFavoritesOrderByCreatedAtDescTest(Category category) {
     // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.NATURE;
+    Member member = createMember(Language.KOREAN);
+    int activeRandomSize = random.nextInt(10) + 1;
+    int inactiveRandomSize = random.nextInt(10) + 1;
+    int total = activeRandomSize + inactiveRandomSize;
+    Pageable pageable = PageRequest.of(0, total);
 
-    // nature 포스트 1개 생성
-    List<Nature> natureList = getNatureList(korean, 1);
-    // favorite에 등록
-    initFavorites(natureList, member, category);
-    Long postId = natureList.get(0).getId();
+    // 카테고리에 해당하는 게시물 생성
+    initMap();
+    List<? extends Post> activePosts = functionMap.get(category).apply(activeRandomSize);
+    List<? extends Post> inactivePosts = functionMap.get(category).apply(inactiveRandomSize);
+
+    // 찜리스트에 등록 - ACTIVE
+    List<Favorite> activeFavorites = createFavorites(member, activePosts, category, "ACTIVE");
+
+    // 찜리스트에 등록 - INACTIVE
+    List<Favorite> inactiveFavorites = createFavorites(member, inactivePosts, category, "INACTIVE");
 
     // when
-    ThumbnailDto result = favoriteRepository.findNatureThumbnailByPostId(member, postId, locale);
+    Page<Favorite> result = favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(
+        member, category, pageable);
 
     // then
-    assertThat(result).extracting("title").isEqualTo("nature title 1");
+    assertThat(result.getTotalElements()).isEqualTo(activeRandomSize);
+    assertThat(result).extracting("status")
+        .allMatch(status -> status.equals("ACTIVE"));
+    assertThat(result).extracting("category")
+        .allMatch(resultCategory -> resultCategory.equals(category));
   }
 
-  @Test
-  @DisplayName("축제 찜리스트")
-  void findFestivalThumbnailsTest() {
-    // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.FESTIVAL;
-    Pageable pageable = PageRequest.of(0, 12);
-
-    // festival 포스트 size개 생성
-    List<Festival> festivalList = getFestivalList(korean, size);
-    // favorite에 등록
-    initFavorites(festivalList, member, category);
-
-    // when
-    Page<ThumbnailDto> result = favoriteRepository.findFestivalThumbnails(member, locale, pageable);
-
-    // then
-    assertThat(result.getTotalElements()).isEqualTo(size);
-    assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("festival title " + size);
-  }
-
-  @Test
-  @DisplayName("postId로 축제 썸네일 조회")
-  void findFestivalThumbnailByPostIdTest() {
-    // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.FESTIVAL;
-
-    // festival 포스트 1개 생성
-    List<Festival> festivalList = getFestivalList(korean, 1);
-    // favorite에 등록
-    initFavorites(festivalList, member, category);
-    Long postId = festivalList.get(0).getId();
-
-    // when
-    ThumbnailDto result = favoriteRepository.findFestivalThumbnailByPostId(member, postId, locale);
-
-    // then
-    assertThat(result).extracting("title").isEqualTo("festival title 1");
-  }
-
-  @Test
-  @DisplayName("전통시장 찜리스트")
-  void findMarketThumbnailsTest() {
-    // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.MARKET;
-    Pageable pageable = PageRequest.of(0, 12);
-
-    // market 포스트 size개 생성
-    List<Market> marketList = getMarketList(korean, size);
-    // favorite에 등록
-    initFavorites(marketList, member, category);
-
-    // when
-    Page<ThumbnailDto> result = favoriteRepository.findMarketThumbnails(member, locale, pageable);
-
-    // then
-    assertThat(result.getTotalElements()).isEqualTo(size);
-    assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("market title " + size);
-  }
-
-  @Test
-  @DisplayName("postId로 전통시장 썸네일 조회")
-  void findMarketThumbnailByPostIdTest() {
-    // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.MARKET;
-
-    // market 포스트 1개 생성
-    List<Market> marketList = getMarketList(korean, 1);
-    // favorite에 등록
-    initFavorites(marketList, member, category);
-    Long postId = marketList.get(0).getId();
-
-    // when
-    ThumbnailDto result = favoriteRepository.findMarketThumbnailByPostId(member, postId, locale);
-
-    // then
-    assertThat(result).extracting("title").isEqualTo("market title 1");
-  }
-
-  @Test
-  @DisplayName("나나스픽 찜리스트")
-  void findNanaThumbnailsTest() {
-    // given
-    Language korean = initKoreanLanguage();
-    Member member = initMember(korean);
-    Language locale = Language.KOREAN;
-    Category category = Category.NANA;
-    Pageable pageable = PageRequest.of(0, 12);
-
-    // market 포스트 size개 생성
-    List<Nana> nanaList = getNanaList(korean, size);
-    // favorite에 등록
-    initFavorites(nanaList, member, category);
-
-    // when
-    Page<ThumbnailDto> result = favoriteRepository.findNanaThumbnails(member, locale, pageable);
-
-    // then
-    assertThat(result.getTotalElements()).isEqualTo(size);
-    assertThat(result.getContent().get(0))
-        .extracting("title").isEqualTo("nana heading " + size);
-
-  }
-
-  Language initKoreanLanguage() {
-    return Language.KOREAN;
-  }
-
-  Member initMember(Language language) {
-    ImageFile imageFile = ImageFile.builder()
-        .originUrl("origin url")
-        .thumbnailUrl("thumbnail url")
-        .build();
-    em.persist(imageFile);
+  private Member createMember(Language language) {
+    ImageFile profileImage = createImageFile();
 
     Member member = Member.builder()
-        .profileImageFile(imageFile)
-        .language(language)
-        .provider(Provider.KAKAO)
-        .providerId(UUID.randomUUID().toString())
-        .email("TEST@naver.com")
-        .nickname(UUID.randomUUID().toString())
         .travelType(TravelType.NONE)
+        .profileImageFile(profileImage)
+        .language(language)
+        .nickname(UUID.randomUUID().toString())
+        .email("test@test.com")
+        .provider(Provider.KAKAO)
+        .providerId("1234567890")
         .build();
     em.persist(member);
 
     return member;
   }
 
-  void initFavorites(List<? extends Post> postList, Member member, Category category) {
-    for (Post post : postList) {
-      Favorite favorite = Favorite.builder()
-          .post(post)
-          .member(member)
-          .category(category)
-          .status("ACTIVE")
-          .notificationCount(0)
-          .build();
-      em.persist(favorite);
-    }
+  private List<Favorite> createFavorites(Member member, List<? extends Post> posts,
+      Category category,
+      String status) {
+    return posts.stream()
+        .map(post -> {
+          Favorite favorite = Favorite.builder()
+              .member(member)
+              .post(post)
+              .category(category)
+              .notificationCount(0)
+              .status(status)
+              .build();
+          em.persist(favorite);
+          return favorite;
+        })
+        .collect(Collectors.toList());
   }
 
-  List<Nature> getNatureList(Language language, int size) {
-    List<Nature> natureList = new ArrayList<>();
+  private List<Nana> createNanas(int size) {
+    List<Nana> nanas = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ImageFile newImageFile = createImageFile();
 
-    for (int i = 1; i <= size; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("origin url " + i)
-          .thumbnailUrl("thumbnail url " + i)
-          .build();
-      em.persist(imageFile);
-
-      Nature nature = Nature.builder()
-          .firstImageFile(imageFile)
+      Nana newNana = Nana.builder()
           .priority(0L)
+          .firstImageFile(newImageFile)
+          .version(String.valueOf(size))
           .build();
-      em.persist(nature);
+      em.persist(newNana);
 
-      NatureTrans natureTrans = NatureTrans.builder()
-          .language(language)
-          .nature(nature)
-          .title("nature title " + i)
-          .build();
-      em.persist(natureTrans);
-
-      natureList.add(nature);
+      nanas.add(newNana);
     }
 
-    return natureList;
+    return nanas;
   }
 
-  List<Festival> getFestivalList(Language language, int size) {
-    List<Festival> festivalList = new ArrayList<>();
+  private List<Nature> createNatures(int size) {
+    List<Nature> natures = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ImageFile newImageFile = createImageFile();
 
-    for (int i = 1; i <= size; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("origin url " + i)
-          .thumbnailUrl("thumbnail url " + i)
-          .build();
-      em.persist(imageFile);
-
-      Festival festival = Festival.builder()
-          .firstImageFile(imageFile)
+      Nature newNature = Nature.builder()
           .priority(0L)
+          .firstImageFile(newImageFile)
           .build();
-      em.persist(festival);
+      em.persist(newNature);
 
-      FestivalTrans festivalTrans = FestivalTrans.builder()
-          .language(language)
-          .festival(festival)
-          .title("festival title " + i)
-          .build();
-      em.persist(festivalTrans);
-
-      festivalList.add(festival);
+      natures.add(newNature);
     }
 
-    return festivalList;
+    return natures;
   }
 
-  List<Market> getMarketList(Language language, int size) {
-    List<Market> marketList = new ArrayList<>();
+  private List<Experience> createExperiences(int size) {
+    List<Experience> experiences = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ImageFile newImageFile = createImageFile();
 
-    for (int i = 1; i <= size; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("origin url " + i)
-          .thumbnailUrl("thumbnail url " + i)
-          .build();
-      em.persist(imageFile);
-
-      Market market = Market.builder()
-          .firstImageFile(imageFile)
+      Experience newExperience = Experience.builder()
           .priority(0L)
+          .firstImageFile(newImageFile)
           .build();
-      em.persist(market);
+      em.persist(newExperience);
 
-      MarketTrans marketTrans = MarketTrans.builder()
-          .language(language)
-          .market(market)
-          .title("market title " + i)
-          .build();
-      em.persist(marketTrans);
-
-      marketList.add(market);
+      experiences.add(newExperience);
     }
 
-    return marketList;
+    return experiences;
   }
 
-  List<Nana> getNanaList(Language language, int size) {
-    List<Nana> nanaList = new ArrayList<>();
+  private List<Market> createMarkets(int size) {
+    List<Market> markets = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ImageFile newImageFile = createImageFile();
 
-    for (int i = 1; i <= size; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("origin url " + i)
-          .thumbnailUrl("thumbnail url " + i)
-          .build();
-      em.persist(imageFile);
-
-      Nana nana = Nana.builder()
-          .firstImageFile(imageFile)
+      Market newMarket = Market.builder()
           .priority(0L)
-          .version("version " + i)
+          .firstImageFile(newImageFile)
           .build();
-      em.persist(nana);
+      em.persist(newMarket);
 
-      NanaTitle nanaTitle = NanaTitle.builder()
-          .nana(nana)
-          .heading("nana heading " + i)
-          .language(language)
-          .build();
-      em.persist(nanaTitle);
-
-      nanaList.add(nana);
+      markets.add(newMarket);
     }
 
-    return nanaList;
+    return markets;
+  }
+
+  private List<Festival> createFestivals(int size) {
+    List<Festival> festivals = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ImageFile newImageFile = createImageFile();
+
+      Festival newFestival = Festival.builder()
+          .priority(0L)
+          .firstImageFile(newImageFile)
+          .build();
+      em.persist(newFestival);
+
+      festivals.add(newFestival);
+    }
+
+    return festivals;
+  }
+
+  private List<Restaurant> createRestaurants(int size) {
+    List<Restaurant> restaurants = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ImageFile newImageFile = createImageFile();
+
+      Restaurant newRestaurant = Restaurant.builder()
+          .priority(0L)
+          .firstImageFile(newImageFile)
+          .build();
+      em.persist(newRestaurant);
+
+      restaurants.add(newRestaurant);
+    }
+
+    return restaurants;
+  }
+
+  private ImageFile createImageFile() {
+    ImageFile imageFile = ImageFile
+        .builder()
+        .originUrl(UUID.randomUUID().toString())
+        .thumbnailUrl(UUID.randomUUID().toString())
+        .build();
+    em.persist(imageFile);
+
+    return imageFile;
   }
 }

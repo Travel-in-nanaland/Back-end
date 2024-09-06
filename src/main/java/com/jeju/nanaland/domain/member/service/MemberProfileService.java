@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class MemberProfileService {
 
+  @Value("${cloud.aws.s3.memberProfileDirectory}")
+  private String MEMBER_PROFILE_DIRECTORY;
   private final S3ImageService s3ImageService;
   private final MemberRepository memberRepository;
 
@@ -53,9 +56,10 @@ public class MemberProfileService {
     ImageFile profileImageFile = member.getProfileImageFile();
     if (multipartFile != null) {
       try {
-        S3ImageDto s3ImageDto = s3ImageService.uploadOriginImageToS3(multipartFile, true);
+        S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true,
+            MEMBER_PROFILE_DIRECTORY);
         if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
-          s3ImageService.deleteImageS3(profileImageFile);
+          s3ImageService.deleteImageS3(profileImageFile, MEMBER_PROFILE_DIRECTORY);
         }
         profileImageFile.updateImageFile(s3ImageDto);
       } catch (IOException e) {

@@ -6,9 +6,10 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
+import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Recommend;
@@ -32,7 +33,7 @@ public class MemberTypeService {
 
   private static final Random RANDOM = new Random();
   private final RecommendRepository recommendRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final RestaurantRepository restaurantRepository;
   private final ExperienceRepository experienceRepository;
 
@@ -159,7 +160,7 @@ public class MemberTypeService {
     }
 
     // 좋아요 여부 체크
-    recommendPostDto.setFavorite(favoriteService.isPostInFavorite(member, category, postId));
+    recommendPostDto.setFavorite(memberFavoriteService.isPostInFavorite(member, category, postId));
 
     return recommendPostDto;
   }
@@ -177,7 +178,7 @@ public class MemberTypeService {
 
     // 좋아요 여부 체크
     recommendPostDto.setFavorite(
-        favoriteService.isPostInFavorite(member, Category.EXPERIENCE, postId));
+        memberFavoriteService.isPostInFavorite(member, Category.EXPERIENCE, postId));
 
     return recommendPostDto;
   }
@@ -195,7 +196,7 @@ public class MemberTypeService {
 
     // 좋아요 여부 체크
     recommendPostDto.setFavorite(
-        favoriteService.isPostInFavorite(member, Category.RESTAURANT, postId));
+        memberFavoriteService.isPostInFavorite(member, Category.RESTAURANT, postId));
 
     return recommendPostDto;
   }

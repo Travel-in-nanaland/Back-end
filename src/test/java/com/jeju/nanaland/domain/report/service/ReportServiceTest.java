@@ -196,7 +196,7 @@ class ReportServiceTest {
     doReturn(NatureCompositeDto.builder().build()).when(natureRepository)
         .findCompositeDtoById(1L, Language.KOREAN);
     doReturn(mock(ImageFile.class)).when(imageFileService)
-        .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), eq("/info_fix_report_images"));
+        .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
     doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
     doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
     doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));

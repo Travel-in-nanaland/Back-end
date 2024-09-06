@@ -3,10 +3,15 @@ package com.jeju.nanaland.domain.restaurant.service;
 import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
 import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
@@ -22,6 +27,7 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +39,47 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantService {
+public class RestaurantService implements PostService {
 
   private final RestaurantRepository restaurantRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final ReviewRepository reviewRepository;
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
+
+  /**
+   * Restaurant 객체 조회
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @return Post
+   * @throws NotFoundException 게시물 id에 해당하는 맛집 게시물이 존재하지 않는 경우
+   */
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return restaurantRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  /**
+   * 카드 정보 조회 - (postId, category, imageFile, title)
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @param language 언어 정보
+   * @return PostCardDto
+   * @throws NotFoundException (게시물 id, langugae)를 가진 맛집 정보가 존재하지 않는 경우
+   */
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+
+    PostCardDto postCardDto = restaurantRepository.findPostCardDto(postId, language);
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.RESTAURANT.toString());
+    return postCardDto;
+  }
 
   // 맛집 리스트 조회
   public RestaurantThumbnailDto getRestaurantList(MemberInfoDto memberInfoDto,
@@ -52,7 +92,7 @@ public class RestaurantService {
         language, keywordFilterList, addressFilterList, pageable);
 
     // 좋아요 여부
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<RestaurantThumbnail> data = restaurantThumbnailPage.getContent();
 
@@ -89,7 +129,7 @@ public class RestaurantService {
 
     // 좋아요 여부 확인
     Member member = memberInfoDto.getMember();
-    boolean isFavorite = favoriteService.isPostInFavorite(member, RESTAURANT, postId);
+    boolean isFavorite = memberFavoriteService.isPostInFavorite(member, RESTAURANT, postId);
 
     // 이미지
     List<ImageFileDto> images = new ArrayList<>();
