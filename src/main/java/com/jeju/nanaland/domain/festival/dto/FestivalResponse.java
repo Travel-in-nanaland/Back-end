@@ -12,22 +12,22 @@ public class FestivalResponse {
 
   @Data
   @Builder
-  @Schema(description = "축제 썸네일 조회 DTO")
-  public static class FestivalThumbnailDto {
+  @Schema(name = "FestivalThumbnailDto", description = "축제 썸네일 조회 DTO")
+  public static class PreviewPageDto {
 
     @Schema(description = "총 조회 개수")
     private Long totalElements;
 
     @Schema(description = "결과 데이터")
-    private List<FestivalThumbnail> data;
+    private List<PreviewDto> data;
 
 
   }
 
   @Data
   @Builder
-  @Schema(description = "축제 썸네일 조회 DTO")
-  public static class FestivalThumbnail {
+  @Schema(name = "FestivalThumbnail", description = "축제 썸네일 조회 DTO")
+  public static class PreviewDto {
 
     @Schema(description = "축제 게시물 id")
     private Long id;
@@ -52,8 +52,8 @@ public class FestivalResponse {
 
   @Builder
   @Getter
-  @Schema(description = "축제 상세 정보")
-  public static class FestivalDetailDto {
+  @Schema(name = "FestivalDetailDto", description = "축제 상세 정보")
+  public static class DetailDto {
 
     @Schema(description = "7대 자연 게시물 id")
     private Long id;

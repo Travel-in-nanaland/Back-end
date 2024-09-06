@@ -14,9 +14,7 @@ import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnail;
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalResponse;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -82,23 +80,25 @@ public class FestivalService implements PostService {
   }
 
   // 종료된 축제 리스트 조회
-  public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
+  public FestivalResponse.PreviewPageDto getPastFestivalList(MemberInfoDto memberInfoDto, int page,
+      int size,
       List<String> addressFilterList) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
-    Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
+    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.searchCompositeDtoByOnGoing(
         memberInfoDto.getLanguage(), pageable, false, addressFilterList);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
+    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
         favoriteIds);
   }
 
   // 이번 달 축제 리스트 조회
-  public FestivalThumbnailDto getThisMonthFestivalList(MemberInfoDto memberInfoDto, int page,
+  public FestivalResponse.PreviewPageDto getThisMonthFestivalList(MemberInfoDto memberInfoDto,
+      int page,
       int size, List<String> addressFilterList, LocalDate startDate, LocalDate endDate) {
     Pageable pageable = PageRequest.of(page, size);
     if (startDate == null && endDate == null) {
@@ -112,18 +112,19 @@ public class FestivalService implements PostService {
       }
     }
     // compositeDto로 기간에 맞는 festival 가져오기
-    Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByMonth(
+    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.searchCompositeDtoByMonth(
         memberInfoDto.getLanguage(), pageable, startDate, endDate, addressFilterList);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
+    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
         favoriteIds);
   }
 
   // 계절별 축제 리스트 조회
-  public FestivalThumbnailDto getSeasonFestivalList(MemberInfoDto memberInfoDto, int page, int size,
+  public FestivalResponse.PreviewPageDto getSeasonFestivalList(MemberInfoDto memberInfoDto,
+      int page, int size,
       String season) {
     Pageable pageable = PageRequest.of(page, size);
 
@@ -131,24 +132,24 @@ public class FestivalService implements PostService {
     String seasonKoreanValue = seasonValueChangeToKorean(season);
 
     // compositeDto로 계절별 festival 가져오기
-    Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
+    Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.searchCompositeDtoBySeason(
         memberInfoDto.getLanguage(), pageable, seasonKoreanValue);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
+    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
         favoriteIds);
 
   }
 
   // 축제 상세 정보 조회
-  public FestivalDetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long id,
+  public FestivalResponse.DetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long id,
       boolean isSearch) {
-    FestivalCompositeDto compositeDtoById = festivalRepository.findCompositeDtoById(id,
+    FestivalCompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage());
 
-    if (compositeDtoById == null) {
+    if (festivalCompositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
 
@@ -159,22 +160,22 @@ public class FestivalService implements PostService {
     boolean isPostInFavorite =
         memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL, id);
 
-    return FestivalDetailDto.builder()
-        .id(compositeDtoById.getId())
-        .addressTag(compositeDtoById.getAddressTag())
-        .title(compositeDtoById.getTitle())
-        .content(compositeDtoById.getContent())
-        .address(compositeDtoById.getAddress())
-        .contact(compositeDtoById.getContact())
-        .time(compositeDtoById.getTime())
-        .fee(compositeDtoById.getFee())
-        .homepage(compositeDtoById.getHomepage())
+    return FestivalResponse.DetailDto.builder()
+        .id(festivalCompositeDto.getId())
+        .addressTag(festivalCompositeDto.getAddressTag())
+        .title(festivalCompositeDto.getTitle())
+        .content(festivalCompositeDto.getContent())
+        .address(festivalCompositeDto.getAddress())
+        .contact(festivalCompositeDto.getContact())
+        .time(festivalCompositeDto.getTime())
+        .fee(festivalCompositeDto.getFee())
+        .homepage(festivalCompositeDto.getHomepage())
         .period(formatLocalDateToStringWithDayOfWeek(memberInfoDto,
-            compositeDtoById.getStartDate(),
-            compositeDtoById.getEndDate()))
+            festivalCompositeDto.getStartDate(),
+            festivalCompositeDto.getEndDate()))
         .isFavorite(isPostInFavorite)
         .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
-            compositeDtoById.getFirstImage()))
+            festivalCompositeDto.getFirstImage()))
         .build();
 
 
@@ -205,18 +206,18 @@ public class FestivalService implements PostService {
   }
 
   // FestivalThumbnailDto 생성
-  private FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
-      MemberInfoDto memberInfoDto, Page<FestivalCompositeDto> festivalCompositeDtoList,
+  private FestivalResponse.PreviewPageDto getFestivalThumbnailDtoByCompositeDto(
+      MemberInfoDto memberInfoDto, Page<FestivalCompositeDto> festivalCompositeDtos,
       List<Long> favoriteIds) {
-    List<FestivalThumbnail> thumbnails = new ArrayList<>();
-    for (FestivalCompositeDto dto : festivalCompositeDtoList) {
+    List<FestivalResponse.PreviewDto> previewDtos = new ArrayList<>();
+    for (FestivalCompositeDto dto : festivalCompositeDtos) {
 
       // LocalDate 타입의 startDate, endDate를 24. 04. 01 ~ 24. 05. 13형태로 formatting
       String period = formatLocalDateToStringWithoutDayOfWeek(memberInfoDto, dto.getStartDate(),
           dto.getEndDate());
 
-      thumbnails.add(
-          FestivalThumbnail.builder()
+      previewDtos.add(
+          FestivalResponse.PreviewDto.builder()
               .id(dto.getId())
               .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
@@ -226,9 +227,9 @@ public class FestivalService implements PostService {
               .build()
       );
     }
-    return FestivalThumbnailDto.builder()
-        .totalElements(festivalCompositeDtoList.getTotalElements())
-        .data(thumbnails)
+    return FestivalResponse.PreviewPageDto.builder()
+        .totalElements(festivalCompositeDtos.getTotalElements())
+        .data(previewDtos)
         .build();
   }
 
