@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface FestivalRepository extends JpaRepository<Festival, Long>,
     FestivalRepositoryCustom {
 
-  List<Festival> findAllFestival(boolean onGoing, LocalDate localDate);
+  List<Festival> findAllByOnGoingAndEndDateBefore(boolean onGoing, LocalDate localDate);
 
-  List<Festival> findAllFestival(LocalDate localDate);
+  List<Festival> findAllByEndDateBefore(LocalDate localDate);
 }

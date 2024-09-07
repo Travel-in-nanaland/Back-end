@@ -220,7 +220,7 @@ public class FestivalService implements PostService {
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   protected void updateOnGoingToFalse() {
-    List<Festival> finishedFestival = festivalRepository.findAllFestival(
+    List<Festival> finishedFestival = festivalRepository.findAllByOnGoingAndEndDateBefore(
         true, LocalDate.now());
 
     if (!finishedFestival.isEmpty()) {
@@ -234,7 +234,7 @@ public class FestivalService implements PostService {
   @Transactional
   @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
   protected void updateActiveToInActive() {
-    List<Festival> finishedFestival = festivalRepository.findAllFestival(
+    List<Festival> finishedFestival = festivalRepository.findAllByEndDateBefore(
         LocalDate.now().minusYears(2));
 
     if (!finishedFestival.isEmpty()) {
@@ -326,6 +326,7 @@ public class FestivalService implements PostService {
     return formattedStartDate + " ~ " + formattedEndDate;
   }
 
+  // TODO switch 수정
   // 계절 분류
   private String seasonValueChangeToKorean(String season) {
     return switch (season) {
