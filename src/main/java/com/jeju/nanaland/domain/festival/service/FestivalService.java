@@ -79,27 +79,46 @@ public class FestivalService implements PostService {
     return postCardDto;
   }
 
-  // 종료된 축제 리스트 조회
+  /**
+   * 종료된 축제 썸네일 리스트 조회
+   *
+   * @param memberInfoDto  유저 정보
+   * @param page           page number
+   * @param size           page size
+   * @param addressFilters 주소 필터
+   * @return 지역필터 적용된 종료된 축제 리스트
+   */
   public FestivalResponse.PreviewPageDto getPastFestivalList(MemberInfoDto memberInfoDto, int page,
       int size,
-      List<String> addressFilterList) {
+      List<String> addressFilters) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.findAllFestivalCompositDtoOrderByEndDate(
-        memberInfoDto.getLanguage(), pageable, false, addressFilterList);
+        memberInfoDto.getLanguage(), pageable, false, addressFilters);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
+    return getFestivalPreviewPagetDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
         favoriteIds);
   }
 
-  // 이번 달 축제 리스트 조회
+  /**
+   * 이번 달 축제 리스트 조회
+   *
+   * @param memberInfoDto  유저 정보
+   * @param page           page number
+   * @param size           page size
+   * @param addressFilters 주소 필터
+   * @param startDate      축제 시작일
+   * @param endDate        축제 종료일
+   * @return 지역필터 적용된 그 달에 진행되는 축제 리스트
+   */
+  //
   public FestivalResponse.PreviewPageDto getThisMonthFestivalList(MemberInfoDto memberInfoDto,
       int page,
-      int size, List<String> addressFilterList, LocalDate startDate, LocalDate endDate) {
+      int size, List<String> addressFilters, LocalDate startDate, LocalDate endDate) {
     Pageable pageable = PageRequest.of(page, size);
     if (startDate == null && endDate == null) {
       // 오늘 날짜 가져오기
@@ -113,16 +132,24 @@ public class FestivalService implements PostService {
     }
     // compositeDto로 기간에 맞는 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtos = festivalRepository.findAllFestivalCompositeDtoByEndDate(
-        memberInfoDto.getLanguage(), pageable, startDate, endDate, addressFilterList);
+        memberInfoDto.getLanguage(), pageable, startDate, endDate, addressFilters);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
+    return getFestivalPreviewPagetDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
         favoriteIds);
   }
 
-  // 계절별 축제 리스트 조회
+  /**
+   * 계절별 축제 리스트 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param page          page number
+   * @param size          page size
+   * @param season        계절
+   * @return 계절필터 적용된 축제 리스트
+   */
   public FestivalResponse.PreviewPageDto getSeasonFestivalList(MemberInfoDto memberInfoDto,
       int page, int size,
       String season) {
@@ -138,12 +165,18 @@ public class FestivalService implements PostService {
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
+    return getFestivalPreviewPagetDtoByCompositeDto(memberInfoDto, festivalCompositeDtos,
         favoriteIds);
 
   }
 
-  // 축제 상세 정보 조회
+  /**
+   * 축제 상세 정보 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param postId        축제 게시물 id
+   * @param isSearch      검색을 통한 접근인지 체크
+   */
   public FestivalResponse.DetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
     FestivalCompositeDto festivalCompositeDto = festivalRepository.findFestivalCompositeDto(postId,
@@ -181,7 +214,9 @@ public class FestivalService implements PostService {
 
   }
 
-  // 매일 00시마다 종료된 축제 상태 업데이트
+  /**
+   * 매일 00시마다 종료된 축제 상태 업데이트
+   */
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   protected void updateOnGoingToFalse() {
@@ -193,7 +228,9 @@ public class FestivalService implements PostService {
     }
   }
 
-  // 매년 2년이 지난 축제는 INACTIVE 처리
+  /**
+   * 매년 2년이 지난 축제는 INACTIVE 처리
+   */
   @Transactional
   @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
   protected void updateActiveToInActive() {
@@ -205,8 +242,16 @@ public class FestivalService implements PostService {
     }
   }
 
+  /**
+   * FestivalPreviewPageDto 생성
+   *
+   * @param memberInfoDto
+   * @param festivalCompositeDtos
+   * @param favoriteIds
+   * @return
+   */
   // FestivalThumbnailDto 생성
-  private FestivalResponse.PreviewPageDto getFestivalThumbnailDtoByCompositeDto(
+  private FestivalResponse.PreviewPageDto getFestivalPreviewPagetDtoByCompositeDto(
       MemberInfoDto memberInfoDto, Page<FestivalCompositeDto> festivalCompositeDtos,
       List<Long> favoriteIds) {
     List<FestivalResponse.PreviewDto> previewDtos = new ArrayList<>();
@@ -233,7 +278,14 @@ public class FestivalService implements PostService {
         .build();
   }
 
-  // 2024.04.01(월) ~ 2024.05.13(화) 형태로 formatting
+  /**
+   * 2024.04.01(월) ~ 2024.05.13(화) 형태로 formatting
+   *
+   * @param memberInfoDto
+   * @param startDate
+   * @param endDate
+   * @return
+   */
   private String formatLocalDateToStringWithDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
     String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
@@ -250,7 +302,14 @@ public class FestivalService implements PostService {
         + ")";
   }
 
-  // 24.04.01 ~ 24.05.13 형태로 formatting
+  /**
+   * 24.04.01 ~ 24.05.13 형태로 formatting
+   *
+   * @param memberInfoDto
+   * @param startDate
+   * @param endDate
+   * @return
+   */
   private String formatLocalDateToStringWithoutDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
 
@@ -278,7 +337,14 @@ public class FestivalService implements PostService {
     };
   }
 
-  // 요일을 DayOfWeek 타입으로 변환
+  /**
+   * 요일을 DayOfWeek 타입으로 변환. LocalDate.getDayOfWeek() -> 월(1), 화(2), 수(3),,,, 커스텀한 DayOfWeek은 [0] =
+   * 월, [1] = 화 이므로 -1
+   *
+   * @param date
+   * @return
+   */
+
   private DayOfWeek getIntDayOfWeek(LocalDate date) {
     /*
       getDayOfWeek().getValue()는 월요일이 1부터 시작,
@@ -287,8 +353,14 @@ public class FestivalService implements PostService {
     return DayOfWeek.values()[date.getDayOfWeek().getValue() - 1];
   }
 
-  // 요일을 언어별 값으로 변환
-  public String getDayOfWeekByLocale(Language locale, LocalDate date) {
+  /**
+   * 요일을 언어별 값으로 변환
+   *
+   * @param locale
+   * @param date
+   * @return
+   */
+  private String getDayOfWeekByLocale(Language locale, LocalDate date) {
     return getIntDayOfWeek(date).getValueByLocale(locale);
   }
 }

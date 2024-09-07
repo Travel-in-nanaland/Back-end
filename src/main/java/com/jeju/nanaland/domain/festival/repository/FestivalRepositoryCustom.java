@@ -17,7 +17,7 @@ public interface FestivalRepositoryCustom {
 
   Page<FestivalCompositeDto> findAllFestivalCompositDtoOrderByEndDate(Language locale,
       Pageable pageable,
-      boolean onGoing, List<String> addressFilterList);
+      boolean onGoing, List<String> addressFilters);
 
   Page<FestivalCompositeDto> findAllFestivalCompositeDtoOrderByEndDate(Language locale,
       Pageable pageable,
@@ -25,7 +25,7 @@ public interface FestivalRepositoryCustom {
 
   Page<FestivalCompositeDto> findAllFestivalCompositeDtoByEndDate(Language locale,
       Pageable pageable,
-      LocalDate startDate, LocalDate endDate, List<String> addressFilterList);
+      LocalDate startDate, LocalDate endDate, List<String> addressFilters);
 
   PostCardDto findPostCardDto(Long postId, Language language);
 }

@@ -67,10 +67,10 @@ public class FestivalController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
-      @RequestParam(defaultValue = "") List<String> addressFilterList) {
+      @RequestParam(defaultValue = "") List<String> addressFilters) {
 
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getPastFestivalList(memberInfoDto, page, size, addressFilterList));
+        festivalService.getPastFestivalList(memberInfoDto, page, size, addressFilters));
   }
 
   @Operation(summary = "계절별 축제 리스트 조회", description = "계절별 축제 리스트 조회 (페이징)")
