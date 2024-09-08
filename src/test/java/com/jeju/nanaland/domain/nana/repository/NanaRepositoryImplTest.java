@@ -192,12 +192,12 @@ class NanaRepositoryImplTest {
 
   @Test
   @DisplayName("나나's pick 베너 조회 시 최근에 추가된 4개의 나나가 나온다.")
-  void findRecentNanaThumbnailDto() {
+  void findTop4RecentPreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    List<PreviewDto> recentPreviewDtoDto = nanaRepositoryImpl.findRecentNanaThumbnailDto(
+    List<PreviewDto> recentPreviewDtoDto = nanaRepositoryImpl.findTop4RecentPreviewDtoOrderByCreatedAt(
         Language.KOREAN);
 
     // Then
@@ -207,12 +207,12 @@ class NanaRepositoryImplTest {
 
   @Test
   @DisplayName("나나's pick 전체 리스트 조회 시 최신순으로 보여진다.")
-  void findAllNanaThumbnailDto() {
+  void findAllPreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    Page<PreviewDto> allNanaThumbnailDto = nanaRepositoryImpl.findAllNanaThumbnailDto(
+    Page<PreviewDto> allNanaThumbnailDto = nanaRepositoryImpl.findAllPreviewDtoOrderByCreatedAt(
         Language.KOREAN,
         PageRequest.of(0, 12));
     List<PreviewDto> result = allNanaThumbnailDto.getContent();

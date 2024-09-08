@@ -11,13 +11,13 @@ import org.springframework.data.domain.Pageable;
 public interface NanaRepositoryCustom {
 
   //메인 페이지에서 슬라이드되는 Nana's pick 찾기
-  List<PreviewDto> findRecentNanaThumbnailDto(Language locale);
+  List<PreviewDto> findTop4RecentPreviewDtoOrderByCreatedAt(Language locale);
 
   //나나 pick 썸네일 페이징 조회
-  Page<PreviewDto> findAllNanaThumbnailDto(Language locale, Pageable pageable);
+  Page<PreviewDto> findAllPreviewDtoOrderByCreatedAt(Language locale, Pageable pageable);
 
   //나나 pick 추천 게시물 4개 modifiedAt으로 최신순 4개
-  List<PreviewDto> findRecommendNanaThumbnailDto(Language locale);
+  List<PreviewDto> findRecommendPreviewDto(Language locale);
 
   Page<PreviewDto> searchNanaThumbnailDtoByKeyword(String keyword, Language locale,
       Pageable pageable);

@@ -30,7 +30,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   //최신순으로 4
   @Override
-  public List<PreviewDto> findRecentNanaThumbnailDto(Language language) {
+  public List<PreviewDto> findTop4RecentPreviewDtoOrderByCreatedAt(Language language) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
             nana.id,
             imageFile.originUrl,
@@ -51,7 +51,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   // 모든 Nana 썸네일 가져오기
   @Override
-  public Page<PreviewDto> findAllNanaThumbnailDto(Language language,
+  public Page<PreviewDto> findAllPreviewDtoOrderByCreatedAt(Language language,
       Pageable pageable) {
     List<PreviewDto> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
             nana.id,
@@ -82,7 +82,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   @Override
-  public List<PreviewDto> findRecommendNanaThumbnailDto(Language language) {
+  public List<PreviewDto> findRecommendPreviewDto(Language language) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
             nana.id,
             imageFile.originUrl,

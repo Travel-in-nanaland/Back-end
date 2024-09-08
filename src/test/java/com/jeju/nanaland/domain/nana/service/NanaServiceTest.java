@@ -154,7 +154,7 @@ public class NanaServiceTest {
     Page<PreviewDto> nanaThumbnails = new PageImpl<>(previewDtoList, pageable,
         previewDtoList.size());
 
-    when(nanaRepository.findAllNanaThumbnailDto(language, pageable)).thenReturn(
+    when(nanaRepository.findAllPreviewDtoOrderByCreatedAt(language, pageable)).thenReturn(
         nanaThumbnails);
 
     // When
