@@ -30,7 +30,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   //최신순으로 4
   @Override
-  public List<PreviewDto> findTop4RecentPreviewDtoOrderByCreatedAt(Language language) {
+  public List<PreviewDto> findTop4PreviewDtoOrderByCreatedAt(Language language) {
     return queryFactory.select(new QNanaResponse_NanaThumbnail(
             nana.id,
             imageFile.originUrl,

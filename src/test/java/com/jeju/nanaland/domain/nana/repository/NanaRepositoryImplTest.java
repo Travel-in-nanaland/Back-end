@@ -192,12 +192,12 @@ class NanaRepositoryImplTest {
 
   @Test
   @DisplayName("나나's pick 베너 조회 시 최근에 추가된 4개의 나나가 나온다.")
-  void findTop4RecentPreviewDtoOrderByCreatedAt() {
+  void findTop4PreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    List<PreviewDto> recentPreviewDtoDto = nanaRepositoryImpl.findTop4RecentPreviewDtoOrderByCreatedAt(
+    List<PreviewDto> recentPreviewDtoDto = nanaRepositoryImpl.findTop4PreviewDtoOrderByCreatedAt(
         Language.KOREAN);
 
     // Then

@@ -92,7 +92,7 @@ public class NanaService implements PostService {
 
   // 메인페이지에 보여지는 4개의 nana
   public List<NanaResponse.PreviewDto> getMainNanaThumbnails(Language locale) {
-    return nanaRepository.findTop4RecentPreviewDtoOrderByCreatedAt(locale);
+    return nanaRepository.findTop4PreviewDtoOrderByCreatedAt(locale);
   }
 
   // 나나's pick 금주 추천 게시글 4개 (modifiedAt 으로 최신순 4개)

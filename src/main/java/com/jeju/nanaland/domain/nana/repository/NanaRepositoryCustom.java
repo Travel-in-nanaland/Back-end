@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 public interface NanaRepositoryCustom {
 
   //메인 페이지에서 슬라이드되는 Nana's pick 찾기
-  List<PreviewDto> findTop4RecentPreviewDtoOrderByCreatedAt(Language locale);
+  List<PreviewDto> findTop4PreviewDtoOrderByCreatedAt(Language locale);
 
   //나나 pick 썸네일 페이징 조회
   Page<PreviewDto> findAllPreviewDtoOrderByCreatedAt(Language locale, Pageable pageable);
