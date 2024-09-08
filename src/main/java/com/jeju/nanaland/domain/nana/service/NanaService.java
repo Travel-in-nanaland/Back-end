@@ -20,8 +20,6 @@ import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.hashtag.service.HashtagService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
 import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
@@ -103,37 +101,37 @@ public class NanaService implements PostService {
   }
 
   // 메인페이지에 보여지는 4개의 nana
-  public List<NanaThumbnail> getMainNanaThumbnails(Language locale) {
+  public List<NanaResponse.PreviewDto> getMainNanaThumbnails(Language locale) {
     return nanaRepository.findRecentNanaThumbnailDto(locale);
   }
 
   // 나나's pick 금주 추천 게시글 4개 (modifiedAt 으로 최신순 4개)
-  public List<NanaThumbnail> getRecommendNanaThumbnails(Language locale) {
-    List<NanaThumbnail> recommendNanaThumbnailDto = nanaRepository.findRecommendNanaThumbnailDto(
+  public List<NanaResponse.PreviewDto> getRecommendNanaThumbnails(Language locale) {
+    List<NanaResponse.PreviewDto> recommendPreviewDtoDto = nanaRepository.findRecommendNanaThumbnailDto(
         locale);
-    markNewestThumbnails(recommendNanaThumbnailDto);
-    return recommendNanaThumbnailDto;
+    markNewestThumbnails(recommendPreviewDtoDto);
+    return recommendPreviewDtoDto;
   }
 
 
   // 나나's pick 썸네일 리스트 조회
-  public NanaThumbnailDto getNanaThumbnails(Language locale, int page, int size) {
+  public NanaResponse.PreviewPageDto getNanaThumbnails(Language locale, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
-    Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
+    Page<NanaResponse.PreviewDto> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
         pageable);
-    List<NanaThumbnail> resultDtoContent = resultDto.getContent();
+    List<NanaResponse.PreviewDto> resultDtoContent = resultDto.getContent();
 
     // new 태그 붙일지 말지 결정
     markNewestThumbnails(resultDtoContent);
 
-    return NanaThumbnailDto.builder()
+    return NanaResponse.PreviewPageDto.builder()
         .totalElements(resultDto.getTotalElements())
         .data(resultDtoContent)
         .build();
   }
 
   //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long postId,
+  public NanaResponse.DetailPageDto getNanaDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
@@ -190,7 +188,7 @@ public class NanaService implements PostService {
     boolean isPostInFavorite = memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(),
         NANA, nanaTitle.getNana().getId());
 
-    List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
+    List<NanaResponse.ContentDetailDto> contentDetailDtos = new ArrayList<>();
     int nanaContentImageIdx = 0;
     for (NanaContent nanaContent : nanaContentList) {
 
@@ -200,8 +198,8 @@ public class NanaService implements PostService {
       // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
       List<String> stringKeywordList = getStringKeywordListFromHashtagList(hashtagList);
 
-      nanaDetails.add(
-          NanaResponse.NanaDetail.builder()
+      contentDetailDtos.add(
+          NanaResponse.ContentDetailDto.builder()
               .number(nanaContent.getPriority().intValue())
               .subTitle(nanaContent.getSubTitle())
               .title(nanaContent.getTitle())
@@ -215,7 +213,7 @@ public class NanaService implements PostService {
       nanaContentImageIdx++;
     }
 
-    return NanaResponse.NanaDetailDto.builder()
+    return NanaResponse.DetailPageDto.builder()
         .id(nana.getId())
         .firstImage(new ImageFileDto(nana.getFirstImageFile().getOriginUrl(),
             nana.getFirstImageFile().getThumbnailUrl()))
@@ -223,7 +221,7 @@ public class NanaService implements PostService {
         .heading(nanaTitle.getHeading())
         .version(nana.getVersion())
         .notice(nanaTitle.getNotice())
-        .nanaDetails(nanaDetails)
+        .contentDetailDtos(contentDetailDtos)
         .isFavorite(isPostInFavorite)
         .build();
 
@@ -444,9 +442,9 @@ public class NanaService implements PostService {
 
   // new 태그 붙일지 말지 결정
   // 가장 최신 게시물에 new
-  private void markNewestThumbnails(List<NanaThumbnail> thumbnails) {
+  private void markNewestThumbnails(List<NanaResponse.PreviewDto> thumbnails) {
     thumbnails.stream()
-        .max(Comparator.comparing(NanaThumbnail::getCreatedAt))
+        .max(Comparator.comparing(NanaResponse.PreviewDto::getCreatedAt))
         .ifPresent(thumbnail -> thumbnail.setNewest(true));
   }
 }

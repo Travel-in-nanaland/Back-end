@@ -19,8 +19,8 @@ import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
@@ -241,13 +241,13 @@ public class SearchService {
     Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
+    Page<PreviewDto> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
         keyword, locale, pageable);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (NanaThumbnail thumbnail : resultPage) {
+    for (PreviewDto thumbnail : resultPage) {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(thumbnail.getId())

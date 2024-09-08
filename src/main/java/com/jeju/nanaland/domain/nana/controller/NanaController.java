@@ -1,9 +1,9 @@
 package com.jeju.nanaland.domain.nana.controller;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.DetailPageDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewPageDto;
 import com.jeju.nanaland.domain.nana.service.NanaService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -40,7 +40,7 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping
-  public BaseResponse<List<NanaResponse.NanaThumbnail>> getMainNanaThumbnails(
+  public BaseResponse<List<PreviewDto>> getMainNanaThumbnails(
       @AuthMember MemberInfoDto memberInfoDto) {
     return BaseResponse.success(SuccessCode.NANA_MAIN_SUCCESS,
         nanaService.getMainNanaThumbnails(memberInfoDto.getLanguage()));
@@ -54,7 +54,7 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommend")
-  public BaseResponse<List<NanaResponse.NanaThumbnail>> getRecommendNanaThumbnails(
+  public BaseResponse<List<PreviewDto>> getRecommendNanaThumbnails(
       @AuthMember MemberInfoDto memberInfoDto) {
     return BaseResponse.success(SuccessCode.NANA_RECOMMEND_LIST_SUCCESS,
         nanaService.getRecommendNanaThumbnails(memberInfoDto.getLanguage()));
@@ -68,7 +68,7 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<NanaThumbnailDto> getNanaThumbnails(@AuthMember MemberInfoDto memberInfoDto,
+  public BaseResponse<PreviewPageDto> getNanaThumbnails(@AuthMember MemberInfoDto memberInfoDto,
       int page,
       int size) {
     return BaseResponse.success(SuccessCode.NANA_LIST_SUCCESS,
@@ -83,7 +83,7 @@ public class NanaController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<NanaDetailDto> getNanaDetail(@AuthMember MemberInfoDto memberInfoDto,
+  public BaseResponse<DetailPageDto> getNanaDetail(@AuthMember MemberInfoDto memberInfoDto,
       @PathVariable(name = "id") Long id, @RequestParam(defaultValue = "false") boolean isSearch) {
     return BaseResponse.success(SuccessCode.NANA_DETAIL_SUCCESS,
         nanaService.getNanaDetail(memberInfoDto, id, isSearch));

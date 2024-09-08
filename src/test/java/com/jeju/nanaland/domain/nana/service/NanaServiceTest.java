@@ -18,10 +18,10 @@ import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetail;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaDetailDto;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.ContentDetailDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.DetailPageDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewPageDto;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
@@ -126,8 +126,8 @@ public class NanaServiceTest {
 
     Pageable pageable = PageRequest.of(0, 10); // 0번 페이지, 페이지 크기 10
     LocalDateTime now = LocalDateTime.now();
-    List<NanaThumbnail> nanaThumbnailList = List.of(
-        NanaThumbnail.builder()
+    List<PreviewDto> previewDtoList = List.of(
+        PreviewDto.builder()
             .firstImage(new ImageFileDto(nana1.getFirstImageFile().getOriginUrl(),
                 nana1.getFirstImageFile().getThumbnailUrl()))
             .subHeading(nanaTitle1.getSubHeading())
@@ -135,7 +135,7 @@ public class NanaServiceTest {
             .version(nana1.getVersion())
             .createdAt(now.plusDays(1))
             .build(),
-        NanaThumbnail.builder()
+        PreviewDto.builder()
             .firstImage(new ImageFileDto(nana2.getFirstImageFile().getOriginUrl(),
                 nana2.getFirstImageFile().getThumbnailUrl()))
             .subHeading(nanaTitle2.getSubHeading())
@@ -143,7 +143,7 @@ public class NanaServiceTest {
             .version(nana2.getVersion())
             .createdAt(now.plusDays(2))
             .build(),
-        NanaThumbnail.builder()
+        PreviewDto.builder()
             .firstImage(new ImageFileDto(nana3.getFirstImageFile().getOriginUrl(),
                 nana3.getFirstImageFile().getThumbnailUrl()))
             .subHeading(nanaTitle3.getSubHeading())
@@ -151,14 +151,14 @@ public class NanaServiceTest {
             .version(nana3.getVersion())
             .createdAt(now.plusDays(3))
             .build());
-    Page<NanaThumbnail> nanaThumbnails = new PageImpl<>(nanaThumbnailList, pageable,
-        nanaThumbnailList.size());
+    Page<PreviewDto> nanaThumbnails = new PageImpl<>(previewDtoList, pageable,
+        previewDtoList.size());
 
     when(nanaRepository.findAllNanaThumbnailDto(language, pageable)).thenReturn(
         nanaThumbnails);
 
     // When
-    NanaThumbnailDto nanaThumbnails1 = nanaService.getNanaThumbnails(Language.KOREAN, 0, 10);
+    PreviewPageDto nanaThumbnails1 = nanaService.getNanaThumbnails(Language.KOREAN, 0, 10);
 
     // Then
     Assertions.assertThat(nanaThumbnails1.getTotalElements()).isEqualTo(3L);
@@ -192,12 +192,12 @@ public class NanaServiceTest {
         nanaTitle.getNana().getId())).thenReturn(true);
 
     // When
-    NanaDetailDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
-    List<NanaDetail> nanaDetails = nanaDetail.getNanaDetails();
+    DetailPageDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
+    List<ContentDetailDto> contentDetailDtos = nanaDetail.getContentDetailDtos();
 
     // Then
-    int[] numberList = {nanaDetails.get(0).number, nanaDetails.get(1).number,
-        nanaDetails.get(2).number};
+    int[] numberList = {contentDetailDtos.get(0).number, contentDetailDtos.get(1).number,
+        contentDetailDtos.get(2).number};
     Assertions.assertThat(numberList).containsSequence(1, 2, 3);
   }
 
