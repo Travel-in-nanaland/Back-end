@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
 @Slf4j
 @RestController
@@ -43,7 +42,7 @@ public class NanaController {
   public BaseResponse<List<PreviewDto>> getMainNanaThumbnails(
       @AuthMember MemberInfoDto memberInfoDto) {
     return BaseResponse.success(SuccessCode.NANA_MAIN_SUCCESS,
-        nanaService.getMainNanaThumbnails(memberInfoDto.getLanguage()));
+        nanaService.getMainPageNanaThumbnails(memberInfoDto.getLanguage()));
   }
 
   @Operation(
@@ -89,12 +88,12 @@ public class NanaController {
         nanaService.getNanaDetail(memberInfoDto, id, isSearch));
   }
 
-  @GetMapping("/upload")
-  public ModelAndView getExistNanaListInfo() {
-    ModelAndView modelAndView = new ModelAndView("upload-nana.html");
-    modelAndView.addObject("nanaInfo", nanaService.getExistNanaListInfo());
-    return modelAndView;
-  }
+//  @GetMapping("/upload")
+//  public ModelAndView getExistNanaListInfo() {
+//    ModelAndView modelAndView = new ModelAndView("upload-nana.html");
+//    modelAndView.addObject("nanaInfo", nanaService.getExistNanaListInfo());
+//    return modelAndView;
+//  }
 
 //  @PostMapping("/upload")
 //  public ModelAndView createNanaPick(@ModelAttribute NanaRequest.NanaUploadDto nanaUploadDto,
