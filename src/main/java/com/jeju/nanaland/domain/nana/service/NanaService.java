@@ -257,7 +257,8 @@ public class NanaService implements PostService {
     // 순서 보장 위해 List 형으로 바꾸고 생성 순서로 정렬
     if (eachInfoList != null) {
       List<NanaAdditionalInfo> nanaAdditionalInfos = new ArrayList<>(eachInfoList);
-      nanaAdditionalInfos.sort(Comparator.comparing(NanaAdditionalInfo::getCreatedAt));
+      // NanaAdditionalInfo에 작성된 순으로 정렬
+      nanaAdditionalInfos.sort(Comparator.comparing(info -> info.getInfoType().ordinal()));
 
       //DTO 형태로 변환
       for (NanaAdditionalInfo info : nanaAdditionalInfos) {
