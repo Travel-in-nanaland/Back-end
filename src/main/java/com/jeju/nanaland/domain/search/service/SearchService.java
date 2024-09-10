@@ -372,7 +372,7 @@ public class SearchService {
               getSearchVolumeDto(memberInfoDto, categoryContent, festivalCompositeDto));
         }
         case NATURE -> {
-          CompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
+          CompositeDto natureCompositeDto = natureRepository.findNatureCompositeDto(postId,
               memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(

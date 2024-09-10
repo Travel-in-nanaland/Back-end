@@ -69,32 +69,50 @@ public class NatureService implements PostService {
     return postCardDto;
   }
 
-  // 7대 자연 리스트 조회
-  public NatureResponse.PreviewPageDto getNatureList(MemberInfoDto memberInfoDto,
-      List<String> addressFilterList, String keyword, int page, int size) {
+  /**
+   * 7대 자연 프리뷰 리스트 조회
+   *
+   * @param memberInfoDto  회원 정보
+   * @param addressFilters 지역명
+   * @param keyword        키워드
+   * @param page           페이지 Number
+   * @param size           페이지 Size
+   * @return 7대 자연 프리뷰 리스트
+   */
+  public NatureResponse.PreviewPageDto getNaturePreview(MemberInfoDto memberInfoDto,
+      List<String> addressFilters, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureResponse.PreviewDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
-        memberInfoDto.getLanguage(), addressFilterList, keyword, pageable);
+    Page<NatureResponse.PreviewDto> naturePreviewDto = natureRepository.findAllNaturePreviewDtoOrderByCreatedAt(
+        memberInfoDto.getLanguage(), addressFilters, keyword, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    List<NatureResponse.PreviewDto> data = natureCompositeDtoPage.getContent();
+    List<NatureResponse.PreviewDto> data = naturePreviewDto.getContent();
     for (NatureResponse.PreviewDto natureThumbnail : data) {
       natureThumbnail.setFavorite(favoriteIds.contains(natureThumbnail.getId()));
     }
 
     return NatureResponse.PreviewPageDto.builder()
-        .totalElements(natureCompositeDtoPage.getTotalElements())
+        .totalElements(naturePreviewDto.getTotalElements())
         .data(data)
         .build();
   }
 
-  // 7대 자연 상세 정보 조회
-  public NatureResponse.DetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
-    NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
+  /**
+   * 7대 자연 상세 정보 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param natureId      7대 자연 ID
+   * @param isSearch      검색 여부
+   * @return 7대 자연 상세 정보
+   * @throws NotFoundException 존재하는 7대 자연이 없는 경우
+   */
+  public NatureResponse.DetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long natureId,
+      boolean isSearch) {
+    NatureCompositeDto natureCompositeDto = natureRepository.findNatureCompositeDto(natureId,
         memberInfoDto.getLanguage());
 
     if (natureCompositeDto == null) {
@@ -103,12 +121,12 @@ public class NatureService implements PostService {
 
     // 검색을 통해 요청되었다면 count
     if (isSearch) {
-      searchService.updateSearchVolumeV1(NATURE, id);
+      searchService.updateSearchVolumeV1(NATURE, natureId);
     }
 
     // 좋아요 여부 확인
     boolean isFavorite =
-        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, id);
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, natureId);
 
     return NatureResponse.DetailDto.builder()
         .id(natureCompositeDto.getId())
@@ -123,7 +141,7 @@ public class NatureService implements PostService {
         .details(natureCompositeDto.getDetails())
         .amenity(natureCompositeDto.getAmenity())
         .isFavorite(isFavorite)
-        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(natureId,
             natureCompositeDto.getFirstImage()))
         .build();
   }

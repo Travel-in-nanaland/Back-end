@@ -39,13 +39,13 @@ public class NatureController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<NatureResponse.PreviewPageDto> getNatureList(
+  public BaseResponse<NatureResponse.PreviewPageDto> getNaturePreview(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "") List<String> addressFilterList,
       @RequestParam(defaultValue = "") String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
-    NatureResponse.PreviewPageDto data = natureService.getNatureList(memberInfoDto,
+    NatureResponse.PreviewPageDto data = natureService.getNaturePreview(memberInfoDto,
         addressFilterList, keyword, page, size);
     return BaseResponse.success(NATURE_LIST_SUCCESS, data);
   }

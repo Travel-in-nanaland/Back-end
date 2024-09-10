@@ -10,12 +10,12 @@ import org.springframework.data.domain.Pageable;
 
 public interface NatureRepositoryCustom {
 
-  NatureCompositeDto findCompositeDtoById(Long id, Language locale);
+  NatureCompositeDto findNatureCompositeDto(Long id, Language locale);
 
   Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Language locale,
       Pageable pageable);
 
-  Page<PreviewDto> findNatureThumbnails(Language locale, List<String> addressFilterList,
+  Page<PreviewDto> findAllNaturePreviewDtoOrderByCreatedAt(Language locale, List<String> addressFilterList,
       String keyword, Pageable pageable);
 
   PostCardDto findPostCardDto(Long postId, Language language);

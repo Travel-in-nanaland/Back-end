@@ -153,9 +153,9 @@ class NatureServiceTest {
   }
 
   private Page<NatureResponse.PreviewDto> createNatureThumbnailList() {
-    List<NatureResponse.PreviewDto> natureThumbnails = new ArrayList<>();
+    List<NatureResponse.PreviewDto> naturePreviewDtos = new ArrayList<>();
     for (int i = 1; i < 3; i++) {
-      natureThumbnails.add(
+      naturePreviewDtos.add(
           NatureResponse.PreviewDto.builder()
               .id((long) i)
               .title("nature title " + i)
@@ -163,7 +163,7 @@ class NatureServiceTest {
               .build());
     }
 
-    return new PageImpl<>(natureThumbnails, PageRequest.of(0, 2), 10);
+    return new PageImpl<>(naturePreviewDtos, PageRequest.of(0, 2), 10);
   }
 
   private NatureCompositeDto createNatureCompositeDto() {
@@ -177,15 +177,15 @@ class NatureServiceTest {
   @DisplayName("7대 자연 썸네일 리스트 조회 성공")
   void getNatureListSuccess() {
     // given
-    Page<NatureResponse.PreviewDto> natureThumbnailList = createNatureThumbnailList();
+    Page<NatureResponse.PreviewDto> naturePreviewDtos = createNatureThumbnailList();
 
-    doReturn(natureThumbnailList).when(natureRepository)
-        .findNatureThumbnails(any(Language.class), anyList(), any(), any());
+    doReturn(naturePreviewDtos).when(natureRepository)
+        .findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(), any());
     doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
-    NatureResponse.PreviewPageDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
+    NatureResponse.PreviewPageDto result = natureService.getNaturePreview(memberInfoDto, new ArrayList<>(), null,
         0, 2);
 
     // then
@@ -193,7 +193,7 @@ class NatureServiceTest {
     assertThat(result.getData()).hasSize(2);
     assertThat(result.getData().get(0).getTitle()).isEqualTo("nature title 1");
 
-    verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
+    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(),
         any());
     verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
@@ -205,23 +205,23 @@ class NatureServiceTest {
     // given
     int pageNumber = 0;
     int pageSize = 2;
-    Page<NatureResponse.PreviewDto> emptyNatureThumbnailList = new PageImpl<>(new ArrayList<>(),
+    Page<NatureResponse.PreviewDto> naturePreviewDtos = new PageImpl<>(new ArrayList<>(),
         PageRequest.of(pageNumber, pageSize), 0);
 
-    doReturn(emptyNatureThumbnailList).when(natureRepository)
-        .findNatureThumbnails(any(Language.class), anyList(), any(), any());
+    doReturn(naturePreviewDtos).when(natureRepository)
+        .findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(), any());
     doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
-    NatureResponse.PreviewPageDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
+    NatureResponse.PreviewPageDto result = natureService.getNaturePreview(memberInfoDto, new ArrayList<>(), null,
         pageNumber, pageSize);
 
     // then
     assertThat(result.getTotalElements()).isZero();
     assertThat(result.getData()).isEmpty();
 
-    verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
+    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(),
         any());
     verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
@@ -231,16 +231,16 @@ class NatureServiceTest {
   @DisplayName("7대 자연 썸네일 리스트 조회 성공 - 좋아요 여부 확인")
   void getNatureListSuccessWithFavorites() {
     // given
-    Page<NatureResponse.PreviewDto> natureThumbnailList = createNatureThumbnailList();
+    Page<NatureResponse.PreviewDto> naturePreviewDtos = createNatureThumbnailList();
     List<Long> favoriteIds = List.of(1L);
 
-    doReturn(natureThumbnailList).when(natureRepository)
-        .findNatureThumbnails(any(Language.class), anyList(), any(), any());
+    doReturn(naturePreviewDtos).when(natureRepository)
+        .findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(), any());
     doReturn(favoriteIds).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
-    NatureResponse.PreviewPageDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
+    NatureResponse.PreviewPageDto result = natureService.getNaturePreview(memberInfoDto, new ArrayList<>(), null,
         0, 2);
 
     // then
@@ -249,7 +249,7 @@ class NatureServiceTest {
     assertThat(result.getData().get(0).isFavorite()).isTrue();
     assertThat(result.getData().get(1).isFavorite()).isFalse();
 
-    verify(natureRepository, times(1)).findNatureThumbnails(any(Language.class), anyList(), any(),
+    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(),
         any());
     verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
@@ -259,7 +259,7 @@ class NatureServiceTest {
   @DisplayName("7대 자연 상세 조회 실패 - 해당 게시물이 존재하지 않는 경우")
   void getNatureDetailFail() {
     // given
-    doReturn(null).when(natureRepository).findCompositeDtoById(any(), any());
+    doReturn(null).when(natureRepository).findNatureCompositeDto(any(), any());
 
     // when
     NotFoundException notFoundException = assertThrows(NotFoundException.class,
@@ -269,7 +269,7 @@ class NatureServiceTest {
     assertThat(notFoundException.getMessage()).isEqualTo(
         ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
 
-    verify(natureRepository, times(1)).findCompositeDtoById(any(), any());
+    verify(natureRepository, times(1)).findNatureCompositeDto(any(), any());
   }
 
   @Test
@@ -283,7 +283,7 @@ class NatureServiceTest {
         new ImageFileDto("origin url 2", "thumbnail url 2")
     );
 
-    doReturn(natureCompositeDto).when(natureRepository).findCompositeDtoById(any(), any());
+    doReturn(natureCompositeDto).when(natureRepository).findNatureCompositeDto(any(), any());
     doReturn(true).when(memberFavoriteService).isPostInFavorite(any(), any(), any());
     doReturn(images).when(imageFileService)
         .getPostImageFilesByPostIdIncludeFirstImage(1L, natureCompositeDto.getFirstImage());
@@ -295,7 +295,7 @@ class NatureServiceTest {
     assertThat(natureDetail.getTitle()).isEqualTo("nature 1");
     assertThat(natureDetail.getImages()).hasSize(3);
 
-    verify(natureRepository, times(1)).findCompositeDtoById(any(), any());
+    verify(natureRepository, times(1)).findNatureCompositeDto(any(), any());
     verify(memberFavoriteService, times(1)).isPostInFavorite(any(), any(), any());
     verify(imageFileService, times(1)).getPostImageFilesByPostIdIncludeFirstImage(1L,
         natureCompositeDto.getFirstImage());
