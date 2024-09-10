@@ -13,7 +13,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.experience.entity.Experience;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
@@ -47,7 +47,7 @@ class MemberTypeServiceTest {
   RecommendRepository recommendRepository;
 
   @Mock
-  FavoriteService favoriteService;
+  MemberFavoriteService memberFavoriteService;
 
   @DisplayName("타입 수정 - NONE 타입이 아닐 때")
   @ParameterizedTest
@@ -84,7 +84,7 @@ class MemberTypeServiceTest {
     when(recommendRepository.findExperienceRecommendPostDto(null, locale, travelType))
         .thenReturn(RecommendPostDto.builder().build());
     when(
-        favoriteService.isPostInFavorite(eq(member), any(Category.class), eq(null)))
+        memberFavoriteService.isPostInFavorite(eq(member), any(Category.class), eq(null)))
         .thenReturn(true);
 
     // when
@@ -100,7 +100,7 @@ class MemberTypeServiceTest {
         .findNatureRecommendPostDto(null, locale, travelType);
     verify(recommendRepository, times(1))
         .findExperienceRecommendPostDto(null, locale, travelType);
-    verify(favoriteService, times(2))
+    verify(memberFavoriteService, times(2))
         .isPostInFavorite(eq(member), any(Category.class), eq(null));
   }
 
@@ -124,7 +124,7 @@ class MemberTypeServiceTest {
         any(TravelType.class)))
         .thenReturn(RecommendPostDto.builder().build());
     when(
-        favoriteService.isPostInFavorite(eq(member), any(Category.class), eq(null)))
+        memberFavoriteService.isPostInFavorite(eq(member), any(Category.class), eq(null)))
         .thenReturn(true);
 
     // when
@@ -140,7 +140,7 @@ class MemberTypeServiceTest {
         .findNatureRecommendPostDto(eq(null), eq(locale), any(TravelType.class));
     verify(recommendRepository, times(1))
         .findExperienceRecommendPostDto(eq(null), eq(locale), any(TravelType.class));
-    verify(favoriteService, times(2))
+    verify(memberFavoriteService, times(2))
         .isPostInFavorite(eq(member), any(Category.class), eq(null));
   }
 

@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageFileService {
 
+  @Value("${cloud.aws.s3.memberProfileDirectory}")
+  private String MEMBER_PROFILE_DIRECTORY;
   private final S3ImageService s3ImageService;
   private final ImageFileRepository imageFileRepository;
 
@@ -33,16 +36,6 @@ public class ImageFileService {
         .thumbnailUrl(s3ImageDto.getThumbnailUrl())
         .build();
     return imageFileRepository.save(imageFile);
-  }
-
-  public ImageFile uploadAndSaveImageFile(MultipartFile multipartFile, boolean autoThumbnail) {
-    try {
-      S3ImageDto s3ImageDto = s3ImageService.uploadOriginImageToS3(multipartFile, autoThumbnail);
-      return saveS3ImageFile(s3ImageDto);
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
-    }
   }
 
   // S3에 저장될 경로 지정
@@ -60,7 +53,7 @@ public class ImageFileService {
 
   public ImageFile getRandomProfileImageFile() {
     String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
-    S3ImageDto s3ImageDto = s3ImageService.getS3Urls(selectedProfile);
+    S3ImageDto s3ImageDto = s3ImageService.getS3Urls(selectedProfile, MEMBER_PROFILE_DIRECTORY);
     return saveS3ImageFile(s3ImageDto);
   }
 
@@ -72,12 +65,8 @@ public class ImageFileService {
     return images;
   }
 
-  public void deleteImageFileInS3ByImageFile(ImageFile imageFile) {
-    s3ImageService.deleteImageS3(imageFile);
-  }
-
-  public void deleteImageFileInS3ByOriginUrl(String originUrl) {
-    s3ImageService.deleteImageS3ByOriginUrl(originUrl);
+  public void deleteImageFileInS3ByImageFile(ImageFile imageFile, String directoryPath) {
+    s3ImageService.deleteImageS3(imageFile, directoryPath);
   }
 
 }

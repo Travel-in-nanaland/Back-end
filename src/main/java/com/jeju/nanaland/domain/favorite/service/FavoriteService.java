@@ -1,29 +1,19 @@
 package com.jeju.nanaland.domain.favorite.service;
 
-import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
-import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
-
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.dto.FavoritePostCardDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteThumbnailDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.ThumbnailDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
-import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
-import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.nana.repository.NanaRepository;
-import com.jeju.nanaland.domain.nature.repository.NatureRepository;
-import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
-import com.jeju.nanaland.global.exception.NotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,59 +28,87 @@ import org.springframework.transaction.annotation.Transactional;
 public class FavoriteService {
 
   private final FavoriteRepository favoriteRepository;
-  private final NanaRepository nanaRepository;
-  private final NatureRepository natureRepository;
-  private final ExperienceRepository experienceRepository;
-  private final FestivalRepository festivalRepository;
-  private final MarketRepository marketRepository;
-  private final RestaurantRepository restaurantRepository;
+  private final PostService postService;
 
-  // 전체 찜리스트 조회
-  public FavoriteThumbnailDto getAllFavoriteList(MemberInfoDto memberInfoDto, int page, int size) {
+  /**
+   * 모든 카테고리의 찜리스트 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 찜 목록 카드 정보 페이지
+   */
+  @Transactional(readOnly = true)
+  public FavoriteResponse.FavoriteCardPageDto getAllFavorites(MemberInfoDto memberInfoDto, int page,
+      int size) {
 
     Member member = memberInfoDto.getMember();
     Language language = memberInfoDto.getLanguage();
     Pageable pageable = PageRequest.of(page, size);
 
-    // Favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
-    Page<Favorite> favorites = favoriteRepository
-        .findAllByMemberAndStatusOrderByCreatedAtDesc(member, "ACTIVE", pageable);
-    List<ThumbnailDto> thumbnailDtoList = new ArrayList<>();
+    // favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
+    Page<Favorite> favorites =
+        favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, pageable);
 
-    // Favorite의 postId, 카테고리 정보를 통해 썸네일 정보 조회
-    for (Favorite favorite : favorites) {
-      Category category = favorite.getCategory();
-      Long postId = favorite.getPost().getId();
+    // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
+    List<FavoritePostCardDto> favoritePostCardDtos = favorites.stream()
+        .map(favorite -> {
+          Category category = favorite.getCategory();
+          Long postId = favorite.getPost().getId();
+          PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
+          return new FavoritePostCardDto(postCardDto);
+        })
+        .collect(Collectors.toList());
 
-      thumbnailDtoList.add(getThumbnailDto(member, postId, language, category));
-    }
-
-    return FavoriteThumbnailDto.builder()
+    return FavoriteResponse.FavoriteCardPageDto.builder()
         .totalElements(favorites.getTotalElements())
-        .data(thumbnailDtoList)
+        .data(favoritePostCardDtos)
         .build();
   }
 
-  // 카테고리별 찜리스트 조회
-  public FavoriteThumbnailDto getCategoryFavoriteList(MemberInfoDto memberInfoDto,
-      Category categoryContent, int page, int size) {
+  /**
+   * 카테고리별 찜리스트 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param category      게시물 카테고리
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 찜 목록 카드 정보 페이지
+   */
+  @Transactional(readOnly = true)
+  public FavoriteResponse.FavoriteCardPageDto getAllCategoryFavorites(MemberInfoDto memberInfoDto,
+      Category category, int page, int size) {
 
     Member member = memberInfoDto.getMember();
     Language language = memberInfoDto.getLanguage();
     Pageable pageable = PageRequest.of(page, size);
 
-    // 해당 카테고리의 찜리스트 조회
-    Page<ThumbnailDto> thumbnails = getThumbnailDtoPage(member, language, pageable,
-        categoryContent);
-    List<ThumbnailDto> thumbnailDtoList = thumbnails.getContent();
+    // favorite 테이블에서 해당 유저의 카테고리 찜리스트 페이지 조회
+    Page<Favorite> favoritePage =
+        favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, category, pageable);
 
-    return FavoriteThumbnailDto.builder()
-        .totalElements(thumbnails.getTotalElements())
-        .data(thumbnailDtoList)
+    // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
+    List<FavoritePostCardDto> favoritePostCardDtos = favoritePage.get()
+        .map(favorite -> {
+          Long postId = favorite.getPost().getId();
+          PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
+          return new FavoritePostCardDto(postCardDto);
+        })
+        .toList();
+
+    return FavoriteResponse.FavoriteCardPageDto.builder()
+        .totalElements(favoritePage.getTotalElements())
+        .data(favoritePostCardDtos)
         .build();
   }
 
-  // 좋아요 토글
+  /**
+   * 찜 등록, 취소 토글
+   *
+   * @param memberInfoDto 회원 정보
+   * @param likeToggleDto 찜 요청, 삭제 정보
+   * @return 찜 상태 정보
+   */
   @Transactional
   public FavoriteResponse.StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto,
       FavoriteRequest.LikeToggleDto likeToggleDto) {
@@ -124,13 +142,10 @@ public class FavoriteService {
     }
     // favorite 엔티티에 존재하지 않음: 처음 찜 목록에 추가하는 경우
     else {
-      // 해당 카테고리에 해당하는 id의 게시물이 없다면 NotFoundException
-      Post post = findPostIfExist(postId, category);
-
       Favorite favorite = Favorite.builder()
           .member(memberInfoDto.getMember())
           .category(category)
-          .post(post)
+          .post(postService.getPost(postId, category))
           .status("ACTIVE")
           .notificationCount(0)
           .build();
@@ -142,72 +157,5 @@ public class FavoriteService {
           .isFavorite(true)
           .build();
     }
-  }
-
-  // 해당 유저의 찜리스트에 있는 postId 리스트 반환
-  public List<Long> getFavoritePostIdsWithMember(Member member) {
-    List<Favorite> favorites = favoriteRepository.findAllByMemberAndStatus(member, "ACTIVE");
-    return favorites.stream().map(favorite -> favorite.getPost().getId()).toList();
-  }
-
-  // 좋아요 여부 조회
-  public boolean isPostInFavorite(Member member, Category category, Long id) {
-    Optional<Favorite> favoriteOptional = favoriteRepository
-        .findByMemberAndCategoryAndPostIdAndStatus(member, category, id, "ACTIVE");
-
-    return favoriteOptional.isPresent();
-  }
-
-  // 카테고리별 게시물 썸네일 정보 조회
-  public ThumbnailDto getThumbnailDto(Member member, Long postId, Language locale,
-      Category category) {
-    return switch (category) {
-      case NANA -> favoriteRepository.findNanaThumbnailByPostId(member, postId, locale);
-      case NATURE -> favoriteRepository.findNatureThumbnailByPostId(member, postId, locale);
-      case MARKET -> favoriteRepository.findMarketThumbnailByPostId(member, postId, locale);
-      case EXPERIENCE -> favoriteRepository.findExperienceThumbnailByPostId(member, postId, locale);
-      case FESTIVAL -> favoriteRepository.findFestivalThumbnailByPostId(member, postId, locale);
-      case RESTAURANT -> favoriteRepository.findRestaurantThumbnailByPostId(member, postId, locale);
-      default -> null;
-    };
-  }
-
-  // 카테고리별 게시물 썸네일 정보 조회 (페이징)
-  private Page<ThumbnailDto> getThumbnailDtoPage(Member member, Language locale, Pageable pageable,
-      Category categoryContent) {
-    return switch (categoryContent) {
-      case NANA -> favoriteRepository.findNanaThumbnails(member, locale, pageable);
-      case EXPERIENCE -> favoriteRepository.findExperienceThumbnails(member, locale, pageable);
-      case NATURE -> favoriteRepository.findNatureThumbnails(member, locale, pageable);
-      case MARKET -> favoriteRepository.findMarketThumbnails(member, locale, pageable);
-      case FESTIVAL -> favoriteRepository.findFestivalThumbnails(member, locale, pageable);
-      case RESTAURANT -> favoriteRepository.findRestaurantThumbnails(member, locale, pageable);
-      default -> throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage());
-    };
-  }
-
-  // 게시물 조회
-  private Post findPostIfExist(Long postId, Category category) {
-    return switch (category) {
-      case NANA -> nanaRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
-
-      case NATURE -> natureRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
-
-      case EXPERIENCE -> experienceRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
-
-      case MARKET -> marketRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
-
-      case FESTIVAL -> festivalRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
-
-      case RESTAURANT -> restaurantRepository.findById(postId)
-          .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage()));
-
-      default -> throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage());
-    };
   }
 }

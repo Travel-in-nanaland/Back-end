@@ -7,6 +7,8 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
@@ -136,6 +138,23 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             .and(natureTrans.title.contains(keyword)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public PostCardDto findPostCardDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostCardDto(
+            nature.id,
+            natureTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(nature)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(nature.id.eq(postId),
+            natureTrans.language.eq(language))
+        .fetchOne();
   }
 
   private BooleanExpression addressTagCondition(List<String> addressFilterList) {

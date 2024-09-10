@@ -2,9 +2,14 @@ package com.jeju.nanaland.domain.market.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
+import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -15,6 +20,7 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,12 +31,45 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MarketService {
+public class MarketService implements PostService {
 
   private final MarketRepository marketRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
+
+  /**
+   * Market 객체 조회
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @return Post
+   * @throws NotFoundException 게시물 id에 해당하는 전통시장 게시물이 존재하지 않는 경우
+   */
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return marketRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  /**
+   * 카드 정보 조회 - (postId, category, imageFile, title)
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @param language 언어 정보
+   * @return PostCardDto
+   * @throws NotFoundException (게시물 id, langugae)를 가진 전통시장 정보가 존재하지 않는 경우
+   */
+  @Override
+  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
+    PostCardDto postCardDto = marketRepository.findPostCardDto(postId, language);
+    Optional.ofNullable(postCardDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postCardDto.setCategory(PostCategory.MARKET.toString());
+    return postCardDto;
+  }
 
   // 전통시장 리스트 조회
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
@@ -42,7 +81,7 @@ public class MarketService {
         addressFilterList, pageable);
 
     // 좋아요 여부
-    List<Long> favoriteIds = favoriteService.getFavoritePostIdsWithMember(
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
     List<MarketThumbnail> data = marketThumbnailPage.getContent();
 
@@ -74,7 +113,8 @@ public class MarketService {
     }
 
     // 좋아요 여부 확인
-    boolean isFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
+    boolean isFavorite =
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
 
     return MarketResponse.MarketDetailDto.builder()
         .id(marketCompositeDto.getId())
