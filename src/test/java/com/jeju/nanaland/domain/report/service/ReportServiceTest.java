@@ -194,7 +194,7 @@ class ReportServiceTest {
         .build();
 
     doReturn(NatureCompositeDto.builder().build()).when(natureRepository)
-        .findCompositeDtoById(1L, Language.KOREAN);
+        .findNatureCompositeDto(1L, Language.KOREAN);
     doReturn(mock(ImageFile.class)).when(imageFileService)
         .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
     doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();

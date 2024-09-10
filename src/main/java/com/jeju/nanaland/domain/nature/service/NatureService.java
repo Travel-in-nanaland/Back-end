@@ -83,7 +83,7 @@ public class NatureService implements PostService {
       List<String> addressFilters, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureResponse.PreviewDto> naturePreviewDto = natureRepository.findAllNaturePreviewDtoOrderByCreatedAt(
+    Page<NatureResponse.PreviewDto> naturePreviewDto = natureRepository.findAllNaturePreviewDtoOrderByPriority(
         memberInfoDto.getLanguage(), addressFilters, keyword, pageable);
 
     // 좋아요 여부

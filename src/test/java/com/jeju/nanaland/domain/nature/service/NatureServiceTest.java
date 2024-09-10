@@ -180,7 +180,7 @@ class NatureServiceTest {
     Page<NatureResponse.PreviewDto> naturePreviewDtos = createNatureThumbnailList();
 
     doReturn(naturePreviewDtos).when(natureRepository)
-        .findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(), any());
+        .findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(), any());
     doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -193,7 +193,7 @@ class NatureServiceTest {
     assertThat(result.getData()).hasSize(2);
     assertThat(result.getData().get(0).getTitle()).isEqualTo("nature title 1");
 
-    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(),
+    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(),
         any());
     verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
@@ -209,7 +209,7 @@ class NatureServiceTest {
         PageRequest.of(pageNumber, pageSize), 0);
 
     doReturn(naturePreviewDtos).when(natureRepository)
-        .findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(), any());
+        .findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(), any());
     doReturn(new ArrayList<>()).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -221,7 +221,7 @@ class NatureServiceTest {
     assertThat(result.getTotalElements()).isZero();
     assertThat(result.getData()).isEmpty();
 
-    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(),
+    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(),
         any());
     verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));
@@ -235,7 +235,7 @@ class NatureServiceTest {
     List<Long> favoriteIds = List.of(1L);
 
     doReturn(naturePreviewDtos).when(natureRepository)
-        .findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(), any());
+        .findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(), any());
     doReturn(favoriteIds).when(memberFavoriteService)
         .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -249,7 +249,7 @@ class NatureServiceTest {
     assertThat(result.getData().get(0).isFavorite()).isTrue();
     assertThat(result.getData().get(1).isFavorite()).isFalse();
 
-    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByCreatedAt(any(Language.class), anyList(), any(),
+    verify(natureRepository, times(1)).findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(),
         any());
     verify(memberFavoriteService, times(1)).getFavoritePostIdsWithMember(
         any(Member.class));

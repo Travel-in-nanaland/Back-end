@@ -15,7 +15,7 @@ public interface NatureRepositoryCustom {
   Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Language locale,
       Pageable pageable);
 
-  Page<PreviewDto> findAllNaturePreviewDtoOrderByCreatedAt(Language locale, List<String> addressFilterList,
+  Page<PreviewDto> findAllNaturePreviewDtoOrderByPriority(Language locale, List<String> addressFilterList,
       String keyword, Pageable pageable);
 
   PostCardDto findPostCardDto(Long postId, Language language);
