@@ -26,7 +26,7 @@ public class NoticeResponse {
 
   @Data
   @Builder
-  @Schema(name = "NoticeTitleDto", description = "공지사항 제목 DTO")
+  @Schema(name = "NoticePreviewDto", description = "공지사항 프리뷰 정보 DTO")
   public static class PreviewDto {
 
     @Schema(description = "공지사항 id")

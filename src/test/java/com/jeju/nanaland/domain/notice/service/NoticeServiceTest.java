@@ -134,14 +134,14 @@ class NoticeServiceTest {
         .findAllNoticePreviewDtoOrderByCreatedAt(any(Language.class), any());
 
     // when: 공지사항 프리뷰 리스트 조회
-    NoticeResponse.PreviewPageDto noticeCardDto = noticeService.getNoticePreview(memberInfoDto, 0,
+    NoticeResponse.PreviewPageDto result = noticeService.getNoticePreview(memberInfoDto, 0,
         12);
 
     // then: 조회된 공지사항 프리뷰 리스트 검증
-    assertThat(noticeCardDto).isNotNull();
-    assertThat(noticeCardDto.getTotalElements()).isEqualTo(
+    assertThat(result).isNotNull();
+    assertThat(result.getTotalElements()).isEqualTo(
         noticeTitleDtos.getTotalElements());
-    assertThat(noticeCardDto.getData()).hasSameSizeAs(noticeTitleDtos.getContent());
+    assertThat(result.getData()).hasSameSizeAs(noticeTitleDtos.getContent());
   }
 
   @Nested
@@ -155,11 +155,11 @@ class NoticeServiceTest {
       doReturn(Optional.empty()).when(noticeRepository).findById(any());
 
       // when: 공지사항 상세 정보 조회
-      NotFoundException notFoundException = assertThrows(NotFoundException.class,
+      NotFoundException result = assertThrows(NotFoundException.class,
           () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
 
       // then: ErrorCode 검증
-      assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.NOTICE_NOT_FOUND.getMessage());
+      assertThat(result.getMessage()).isEqualTo(ErrorCode.NOTICE_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -171,11 +171,11 @@ class NoticeServiceTest {
       doReturn(null).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
 
       // when: 공지사항 상세 정보 조회
-      NotFoundException notFoundException = assertThrows(NotFoundException.class,
+      NotFoundException result = assertThrows(NotFoundException.class,
           () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
 
       // then: ErrorCode 검증
-      assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+      assertThat(result.getMessage()).isEqualTo(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
 
     @Test
