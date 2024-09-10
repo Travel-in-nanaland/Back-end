@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -125,74 +126,80 @@ class NoticeServiceTest {
   }
 
   @Test
-  @DisplayName("공지사항 리스트 조회 성공")
-  void getNoticeList() {
-    // given
+  @DisplayName("공지사항 프리뷰 리스트 조회 성공 TEST")
+  void getNoticePreview() {
+    // given: 공지사항 설정
     Page<NoticeResponse.PreviewDto> noticeTitleDtos = createNoticeTitles();
-    doReturn(noticeTitleDtos).when(noticeRepository).findAllNoticePreviewDtoOrderByCreatedAt(any(Language.class), any());
+    doReturn(noticeTitleDtos).when(noticeRepository)
+        .findAllNoticePreviewDtoOrderByCreatedAt(any(Language.class), any());
 
-    // when
-    NoticeResponse.PreviewPageDto noticeCardDto = noticeService.getNoticeCard(memberInfoDto, 0, 12);
+    // when: 공지사항 프리뷰 리스트 조회
+    NoticeResponse.PreviewPageDto noticeCardDto = noticeService.getNoticePreview(memberInfoDto, 0,
+        12);
 
-    // then
+    // then: 조회된 공지사항 프리뷰 리스트 검증
     assertThat(noticeCardDto).isNotNull();
     assertThat(noticeCardDto.getTotalElements()).isEqualTo(
         noticeTitleDtos.getTotalElements());
     assertThat(noticeCardDto.getData()).hasSameSizeAs(noticeTitleDtos.getContent());
   }
 
-  @Test
-  @DisplayName("공지사항 상세 조회 실패 - 데이터가 없는 경우")
-  void getNoticeDetailFail() {
-    // given
-    doReturn(Optional.empty()).when(noticeRepository).findById(any());
+  @Nested
+  @DisplayName("공지사항 상세 정보 조회 TEST")
+  class GetNoticeDetail {
 
-    // when
-    NotFoundException notFoundException = assertThrows(NotFoundException.class,
-        () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
+    @Test
+    @DisplayName("실패 - 공지사항이 존재하지 않는 경우")
+    void getNoticeDetailFail_noticeNotFound() {
+      // given: 공지사항을 찾을 수 없도록 설정
+      doReturn(Optional.empty()).when(noticeRepository).findById(any());
 
-    // then
-    assertThat(notFoundException.getMessage()).isEqualTo(
-        ErrorCode.NOTICE_NOT_FOUND.getMessage());
-  }
+      // when: 공지사항 상세 정보 조회
+      NotFoundException notFoundException = assertThrows(NotFoundException.class,
+          () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
 
-  @Test
-  @DisplayName("공지사항 상세 조회 실패 - 데이터가 없는 경우")
-  void getNoticeDetailFail2() {
-    // given
-    Notice notice = createNotice();
-    doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
-    doReturn(null).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
+      // then: ErrorCode 검증
+      assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.NOTICE_NOT_FOUND.getMessage());
+    }
 
-    // when
-    NotFoundException notFoundException = assertThrows(NotFoundException.class,
-        () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
+    @Test
+    @DisplayName("실패 - 공지사항의 상세 정보가 없는 경우")
+    void getNoticeDetailFail_noticeDetailNotFound() {
+      // given: 공지사항 설정, 공지사항의 상세 정보를 찾을 수 없도록 설정
+      Notice notice = createNotice();
+      doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
+      doReturn(null).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
 
-    // then
-    assertThat(notFoundException.getMessage()).isEqualTo(
-        ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
-  }
+      // when: 공지사항 상세 정보 조회
+      NotFoundException notFoundException = assertThrows(NotFoundException.class,
+          () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
 
-  @Test
-  @DisplayName("공지사항 상세 조회 성공")
-  void getNoticeDetailSuccess() {
-    // given
-    Notice notice = createNotice();
-    NoticeResponse.DetailDto noticeDetail = createNoticeDetail();
-    List<NoticeResponse.ContentDto> noticeContents = createNoticeContents();
+      // then: ErrorCode 검증
+      assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
 
-    doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
-    doReturn(noticeDetail).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
-    doReturn(noticeContents).when(noticeRepository).findAllNoticeContentDto(any(Language.class), any());
+    @Test
+    @DisplayName("성공")
+    void getNoticeDetailSuccess() {
+      // given: 공지사항 설정
+      Notice notice = createNotice();
+      NoticeResponse.DetailDto noticeDetail = createNoticeDetail();
+      List<NoticeResponse.ContentDto> noticeContents = createNoticeContents();
 
-    // when
-    NoticeResponse.DetailDto result = noticeService.getNoticeDetail(memberInfoDto, 1L);
+      doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
+      doReturn(noticeDetail).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
+      doReturn(noticeContents).when(noticeRepository)
+          .findAllNoticeContentDto(any(Language.class), any());
 
-    // then
-    assertThat(result).isNotNull();
-    assertThat(result.getTitle()).isEqualTo(noticeDetail.getTitle());
-    assertThat(result.getNoticeContents()).hasSameSizeAs(noticeContents);
-    assertThat(result.getNoticeContents().get(0).getContent()).isEqualTo(
-        noticeContents.get(0).getContent());
+      // when: 공지사항 상세 정보 조회
+      NoticeResponse.DetailDto result = noticeService.getNoticeDetail(memberInfoDto, 1L);
+
+      // then: 공지사항 상세 정보 검증
+      assertThat(result).isNotNull();
+      assertThat(result.getTitle()).isEqualTo(noticeDetail.getTitle());
+      assertThat(result.getNoticeContents()).hasSameSizeAs(noticeContents);
+      assertThat(result.getNoticeContents().get(0).getContent()).isEqualTo(
+          noticeContents.get(0).getContent());
+    }
   }
 }

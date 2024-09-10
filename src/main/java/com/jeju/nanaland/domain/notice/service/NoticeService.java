@@ -26,7 +26,7 @@ public class NoticeService {
    * @param size          페이지 크기 정보
    * @return 공지사항 프리뷰 리스트
    */
-  public NoticeResponse.PreviewPageDto getNoticeCard(MemberInfoDto memberInfoDto, int page,
+  public NoticeResponse.PreviewPageDto getNoticePreview(MemberInfoDto memberInfoDto, int page,
       int size) {
 
     Pageable pageable = PageRequest.of(page, size);
