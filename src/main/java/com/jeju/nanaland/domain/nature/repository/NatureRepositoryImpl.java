@@ -10,9 +10,9 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.QNatureResponse_NatureThumbnail;
+import com.jeju.nanaland.domain.nature.dto.QNatureResponse_PreviewDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -107,10 +107,10 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public Page<NatureThumbnail> findNatureThumbnails(Language language,
+  public Page<NatureResponse.PreviewDto> findNatureThumbnails(Language language,
       List<String> addressFilterList, String keyword, Pageable pageable) {
-    List<NatureThumbnail> resultDto = queryFactory
-        .select(new QNatureResponse_NatureThumbnail(
+    List<NatureResponse.PreviewDto> resultDto = queryFactory
+        .select(new QNatureResponse_PreviewDto(
                 nature.id,
                 natureTrans.title,
                 imageFile.originUrl,

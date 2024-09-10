@@ -12,9 +12,7 @@ import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -72,30 +70,30 @@ public class NatureService implements PostService {
   }
 
   // 7대 자연 리스트 조회
-  public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
+  public NatureResponse.PreviewPageDto getNatureList(MemberInfoDto memberInfoDto,
       List<String> addressFilterList, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureThumbnail> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
+    Page<NatureResponse.PreviewDto> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
         memberInfoDto.getLanguage(), addressFilterList, keyword, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    List<NatureThumbnail> data = natureCompositeDtoPage.getContent();
-    for (NatureThumbnail natureThumbnail : data) {
+    List<NatureResponse.PreviewDto> data = natureCompositeDtoPage.getContent();
+    for (NatureResponse.PreviewDto natureThumbnail : data) {
       natureThumbnail.setFavorite(favoriteIds.contains(natureThumbnail.getId()));
     }
 
-    return NatureThumbnailDto.builder()
+    return NatureResponse.PreviewPageDto.builder()
         .totalElements(natureCompositeDtoPage.getTotalElements())
         .data(data)
         .build();
   }
 
   // 7대 자연 상세 정보 조회
-  public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
+  public NatureResponse.DetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
     NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
         memberInfoDto.getLanguage());
 
@@ -112,7 +110,7 @@ public class NatureService implements PostService {
     boolean isFavorite =
         memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, id);
 
-    return NatureDetailDto.builder()
+    return NatureResponse.DetailDto.builder()
         .id(natureCompositeDto.getId())
         .addressTag(natureCompositeDto.getAddressTag())
         .title(natureCompositeDto.getTitle())

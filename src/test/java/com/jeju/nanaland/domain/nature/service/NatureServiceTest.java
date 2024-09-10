@@ -24,9 +24,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
@@ -154,11 +152,11 @@ class NatureServiceTest {
         .build();
   }
 
-  private Page<NatureThumbnail> createNatureThumbnailList() {
-    List<NatureThumbnail> natureThumbnails = new ArrayList<>();
+  private Page<NatureResponse.PreviewDto> createNatureThumbnailList() {
+    List<NatureResponse.PreviewDto> natureThumbnails = new ArrayList<>();
     for (int i = 1; i < 3; i++) {
       natureThumbnails.add(
-          NatureThumbnail.builder()
+          NatureResponse.PreviewDto.builder()
               .id((long) i)
               .title("nature title " + i)
               .addressTag("제주시")
@@ -179,7 +177,7 @@ class NatureServiceTest {
   @DisplayName("7대 자연 썸네일 리스트 조회 성공")
   void getNatureListSuccess() {
     // given
-    Page<NatureThumbnail> natureThumbnailList = createNatureThumbnailList();
+    Page<NatureResponse.PreviewDto> natureThumbnailList = createNatureThumbnailList();
 
     doReturn(natureThumbnailList).when(natureRepository)
         .findNatureThumbnails(any(Language.class), anyList(), any(), any());
@@ -187,7 +185,7 @@ class NatureServiceTest {
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
-    NatureThumbnailDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
+    NatureResponse.PreviewPageDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
         0, 2);
 
     // then
@@ -207,7 +205,7 @@ class NatureServiceTest {
     // given
     int pageNumber = 0;
     int pageSize = 2;
-    Page<NatureThumbnail> emptyNatureThumbnailList = new PageImpl<>(new ArrayList<>(),
+    Page<NatureResponse.PreviewDto> emptyNatureThumbnailList = new PageImpl<>(new ArrayList<>(),
         PageRequest.of(pageNumber, pageSize), 0);
 
     doReturn(emptyNatureThumbnailList).when(natureRepository)
@@ -216,7 +214,7 @@ class NatureServiceTest {
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
-    NatureThumbnailDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
+    NatureResponse.PreviewPageDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
         pageNumber, pageSize);
 
     // then
@@ -233,7 +231,7 @@ class NatureServiceTest {
   @DisplayName("7대 자연 썸네일 리스트 조회 성공 - 좋아요 여부 확인")
   void getNatureListSuccessWithFavorites() {
     // given
-    Page<NatureThumbnail> natureThumbnailList = createNatureThumbnailList();
+    Page<NatureResponse.PreviewDto> natureThumbnailList = createNatureThumbnailList();
     List<Long> favoriteIds = List.of(1L);
 
     doReturn(natureThumbnailList).when(natureRepository)
@@ -242,7 +240,7 @@ class NatureServiceTest {
         .getFavoritePostIdsWithMember(any(Member.class));
 
     // when
-    NatureThumbnailDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
+    NatureResponse.PreviewPageDto result = natureService.getNatureList(memberInfoDto, new ArrayList<>(), null,
         0, 2);
 
     // then
@@ -291,7 +289,7 @@ class NatureServiceTest {
         .getPostImageFilesByPostIdIncludeFirstImage(1L, natureCompositeDto.getFirstImage());
 
     // when
-    NatureDetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, 1L, true);
+    NatureResponse.DetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, 1L, true);
 
     // then
     assertThat(natureDetail.getTitle()).isEqualTo("nature 1");
