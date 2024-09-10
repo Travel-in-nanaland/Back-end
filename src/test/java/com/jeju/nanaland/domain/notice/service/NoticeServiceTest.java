@@ -86,11 +86,11 @@ class NoticeServiceTest {
         .build();
   }
 
-  private Page<NoticeResponse.TitleDto> createNoticeTitles() {
-    List<NoticeResponse.TitleDto> noticeTitleDtos = new ArrayList<>();
+  private Page<NoticeResponse.PreviewDto> createNoticeTitles() {
+    List<NoticeResponse.PreviewDto> noticeTitleDtos = new ArrayList<>();
     for (int i = 1; i < 3; i++) {
       noticeTitleDtos.add(
-          NoticeResponse.TitleDto.builder()
+          NoticeResponse.PreviewDto.builder()
               .noticeCategory(NoticeCategory.NOTICE.name())
               .title("title")
               .build());
@@ -128,11 +128,11 @@ class NoticeServiceTest {
   @DisplayName("공지사항 리스트 조회 성공")
   void getNoticeList() {
     // given
-    Page<NoticeResponse.TitleDto> noticeTitleDtos = createNoticeTitles();
-    doReturn(noticeTitleDtos).when(noticeRepository).findNoticeList(any(Language.class), any());
+    Page<NoticeResponse.PreviewDto> noticeTitleDtos = createNoticeTitles();
+    doReturn(noticeTitleDtos).when(noticeRepository).findAllNoticePreviewDtoOrderByCreatedAt(any(Language.class), any());
 
     // when
-    NoticeResponse.CardDto noticeCardDto = noticeService.getNoticeCard(memberInfoDto, 0, 12);
+    NoticeResponse.PreviewPageDto noticeCardDto = noticeService.getNoticeCard(memberInfoDto, 0, 12);
 
     // then
     assertThat(noticeCardDto).isNotNull();
@@ -162,7 +162,7 @@ class NoticeServiceTest {
     // given
     Notice notice = createNotice();
     doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
-    doReturn(null).when(noticeRepository).getNoticeDetail(any(Language.class), any());
+    doReturn(null).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
 
     // when
     NotFoundException notFoundException = assertThrows(NotFoundException.class,
@@ -182,8 +182,8 @@ class NoticeServiceTest {
     List<NoticeResponse.ContentDto> noticeContents = createNoticeContents();
 
     doReturn(Optional.of(notice)).when(noticeRepository).findById(any());
-    doReturn(noticeDetail).when(noticeRepository).getNoticeDetail(any(Language.class), any());
-    doReturn(noticeContents).when(noticeRepository).getNoticeContents(any(Language.class), any());
+    doReturn(noticeDetail).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
+    doReturn(noticeContents).when(noticeRepository).findAllNoticeContentDto(any(Language.class), any());
 
     // when
     NoticeResponse.DetailDto result = noticeService.getNoticeDetail(memberInfoDto, 1L);

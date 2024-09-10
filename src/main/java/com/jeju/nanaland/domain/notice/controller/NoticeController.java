@@ -34,12 +34,12 @@ public class NoticeController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
   })
   @GetMapping("/list")
-  public BaseResponse<NoticeResponse.CardDto> getNoticeCard(
+  public BaseResponse<NoticeResponse.PreviewPageDto> getNoticeCard(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size
   ) {
-    NoticeResponse.CardDto result = noticeService.getNoticeCard(memberInfoDto, page, size);
+    NoticeResponse.PreviewPageDto result = noticeService.getNoticeCard(memberInfoDto, page, size);
     return BaseResponse.success(NOTICE_LIST_SUCCESS, result);
   }
 

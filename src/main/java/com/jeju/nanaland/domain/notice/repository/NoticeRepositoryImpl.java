@@ -10,7 +10,7 @@ import com.jeju.nanaland.domain.common.dto.QImageFileDto;
 import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_ContentDto;
 import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_DetailDto;
-import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_TitleDto;
+import com.jeju.nanaland.domain.notice.dto.QNoticeResponse_PreviewDto;
 import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -25,10 +25,17 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
+  /**
+   * 공지사항 프리뷰 페이징 조회
+   *
+   * @param language 언어
+   * @param pageable 페이징 정보
+   * @return 공지사항 프리뷰 리스트
+   */
   @Override
-  public Page<NoticeResponse.TitleDto> findNoticeList(Language language, Pageable pageable) {
-    List<NoticeResponse.TitleDto> resultDto = queryFactory
-        .select(new QNoticeResponse_TitleDto(
+  public Page<NoticeResponse.PreviewDto> findAllNoticePreviewDtoOrderByCreatedAt(Language language, Pageable pageable) {
+    List<NoticeResponse.PreviewDto> resultDto = queryFactory
+        .select(new QNoticeResponse_PreviewDto(
                 notice.id,
                 notice.noticeCategory.stringValue(),
                 noticeTitle.title,
@@ -43,6 +50,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
         .limit(pageable.getPageSize())
         .fetch();
 
+    // 공지사항 카테고리 정보 언어별 처리
     resultDto.forEach(
         noticeTitleDto -> {
           String noticeCategory = noticeTitleDto.getNoticeCategory();
@@ -52,6 +60,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
         }
     );
 
+    // 총 데이터 수
     JPAQuery<Long> countQuery = queryFactory
         .select(noticeTitle.count())
         .from(noticeTitle)
@@ -61,8 +70,15 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
+  /**
+   * 공지사항 상세 조회
+   *
+   * @param language 언어
+   * @param noticeId 공지사항 ID
+   * @return 공지사항 상세 정보
+   */
   @Override
-  public NoticeResponse.DetailDto getNoticeDetail(Language language, Long id) {
+  public NoticeResponse.DetailDto findNoticeDetailDto(Language language, Long noticeId) {
     return queryFactory
         .select(new QNoticeResponse_DetailDto(
             noticeTitle.title,
@@ -70,13 +86,20 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
         ))
         .from(noticeTitle)
         .innerJoin(noticeTitle.notice, notice)
-        .where(notice.id.eq(id)
+        .where(notice.id.eq(noticeId)
             .and(noticeTitle.language.eq(language)))
         .fetchOne();
   }
 
+  /**
+   * 공지사항 내용 조회
+   *
+   * @param language 언어
+   * @param noticeId 공지사항 ID
+   * @return 공지사항 내용 정보
+   */
   @Override
-  public List<NoticeResponse.ContentDto> getNoticeContents(Language language, Long id) {
+  public List<NoticeResponse.ContentDto> findAllNoticeContentDto(Language language, Long noticeId) {
     return queryFactory
         .select(
             new QNoticeResponse_ContentDto(
@@ -90,7 +113,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
         .from(noticeContent)
         .innerJoin(noticeContent.noticeTitle, noticeTitle)
         .leftJoin(noticeContent.imageFile, imageFile)
-        .where(noticeContent.noticeTitle.notice.id.eq(id)
+        .where(noticeContent.noticeTitle.notice.id.eq(noticeId)
             .and(noticeContent.noticeTitle.language.eq(language)))
         .fetch();
   }

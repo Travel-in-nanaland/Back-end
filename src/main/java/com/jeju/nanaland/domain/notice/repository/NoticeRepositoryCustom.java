@@ -8,9 +8,10 @@ import org.springframework.data.domain.Pageable;
 
 public interface NoticeRepositoryCustom {
 
-  Page<NoticeResponse.TitleDto> findNoticeList(Language language, Pageable pageable);
+  Page<NoticeResponse.PreviewDto> findAllNoticePreviewDtoOrderByCreatedAt(Language language,
+      Pageable pageable);
 
-  NoticeResponse.DetailDto getNoticeDetail(Language language, Long id);
+  NoticeResponse.DetailDto findNoticeDetailDto(Language language, Long id);
 
-  List<NoticeResponse.ContentDto> getNoticeContents(Language language, Long id);
+  List<NoticeResponse.ContentDto> findAllNoticeContentDto(Language language, Long id);
 }

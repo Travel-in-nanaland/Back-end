@@ -14,20 +14,20 @@ public class NoticeResponse {
 
   @Data
   @Builder
-  @Schema(name = "NoticeCardDto", description = "공지사항 전체 리스트 조회 DTO")
-  public static class CardDto {
+  @Schema(name = "NoticePreviewPageDto", description = "공지사항 전체 리스트 조회 DTO")
+  public static class PreviewPageDto {
 
     @Schema(description = "총 조회 개수")
     private Long totalElements;
 
     @Schema(description = "결과 데이터")
-    private List<TitleDto> data;
+    private List<PreviewDto> data;
   }
 
   @Data
   @Builder
   @Schema(name = "NoticeTitleDto", description = "공지사항 제목 DTO")
-  public static class TitleDto {
+  public static class PreviewDto {
 
     @Schema(description = "공지사항 id")
     private Long id;
@@ -39,7 +39,7 @@ public class NoticeResponse {
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public TitleDto(Long id, String noticeCategory, String title, LocalDateTime createdAt) {
+    public PreviewDto(Long id, String noticeCategory, String title, LocalDateTime createdAt) {
       this.id = id;
       this.noticeCategory = noticeCategory;
       this.title = title;
