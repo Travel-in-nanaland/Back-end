@@ -24,6 +24,7 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.report.dto.ReportRequest;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
+import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.InfoFixReportImageFile;
@@ -49,6 +50,7 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -71,10 +73,6 @@ public class ReportService {
   private static final int MAX_IMAGE_COUNT = 5;
   // TODO: 관리자 계정으로 바꾸기
   private static final String ADMIN_EMAIL = "jyajoo1020@gmail.com";
-  @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
-  private String INFO_FIX_REPORT_IMAGE_DIRECTORY;
-  @Value("${cloud.aws.s3.claimReportFileDirectory}")
-  private String CLAIM_REPORT_FILE_DIRECTORY;
   private final MemberRepository memberRepository;
   private final ClaimReportVideoFileRepository claimReportVideoFileRepository;
   private final ClaimReportRepository claimReportRepository;
@@ -92,40 +90,31 @@ public class ReportService {
   private final Environment env;
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
+  @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
+  private String INFO_FIX_REPORT_IMAGE_DIRECTORY;
+  @Value("${cloud.aws.s3.claimReportFileDirectory}")
+  private String CLAIM_REPORT_FILE_DIRECTORY;
 
-  // 정보 수정 제안
   @Transactional
   public void requestPostInfoFix(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
-      List<MultipartFile> imageList) {
-
-    Category category = Category.valueOf(reqDto.getCategory());
-    // 나나스픽 전처리
-    if (List.of(Category.NANA, Category.NANA_CONTENT).contains(category)) {
-      throw new BadRequestException(NANA_INFO_FIX_FORBIDDEN.getMessage());
-    }
-
-    // 이미지 5장 이상 전처리
-    if (imageList != null && imageList.size() > MAX_IMAGE_COUNT) {
-      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
-    }
+      List<MultipartFile> images) {
+    // 수정 요청 유효성 검사
+    validateInfoFixReportRequest(reqDto, images);
 
     // 해당 게시물 정보 가져오기
-    Long postId = reqDto.getPostId();
-    Language language = memberInfoDto.getLanguage();
-    CompositeDto compositeDto = findCompositeDto(category, postId, language);
+    CompositeDto compositeDto = findCompositeDto(Category.valueOf(reqDto.getCategory()),
+        reqDto.getPostId(), memberInfoDto.getLanguage());
     if (compositeDto == null) {
       throw new NotFoundException(NOT_FOUND_EXCEPTION.getMessage());
     }
 
     // InfoFixReport 저장
-    String title = compositeDto.getTitle();
-    FixType fixType = FixType.valueOf(reqDto.getFixType());
     InfoFixReport infoFixReport = InfoFixReport.builder()
         .postId(reqDto.getPostId())
         .member(memberInfoDto.getMember())
-        .category(category)
-        .fixType(fixType)
-        .title(title)
+        .category(Category.valueOf(reqDto.getCategory()))
+        .fixType(FixType.valueOf(reqDto.getFixType()))
+        .title(compositeDto.getTitle())
         .locale(memberInfoDto.getLanguage())
         .content(reqDto.getContent())
         .email(reqDto.getEmail())
@@ -133,11 +122,27 @@ public class ReportService {
     infoFixReportRepository.save(infoFixReport);
 
     // 이미지 저장
-    List<String> imageUrlList = saveImagesAndGetUrls(imageList, infoFixReport,
+    List<String> imageUrlList = saveImagesAndGetUrls(images, infoFixReport,
         INFO_FIX_REPORT_IMAGE_DIRECTORY);
 
     // 이메일 전송
     sendEmailReport(memberInfoDto.getMember().getEmail(), infoFixReport, imageUrlList);
+  }
+
+  private void validateInfoFixReportRequest(InfoFixDto reqDto, List<MultipartFile> images) {
+    Category category = Category.valueOf(reqDto.getCategory());
+
+    // 나나스픽 전처리
+    if (List.of(Category.NANA, Category.NANA_CONTENT).contains(category)) {
+      throw new BadRequestException(NANA_INFO_FIX_FORBIDDEN.getMessage());
+    }
+    checkFileCountLimit(images);
+  }
+
+  private void checkFileCountLimit(List<MultipartFile> files) {
+    if (files != null && files.size() > MAX_IMAGE_COUNT) {
+      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
+    }
   }
 
   private CompositeDto findCompositeDto(Category category, Long postId, Language language) {
@@ -151,17 +156,11 @@ public class ReportService {
     };
   }
 
-  // 신고 기능
   @Transactional
-  public void requestClaimReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
+  public void requestClaimReport(MemberInfoDto memberInfoDto, ReportRequest.ClaimReportDto reqDto,
       List<MultipartFile> fileList) {
-    validateReportRequest(memberInfoDto, reqDto);
-    checkExistingReport(memberInfoDto, reqDto);
-
-    // 파일 개수 확인
-    if (fileList != null && fileList.size() > MAX_IMAGE_COUNT) {
-      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
-    }
+    // 요청 유효성 확인
+    validateClaimReportRequest(memberInfoDto, reqDto, fileList);
 
     // claimReport 저장
     ClaimReport claimReport = ClaimReport.builder()
@@ -174,27 +173,8 @@ public class ReportService {
     claimReportRepository.save(claimReport);
 
     // 이미지, 동영상 분리
-    List<MultipartFile> imageFiles = new ArrayList<>();
-    List<MultipartFile> videoFiles = new ArrayList<>();
-    if (fileList != null) {
-      for (MultipartFile file : fileList) {
-        String contentType = file.getContentType();
-        if (contentType != null) {
-          if (contentType.startsWith("image/")) {
-            imageFiles.add(file);
-          } else if (contentType.startsWith("video/")) {
-            videoFiles.add(file);
-          }
-        }
-      }
-    }
-
-    // claimReportImageFile 이미지 저장
-    List<String> imageUrlList = saveImagesAndGetUrls(imageFiles, claimReport,
-        CLAIM_REPORT_FILE_DIRECTORY);
-
-    // claimReportVideoFile 동영상 저장
-    List<String> videoUrlList = saveVideosAndGetUrls(videoFiles, claimReport);
+    List<String> imageUrlList = processAndSaveFiles(fileList, claimReport, "image/");
+    List<String> videoUrlList = processAndSaveFiles(fileList, claimReport, "video/");
 
     // 이메일 전송
     List<String> combinedUrlList = new ArrayList<>(imageUrlList);
@@ -202,120 +182,158 @@ public class ReportService {
     sendEmailReport(reqDto.getEmail(), claimReport, combinedUrlList);
   }
 
-  // 상황별 요청 유효 확인
-  private void validateReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
+  private void validateClaimReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
+      List<MultipartFile> fileList) {
+    // 타입별 유효성 확인
     ReportType reportType = ReportType.valueOf(reqDto.getReportType());
-    // 리뷰를 신고하는 경우 - 리뷰 데이터 조회, 본인이 작성한 것인지 확인
     if (reportType == ReportType.REVIEW) {
-      Review review = reviewRepository.findById(reqDto.getId())
-          .orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND.getMessage()));
-      if (review.getMember().equals(memberInfoDto.getMember())) {
-        throw new BadRequestException(SELF_REPORT_NOT_ALLOWED.getMessage());
-      }
+      validateReviewReportRequest(memberInfoDto, reqDto);
+    } else if (reportType == ReportType.MEMBER) {
+      validateMemberReportRequest(memberInfoDto, reqDto);
     }
-    // 유저를 신고하는 경우 - 본인을 신고하는 것인지 확인, 유저 데이터 조회
-    else if (reportType == ReportType.MEMBER) {
-      if (memberInfoDto.getMember().getId().equals(reqDto.getId())) {
-        throw new BadRequestException(SELF_REPORT_NOT_ALLOWED.getMessage());
-      }
-      memberRepository.findById(reqDto.getId())
-          .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
-    }
-  }
 
-  // 이미 신고한 적이 있는지 확인
-  private void checkExistingReport(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
+    // 이미 신고한 적이 있는지 확인
     Optional<ClaimReport> claimReportOptional = claimReportRepository.findByMemberAndIdAndReportType(
         memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
 
     if (claimReportOptional.isPresent()) {
       throw new BadRequestException(REVIEW_ALREADY_REPORTED.getMessage());
     }
+    checkFileCountLimit(fileList);
   }
 
-  // 이미지 저장
+  private void validateReviewReportRequest(MemberInfoDto memberInfoDto,
+      ReportRequest.ClaimReportDto reqDto) {
+    Review review = reviewRepository.findById(reqDto.getId())
+        .orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND.getMessage()));
+    if (review.getMember().equals(memberInfoDto.getMember())) {
+      throw new BadRequestException(SELF_REPORT_NOT_ALLOWED.getMessage());
+    }
+  }
+
+  private void validateMemberReportRequest(MemberInfoDto memberInfoDto,
+      ReportRequest.ClaimReportDto reqDto) {
+    if (memberInfoDto.getMember().getId().equals(reqDto.getId())) {
+      throw new BadRequestException(SELF_REPORT_NOT_ALLOWED.getMessage());
+    }
+    memberRepository.findById(reqDto.getId())
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+  }
+
+  private List<String> processAndSaveFiles(List<MultipartFile> fileList, ClaimReport claimReport,
+      String type) {
+    if (type.equals("image/")) {
+      List<MultipartFile> imageFiles = filterFilesByType(fileList, type);
+      return saveImagesAndGetUrls(imageFiles, claimReport, CLAIM_REPORT_FILE_DIRECTORY);
+    } else if (type.equals("video/")) {
+      List<MultipartFile> videoFiles = filterFilesByType(fileList, type);
+      return saveVideosAndGetUrls(videoFiles, claimReport);
+    }
+    throw new IllegalArgumentException("Unsupported file type");
+  }
+
+  private List<MultipartFile> filterFilesByType(List<MultipartFile> fileList, String type) {
+    if (fileList == null) {
+      return new ArrayList<>();
+    }
+    return fileList.stream()
+        .filter(file -> file.getContentType() != null && file.getContentType().startsWith(type))
+        .collect(Collectors.toList());
+  }
+
   private List<String> saveImagesAndGetUrls(List<MultipartFile> imageList, Object report,
       String directory) {
-    List<String> imageUrlList = new ArrayList<>();
-    if (imageList != null) {
-      // 이미지 파일 저장
-      List<Object> saveImageFiles = saveImageFiles(imageList, report, directory);
-
-      // 이미지 연관 관계 저장 && url 반환
-      if (report instanceof InfoFixReport) {
-        List<InfoFixReportImageFile> infoFixReportImageFiles = saveImageFiles.stream()
-            .map(o -> (InfoFixReportImageFile) o).collect(Collectors.toList());
-        infoFixReportImageFileRepository.saveAll(infoFixReportImageFiles);
-        imageUrlList = infoFixReportImageFiles.stream()
-            .map(file -> file.getImageFile().getOriginUrl())
-            .collect(Collectors.toList());
-      } else if (report instanceof ClaimReport) {
-        List<ClaimReportImageFile> claimReportImageFiles = saveImageFiles.stream()
-            .map(o -> (ClaimReportImageFile) o).collect(Collectors.toList());
-        claimReportImageFileRepository.saveAll(claimReportImageFiles);
-        imageUrlList = claimReportImageFiles.stream()
-            .map(file -> file.getImageFile().getOriginUrl())
-            .collect(Collectors.toList());
-      }
+    if (imageList == null || imageList.isEmpty()) {
+      return Collections.emptyList();
     }
-    return imageUrlList;
+    // 이미지 저장
+    List<ImageFile> saveImageFiles = saveImages(imageList, directory);
+
+    // 이미지와 객체 연관 관계 생성 및 저장
+    List<Object> reportImageFiles = createReportImageFiles(saveImageFiles, report);
+    if (report instanceof InfoFixReport) {
+      saveInfoFixReportImageFiles(reportImageFiles);
+    } else if (report instanceof ClaimReport) {
+      saveClaimReportImages(reportImageFiles);
+    }
+
+    // 이미지 URL 리스트 반환
+    return saveImageFiles.stream().map(ImageFile::getOriginUrl).collect(Collectors.toList());
   }
 
-  // 이미지 파일 저장 && 이미지 연관 관계 객체 생성
-  private List<Object> saveImageFiles(List<MultipartFile> imageList, Object report,
-      String directory) {
-    List<Object> imageFileList = new ArrayList<>();
-    for (MultipartFile image : imageList) {
-      ImageFile imageFile = imageFileService.uploadAndSaveImageFile(image, false, directory);
-
-      if (report instanceof InfoFixReport infoFixReport) {
-        imageFileList.add(InfoFixReportImageFile.builder()
-            .imageFile(imageFile)
-            .infoFixReport(infoFixReport)
-            .build());
-      } else if (report instanceof ClaimReport claimReport) {
-        imageFileList.add(ClaimReportImageFile.builder()
-            .imageFile(imageFile)
-            .claimReport(claimReport)
-            .build());
-      }
-    }
-    return imageFileList;
+  private List<ImageFile> saveImages(List<MultipartFile> imageFiles, String directory) {
+    return imageFiles.stream()
+        .map(image -> imageFileService.uploadAndSaveImageFile(image, false, directory))
+        .collect(Collectors.toList());
   }
 
-  // 동영상 저장
+  private List<Object> createReportImageFiles(List<ImageFile> imageFiles, Object report) {
+    return imageFiles.stream()
+        .map(imageFile -> {
+          if (report instanceof InfoFixReport infoFixReport) {
+            return InfoFixReportImageFile.builder()
+                .imageFile(imageFile)
+                .infoFixReport(infoFixReport)
+                .build();
+          } else if (report instanceof ClaimReport claimReport) {
+            return ClaimReportImageFile.builder()
+                .imageFile(imageFile)
+                .claimReport(claimReport)
+                .build();
+          }
+          throw new IllegalArgumentException("Unsupported report type");
+        })
+        .collect(Collectors.toList());
+  }
+
+  private void saveInfoFixReportImageFiles(List<Object> saveImageFiles) {
+    // Object를 InfoFixReportImageFile로 변환
+    List<InfoFixReportImageFile> infoFixReportImageFiles = saveImageFiles.stream()
+        .map(o -> (InfoFixReportImageFile) o).collect(Collectors.toList());
+
+    // InfoFixReportImageFile(연관관계)를 모두 저장
+    infoFixReportImageFileRepository.saveAll(infoFixReportImageFiles);
+  }
+
+  private void saveClaimReportImages(List<Object> saveImageFiles) {
+    // Object를 ClaimReportImageFile로 변환
+    List<ClaimReportImageFile> claimReportImageFiles = saveImageFiles.stream()
+        .map(o -> (ClaimReportImageFile) o).collect(Collectors.toList());
+
+    // ClaimReportImageFile(연관관계)를 모두 저장
+    claimReportImageFileRepository.saveAll(claimReportImageFiles);
+  }
+
   private List<String> saveVideosAndGetUrls(List<MultipartFile> videoFiles, ClaimReport report) {
-    List<String> videoUrlList = new ArrayList<>();
-    if (videoFiles != null) {
-      // 동영상 파일 저장
-      List<ClaimReportVideoFile> claimReportVideoFiles = saveVideoFiles(videoFiles, report);
-
-      // 동영상 연관 관계 저장 && url 반환
-      claimReportVideoFileRepository.saveAll(claimReportVideoFiles);
-      videoUrlList = claimReportVideoFiles.stream()
-          .map(file -> file.getVideoFile().getOriginUrl())
-          .collect(Collectors.toList());
+    if (videoFiles == null || videoFiles.isEmpty()) {
+      return Collections.emptyList();
     }
-    return videoUrlList;
+    // 동영상 파일 저장
+    List<VideoFile> saveVideoFiles = saveVideoFiles(videoFiles);
+
+    // 동영상 연관 관계 저장 && url 반환
+    List<ClaimReportVideoFile> reportVideoFiles = createReportVideoFiles(saveVideoFiles, report);
+    claimReportVideoFileRepository.saveAll(reportVideoFiles);
+
+    return saveVideoFiles.stream().map(VideoFile::getOriginUrl).collect(Collectors.toList());
   }
 
-  // 동영상 파일 저장 && 동영상 연관 관계 생성
-  private List<ClaimReportVideoFile> saveVideoFiles(List<MultipartFile> videoFiles,
-      ClaimReport report) {
-    List<ClaimReportVideoFile> videoFileList = new ArrayList<>();
-    for (MultipartFile video : videoFiles) {
-      VideoFile videoFile = videoFileService.uploadAndSaveVideoFile(video,
-          CLAIM_REPORT_FILE_DIRECTORY);
-
-      videoFileList.add(ClaimReportVideoFile.builder()
-          .videoFile(videoFile)
-          .claimReport(report)
-          .build());
-    }
-    return videoFileList;
+  private List<VideoFile> saveVideoFiles(List<MultipartFile> videoFiles) {
+    return videoFiles.stream()
+        .map(video -> videoFileService.uploadAndSaveVideoFile(video, CLAIM_REPORT_FILE_DIRECTORY))
+        .collect(Collectors.toList());
   }
 
-  // 메일 전송
+  private List<ClaimReportVideoFile> createReportVideoFiles(List<VideoFile> saveVideoFiles,
+      ClaimReport claimReport) {
+    return saveVideoFiles.stream()
+        .map(videoFile -> ClaimReportVideoFile.builder()
+            .videoFile(videoFile)
+            .claimReport(claimReport)
+            .build())
+        .collect(Collectors.toList());
+  }
+
   private void sendEmailReport(String email, Object report, List<String> imageUrlList) {
     try {
       MimeMessage mimeMessage = createReportMail(email, report, imageUrlList);
@@ -326,7 +344,6 @@ public class ReportService {
     }
   }
 
-  // 메일 생성
   private MimeMessage createReportMail(String memberEmail, Object report, List<String> imageUrlList)
       throws MessagingException, UnsupportedEncodingException {
     MimeMessage message = javaMailSender.createMimeMessage();
@@ -337,30 +354,39 @@ public class ReportService {
     Context context = new Context();
     String templateName = "";
     if (report instanceof InfoFixReport infoFixReport) {
-      message.setSubject("[Nanaland] 정보 수정 요청입니다.");
-      context.setVariable("fix_type", infoFixReport.getFixType());
-      context.setVariable("category", infoFixReport.getCategory());
-      context.setVariable("language", infoFixReport.getLocale().name());
-      context.setVariable("title", infoFixReport.getTitle());
-      context.setVariable("content", infoFixReport.getContent());
-      context.setVariable("email", infoFixReport.getEmail());
+      setInfoFixReportContext(message, context, infoFixReport);
       templateName = "info-fix-report";
     } else if (report instanceof ClaimReport claimReport) {
-      message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
-      context.setVariable("report_type", claimReport.getReportType());
-      context.setVariable("claim_type", claimReport.getClaimType());
-      context.setVariable("id", claimReport.getId());
-      context.setVariable("content", claimReport.getContent());
-      context.setVariable("email", memberEmail);
+      setClaimReportContext(memberEmail, message, context, claimReport);
       templateName = "claim-report";
     }
 
     for (int i = 0; i < imageUrlList.size(); i++) {
       context.setVariable("image_" + i, imageUrlList.get(i));
     }
-
     message.setText(templateEngine.process(templateName, context), "utf-8", "html");
 
     return message;
+  }
+
+  private void setClaimReportContext(String memberEmail, MimeMessage message, Context context,
+      ClaimReport claimReport) throws MessagingException {
+    message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
+    context.setVariable("report_type", claimReport.getReportType());
+    context.setVariable("claim_type", claimReport.getClaimType());
+    context.setVariable("id", claimReport.getId());
+    context.setVariable("content", claimReport.getContent());
+    context.setVariable("email", memberEmail);
+  }
+
+  private void setInfoFixReportContext(MimeMessage message, Context context,
+      InfoFixReport infoFixReport) throws MessagingException {
+    message.setSubject("[Nanaland] 정보 수정 요청입니다.");
+    context.setVariable("fix_type", infoFixReport.getFixType());
+    context.setVariable("category", infoFixReport.getCategory());
+    context.setVariable("language", infoFixReport.getLocale().name());
+    context.setVariable("title", infoFixReport.getTitle());
+    context.setVariable("content", infoFixReport.getContent());
+    context.setVariable("email", infoFixReport.getEmail());
   }
 }
