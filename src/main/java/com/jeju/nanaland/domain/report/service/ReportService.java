@@ -1,11 +1,11 @@
 package com.jeju.nanaland.domain.report.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.ALREADY_REPORTED;
 import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.MAIL_FAIL_ERROR;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
-import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_ALREADY_REPORTED;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOWED;
 
@@ -209,8 +209,11 @@ public class ReportService {
     claimReportRepository.save(claimReport);
 
     // 이미지, 동영상 저장
-    List<String> imageUrls = filterAndSaveFiles(files, claimReport, "image/");
-    List<String> videoUrls = filterAndSaveFiles(files, claimReport, "video/");
+    List<MultipartFile> imageFiles = filterFilesByType(files, "image/");
+    List<MultipartFile> videoFiles = filterFilesByType(files, "video/");
+    List<String> imageUrls = saveImagesAndGetUrls(imageFiles, claimReport,
+        CLAIM_REPORT_FILE_DIRECTORY);
+    List<String> videoUrls = saveVideosAndGetUrls(videoFiles, claimReport);
 
     // 이메일 전송
     List<String> combinedUrls = new ArrayList<>(imageUrls);
@@ -240,7 +243,7 @@ public class ReportService {
     Optional<ClaimReport> saveClaimReport = claimReportRepository.findByMemberAndIdAndReportType(
         memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
     if (saveClaimReport.isPresent()) {
-      throw new BadRequestException(REVIEW_ALREADY_REPORTED.getMessage());
+      throw new BadRequestException(ALREADY_REPORTED.getMessage());
     }
 
     checkFileCountLimit(files);
@@ -280,27 +283,6 @@ public class ReportService {
     }
     memberRepository.findById(reqDto.getId())
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
-  }
-
-  /**
-   * 타입별 파일 필터링, 파일 저장
-   *
-   * @param files       파일 리스트
-   * @param claimReport 신고 요청
-   * @param type        파일 타입
-   * @return 파일 URL 리스트
-   * @throws IllegalArgumentException 지원하지 않는 파일 타입인 경우
-   */
-  private List<String> filterAndSaveFiles(List<MultipartFile> files, ClaimReport claimReport,
-      String type) {
-    if (type.equals("image/")) {
-      List<MultipartFile> imageFiles = filterFilesByType(files, type);
-      return saveImagesAndGetUrls(imageFiles, claimReport, CLAIM_REPORT_FILE_DIRECTORY);
-    } else if (type.equals("video/")) {
-      List<MultipartFile> videoFiles = filterFilesByType(files, type);
-      return saveVideosAndGetUrls(videoFiles, claimReport);
-    }
-    throw new IllegalArgumentException("Unsupported file type");
   }
 
   /**

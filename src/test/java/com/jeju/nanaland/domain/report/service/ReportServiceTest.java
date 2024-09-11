@@ -1,18 +1,20 @@
 package com.jeju.nanaland.domain.report.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.ALREADY_REPORTED;
 import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
-import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_ALREADY_REPORTED;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOWED;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -22,16 +24,13 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.VideoFile;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.VideoFileService;
-import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
+import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
-import com.jeju.nanaland.domain.nature.repository.NatureRepository;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
+import com.jeju.nanaland.domain.report.dto.ReportRequest;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
@@ -42,7 +41,6 @@ import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
-import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
@@ -52,7 +50,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -81,15 +81,7 @@ class ReportServiceTest {
   @Mock
   InfoFixReportImageFileRepository infoFixReportImageFileRepository;
   @Mock
-  NatureRepository natureRepository;
-  @Mock
   MarketRepository marketRepository;
-  @Mock
-  FestivalRepository festivalRepository;
-  @Mock
-  ExperienceRepository experienceRepository;
-  @Mock
-  RestaurantRepository restaurantRepository;
   @Mock
   ReviewRepository reviewRepository;
   @Mock
@@ -98,6 +90,8 @@ class ReportServiceTest {
   ClaimReportImageFileRepository claimReportImageFileRepository;
   @Mock
   ClaimReportVideoFileRepository claimReportVideoFileRepository;
+  @Mock
+  MemberRepository memberRepository;
   @Mock
   ImageFileService imageFileService;
   @Mock
@@ -109,15 +103,51 @@ class ReportServiceTest {
   @Mock
   SpringTemplateEngine templateEngine;
 
-  private MemberInfoDto createMemberInfoDto(Language language, TravelType travelType) {
-    Member member = Member.builder()
-        .language(language)
-        .travelType(travelType)
-        .build();
+  MemberInfoDto memberInfoDto, memberInfoDto2;
+
+  private static List<MultipartFile> createImageMultipartFiles(int itemCount) {
+    List<MultipartFile> files = new ArrayList<>();
+    for (int i = 0; i < itemCount; i++) {
+      files.add(new MockMultipartFile("image", "test.png", "image/png",
+          "test file".getBytes(StandardCharsets.UTF_8)));
+    }
+    return files;
+  }
+
+  private static List<MultipartFile> createVideoMultipartFiles(int itemCount) {
+    List<MultipartFile> files = new ArrayList<>();
+    for (int i = 0; i < itemCount; i++) {
+      files.add(new MockMultipartFile("video", "test.mp4", "video/mp4",
+          "test file".getBytes(StandardCharsets.UTF_8)));
+    }
+    return files;
+  }
+
+  @BeforeEach
+  void setUp() {
+    memberInfoDto = createMemberInfoDto();
+    memberInfoDto2 = createMemberInfoDto();
+  }
+
+  private MemberInfoDto createMemberInfoDto() {
+    Member member = spy(Member.builder()
+        .language(Language.KOREAN)
+        .travelType(TravelType.NONE)
+        .build());
 
     return MemberInfoDto.builder()
         .member(member)
-        .language(language)
+        .language(Language.KOREAN)
+        .build();
+  }
+
+  private ReportRequest.InfoFixDto createInfoFixDto(Category category) {
+    return ReportRequest.InfoFixDto.builder()
+        .fixType(FixType.CONTACT_OR_HOMEPAGE.name())
+        .email("test@naver.com")
+        .content("content")
+        .category(category.name())
+        .postId(1L)
         .build();
   }
 
@@ -129,8 +159,8 @@ class ReportServiceTest {
         .build();
   }
 
-  private ClaimReportDto createClaimReportDto(ReportType reportType) {
-    return ClaimReportDto.builder()
+  private ReportRequest.ClaimReportDto createClaimReportDto(ReportType reportType) {
+    return ReportRequest.ClaimReportDto.builder()
         .id(1L)
         .email("test@gmail.com")
         .reportType(reportType.name())
@@ -138,190 +168,256 @@ class ReportServiceTest {
         .build();
   }
 
-  @Test
-  @DisplayName("없는 게시물에 대한 요청")
-  void fixInfoReportWithWrongPost() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    InfoFixDto infoFixDto = InfoFixDto.builder()
-        .fixType(FixType.CONTACT_OR_HOMEPAGE.name())
-        .postId(1L)
-        .email("test@naver.com")
-        .category(Category.MARKET.name())
-        .content("수정 내용")
-        .build();
-    doReturn(null).when(marketRepository).findCompositeDtoById(1L, Language.KOREAN);
+  @Nested
+  @DisplayName("정보 수정 제안 TEST")
+  class RequestPostInfoFix {
 
-    // when
-    // then
-    assertThatThrownBy(
-        () -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, new ArrayList<>())
-    ).isInstanceOf(NotFoundException.class);
-  }
+    @ParameterizedTest
+    @DisplayName("실패 - 카테고리가 올바르지 않은 경우")
+    @EnumSource(value = Category.class, names = {"NANA", "NANA_CONTENT"}, mode = Mode.INCLUDE)
+    void requestPostInfoFixFail_invalidCategory(Category category) {
+      // given: 나나스픽에 대한 정보 수정 제안 요청 설정
+      ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(category);
 
-  @ParameterizedTest
-  @DisplayName("나나스픽 정보 수정 제안 요청")
-  @EnumSource(value = Category.class, names = {"NANA", "NANA_CONTENT"}, mode = Mode.INCLUDE)
-  void fixInfoReportWithNanaTest(Category category) {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    InfoFixDto infoFixDto = InfoFixDto.builder()
-        .fixType(FixType.CONTACT_OR_HOMEPAGE.name())
-        .postId(1L)
-        .email("test@naver.com")
-        .category(category.name())
-        .content("수정 내용")
-        .build();
-
-    // when
-    // then
-    assertThatThrownBy(
-        () -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, new ArrayList<>())
-    ).isInstanceOf(BadRequestException.class);
-  }
-
-  @Test
-  @DisplayName("정보 수정 제안 요청")
-  void fixInfoReportTest() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    InfoFixDto infoFixDto = InfoFixDto.builder()
-        .fixType(FixType.CONTACT_OR_HOMEPAGE.name())
-        .postId(1L)
-        .email("test@naver.com")
-        .category(Category.NATURE.name())
-        .content("수정 내용")
-        .build();
-
-    doReturn(NatureCompositeDto.builder().build()).when(natureRepository)
-        .findCompositeDtoById(1L, Language.KOREAN);
-    doReturn(mock(ImageFile.class)).when(imageFileService)
-        .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
-    doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
-    doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
-    doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
-
-    // when
-    // then
-    reportService.requestPostInfoFix(memberInfoDto, infoFixDto, List.of(mock(MultipartFile.class)));
-  }
-
-  @Test
-  @DisplayName("리뷰 신고 실패 - 리뷰가 존재하지 않는 경우")
-  void requestClaimReportDtoFail() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
-    doReturn(Optional.empty()).when(reviewRepository).findById(any());
-
-    // when
-    NotFoundException notFoundException = assertThrows(NotFoundException.class,
-        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null));
-
-    // then
-    assertThat(notFoundException.getMessage()).isEqualTo(REVIEW_NOT_FOUND.getMessage());
-  }
-
-  @Test
-  @DisplayName("리뷰 신고 실패 - 파일 개수가 최대개수를 넘는 경우")
-  void requestClaimReportDtoFail2() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
-    Review review = createReview(memberInfoDto2.getMember());
-    List<MultipartFile> fileList = new ArrayList<>();
-    for (int i = 0; i < 6; i++) {
-      fileList.add(new MockMultipartFile("image", "test.png", "png", "test file".getBytes(
-          StandardCharsets.UTF_8)));
+      // when: 정보 수정 제안
+      // then: ErrorCode 검증
+      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, null))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessage(NANA_INFO_FIX_FORBIDDEN.getMessage());
     }
-    doReturn(Optional.of(review)).when(reviewRepository).findById(any());
 
-    // when
-    BadRequestException badRequestException = assertThrows(BadRequestException.class,
-        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, fileList));
+    @Test
+    @DisplayName("실패 - 파일 개수가 초과된 경우")
+    void requestPostInfoFixFail_fileCountOverLimit() {
+      // given: 파일 개수가 초과되도록 설정
+      ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(Category.MARKET);
+      List<MultipartFile> files = createImageMultipartFiles(6);
 
-    // then
-    assertThat(badRequestException.getMessage()).isEqualTo(IMAGE_BAD_REQUEST.getMessage());
-  }
-
-  @Test
-  @DisplayName("리뷰 신고 실패 - 본인의 리뷰 신고")
-  void requestClaimReportDtoFail3() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
-    Review review = createReview(memberInfoDto.getMember());
-    doReturn(Optional.of(review)).when(reviewRepository).findById(any());
-
-    // when
-    BadRequestException badRequestException = assertThrows(BadRequestException.class,
-        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null));
-
-    // then
-    assertThat(badRequestException.getMessage()).isEqualTo(SELF_REPORT_NOT_ALLOWED.getMessage());
-  }
-
-  @Test
-  @DisplayName("리뷰 신고 실패 - 이미 신고한 리뷰인 경우")
-  void requestClaimReportDtoFail4() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
-    Review review = createReview(memberInfoDto2.getMember());
-    doReturn(Optional.of(review)).when(reviewRepository).findById(any());
-    doReturn(Optional.of(claimReportDto)).when(claimReportRepository)
-        .findByMemberAndIdAndReportType(any(), any(), any());
-
-    // when
-    BadRequestException badRequestException = assertThrows(BadRequestException.class,
-        () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null));
-
-    // then
-    assertThat(badRequestException.getMessage()).isEqualTo(REVIEW_ALREADY_REPORTED.getMessage());
-  }
-
-  @Test
-  @DisplayName("리뷰 신고 성공")
-  void requestClaimReportSuccess() {
-    // given
-    MemberInfoDto memberInfoDto = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    MemberInfoDto memberInfoDto2 = createMemberInfoDto(Language.KOREAN, TravelType.NONE);
-    ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
-    Review review = createReview(memberInfoDto2.getMember());
-    List<MultipartFile> fileList = new ArrayList<>();
-    for (int i = 0; i < 2; i++) {
-      fileList.add(new MockMultipartFile("image", "test.png", "image/png", "test file".getBytes(
-          StandardCharsets.UTF_8)));
-      fileList.add(new MockMultipartFile("video", "test.mp4", "video/mp4", "test file".getBytes(
-          StandardCharsets.UTF_8)));
+      // when: 정보 수정 제안
+      // then: ErrorCode 검증
+      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessage(IMAGE_BAD_REQUEST.getMessage());
     }
-    doReturn(Optional.of(review)).when(reviewRepository).findById(any());
-    doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
-    doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
 
-    // Mock image and video file service methods
-    ImageFile mockImageFile = mock(ImageFile.class);
-    VideoFile mockVideoFile = mock(VideoFile.class);
+    @Test
+    @DisplayName("실패 - 존재하는 게시물이 없는 경우")
+    void requestPostInfoFixFail_postNotFound() {
+      // given: 파일 개수가 초과되도록 설정
+      ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(Category.MARKET);
+      doReturn(null).when(marketRepository)
+          .findCompositeDtoById(any(), any(Language.class));
 
-    doReturn(mockImageFile).when(imageFileService)
-        .uploadAndSaveImageFile(any(), anyBoolean(), any());
-    doReturn(mockVideoFile).when(videoFileService).uploadAndSaveVideoFile(any(), any());
+      // when: 정보 수정 제안
+      // then: ErrorCode 검증
+      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, null))
+          .isInstanceOf(NotFoundException.class)
+          .hasMessage(NOT_FOUND_EXCEPTION.getMessage());
+    }
 
-    // Mock URL returns
-    doReturn("imageUrl").when(mockImageFile).getOriginUrl();
-    doReturn("videoUrl").when(mockVideoFile).getOriginUrl();
+    @Test
+    @DisplayName("성공")
+    void requestPostInfoFixSuccess() {
+      // given: 정보 수정 제안 요청 설정
+      ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(Category.MARKET);
+      int itemCount = 3;
+      List<MultipartFile> files = createImageMultipartFiles(itemCount);
 
-    // when
-    reportService.requestClaimReport(memberInfoDto, claimReportDto, fileList);
+      doReturn(MarketCompositeDto.builder().build()).when(marketRepository)
+          .findCompositeDtoById(any(), any(Language.class));
+      doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+      doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
+      doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
 
-    // then
-    verify(claimReportRepository, times(1)).save(any(ClaimReport.class));
-    verify(imageFileService, times(2)).uploadAndSaveImageFile(any(), anyBoolean(), any());
-    verify(videoFileService, times(2)).uploadAndSaveVideoFile(any(), any());
-    verify(claimReportImageFileRepository, times(1)).saveAll(anyList());
-    verify(claimReportVideoFileRepository, times(1)).saveAll(anyList());
-    verify(javaMailSender, times(1)).send(any(MimeMessage.class));
+      // when: 정보 수정 제안
+      reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files);
+
+      // then: 정보 수정 제안 요청 검증
+      verify(infoFixReportRepository).save(any(InfoFixReport.class));
+      verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(MultipartFile.class),
+          eq(false),
+          any());
+      verify(infoFixReportImageFileRepository).saveAll(anyList());
+      verify(javaMailSender).send(any(MimeMessage.class));
+    }
+  }
+
+  @Nested
+  @DisplayName("신고 요청 TEST")
+  class RequestClaimReport {
+
+    @Test
+    @DisplayName("실패 - 리뷰가 존재하지 않는 경우")
+    void requestClaimReportFail_reviewNotFound() {
+      // given: 존재하는 리뷰가 없도록 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      doReturn(Optional.empty()).when(reviewRepository).findById(any());
+
+      // when: 리뷰 신고 요청
+      // then: ErrorCode 검증
+      assertThatThrownBy(
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          .isInstanceOf(NotFoundException.class)
+          .hasMessage(REVIEW_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - 본인이 작성한 리뷰를 신고한 경우")
+    void requestClaimReportFail_selfReportedReview() {
+      // given: 본인이 작성한 리뷰에 대해 신고 요청하도록 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      Review review = createReview(memberInfoDto.getMember());
+      doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+
+      // when: 리뷰 신고 요청
+      // then: ErrorCode 검증
+      assertThatThrownBy(
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessage(SELF_REPORT_NOT_ALLOWED.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - 이미 신고한 경우")
+    void requestClaimReportFail_alreadyReported() {
+      // given: 이미 신고한 적이 있도록 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      Review review = createReview(memberInfoDto2.getMember());
+      doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+      doReturn(Optional.of(claimReportDto)).when(claimReportRepository)
+          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+
+      // when: 리뷰 신고 요청
+      // then: ErrorCode 검증
+      assertThatThrownBy(
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessage(ALREADY_REPORTED.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - 파일 개수가 초과된 경우")
+    void requestClaimReportFail_fileCountOverLimit() {
+      // given: 파일 개수가 초과되도록 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      Review review = createReview(memberInfoDto2.getMember());
+      List<MultipartFile> files = createImageMultipartFiles(6);
+      doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+      doReturn(Optional.empty()).when(claimReportRepository)
+          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+
+      // when: 리뷰 신고 요청
+      // then: ErrorCode 검증
+      assertThatThrownBy(
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, files))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessage(IMAGE_BAD_REQUEST.getMessage());
+    }
+
+    @Test
+    @DisplayName("리뷰 신고 성공")
+    void requestReviewClaimReportSuccess() {
+      // given: 리뷰 신고 요청 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      Review review = createReview(memberInfoDto2.getMember());
+      int imageCount = 3;
+      int videoCount = 2;
+      List<MultipartFile> imageMultipartFiles = createImageMultipartFiles(imageCount);
+      List<MultipartFile> videoMultipartFiles = createVideoMultipartFiles(videoCount);
+      List<MultipartFile> files = new ArrayList<>(imageMultipartFiles);
+      files.addAll(videoMultipartFiles);
+
+      doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+      doReturn(Optional.empty()).when(claimReportRepository)
+          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+      doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
+      doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
+
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+      doReturn(mock(VideoFile.class)).when(videoFileService)
+          .uploadAndSaveVideoFile(any(MultipartFile.class), any());
+
+      // when: 리뷰 신고 요청
+      reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
+
+      // then: 리뷰 신고 요청 검증
+      verify(claimReportRepository).save(any(ClaimReport.class));
+      verify(imageFileService, times(imageCount)).uploadAndSaveImageFile(any(), anyBoolean(),
+          any());
+      verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
+      verify(claimReportImageFileRepository).saveAll(anyList());
+      verify(claimReportVideoFileRepository).saveAll(anyList());
+      verify(javaMailSender).send(any(MimeMessage.class));
+    }
+
+    @Test
+    @DisplayName("실패 - 본인을 신고하는 경우")
+    void requestClaimReportFail_selfReportedMember() {
+      // given: 본인에 대해 신고 요청하도록 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.MEMBER);
+      doReturn(claimReportDto.getId()).when(memberInfoDto.getMember()).getId();
+
+      // when: 유저 신고 요청
+      // then: ErrorCode 검증
+      assertThatThrownBy(
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessage(SELF_REPORT_NOT_ALLOWED.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하는 회원이 없는 경우")
+    void requestClaimReportFail_memberNotFound() {
+      // given: 존재하는 회원이 없도록 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.MEMBER);
+      doReturn(2L).when(memberInfoDto.getMember()).getId();
+      doReturn(Optional.empty()).when(memberRepository).findById(any());
+
+      // when: 유저 신고 요청
+      // then: ErrorCode 검증
+      assertThatThrownBy(
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          .isInstanceOf(NotFoundException.class)
+          .hasMessage(MEMBER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("유저 신고 성공")
+    void requestMemberClaimReportSuccess() {
+      // given: 유저 신고 요청 설정
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.MEMBER);
+      int imageCount = 3;
+      int videoCount = 2;
+      List<MultipartFile> imageMultipartFiles = createImageMultipartFiles(imageCount);
+      List<MultipartFile> videoMultipartFiles = createVideoMultipartFiles(videoCount);
+      List<MultipartFile> files = new ArrayList<>(imageMultipartFiles);
+      files.addAll(videoMultipartFiles);
+
+      doReturn(2L).when(memberInfoDto.getMember()).getId();
+      doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
+      doReturn(Optional.empty()).when(claimReportRepository)
+          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+      doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
+      doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+      doReturn(mock(VideoFile.class)).when(videoFileService)
+          .uploadAndSaveVideoFile(any(MultipartFile.class), any());
+
+      // when: 유저 신고 요청
+      reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
+
+      // then: 유저 신고 요청 검증
+      verify(claimReportRepository).save(any(ClaimReport.class));
+      verify(imageFileService, times(imageCount)).uploadAndSaveImageFile(any(), anyBoolean(),
+          any());
+      verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
+      verify(claimReportImageFileRepository).saveAll(anyList());
+      verify(claimReportVideoFileRepository).saveAll(anyList());
+      verify(javaMailSender).send(any(MimeMessage.class));
+    }
   }
 }
