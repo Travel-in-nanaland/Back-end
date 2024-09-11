@@ -287,7 +287,7 @@ class ReportServiceTest {
       Review review = createReview(memberInfoDto2.getMember());
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.of(claimReportDto)).when(claimReportRepository)
-          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
 
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
@@ -306,7 +306,7 @@ class ReportServiceTest {
       List<MultipartFile> files = createImageMultipartFiles(6);
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
-          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
 
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
@@ -331,7 +331,7 @@ class ReportServiceTest {
 
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
-          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
       doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
       doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
 
@@ -399,7 +399,7 @@ class ReportServiceTest {
       doReturn(2L).when(memberInfoDto.getMember()).getId();
       doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
-          .findByMemberAndIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
       doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
       doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
       doReturn(mock(ImageFile.class)).when(imageFileService)

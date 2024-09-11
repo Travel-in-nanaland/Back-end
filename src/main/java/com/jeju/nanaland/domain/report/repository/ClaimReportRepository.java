@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ClaimReportRepository extends JpaRepository<ClaimReport, Long> {
 
-  Optional<ClaimReport> findByMemberAndIdAndReportType(Member member, Long id,
+  Optional<ClaimReport> findByMemberAndReferenceIdAndReportType(Member member, Long referenceId,
       ReportType reportType);
 }

@@ -240,7 +240,7 @@ public class ReportService {
     }
 
     // 이미 신고한 적이 있는지 확인
-    Optional<ClaimReport> saveClaimReport = claimReportRepository.findByMemberAndIdAndReportType(
+    Optional<ClaimReport> saveClaimReport = claimReportRepository.findByMemberAndReferenceIdAndReportType(
         memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
     if (saveClaimReport.isPresent()) {
       throw new BadRequestException(ALREADY_REPORTED.getMessage());
