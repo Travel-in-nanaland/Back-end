@@ -23,6 +23,7 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.VideoFile;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.MailService;
 import com.jeju.nanaland.domain.common.service.VideoFileService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
@@ -45,7 +46,6 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,11 +63,8 @@ import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.env.Environment;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @ExtendWith(MockitoExtension.class)
 @Execution(ExecutionMode.CONCURRENT)
@@ -97,12 +94,7 @@ class ReportServiceTest {
   @Mock
   VideoFileService videoFileService;
   @Mock
-  Environment env;
-  @Mock
-  JavaMailSender javaMailSender;
-  @Mock
-  SpringTemplateEngine templateEngine;
-
+  MailService mailService;
   MemberInfoDto memberInfoDto, memberInfoDto2;
 
   private static List<MultipartFile> createImageMultipartFiles(int itemCount) {
@@ -228,8 +220,6 @@ class ReportServiceTest {
       doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
-      doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
-      doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
 
       // when: 정보 수정 제안
       reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files);
@@ -237,10 +227,9 @@ class ReportServiceTest {
       // then: 정보 수정 제안 요청 검증
       verify(infoFixReportRepository).save(any(InfoFixReport.class));
       verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(MultipartFile.class),
-          eq(false),
-          any());
+          eq(false), any());
       verify(infoFixReportImageFileRepository).saveAll(anyList());
-      verify(javaMailSender).send(any(MimeMessage.class));
+      verify(mailService).sendEmailReport(any(), any(), any());
     }
   }
 
@@ -332,9 +321,6 @@ class ReportServiceTest {
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
-      doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
-      doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
-
       doReturn(mock(ImageFile.class)).when(imageFileService)
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
@@ -350,7 +336,7 @@ class ReportServiceTest {
       verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
       verify(claimReportImageFileRepository).saveAll(anyList());
       verify(claimReportVideoFileRepository).saveAll(anyList());
-      verify(javaMailSender).send(any(MimeMessage.class));
+      verify(mailService).sendEmailReport(any(), any(), any());
     }
 
     @Test
@@ -400,8 +386,6 @@ class ReportServiceTest {
       doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
-      doReturn(mock(MimeMessage.class)).when(javaMailSender).createMimeMessage();
-      doReturn("nanaland.jeju@gmail.com").when(env).getProperty("spring.mail.username");
       doReturn(mock(ImageFile.class)).when(imageFileService)
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
@@ -417,7 +401,7 @@ class ReportServiceTest {
       verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
       verify(claimReportImageFileRepository).saveAll(anyList());
       verify(claimReportVideoFileRepository).saveAll(anyList());
-      verify(javaMailSender).send(any(MimeMessage.class));
+      verify(mailService).sendEmailReport(any(), any(), any());
     }
   }
 }
