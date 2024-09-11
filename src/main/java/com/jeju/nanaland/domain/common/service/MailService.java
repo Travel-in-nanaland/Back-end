@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -38,6 +39,7 @@ public class MailService {
    * @param urls        파일 URL 리스트
    * @throws ServerErrorException 메일 전송이 실패한 경우
    */
+  @Async("mailExecutor")
   public void sendEmailReport(String memberEmail, Object report, List<String> urls) {
     try {
       MimeMessage mimeMessage = createReportMail(memberEmail, report, urls);
