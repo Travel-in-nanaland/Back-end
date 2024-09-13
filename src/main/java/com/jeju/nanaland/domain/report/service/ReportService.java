@@ -28,6 +28,8 @@ import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.InfoFixReportImageFile;
+import com.jeju.nanaland.domain.report.entity.Report;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportImageFile;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
@@ -296,7 +298,7 @@ public class ReportService {
    * @param directory 파일 저장 위치
    * @return 이미지 URL 리스트
    */
-  private List<String> saveImagesAndGetUrls(List<MultipartFile> files, Object report,
+  private List<String> saveImagesAndGetUrls(List<MultipartFile> files, Report report,
       String directory) {
     if (files == null || files.isEmpty()) {
       return Collections.emptyList();
@@ -304,12 +306,12 @@ public class ReportService {
     // 이미지 저장
     List<ImageFile> saveImageFiles = saveImages(files, directory);
 
-    // 이미지와 Report 매핑 생성 및 저장
-    List<Object> reportImageFiles = createReportImageFiles(saveImageFiles, report);
-    if (report instanceof InfoFixReport) {
-      saveInfoFixReportImageFiles(reportImageFiles);
-    } else if (report instanceof ClaimReport) {
-      saveClaimReportImages(reportImageFiles);
+    // 이미지와 Report 매핑 저장
+    if (report.getReportType().equals(ReportType.INFO_FIX)) {
+      saveInfoFixReportImages((InfoFixReport) report, saveImageFiles);
+
+    } else if (report.getReportType().equals(ReportType.CLAIM)) {
+      saveClaimReportImages((ClaimReport) report, saveImageFiles);
     }
 
     // 이미지 URL 리스트 반환
@@ -330,57 +332,36 @@ public class ReportService {
   }
 
   /**
-   * 이미지와 Report(InfoFixReport, ClaimReport)의 매핑 생성
+   * 정보수정 제안 이미지와 Report 매핑 생성 및 저장
    *
-   * @param imageFiles 이미지 리스트
-   * @param report     요청 (InfoFixReport, ClaimReport)
-   * @return 이미지와 Report의 매핑 리스트
-   * @throws IllegalArgumentException 지원하지 않는 타입인 경우
+   * @param infoFixReport  정보 수정 제안 요청
+   * @param saveImageFiles 저장된 이미지 리스트
    */
-  private List<Object> createReportImageFiles(List<ImageFile> imageFiles, Object report) {
-    return imageFiles.stream()
-        .map(imageFile -> {
-          if (report instanceof InfoFixReport infoFixReport) {
-            return InfoFixReportImageFile.builder()
+  private void saveInfoFixReportImages(InfoFixReport infoFixReport,
+      List<ImageFile> saveImageFiles) {
+    List<InfoFixReportImageFile> reportImageFiles = saveImageFiles.stream()
+        .map(imageFile ->
+            InfoFixReportImageFile.builder()
                 .imageFile(imageFile)
                 .infoFixReport(infoFixReport)
-                .build();
-          } else if (report instanceof ClaimReport claimReport) {
-            return ClaimReportImageFile.builder()
+                .build()).toList();
+    infoFixReportImageFileRepository.saveAll(reportImageFiles);
+  }
+
+  /**
+   * 신고 요청 이미지와 Report 매핑 생성 및 저장
+   *
+   * @param claimReport    신고 요청
+   * @param saveImageFiles 저장된 이미지 리스트
+   */
+  private void saveClaimReportImages(ClaimReport claimReport, List<ImageFile> saveImageFiles) {
+    List<ClaimReportImageFile> reportImageFiles = saveImageFiles.stream()
+        .map(imageFile ->
+            ClaimReportImageFile.builder()
                 .imageFile(imageFile)
                 .claimReport(claimReport)
-                .build();
-          }
-          throw new IllegalArgumentException("Unsupported report type");
-        }).collect(Collectors.toList());
-  }
-
-  /**
-   * 이미지와 InfoFixReport의 매핑 저장
-   *
-   * @param saveReportImageFiles 이미지와 InfoFixReport의 매핑 리스트
-   */
-  private void saveInfoFixReportImageFiles(List<Object> saveReportImageFiles) {
-    // Object를 InfoFixReportImageFile로 변환
-    List<InfoFixReportImageFile> infoFixReportImageFiles = saveReportImageFiles.stream()
-        .map(o -> (InfoFixReportImageFile) o).collect(Collectors.toList());
-
-    // 이미지와 InfoFixReport의 매핑 모두 저장
-    infoFixReportImageFileRepository.saveAll(infoFixReportImageFiles);
-  }
-
-  /**
-   * 이미지와 ClaimReport의 매핑 저장
-   *
-   * @param saveReportImageFiles 이미지와 ClaimReport의 매핑 리스트
-   */
-  private void saveClaimReportImages(List<Object> saveReportImageFiles) {
-    // Object를 ClaimReportImageFile로 변환
-    List<ClaimReportImageFile> claimReportImageFiles = saveReportImageFiles.stream()
-        .map(o -> (ClaimReportImageFile) o).collect(Collectors.toList());
-
-    // 이미지와 ClaimReport의 매핑 모두 저장
-    claimReportImageFileRepository.saveAll(claimReportImageFiles);
+                .build()).toList();
+    claimReportImageFileRepository.saveAll(reportImageFiles);
   }
 
   /**
