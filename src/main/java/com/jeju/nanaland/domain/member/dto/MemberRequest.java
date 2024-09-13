@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.member.entity.WithdrawalType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -24,7 +24,7 @@ public class MemberRequest {
 
     @Schema(description = "이용약관 동의 여부")
     @Valid
-    List<ConsentItem> consentItems;
+    List<ConsentItemDto> consentItems;
 
     @Schema(description = "이메일(필수) - GUEST이면 GUEST@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
     @Pattern(
@@ -46,7 +46,7 @@ public class MemberRequest {
     private String providerId;
 
     @Schema(description = "언어(필수)", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
         enumClass = Language.class,
@@ -74,7 +74,7 @@ public class MemberRequest {
   public static class LoginDto {
 
     @Schema(description = "언어", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
         enumClass = Language.class,
@@ -100,7 +100,8 @@ public class MemberRequest {
   }
 
   @Data
-  public static class ConsentItem {
+  @Schema(description = "이용약관 동의 여부")
+  public static class ConsentItemDto {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
         allowableValues = {"TERMS_OF_USE", "MARKETING", "LOCATION_SERVICE"})
@@ -117,6 +118,7 @@ public class MemberRequest {
   }
 
   @Data
+  @Schema(description = "이용약관 수정 요청 DTO")
   public static class ConsentUpdateDto {
 
     @Schema(description = "이용약관", example = "MARKETING",
@@ -190,7 +192,7 @@ public class MemberRequest {
   public static class LanguageUpdateDto {
 
     @Schema(description = "언어", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
         enumClass = Language.class,

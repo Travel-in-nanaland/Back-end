@@ -15,6 +15,7 @@ public class MemberResponse {
 
   @Data
   @Builder
+  @Schema(description = "회원 정보 DTO")
   public static class MemberInfoDto {
 
     private Member member;
@@ -40,7 +41,7 @@ public class MemberResponse {
         description = "게시물 카테고리",
         example = "NATURE",
         allowableValues = {
-            "NATURE", "EXPERIENCE", "FESTIVAL", "MARKET"
+            "NATURE", "EXPERIENCE", "FESTIVAL", "MARKET", "RESTAURANT"
         })
     private String category;
 
@@ -74,7 +75,7 @@ public class MemberResponse {
   public static class ProfileDto {
 
     @Schema(description = "이용약관 동의 여부 - 내 프로필인 경우에만 제공")
-    List<ConsentItemResponse> consentItems;
+    List<ConsentItemDto> consentItems;
     @Schema(description = "내 프로필인지 확인 여부")
     private boolean isMyProfile;
     @Schema(description = "유저 Id")
@@ -97,7 +98,8 @@ public class MemberResponse {
 
   @Data
   @Builder
-  public static class ConsentItemResponse {
+  @Schema(name = "ConsentItemResponse", description = "이용약관 동의 여부")
+  public static class ConsentItemDto {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
         allowableValues = {"MARKETING", "LOCATION_SERVICE"})
