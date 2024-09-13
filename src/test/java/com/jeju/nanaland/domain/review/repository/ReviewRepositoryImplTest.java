@@ -14,8 +14,8 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
-import com.jeju.nanaland.domain.report.entity.claim.ReportType;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
@@ -129,10 +129,10 @@ class ReviewRepositoryImplTest {
     return reviews;
   }
 
-  private void createClaimReport(Long id, Member member, ReportType reportType) {
+  private void createClaimReport(Long id, Member member, ClaimReportType claimReportType) {
     ClaimReport claimReport = ClaimReport.builder()
         .referenceId(id)
-        .reportType(reportType)
+        .claimReportType(claimReportType)
         .claimType(ClaimType.DISLIKE)
         .member(member)
         .content("content")
@@ -163,7 +163,7 @@ class ReviewRepositoryImplTest {
   void findReviewListByPostId2() {
     // given - member2가 member1의 첫 번째 리뷰 신고
     MemberInfoDto member2InfoDto = createMemberInfoDto(member2);
-    createClaimReport(reviewList.get(0).getId(), member2, ReportType.REVIEW);
+    createClaimReport(reviewList.get(0).getId(), member2, ClaimReportType.REVIEW);
 
     Category validCategory = Category.EXPERIENCE;
     Pageable pageable = PageRequest.of(0, 2);
@@ -183,7 +183,7 @@ class ReviewRepositoryImplTest {
   void findReviewListByPostId3() {
     // given - member3가 member1 유저 신고
     MemberInfoDto member3InfoDto = createMemberInfoDto(member3);
-    createClaimReport(member1.getId(), member3, ReportType.MEMBER);
+    createClaimReport(member1.getId(), member3, ClaimReportType.MEMBER);
 
     Category validCategory = Category.EXPERIENCE;
     Pageable pageable = PageRequest.of(0, 2);
@@ -255,7 +255,7 @@ class ReviewRepositoryImplTest {
   void findReviewListByMember3() {
     // given - member1이 member2 첫 번째 리뷰 신고
     Pageable pageable = PageRequest.of(0, 2);
-    createClaimReport(reviewList2.get(0).getId(), member1, ReportType.REVIEW);
+    createClaimReport(reviewList2.get(0).getId(), member1, ClaimReportType.REVIEW);
 
     // when
     Page<MemberReviewDetailDto> memberReviewDetails = reviewRepository.findReviewListByMember(
@@ -274,7 +274,7 @@ class ReviewRepositoryImplTest {
   @DisplayName("회원 별 리뷰 리스트 조회 - 타인 프로필 조회 - 신고한 유저의 리뷰는 안보이도록")
   void findReviewListByMember4() {
     // given - member1이 member3 유저 신고
-    createClaimReport(member3.getId(), member1, ReportType.MEMBER);
+    createClaimReport(member3.getId(), member1, ClaimReportType.MEMBER);
     Pageable pageable = PageRequest.of(0, 2);
 
     // when
@@ -321,7 +321,7 @@ class ReviewRepositoryImplTest {
   @DisplayName("회원 별 리뷰 썸네일 리스트 조회 - 타인 프로필 - 신고한 리뷰는 안보이도록")
   void findReviewPreviewByMember3() {
     // given
-    createClaimReport(reviewList2.get(0).getId(), member1, ReportType.REVIEW);
+    createClaimReport(reviewList2.get(0).getId(), member1, ClaimReportType.REVIEW);
 
     // when - member1이 member2 조회
     List<MemberReviewPreviewDetailDto> memberReviewPreviewDetails = reviewRepository.findReviewPreviewByMember(
@@ -340,7 +340,7 @@ class ReviewRepositoryImplTest {
   @DisplayName("회원 별 리뷰 썸네일 리스트 조회 - 타인 프로필 - 신고한 유저의 리뷰는 안보이도록")
   void findReviewPreviewByMember4() {
     // given
-    createClaimReport(member3.getId(), member1, ReportType.MEMBER);
+    createClaimReport(member3.getId(), member1, ClaimReportType.MEMBER);
 
     // when - member1이 member2 조회
     List<MemberReviewPreviewDetailDto> memberReviewPreviewDetails = reviewRepository.findReviewPreviewByMember(

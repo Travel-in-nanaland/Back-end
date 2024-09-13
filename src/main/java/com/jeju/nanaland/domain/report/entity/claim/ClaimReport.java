@@ -34,7 +34,7 @@ public class ClaimReport extends BaseEntity {
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  private ReportType reportType;
+  private ClaimReportType claimReportType;
 
   @NotNull
   @Enumerated(EnumType.STRING)

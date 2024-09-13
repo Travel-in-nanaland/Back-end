@@ -97,7 +97,7 @@ public class MailService {
   private void setClaimReportContext(String memberEmail, MimeMessage message, Context context,
       ClaimReport claimReport) throws MessagingException {
     message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
-    context.setVariable("report_type", claimReport.getReportType());
+    context.setVariable("report_type", claimReport.getClaimReportType());
     context.setVariable("claim_type", claimReport.getClaimType());
     context.setVariable("id", claimReport.getId());
     context.setVariable("content", claimReport.getContent());

@@ -35,8 +35,8 @@ import com.jeju.nanaland.domain.report.dto.ReportRequest;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
-import com.jeju.nanaland.domain.report.entity.claim.ReportType;
 import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
@@ -151,11 +151,11 @@ class ReportServiceTest {
         .build();
   }
 
-  private ReportRequest.ClaimReportDto createClaimReportDto(ReportType reportType) {
+  private ReportRequest.ClaimReportDto createClaimReportDto(ClaimReportType claimReportType) {
     return ReportRequest.ClaimReportDto.builder()
         .id(1L)
         .email("test@gmail.com")
-        .reportType(reportType.name())
+        .reportType(claimReportType.name())
         .claimType(ClaimType.ETC.name())
         .build();
   }
@@ -241,7 +241,7 @@ class ReportServiceTest {
     @DisplayName("실패 - 리뷰가 존재하지 않는 경우")
     void requestClaimReportFail_reviewNotFound() {
       // given: 존재하는 리뷰가 없도록 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.REVIEW);
       doReturn(Optional.empty()).when(reviewRepository).findById(any());
 
       // when: 리뷰 신고 요청
@@ -256,7 +256,7 @@ class ReportServiceTest {
     @DisplayName("실패 - 본인이 작성한 리뷰를 신고한 경우")
     void requestClaimReportFail_selfReportedReview() {
       // given: 본인이 작성한 리뷰에 대해 신고 요청하도록 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.REVIEW);
       Review review = createReview(memberInfoDto.getMember());
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
 
@@ -272,11 +272,11 @@ class ReportServiceTest {
     @DisplayName("실패 - 이미 신고한 경우")
     void requestClaimReportFail_alreadyReported() {
       // given: 이미 신고한 적이 있도록 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.REVIEW);
       Review review = createReview(memberInfoDto2.getMember());
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.of(claimReportDto)).when(claimReportRepository)
-          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
 
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
@@ -290,12 +290,12 @@ class ReportServiceTest {
     @DisplayName("실패 - 파일 개수가 초과된 경우")
     void requestClaimReportFail_fileCountOverLimit() {
       // given: 파일 개수가 초과되도록 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.REVIEW);
       Review review = createReview(memberInfoDto2.getMember());
       List<MultipartFile> files = createImageMultipartFiles(6);
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
-          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
 
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
@@ -309,7 +309,7 @@ class ReportServiceTest {
     @DisplayName("리뷰 신고 성공")
     void requestReviewClaimReportSuccess() {
       // given: 리뷰 신고 요청 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.REVIEW);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.REVIEW);
       Review review = createReview(memberInfoDto2.getMember());
       int imageCount = 3;
       int videoCount = 2;
@@ -320,7 +320,7 @@ class ReportServiceTest {
 
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
-          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
@@ -343,7 +343,7 @@ class ReportServiceTest {
     @DisplayName("실패 - 본인을 신고하는 경우")
     void requestClaimReportFail_selfReportedMember() {
       // given: 본인에 대해 신고 요청하도록 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.MEMBER);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.MEMBER);
       doReturn(claimReportDto.getId()).when(memberInfoDto.getMember()).getId();
 
       // when: 유저 신고 요청
@@ -358,7 +358,7 @@ class ReportServiceTest {
     @DisplayName("실패 - 존재하는 회원이 없는 경우")
     void requestClaimReportFail_memberNotFound() {
       // given: 존재하는 회원이 없도록 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.MEMBER);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.MEMBER);
       doReturn(2L).when(memberInfoDto.getMember()).getId();
       doReturn(Optional.empty()).when(memberRepository).findById(any());
 
@@ -374,7 +374,7 @@ class ReportServiceTest {
     @DisplayName("유저 신고 성공")
     void requestMemberClaimReportSuccess() {
       // given: 유저 신고 요청 설정
-      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ReportType.MEMBER);
+      ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.MEMBER);
       int imageCount = 3;
       int videoCount = 2;
       List<MultipartFile> imageMultipartFiles = createImageMultipartFiles(imageCount);
@@ -385,7 +385,7 @@ class ReportServiceTest {
       doReturn(2L).when(memberInfoDto.getMember()).getId();
       doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
-          .findByMemberAndReferenceIdAndReportType(any(Member.class), any(), any(ReportType.class));
+          .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)

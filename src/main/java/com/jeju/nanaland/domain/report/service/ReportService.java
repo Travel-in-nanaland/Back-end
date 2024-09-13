@@ -30,9 +30,9 @@ import com.jeju.nanaland.domain.report.entity.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.InfoFixReportImageFile;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportImageFile;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportVideoFile;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
-import com.jeju.nanaland.domain.report.entity.claim.ReportType;
 import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
@@ -189,7 +189,7 @@ public class ReportService {
     ClaimReport claimReport = ClaimReport.builder()
         .member(memberInfoDto.getMember())
         .referenceId(reqDto.getId())
-        .reportType(ReportType.valueOf(reqDto.getReportType()))
+        .claimReportType(ClaimReportType.valueOf(reqDto.getReportType()))
         .claimType(ClaimType.valueOf(reqDto.getClaimType()))
         .content(reqDto.getContent())
         .build();
@@ -219,16 +219,16 @@ public class ReportService {
   private void validateClaimReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
       List<MultipartFile> files) {
     // 타입별 유효성 확인
-    ReportType reportType = ReportType.valueOf(reqDto.getReportType());
-    if (reportType == ReportType.REVIEW) {
+    ClaimReportType claimReportType = ClaimReportType.valueOf(reqDto.getReportType());
+    if (claimReportType == ClaimReportType.REVIEW) {
       validateReviewReportRequest(memberInfoDto, reqDto);
-    } else if (reportType == ReportType.MEMBER) {
+    } else if (claimReportType == ClaimReportType.MEMBER) {
       validateMemberReportRequest(memberInfoDto, reqDto);
     }
 
     // 이미 신고한 적이 있는지 확인
-    Optional<ClaimReport> saveClaimReport = claimReportRepository.findByMemberAndReferenceIdAndReportType(
-        memberInfoDto.getMember(), reqDto.getId(), ReportType.valueOf(reqDto.getReportType()));
+    Optional<ClaimReport> saveClaimReport = claimReportRepository.findByMemberAndReferenceIdAndClaimReportType(
+        memberInfoDto.getMember(), reqDto.getId(), ClaimReportType.valueOf(reqDto.getReportType()));
     if (saveClaimReport.isPresent()) {
       throw new BadRequestException(ALREADY_REPORTED.getMessage());
     }
