@@ -34,6 +34,7 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.report.dto.ReportRequest;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
+import com.jeju.nanaland.domain.report.entity.Report;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
@@ -229,7 +230,7 @@ class ReportServiceTest {
       verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(MultipartFile.class),
           eq(false), any());
       verify(infoFixReportImageFileRepository).saveAll(anyList());
-      verify(mailService).sendEmailReport(any(), any(), any());
+      verify(mailService).sendEmailReport(any(Report.class), any());
     }
   }
 
@@ -336,7 +337,7 @@ class ReportServiceTest {
       verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
       verify(claimReportImageFileRepository).saveAll(anyList());
       verify(claimReportVideoFileRepository).saveAll(anyList());
-      verify(mailService).sendEmailReport(any(), any(), any());
+      verify(mailService).sendEmailReport(any(Report.class), any());
     }
 
     @Test
@@ -401,7 +402,7 @@ class ReportServiceTest {
       verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
       verify(claimReportImageFileRepository).saveAll(anyList());
       verify(claimReportVideoFileRepository).saveAll(anyList());
-      verify(mailService).sendEmailReport(any(), any(), any());
+      verify(mailService).sendEmailReport(any(Report.class), any());
     }
   }
 }

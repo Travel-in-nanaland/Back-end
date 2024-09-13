@@ -123,7 +123,7 @@ public class ReportService {
         INFO_FIX_REPORT_IMAGE_DIRECTORY);
 
     // 이메일 전송
-    mailService.sendEmailReport(memberInfoDto.getMember().getEmail(), infoFixReport, imageUrls);
+    mailService.sendEmailReport(infoFixReport, imageUrls);
   }
 
   /**
@@ -194,6 +194,7 @@ public class ReportService {
         .claimReportType(ClaimReportType.valueOf(reqDto.getReportType()))
         .claimType(ClaimType.valueOf(reqDto.getClaimType()))
         .content(reqDto.getContent())
+        .email(reqDto.getEmail())
         .build();
     claimReportRepository.save(claimReport);
 
@@ -207,7 +208,7 @@ public class ReportService {
     // 이메일 전송
     List<String> combinedUrls = new ArrayList<>(imageUrls);
     combinedUrls.addAll(videoUrls);
-    mailService.sendEmailReport(reqDto.getEmail(), claimReport, combinedUrls);
+    mailService.sendEmailReport(claimReport, combinedUrls);
   }
 
   /**

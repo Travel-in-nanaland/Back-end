@@ -136,6 +136,7 @@ class ReviewRepositoryImplTest {
         .claimType(ClaimType.DISLIKE)
         .member(member)
         .content("content")
+        .email("test@naver.com")
         .build();
     entityManager.persist(claimReport);
   }
