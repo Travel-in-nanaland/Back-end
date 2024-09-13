@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.report.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Category;
-import com.jeju.nanaland.domain.report.entity.FixType;
+import com.jeju.nanaland.domain.report.entity.infoFix.FixType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import io.swagger.v3.oas.annotations.media.Schema;

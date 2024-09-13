@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.report.entity;
+package com.jeju.nanaland.domain.report.entity.infoFix;
 
 public enum FixType {
 

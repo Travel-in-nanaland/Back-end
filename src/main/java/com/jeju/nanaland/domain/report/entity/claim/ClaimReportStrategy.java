@@ -1,8 +1,9 @@
-package com.jeju.nanaland.domain.report.entity;
+package com.jeju.nanaland.domain.report.entity.claim;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
-import com.jeju.nanaland.domain.report.entity.claim.ClaimReportImageFile;
+import com.jeju.nanaland.domain.report.entity.Report;
+import com.jeju.nanaland.domain.report.entity.ReportStrategy;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;

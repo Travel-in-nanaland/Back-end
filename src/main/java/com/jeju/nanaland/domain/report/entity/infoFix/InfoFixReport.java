@@ -1,8 +1,10 @@
-package com.jeju.nanaland.domain.report.entity;
+package com.jeju.nanaland.domain.report.entity.infoFix;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.report.entity.Report;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.Column;

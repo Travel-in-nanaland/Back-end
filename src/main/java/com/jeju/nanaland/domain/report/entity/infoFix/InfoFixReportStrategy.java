@@ -1,6 +1,9 @@
-package com.jeju.nanaland.domain.report.entity;
+package com.jeju.nanaland.domain.report.entity.infoFix;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.report.entity.Report;
+import com.jeju.nanaland.domain.report.entity.ReportStrategy;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;
