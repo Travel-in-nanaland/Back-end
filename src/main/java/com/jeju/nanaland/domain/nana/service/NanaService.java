@@ -135,10 +135,8 @@ public class NanaService implements PostService {
         .build();
   }
 
-  // TODO 리팩토링 필요
-
   /**
-   * 나나 상세 게시물
+   * 나나 상세 게시물. nanaContent는 post에 firstImage를 갖지 않는다, nanaContent는 KoreanNanaContent의 이미지를 공유한다.
    *
    * @param memberInfoDto
    * @param postId
@@ -152,48 +150,26 @@ public class NanaService implements PostService {
     Language language = memberInfoDto.getLanguage();
 
     // nana 찾아서
-    Nana nana = getNanaById(postId);
+    Nana nana = nanaRepository.findNanaById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
 
     // nanaTitle 찾아서
     NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)
         .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
 
-    NanaTitle koreanNanaTitle;
-    List<NanaContent> nanaContents;
-    List<NanaContent> koreanNanaContents;
+    // nanaContets 찾아서
+    List<NanaContent> nanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+        nanaTitle);
 
-    // korean nanaTitle 찾기 -> nanaContent의 이미지는 korean nanaContent의 이미지를 공유하기 때문에 찾아놔야함
-    if (language == Language.KOREAN) {
-      nanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle);
-      koreanNanaContents = nanaContents;
-    } else {
-      koreanNanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, Language.KOREAN)
-          .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
-      nanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle);
-      koreanNanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(
-          koreanNanaTitle);
-    }
+    // nanaContent는 KOREAN 버전의 nanaContents의 이미지를 공유
+    List<NanaContent> koreanNanaContents = getKoreanNanaContents(language, nana, nanaContents);
 
     if (isSearch) {
       searchService.updateSearchVolumeV1(NANA, nana.getId());
     }
 
-    // nanaTitle에 맞는 nanaContent게시물 조회, <- 에 사용할 nanaContent 이미지 koreanNanaContent에서 찾기
-
     // nanaContent 별 이미지 리스트 조회 후 저장하기.
-    List<List<ImageFileDto>> eachNanaContentImages = new ArrayList<>();
-
-    for (NanaContent nanaContent : koreanNanaContents) { // 각 korean nanaContent에 맞는 사진들 가져오기
-
-      // content의 이미지 postImageFile에서 여러 개 찾아오기
-      List<ImageFileDto> contentImageFiles = new ArrayList<>(imageFileRepository.findPostImageFiles(
-          nanaContent.getId()));
-
-      if (contentImageFiles.isEmpty()) {// 사진 없으면 서버 에러
-        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
-      }
-      eachNanaContentImages.add(contentImageFiles);
-    }
+    List<List<ImageFileDto>> eachNanaContentImages = getEachNanaContentsImages(koreanNanaContents);
 
     // 서버 오류 체크 (밑에 나오는 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
     if (nanaContents.size() != eachNanaContentImages.size()) {
@@ -203,30 +179,8 @@ public class NanaService implements PostService {
     boolean isPostInFavorite = memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(),
         NANA, nanaTitle.getNana().getId());
 
-    List<NanaResponse.ContentDetailDto> contentDetailDtos = new ArrayList<>();
-    int nanaContentImageIdx = 0;
-    for (NanaContent nanaContent : nanaContents) {
-
-      List<Hashtag> hashtags = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
-          language, NANA_CONTENT, nanaContent.getId());
-
-      // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
-      List<String> stringKeywords = getStringKeywordsFromHashtags(hashtags);
-
-      contentDetailDtos.add(
-          NanaResponse.ContentDetailDto.builder()
-              .number(nanaContent.getPriority().intValue())
-              .subTitle(nanaContent.getSubTitle())
-              .title(nanaContent.getTitle())
-              .images(eachNanaContentImages.get(nanaContentImageIdx))
-//              .imageUrl(eachNanaContentImages.get(nanaContentImageIdx).getImageFile().getOriginUrl())
-              .content(nanaContent.getContent())
-              .additionalInfoList(
-                  getAdditionalInfoFromNanaContentEntity(language, nanaContent))
-              .hashtags(stringKeywords)
-              .build());
-      nanaContentImageIdx++;
-    }
+    List<NanaResponse.ContentDetailDto> contentDetailDtos = getNanaDetailDtosFromNanaContents(
+        nanaContents, language, eachNanaContentImages);
 
     return NanaResponse.DetailPageDto.builder()
         .id(nana.getId())
@@ -285,10 +239,88 @@ public class NanaService implements PostService {
         .collect(Collectors.toList());
   }
 
-  private Nana getNanaById(Long id) {
-    return nanaRepository.findNanaById(id)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
+  /**
+   * nanaContents -> nanaDetailDtos 변환
+   *
+   * @param nanaContents
+   * @param language
+   * @param eachNanaContentImages
+   * @return
+   */
+  private List<NanaResponse.ContentDetailDto> getNanaDetailDtosFromNanaContents(
+      List<NanaContent> nanaContents, Language language,
+      List<List<ImageFileDto>> eachNanaContentImages) {
+    List<NanaResponse.ContentDetailDto> result = new ArrayList<>();
+    int nanaContentImageIdx = 0;
+    for (NanaContent nanaContent : nanaContents) {
 
+      List<Hashtag> hashtags = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
+          language, NANA_CONTENT, nanaContent.getId());
+
+      // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
+      List<String> stringKeywords = getStringKeywordsFromHashtags(hashtags);
+
+      result.add(
+          NanaResponse.ContentDetailDto.builder()
+              .number(nanaContent.getPriority().intValue())
+              .subTitle(nanaContent.getSubTitle())
+              .title(nanaContent.getTitle())
+              .images(eachNanaContentImages.get(nanaContentImageIdx))
+//              .imageUrl(eachNanaContentImages.get(nanaContentImageIdx).getImageFile().getOriginUrl())
+              .content(nanaContent.getContent())
+              .additionalInfoList(
+                  getAdditionalInfoFromNanaContentEntity(language, nanaContent))
+              .hashtags(stringKeywords)
+              .build());
+      nanaContentImageIdx++;
+    }
+    return result;
+  }
+
+  /**
+   * nanaContent 순서대로 각 게시물의 이미지 리스트 koreanContents에서 가져오기
+   *
+   * @param koreanNanaContents
+   * @return
+   */
+  private List<List<ImageFileDto>> getEachNanaContentsImages(List<NanaContent> koreanNanaContents) {
+    List<List<ImageFileDto>> eachNanaContentImages = new ArrayList<>();
+
+    for (NanaContent nanaContent : koreanNanaContents) { // 각 korean nanaContent에 맞는 사진들 가져오기
+
+      // content의 이미지 postImageFile에서 여러 개 찾아오기
+      List<ImageFileDto> contentImageFiles = new ArrayList<>(imageFileRepository.findPostImageFiles(
+          nanaContent.getId()));
+
+      if (contentImageFiles.isEmpty()) {// 사진 없으면 서버 에러
+        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
+      }
+      eachNanaContentImages.add(contentImageFiles);
+    }
+    return eachNanaContentImages;
+  }
+
+  /**
+   * korean nanaTitle 찾기. nanaContent의 이미지는 korean nanaContent의 이미지를 공유하기 때문에 찾아놔야함
+   *
+   * @param language
+   * @param nana
+   * @param nanaContents
+   * @return
+   */
+  private List<NanaContent> getKoreanNanaContents(Language language, Nana nana,
+      List<NanaContent> nanaContents) {
+    List<NanaContent> koreanNanaContents;
+    if (language == Language.KOREAN) {
+      koreanNanaContents = nanaContents;
+    } else {
+      NanaTitle koreanNanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
+              Language.KOREAN)
+          .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
+      koreanNanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+          koreanNanaTitle);
+    }
+    return koreanNanaContents;
   }
 
   /**
