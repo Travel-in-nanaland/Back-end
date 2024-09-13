@@ -32,16 +32,18 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.report.dto.ReportRequest;
+import com.jeju.nanaland.domain.report.entity.ClaimReportStrategy;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
+import com.jeju.nanaland.domain.report.entity.InfoFixReportStrategy;
 import com.jeju.nanaland.domain.report.entity.Report;
+import com.jeju.nanaland.domain.report.entity.ReportStrategyFactory;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
-import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
-import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
 import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
@@ -77,15 +79,11 @@ class ReportServiceTest {
   @Mock
   InfoFixReportRepository infoFixReportRepository;
   @Mock
-  InfoFixReportImageFileRepository infoFixReportImageFileRepository;
-  @Mock
   MarketRepository marketRepository;
   @Mock
   ReviewRepository reviewRepository;
   @Mock
   ClaimReportRepository claimReportRepository;
-  @Mock
-  ClaimReportImageFileRepository claimReportImageFileRepository;
   @Mock
   ClaimReportVideoFileRepository claimReportVideoFileRepository;
   @Mock
@@ -96,6 +94,13 @@ class ReportServiceTest {
   VideoFileService videoFileService;
   @Mock
   MailService mailService;
+  @Mock
+  ReportStrategyFactory reportStrategyFactory;
+  @Mock
+  InfoFixReportStrategy infoFixReportStrategy;
+  @Mock
+  ClaimReportStrategy claimReportStrategy;
+
   MemberInfoDto memberInfoDto, memberInfoDto2;
 
   private static List<MultipartFile> createImageMultipartFiles(int itemCount) {
@@ -221,6 +226,7 @@ class ReportServiceTest {
       doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+      doReturn(infoFixReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 정보 수정 제안
       reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files);
@@ -229,7 +235,8 @@ class ReportServiceTest {
       verify(infoFixReportRepository).save(any(InfoFixReport.class));
       verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(MultipartFile.class),
           eq(false), any());
-      verify(infoFixReportImageFileRepository).saveAll(anyList());
+      verify(reportStrategyFactory).findStrategy(ReportType.INFO_FIX);
+      verify(infoFixReportStrategy).saveReportImages(any(InfoFixReport.class), anyList());
       verify(mailService).sendEmailReport(any(Report.class), any());
     }
   }
@@ -326,6 +333,7 @@ class ReportServiceTest {
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
           .uploadAndSaveVideoFile(any(MultipartFile.class), any());
+      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 리뷰 신고 요청
       reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
@@ -335,7 +343,8 @@ class ReportServiceTest {
       verify(imageFileService, times(imageCount)).uploadAndSaveImageFile(any(), anyBoolean(),
           any());
       verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
-      verify(claimReportImageFileRepository).saveAll(anyList());
+      verify(reportStrategyFactory).findStrategy(any(ReportType.class));
+      verify(claimReportStrategy).saveReportImages(any(ClaimReport.class), anyList());
       verify(claimReportVideoFileRepository).saveAll(anyList());
       verify(mailService).sendEmailReport(any(Report.class), any());
     }
@@ -391,6 +400,7 @@ class ReportServiceTest {
           .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
           .uploadAndSaveVideoFile(any(MultipartFile.class), any());
+      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 유저 신고 요청
       reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
@@ -400,7 +410,8 @@ class ReportServiceTest {
       verify(imageFileService, times(imageCount)).uploadAndSaveImageFile(any(), anyBoolean(),
           any());
       verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
-      verify(claimReportImageFileRepository).saveAll(anyList());
+      verify(reportStrategyFactory).findStrategy(any(ReportType.class));
+      verify(claimReportStrategy).saveReportImages(any(ClaimReport.class), anyList());
       verify(claimReportVideoFileRepository).saveAll(anyList());
       verify(mailService).sendEmailReport(any(Report.class), any());
     }

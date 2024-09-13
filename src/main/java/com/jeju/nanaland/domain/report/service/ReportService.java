@@ -27,18 +27,15 @@ import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
 import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
 import com.jeju.nanaland.domain.report.entity.FixType;
 import com.jeju.nanaland.domain.report.entity.InfoFixReport;
-import com.jeju.nanaland.domain.report.entity.InfoFixReportImageFile;
 import com.jeju.nanaland.domain.report.entity.Report;
-import com.jeju.nanaland.domain.report.entity.ReportType;
+import com.jeju.nanaland.domain.report.entity.ReportStrategyFactory;
+import com.jeju.nanaland.domain.report.entity.ReportStrategy;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
-import com.jeju.nanaland.domain.report.entity.claim.ClaimReportImageFile;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportVideoFile;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
-import com.jeju.nanaland.domain.report.repository.ClaimReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportRepository;
 import com.jeju.nanaland.domain.report.repository.ClaimReportVideoFileRepository;
-import com.jeju.nanaland.domain.report.repository.InfoFixReportImageFileRepository;
 import com.jeju.nanaland.domain.report.repository.InfoFixReportRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.review.entity.Review;
@@ -66,10 +63,8 @@ public class ReportService {
   private final MemberRepository memberRepository;
   private final ClaimReportVideoFileRepository claimReportVideoFileRepository;
   private final ClaimReportRepository claimReportRepository;
-  private final ClaimReportImageFileRepository claimReportImageFileRepository;
   private final ReviewRepository reviewRepository;
   private final InfoFixReportRepository infoFixReportRepository;
-  private final InfoFixReportImageFileRepository infoFixReportImageFileRepository;
   private final NatureRepository natureRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
@@ -78,7 +73,7 @@ public class ReportService {
   private final ImageFileService imageFileService;
   private final VideoFileService videoFileService;
   private final MailService mailService;
-
+  private final ReportStrategyFactory reportStrategyFactory;
   @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
   private String INFO_FIX_REPORT_IMAGE_DIRECTORY;
   @Value("${cloud.aws.s3.claimReportFileDirectory}")
@@ -308,12 +303,8 @@ public class ReportService {
     List<ImageFile> saveImageFiles = saveImages(files, directory);
 
     // 이미지와 Report 매핑 저장
-    if (report.getReportType().equals(ReportType.INFO_FIX)) {
-      saveInfoFixReportImages((InfoFixReport) report, saveImageFiles);
-
-    } else if (report.getReportType().equals(ReportType.CLAIM)) {
-      saveClaimReportImages((ClaimReport) report, saveImageFiles);
-    }
+    ReportStrategy reportStrategy = reportStrategyFactory.findStrategy(report.getReportType());
+    reportStrategy.saveReportImages(report, saveImageFiles);
 
     // 이미지 URL 리스트 반환
     return saveImageFiles.stream().map(ImageFile::getOriginUrl).collect(Collectors.toList());
@@ -330,39 +321,6 @@ public class ReportService {
     return files.stream()
         .map(file -> imageFileService.uploadAndSaveImageFile(file, false, directory))
         .collect(Collectors.toList());
-  }
-
-  /**
-   * 정보수정 제안 이미지와 Report 매핑 생성 및 저장
-   *
-   * @param infoFixReport  정보 수정 제안 요청
-   * @param saveImageFiles 저장된 이미지 리스트
-   */
-  private void saveInfoFixReportImages(InfoFixReport infoFixReport,
-      List<ImageFile> saveImageFiles) {
-    List<InfoFixReportImageFile> reportImageFiles = saveImageFiles.stream()
-        .map(imageFile ->
-            InfoFixReportImageFile.builder()
-                .imageFile(imageFile)
-                .infoFixReport(infoFixReport)
-                .build()).toList();
-    infoFixReportImageFileRepository.saveAll(reportImageFiles);
-  }
-
-  /**
-   * 신고 요청 이미지와 Report 매핑 생성 및 저장
-   *
-   * @param claimReport    신고 요청
-   * @param saveImageFiles 저장된 이미지 리스트
-   */
-  private void saveClaimReportImages(ClaimReport claimReport, List<ImageFile> saveImageFiles) {
-    List<ClaimReportImageFile> reportImageFiles = saveImageFiles.stream()
-        .map(imageFile ->
-            ClaimReportImageFile.builder()
-                .imageFile(imageFile)
-                .claimReport(claimReport)
-                .build()).toList();
-    claimReportImageFileRepository.saveAll(reportImageFiles);
   }
 
   /**
