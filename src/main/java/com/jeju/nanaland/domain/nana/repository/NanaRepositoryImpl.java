@@ -37,8 +37,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -59,8 +59,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -89,8 +89,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -113,8 +113,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nana)
