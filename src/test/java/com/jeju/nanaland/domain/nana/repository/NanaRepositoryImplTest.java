@@ -238,7 +238,7 @@ class NanaRepositoryImplTest {
     // Then
     boolean isSearched = false;
     for (PreviewDto previewDto : content) {
-      if (previewDto.getSubHeading().equals("keyword")) {
+      if (previewDto.getHeading().equals("keyword")) {
         isSearched = true;
       }
     }

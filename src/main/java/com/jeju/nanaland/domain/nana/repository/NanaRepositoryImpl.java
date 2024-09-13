@@ -12,8 +12,8 @@ import com.jeju.nanaland.domain.common.dto.PostCardDto;
 import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
-import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
+import com.jeju.nanaland.domain.nana.dto.QNanaResponse_PreviewDto;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -31,13 +31,13 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   //최신순으로 4
   @Override
   public List<PreviewDto> findTop4PreviewDtoOrderByCreatedAt(Language language) {
-    return queryFactory.select(new QNanaResponse_NanaThumbnail(
+    return queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -53,13 +53,13 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   @Override
   public Page<PreviewDto> findAllPreviewDtoOrderByCreatedAt(Language language,
       Pageable pageable) {
-    List<PreviewDto> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
+    List<PreviewDto> resultDto = queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -83,13 +83,13 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   @Override
   public List<PreviewDto> findRecommendPreviewDto(Language language) {
-    return queryFactory.select(new QNanaResponse_NanaThumbnail(
+    return queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -107,13 +107,13 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
     List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
 
-    List<PreviewDto> resultDto = queryFactory.selectDistinct(new QNanaResponse_NanaThumbnail(
+    List<PreviewDto> resultDto = queryFactory.selectDistinct(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nana)
