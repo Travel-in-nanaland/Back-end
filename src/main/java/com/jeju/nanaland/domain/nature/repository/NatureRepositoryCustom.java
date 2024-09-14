@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.nature.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.PreviewDto;
 import java.util.List;
@@ -18,5 +18,5 @@ public interface NatureRepositoryCustom {
   Page<PreviewDto> findAllNaturePreviewDtoOrderByPriority(Language locale, List<String> addressFilterList,
       String keyword, Pageable pageable);
 
-  PostCardDto findPostCardDto(Long postId, Language language);
+  PostPreviewDto findPostPreviewDto(Long postId, Language language);
 }

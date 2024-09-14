@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.entity;
 
 import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

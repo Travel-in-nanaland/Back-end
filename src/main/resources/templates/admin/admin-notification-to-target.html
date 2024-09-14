@@ -19,13 +19,13 @@
       event.preventDefault();
       form = event.target;
       const formData = {
-        memberId: document.querySelector('input[name="memberId"]').value,
+        memberId: document.querySelector('input[id="memberId"]').value,
         notificationDto: {
-          category: document.querySelector('select[name="category"]').value,
-          contentId: document.querySelector('input[name="contentId"]').value,
-          title: document.querySelector('input[name="title"]').value,
-          content: document.querySelector('input[name="content"]').value,
-          language: document.querySelector('select[name="language"]').value,
+          category: document.querySelector('select[id="category"]').value,
+          contentId: document.querySelector('input[id="contentId"]').value,
+          title: document.querySelector('input[id="title"]').value,
+          content: document.querySelector('input[id="content"]').value,
+          language: document.querySelector('select[id="language"]').value,
         }
       };
 
@@ -103,7 +103,7 @@
   <input name="memberId" placeholder="memberId" required th:field="*{memberId}"
          type="number">
 
-  <select name="category" th:field="*{notificationDto.category}">
+  <select id="category" name="category" th:field="*{notificationDto.category}">
     <option value="NANA">NANA</option>
     <option value="EXPERIENCE">EXPERIENCE</option>
     <option value="FESTIVAL">FESTIVAL</option>
@@ -114,16 +114,18 @@
     <option value="NONE">NONE</option>
   </select>
 
-  <input name="contentId" placeholder="contentId" required th:field="*{notificationDto.contentId}"
+  <input id="contentId" name="contentId" placeholder="contentId" required
+         th:field="*{notificationDto.contentId}"
          type="number">
 
-  <input name="title" placeholder="title" required th:field="*{notificationDto.title}"
+  <input id="title" name="title" placeholder="title" required th:field="*{notificationDto.title}"
          type="text">
 
-  <input name="content" placeholder="content" required th:field="*{notificationDto.content}"
+  <input id="content" name="content" placeholder="content" required
+         th:field="*{notificationDto.content}"
          type="text">
 
-  <select name="language" th:field="*{notificationDto.language}">
+  <select id="language" name="language" th:field="*{notificationDto.language}">
     <option value="KOREAN">KOREAN</option>
     <option value="ENGLISH">ENGLISH</option>
     <option value="CHINESE">CHINESE</option>

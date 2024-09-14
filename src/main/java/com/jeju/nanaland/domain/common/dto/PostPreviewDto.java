@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
-public class PostCardDto {
+public class PostPreviewDto {
 
   @Schema(description = "게시물 id")
   private Long id;
@@ -22,16 +22,18 @@ public class PostCardDto {
   private ImageFileDto firstImage;
 
   @QueryProjection
-  public PostCardDto(Long id, String title, String originUrl, String thumbnailUrl) {
+  public PostPreviewDto(Long id, String title, String originUrl, String thumbnailUrl) {
     this.id = id;
     this.title = title;
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
   }
 
-  public PostCardDto(Long id, String title, String category, ImageFileDto firstImage) {
-    this.id = id;
-    this.title = title;
-    this.category = category;
-    this.firstImage = firstImage;
+  public PostPreviewDto(PostPreviewDto postPreviewDto) {
+    this.id = postPreviewDto.getId();
+    this.title = postPreviewDto.getTitle();
+    this.category = postPreviewDto.getCategory();
+    this.firstImage = postPreviewDto.getFirstImage();
   }
+
+
 }

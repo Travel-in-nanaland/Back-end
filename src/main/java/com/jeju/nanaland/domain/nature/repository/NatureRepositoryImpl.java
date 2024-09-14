@@ -7,8 +7,8 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
@@ -172,9 +172,9 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
    * @return 7대 자연 프리뷰 정보
    */
   @Override
-  public PostCardDto findPostCardDto(Long natureId, Language language) {
+  public PostPreviewDto findPostPreviewDto(Long natureId, Language language) {
     return queryFactory
-        .select(new QPostCardDto(
+        .select(new QPostPreviewDto(
             nature.id,
             natureTrans.title,
             imageFile.originUrl,
