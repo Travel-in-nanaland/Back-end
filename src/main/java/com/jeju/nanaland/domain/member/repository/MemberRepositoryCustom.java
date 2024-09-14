@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface MemberRepositoryCustom {
 
-  MemberInfoDto findMemberWithLanguage(Long memberId);
+  MemberInfoDto findMemberInfoDto(Long memberId);
 
-  List<MemberConsent> findExpiredMemberConsent();
+  List<MemberConsent> findAllExpiredMemberConsent();
 
-  List<Member> findInactiveMembersForWithdrawalDate();
+  List<Member> findAllInactiveMember();
 
-  List<MemberConsent> findMemberConsentByMember(Member member);
+  List<MemberConsent> findAllMemberConsent(Member member);
 }

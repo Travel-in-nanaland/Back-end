@@ -8,8 +8,8 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
@@ -37,8 +37,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -59,8 +59,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -89,8 +89,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nanaTitle)
@@ -113,8 +113,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
-            nanaTitle.heading,
             nanaTitle.subHeading,
+            nanaTitle.heading,
             nana.createdAt
         ))
         .from(nana)
@@ -145,9 +145,9 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   @Override
-  public PostCardDto findPostCardDto(Long postId, Language language) {
+  public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
     return queryFactory
-        .select(new QPostCardDto(
+        .select(new QPostPreviewDto(
             nana.id,
             nanaTitle.heading,
             imageFile.originUrl,

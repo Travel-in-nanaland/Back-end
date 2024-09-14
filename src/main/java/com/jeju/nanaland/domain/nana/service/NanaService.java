@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.repository.PostImageFileRepository;
@@ -82,24 +82,22 @@ public class NanaService implements PostService {
   }
 
   /**
-   * 카드 정보 조회 - (postId, category, imageFile, title)
+   * 게시물 preview 정보 조회 - (postId, category, imageFile, title)
    *
    * @param postId   게시물 id
    * @param category 게시물 카테고리
    * @param language 언어 정보
-   * @return PostCardDto
+   * @return PostPreviewDto
    * @throws NotFoundException (게시물 id, langugae)를 가진 나나스픽 정보가 존재하지 않는 경우
    */
   @Override
-  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
-    PostCardDto postCardDto = nanaRepository.findPostCardDto(postId, language);
-
-    // 게시물 정보가 없는 경우 에러처리
-    Optional.ofNullable(postCardDto)
+  public PostPreviewDto getPostPreviewDto(Long postId, Category category, Language language) {
+    PostPreviewDto postPreviewDto = nanaRepository.findPostPreviewDto(postId, language);
+    Optional.ofNullable(postPreviewDto)
         .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
 
-    postCardDto.setCategory(PostCategory.NANA.toString());
-    return postCardDto;
+    postPreviewDto.setCategory(PostCategory.NANA.toString());
+    return postPreviewDto;
   }
 
   // 메인페이지에 보여지는 4개의 nana

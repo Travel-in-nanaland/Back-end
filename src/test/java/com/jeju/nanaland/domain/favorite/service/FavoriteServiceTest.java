@@ -8,13 +8,13 @@ import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
-import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.FavoriteCardPageDto;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
@@ -121,11 +121,13 @@ class FavoriteServiceTest {
 
     when(favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, pageable))
         .thenReturn(new PageImpl<>(favorites, pageable, favorites.size()));
-    when(postService.getPostCardDto(nullable(Long.class), any(Category.class), eq(Language.KOREAN)))
-        .thenReturn(PostCardDto.builder().build());
+    when(postService.getPostPreviewDto(nullable(Long.class), any(Category.class),
+        eq(Language.KOREAN)))
+        .thenReturn(PostPreviewDto.builder().build());
 
     // when
-    FavoriteCardPageDto result = favoriteService.getAllFavorites(memberInfoDto, 0, total);
+    FavoriteResponse.PreviewPageDto result = favoriteService.getAllFavorites(memberInfoDto, 0,
+        total);
 
     // then
     assertThat(result.getTotalElements()).isEqualTo(total);
@@ -151,12 +153,13 @@ class FavoriteServiceTest {
 
     when(favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, category, pageable))
         .thenReturn(new PageImpl<>(favorites, pageable, favorites.size()));
-    when(postService.getPostCardDto(nullable(Long.class), any(Category.class), eq(Language.KOREAN)))
-        .thenReturn(PostCardDto.builder().build());
+    when(postService.getPostPreviewDto(nullable(Long.class), any(Category.class),
+        eq(Language.KOREAN)))
+        .thenReturn(PostPreviewDto.builder().build());
 
     // when
-    FavoriteCardPageDto result = favoriteService.getAllCategoryFavorites(memberInfoDto, category,
-        0, randomSize);
+    FavoriteResponse.PreviewPageDto result = favoriteService.getAllCategoryFavorites(memberInfoDto,
+        category, 0, randomSize);
 
     // then
     assertThat(result.getTotalElements()).isEqualTo(randomSize);

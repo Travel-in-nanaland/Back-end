@@ -17,7 +17,7 @@ public class FcmTokenService {
 
   private final FcmTokenRepository fcmTokenRepository;
 
-  public FcmToken saveFcmToken(Member member, String fcmToken) {
+  public FcmToken createFcmToken(Member member, String fcmToken) {
     return fcmTokenRepository.save(
         FcmToken.builder()
             .member(member)

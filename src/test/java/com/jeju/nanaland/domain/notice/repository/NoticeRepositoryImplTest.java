@@ -9,9 +9,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeContentDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeDetailDto;
-import com.jeju.nanaland.domain.notice.dto.NoticeResponse.NoticeTitleDto;
+import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import com.jeju.nanaland.domain.notice.entity.Notice;
 import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
 import com.jeju.nanaland.domain.notice.entity.NoticeContent;
@@ -122,58 +120,62 @@ class NoticeRepositoryImplTest {
   }
 
   @Test
-  @DisplayName("공지사항 리스트 조회")
-  void findNoticeList() {
-    // given
-    Pageable pageable = PageRequest.of(0, 2);
+  @DisplayName("공지사항 프리뷰 페이징 조회 TEST")
+  void findAllNoticePreviewDtoOrderByCreatedAt() {
+    // given: 페이징 정보 설정
+    int page = 0;
+    int size = 2;
+    Pageable pageable = PageRequest.of(page, size);
 
-    // when
-    Page<NoticeTitleDto> noticeList = noticeRepository.findNoticeList(
+    // when: 공지사항 프리뷰 페이징 조회
+    Page<NoticeResponse.PreviewDto> result = noticeRepository.findAllNoticePreviewDtoOrderByCreatedAt(
         memberInfoDto.getLanguage(), pageable);
 
-    // then
-    assertThat(noticeList).isNotNull();
-    assertThat(noticeList.getTotalElements()).isEqualTo(3);
-    assertThat(noticeList.getContent()).isNotEmpty();
+    // then: 조회된 공지사항 프리뷰 페이징 검증
+    assertThat(result).isNotNull();
+    assertThat(result.getTotalElements()).isEqualTo(3);
+    assertThat(result.getContent()).hasSize(2);
+    assertThat(result.getNumber()).isEqualTo(page);
+    assertThat(result.getSize()).isEqualTo(size);
   }
 
   @Test
-  @DisplayName("공지사항 세부 정보 조회")
-  void getNoticeDetail() {
-    // given
+  @DisplayName("공지사항 상세 정보 조회 TEST")
+  void findNoticeDetailDto() {
+    // given: 공지사항 설정
     Notice notice = createNotice();
     NoticeTitle noticeTitle = createNoticeTitle(notice, Language.KOREAN);
     createNoticeContent(noticeTitle, null);
     createNoticeContent(noticeTitle, createImageFile());
 
-    // when
-    NoticeDetailDto noticeDetail = noticeRepository.getNoticeDetail(memberInfoDto.getLanguage(),
+    // when: 공지사항 상세 정보 조회
+    NoticeResponse.DetailDto result = noticeRepository.findNoticeDetailDto(memberInfoDto.getLanguage(),
         notice.getId());
 
-    // then
-    assertThat(noticeDetail.getTitle()).isEqualTo(noticeTitle.getTitle());
-    assertThat(noticeDetail.getCreatedAt()).isEqualTo(notice.getCreatedAt().toLocalDate());
+    // then: 조회된 공지사항 상세 정보 검증
+    assertThat(result.getTitle()).isEqualTo(noticeTitle.getTitle());
+    assertThat(result.getCreatedAt()).isEqualTo(notice.getCreatedAt().toLocalDate());
   }
 
   @Test
-  @DisplayName("공지사항 세부 내용 조회")
-  void getNoticeContents() {
-    // given
+  @DisplayName("공지사항 내용 조회 TEST")
+  void findAllNoticeContentDto() {
+    // given: 공지사항 설정
     Notice notice = createNotice();
     NoticeTitle noticeTitle = createNoticeTitle(notice, Language.KOREAN);
     NoticeContent noticeContent = createNoticeContent(noticeTitle, createImageFile());
     NoticeContent noticeContent2 = createNoticeContent(noticeTitle, null);
 
-    // when
-    List<NoticeContentDto> noticeContents = noticeRepository.getNoticeContents(
+    // when: 공지사항 내용 조회
+    List<NoticeResponse.ContentDto> result = noticeRepository.findAllNoticeContentDto(
         memberInfoDto.getLanguage(), notice.getId());
 
-    // then
-    assertThat(noticeContents).hasSize(2);
-    assertThat(noticeContents.get(0).getContent()).isEqualTo(noticeContent.getContent());
-    assertThat(noticeContents.get(0).getImage().getThumbnailUrl()).isEqualTo(
+    // then: 공지사항 내용 검증
+    assertThat(result).hasSize(2);
+    assertThat(result.get(0).getContent()).isEqualTo(noticeContent.getContent());
+    assertThat(result.get(0).getImage().getThumbnailUrl()).isEqualTo(
         noticeContent.getImageFile().getThumbnailUrl());
-    assertThat(noticeContents.get(1).getContent()).isEqualTo(noticeContent2.getContent());
-    assertThat(noticeContents.get(1).getImage()).isNull();
+    assertThat(result.get(1).getContent()).isEqualTo(noticeContent2.getContent());
+    assertThat(result.get(1).getImage()).isNull();
   }
 }
