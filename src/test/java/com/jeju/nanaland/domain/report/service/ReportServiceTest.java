@@ -212,7 +212,7 @@ class ReportServiceTest {
           .isInstanceOf(NotFoundException.class)
           .hasMessage(NOT_FOUND_EXCEPTION.getMessage());
     }
-
+    
     @Test
     @DisplayName("성공")
     void requestPostInfoFixSuccess() {

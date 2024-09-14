@@ -160,7 +160,7 @@ public class ReportService {
    */
   private CompositeDto findCompositeDto(Category category, Long postId, Language language) {
     return switch (category) {
-      case NATURE -> natureRepository.findCompositeDtoById(postId, language);
+      case NATURE -> natureRepository.findNatureCompositeDto(postId, language);
       case MARKET -> marketRepository.findCompositeDtoById(postId, language);
       case FESTIVAL -> festivalRepository.findCompositeDtoById(postId, language);
       case EXPERIENCE -> experienceRepository.findCompositeDtoById(postId, language);

@@ -13,15 +13,8 @@ import static com.jeju.nanaland.global.exception.SuccessCode.VALID_NICKNAME_SUCC
 import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberProfileService;
@@ -77,7 +70,7 @@ public class MemberController {
   @PostMapping(value = "/join",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<JwtDto> join(
-      @RequestPart(value = "reqDto") @Valid JoinDto joinDto,
+      @RequestPart(value = "reqDto") @Valid MemberRequest.JoinDto joinDto,
       @RequestPart(required = false) MultipartFile multipartFile) {
     JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
     return BaseResponse.success(JOIN_SUCCESS, jwtDto);
@@ -90,7 +83,7 @@ public class MemberController {
       @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content)
   })
   @PostMapping("/login")
-  public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
+  public BaseResponse<JwtDto> login(@RequestBody @Valid MemberRequest.LoginDto loginDto) {
     JwtDto jwtDto = memberLoginService.login(loginDto);
     return BaseResponse.success(LOGIN_SUCCESS, jwtDto);
   }
@@ -156,10 +149,10 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommended")
-  public BaseResponse<List<RecommendPostDto>> getRecommendPostsByType(
+  public BaseResponse<List<MemberResponse.RecommendPostDto>> getRecommendPostsByType(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
@@ -172,10 +165,10 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommended/random")
-  public BaseResponse<List<RecommendPostDto>> getRandomRecommendedPosts(
+  public BaseResponse<List<MemberResponse.RecommendPostDto>> getRandomRecommendedPosts(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(memberInfoDto);
+    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
@@ -189,7 +182,7 @@ public class MemberController {
   @PostMapping("/withdrawal")
   public BaseResponse<Null> withdrawal(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid WithdrawalDto withdrawalType) {
+      @RequestBody @Valid MemberRequest.WithdrawalDto withdrawalType) {
     memberLoginService.withdrawal(memberInfoDto, withdrawalType);
     return BaseResponse.success(WITHDRAWAL_SUCCESS);
   }
@@ -207,7 +200,7 @@ public class MemberController {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart @Valid ProfileUpdateDto reqDto,
+      @RequestPart @Valid MemberRequest.ProfileUpdateDto reqDto,
       @RequestPart(required = false) MultipartFile multipartFile) {
 
     memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile);
@@ -223,11 +216,11 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/profile")
-  public BaseResponse<ProfileDto> getMemberProfile(
+  public BaseResponse<MemberResponse.ProfileDto> getMemberProfile(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(required = false) Long id) {
 
-    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, id);
+    MemberResponse.ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, id);
     return BaseResponse.success(GET_MEMBER_PROFILE_SUCCESS, profileDto);
   }
 
@@ -240,7 +233,7 @@ public class MemberController {
   @PostMapping("/language")
   public BaseResponse<Null> updateLanguage(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid LanguageUpdateDto languageUpdateDto) {
+      @RequestBody @Valid MemberRequest.LanguageUpdateDto languageUpdateDto) {
     memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
     return BaseResponse.success(UPDATE_LANGUAGE_SUCCESS);
   }
@@ -254,7 +247,7 @@ public class MemberController {
   @PostMapping("/consent")
   public BaseResponse<Null> updateMemberConsent(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid ConsentUpdateDto consentUpdateDto
+      @RequestBody @Valid MemberRequest.ConsentUpdateDto consentUpdateDto
   ) {
     memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
     return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS);

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
@@ -61,28 +61,29 @@ class ExperienceServiceTest {
   ReviewRepository reviewRepository;
 
   @Test
-  @DisplayName("이색체험 카드 정보 조회")
+  @DisplayName("이색체험 preview 정보 조회")
   void getPostCardDtoTest() {
     // given
     ImageFile imageFile = createImageFile();
     Experience experience = createExperience(imageFile);
     ExperienceTrans experienceTrans = createExperienceTrans(experience);
-    PostCardDto postCardDto = PostCardDto.builder()
+    PostPreviewDto postPreviewDto = PostPreviewDto.builder()
         .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
         .title(experienceTrans.getTitle())
         .id(experience.getId())
         .category(Category.EXPERIENCE.toString())
         .build();
-    when(experienceRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
-        .thenReturn(postCardDto);
+    when(experienceRepository.findPostPreviewDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postPreviewDto);
 
     // when
-    PostCardDto result =
-        experienceService.getPostCardDto(postCardDto.getId(), Category.MARKET, Language.KOREAN);
+    PostPreviewDto result =
+        experienceService.getPostPreviewDto(postPreviewDto.getId(), Category.MARKET,
+            Language.KOREAN);
 
     // then
-    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
-    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+    assertThat(result.getFirstImage()).isEqualTo(postPreviewDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postPreviewDto.getTitle());
   }
 
   @Test

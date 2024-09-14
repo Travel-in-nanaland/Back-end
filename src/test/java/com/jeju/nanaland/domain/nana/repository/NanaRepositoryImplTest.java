@@ -238,7 +238,7 @@ class NanaRepositoryImplTest {
     // Then
     boolean isSearched = false;
     for (NanaThumbnail nanaThumbnail : content) {
-      if (nanaThumbnail.getSubHeading().equals("keyword")) {
+      if (nanaThumbnail.getHeading().equals("keyword")) {
         isSearched = true;
       }
     }

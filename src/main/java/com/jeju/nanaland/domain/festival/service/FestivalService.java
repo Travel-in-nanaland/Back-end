@@ -8,7 +8,7 @@ import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.data.Status;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
@@ -63,22 +63,22 @@ public class FestivalService implements PostService {
   }
 
   /**
-   * 카드 정보 조회 - (postId, category, imageFile, title)
+   * 게시물 preview 정보 조회 - (postId, category, imageFile, title)
    *
    * @param postId   게시물 id
    * @param category 게시물 카테고리
    * @param language 언어 정보
-   * @return PostCardDto
+   * @return PostPreviewDto
    * @throws NotFoundException (게시물 id, langugae)를 가진 축제 정보가 존재하지 않는 경우
    */
   @Override
-  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
-    PostCardDto postCardDto = festivalRepository.findPostCardDto(postId, language);
-    Optional.ofNullable(postCardDto)
+  public PostPreviewDto getPostPreviewDto(Long postId, Category category, Language language) {
+    PostPreviewDto postPreviewDto = festivalRepository.findPostPreviewDto(postId, language);
+    Optional.ofNullable(postPreviewDto)
         .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
 
-    postCardDto.setCategory(PostCategory.FESTIVAL.toString());
-    return postCardDto;
+    postPreviewDto.setCategory(PostCategory.FESTIVAL.toString());
+    return postPreviewDto;
   }
 
   // 종료된 축제 리스트 조회

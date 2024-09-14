@@ -5,16 +5,14 @@ import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureDetailDto;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnail;
-import com.jeju.nanaland.domain.nature.dto.NatureResponse.NatureThumbnailDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.ErrorCode;
@@ -53,50 +51,68 @@ public class NatureService implements PostService {
   }
 
   /**
-   * 카드 정보 조회 - (postId, category, imageFile, title)
+   * 게시물 preview 정보 조회 - (postId, category, imageFile, title)
    *
    * @param postId   게시물 id
    * @param category 게시물 카테고리
    * @param language 언어 정보
-   * @return PostCardDto
+   * @return PostPreviewDto
    * @throws NotFoundException (게시물 id, langugae)를 가진 7대자연 정보가 존재하지 않는 경우
    */
   @Override
-  public PostCardDto getPostCardDto(Long postId, Category category, Language language) {
-    PostCardDto postCardDto = natureRepository.findPostCardDto(postId, language);
-    Optional.ofNullable(postCardDto)
+  public PostPreviewDto getPostPreviewDto(Long postId, Category category, Language language) {
+    PostPreviewDto postPreviewDto = natureRepository.findPostPreviewDto(postId, language);
+    Optional.ofNullable(postPreviewDto)
         .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
 
-    postCardDto.setCategory(PostCategory.NATURE.toString());
-    return postCardDto;
+    postPreviewDto.setCategory(PostCategory.NATURE.toString());
+    return postPreviewDto;
   }
 
-  // 7대 자연 리스트 조회
-  public NatureThumbnailDto getNatureList(MemberInfoDto memberInfoDto,
-      List<String> addressFilterList, String keyword, int page, int size) {
+  /**
+   * 7대 자연 프리뷰 리스트 조회
+   *
+   * @param memberInfoDto  회원 정보
+   * @param addressFilters 지역명
+   * @param keyword        키워드
+   * @param page           페이지 Number
+   * @param size           페이지 Size
+   * @return 7대 자연 프리뷰 리스트
+   */
+  public NatureResponse.PreviewPageDto getNaturePreview(MemberInfoDto memberInfoDto,
+      List<String> addressFilters, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureThumbnail> natureCompositeDtoPage = natureRepository.findNatureThumbnails(
-        memberInfoDto.getLanguage(), addressFilterList, keyword, pageable);
+    Page<NatureResponse.PreviewDto> naturePreviewDto = natureRepository.findAllNaturePreviewDtoOrderByPriority(
+        memberInfoDto.getLanguage(), addressFilters, keyword, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
 
-    List<NatureThumbnail> data = natureCompositeDtoPage.getContent();
-    for (NatureThumbnail natureThumbnail : data) {
+    List<NatureResponse.PreviewDto> data = naturePreviewDto.getContent();
+    for (NatureResponse.PreviewDto natureThumbnail : data) {
       natureThumbnail.setFavorite(favoriteIds.contains(natureThumbnail.getId()));
     }
 
-    return NatureThumbnailDto.builder()
-        .totalElements(natureCompositeDtoPage.getTotalElements())
+    return NatureResponse.PreviewPageDto.builder()
+        .totalElements(naturePreviewDto.getTotalElements())
         .data(data)
         .build();
   }
 
-  // 7대 자연 상세 정보 조회
-  public NatureDetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long id, boolean isSearch) {
-    NatureCompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(id,
+  /**
+   * 7대 자연 상세 정보 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param natureId      7대 자연 ID
+   * @param isSearch      검색 여부
+   * @return 7대 자연 상세 정보
+   * @throws NotFoundException 존재하는 7대 자연이 없는 경우
+   */
+  public NatureResponse.DetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long natureId,
+      boolean isSearch) {
+    NatureCompositeDto natureCompositeDto = natureRepository.findNatureCompositeDto(natureId,
         memberInfoDto.getLanguage());
 
     if (natureCompositeDto == null) {
@@ -105,14 +121,14 @@ public class NatureService implements PostService {
 
     // 검색을 통해 요청되었다면 count
     if (isSearch) {
-      searchService.updateSearchVolumeV1(NATURE, id);
+      searchService.updateSearchVolumeV1(NATURE, natureId);
     }
 
     // 좋아요 여부 확인
     boolean isFavorite =
-        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, id);
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, natureId);
 
-    return NatureDetailDto.builder()
+    return NatureResponse.DetailDto.builder()
         .id(natureCompositeDto.getId())
         .addressTag(natureCompositeDto.getAddressTag())
         .title(natureCompositeDto.getTitle())
@@ -125,7 +141,7 @@ public class NatureService implements PostService {
         .details(natureCompositeDto.getDetails())
         .amenity(natureCompositeDto.getAmenity())
         .isFavorite(isFavorite)
-        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(natureId,
             natureCompositeDto.getFirstImage()))
         .build();
   }

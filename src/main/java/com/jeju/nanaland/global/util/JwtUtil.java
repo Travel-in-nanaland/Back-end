@@ -48,7 +48,14 @@ public class JwtUtil {
     return secretKey2;
   }
 
-  public String getAccessToken(String memberId, Set<Role> roleSet) {
+  /**
+   * AccessToken 생성
+   *
+   * @param memberId 회원 ID
+   * @param roleSet  회원 권한
+   * @return AccessToken
+   */
+  public String createAccessToken(String memberId, Set<Role> roleSet) {
     Claims claims = Jwts.claims().setSubject(memberId);
     String authorities = roleSet.stream()
         .map(Enum::name)
@@ -65,7 +72,14 @@ public class JwtUtil {
         .compact();
   }
 
-  public String getRefreshToken(String memberId, Set<Role> roleSet) {
+  /**
+   * RefreshToken 생성
+   *
+   * @param memberId 회원 ID
+   * @param roleSet  회원 권한
+   * @return RefreshToken
+   */
+  public String createRefreshToken(String memberId, Set<Role> roleSet) {
     Claims claims = Jwts.claims().setSubject(memberId);
     String authorities = roleSet.stream()
         .map(Enum::name)
@@ -85,6 +99,12 @@ public class JwtUtil {
     return refreshToken;
   }
 
+  /**
+   * AccessToken 유효성 확인
+   *
+   * @param accessToken AccessToken
+   * @return 유효 여부
+   */
   public boolean verifyAccessToken(String accessToken) {
     try {
       Jwts.parserBuilder()
@@ -98,6 +118,12 @@ public class JwtUtil {
     }
   }
 
+  /**
+   * AccessToken에서 memberId 찾기
+   *
+   * @param token JWT
+   * @return 회원 ID
+   */
   public String getMemberIdFromAccess(String token) {
     return Jwts.parserBuilder()
         .setSigningKey(getSecretKey())
@@ -107,21 +133,37 @@ public class JwtUtil {
         .getSubject();
   }
 
+  /**
+   * JWT를 파싱하여, 사용자 인증 정보를 생성
+   *
+   * @param token JWT
+   * @return 인증 정보
+   */
   public Authentication getAuthentication(String token) {
+    // JWT 토큰을 파싱하여 클레임(claims)을 추출
     Claims claims = Jwts.parserBuilder()
         .setSigningKey(getSecretKey())
         .build()
         .parseClaimsJws(token)
         .getBody();
+
+    // 클레임에서 권한(authorities) 정보를 가져와 GrantedAuthority 리스트로 변환
     Collection<? extends GrantedAuthority> authorities =
         Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
 
+    // 토큰에서 사용자 ID를 추출하고, 권한과 함께 UsernamePasswordAuthenticationToken 객체로 반환
     return new UsernamePasswordAuthenticationToken(getMemberIdFromAccess(token), "",
         authorities);
   }
 
+  /**
+   * bearerToken에서 실제 JWT 추출
+   *
+   * @param bearerToken bearerToken
+   * @return JWT
+   */
   public String resolveToken(String bearerToken) {
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
       return bearerToken.substring("Bearer ".length());
@@ -129,6 +171,12 @@ public class JwtUtil {
     return null;
   }
 
+  /**
+   * RefreshToken 유효성 확인
+   *
+   * @param refreshToken refreshToken
+   * @return 유효 여부
+   */
   public boolean verifyRefreshToken(String refreshToken) {
     try {
       Jwts.parserBuilder()
@@ -141,10 +189,22 @@ public class JwtUtil {
     }
   }
 
-  public String findRefreshTokenById(String memberId) {
+  /**
+   * Redis에서 RefreshToken 찾기
+   *
+   * @param memberId 회원 ID
+   * @return RefreshToken
+   */
+  public String findRefreshToken(String memberId) {
     return redisUtil.getRecentDataFromList(REFRESH_KEY + memberId);
   }
 
+  /**
+   * RefreshToken에서 memberId 찾기
+   *
+   * @param refreshToken refreshToken
+   * @return 회원 ID
+   */
   public String getMemberIdFromRefresh(String refreshToken) {
     return Jwts.parserBuilder()
         .setSigningKey(getSecretKey2())
@@ -154,10 +214,20 @@ public class JwtUtil {
         .getSubject();
   }
 
+  /**
+   * Redis에서 RefreshToken 삭제
+   *
+   * @param memberId 회원 ID
+   */
   public void deleteRefreshToken(String memberId) {
     redisUtil.deleteData(REFRESH_KEY + memberId);
   }
 
+  /**
+   * AccessToken을 BlackList로 등록
+   *
+   * @param accessToken accessToken
+   */
   public void setBlackList(String accessToken) {
     redisUtil.setExpiringValue(accessToken, BLACK_LIST_VAL, BLACK_LIST_EXPIRE);
   }

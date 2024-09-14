@@ -9,8 +9,8 @@ import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restau
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantResponse_RestaurantMenuDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantResponse_RestaurantThumbnail;
@@ -181,9 +181,9 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   }
 
   @Override
-  public PostCardDto findPostCardDto(Long postId, Language language) {
+  public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
     return queryFactory
-        .select(new QPostCardDto(
+        .select(new QPostPreviewDto(
             restaurant.id,
             restaurantTrans.title,
             imageFile.originUrl,

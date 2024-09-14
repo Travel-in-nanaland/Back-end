@@ -13,21 +13,22 @@ public class NatureResponse {
 
   @Getter
   @Builder
-  @Schema(description = "7대 자연 게시물 페이징 정보")
-  public static class NatureThumbnailDto {
+  @Schema(name = "NaturePreviewPageDto", description = "7대 자연 전체 리스트 조회 DTO")
+  public static class PreviewPageDto {
 
     @Schema(description = "7대 자연 전체 게시물 수")
     private Long totalElements;
 
     @Schema(description = "7대 자연 게시물 결과 리스트")
-    private List<NatureThumbnail> data;
+    private List<PreviewDto> data;
 
   }
 
   @Data
   @Builder
   @AllArgsConstructor
-  public static class NatureThumbnail {
+  @Schema(name = "NaturePreviewDto", description = "7대 자연 프리뷰 정보 DTO")
+  public static class PreviewDto {
 
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
@@ -45,7 +46,7 @@ public class NatureResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public NatureThumbnail(Long id, String title, String originUrl, String thumbnailUrl,
+    public PreviewDto(Long id, String title, String originUrl, String thumbnailUrl,
         String addressTag) {
       this.id = id;
       this.title = title;
@@ -56,8 +57,8 @@ public class NatureResponse {
 
   @Getter
   @Builder
-  @Schema(description = "7대 자연 상세 정보")
-  public static class NatureDetailDto {
+  @Schema(name = "NatureDetailDto", description = "7대 자연 상세 정보")
+  public static class DetailDto {
 
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
