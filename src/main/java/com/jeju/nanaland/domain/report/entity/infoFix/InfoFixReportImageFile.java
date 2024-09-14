@@ -1,4 +1,4 @@
-package com.jeju.nanaland.domain.report.entity;
+package com.jeju.nanaland.domain.report.entity.infoFix;
 
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import jakarta.persistence.Entity;

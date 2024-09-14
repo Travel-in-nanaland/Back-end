@@ -2,9 +2,9 @@ package com.jeju.nanaland.domain.report.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Category;
-import com.jeju.nanaland.domain.report.entity.FixType;
+import com.jeju.nanaland.domain.report.entity.infoFix.FixType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
-import com.jeju.nanaland.domain.report.entity.claim.ReportType;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -74,7 +74,7 @@ public class ReportRequest {
     private Long id;
 
     @EnumValid(
-        enumClass = ReportType.class,
+        enumClass = ClaimReportType.class,
         message = "신고 타입이 유효하지 않습니다."
     )
     @Schema(
