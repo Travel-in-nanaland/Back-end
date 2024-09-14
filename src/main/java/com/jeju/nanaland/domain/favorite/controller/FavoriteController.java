@@ -47,14 +47,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/all/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getAllFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getAllFavorites(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllFavorites(memberInfoDto, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "이색체험 찜리스트 조회", description = "이색체험 찜리스트 조회")
@@ -64,14 +64,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/experience/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getExperienceFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getExperienceFavorites(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllCategoryFavorites(memberInfoDto, EXPERIENCE, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "7대자연 찜리스트 조회", description = "7대자연 찜리스트 조회")
@@ -81,14 +81,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/nature/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getNatureFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getNatureFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllCategoryFavorites(memberInfoDto, NATURE, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "축제 찜리스트 조회", description = "축제 찜리스트 조회")
@@ -98,14 +98,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/festival/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getFestivalFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getFestivalFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllCategoryFavorites(memberInfoDto, FESTIVAL, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "전통시장 찜리스트 조회", description = "전통시장 찜리스트 조회")
@@ -115,14 +115,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/market/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getMarketFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getMarketFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllCategoryFavorites(memberInfoDto, MARKET, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "나나스픽 찜리스트 조회", description = "나나스픽 찜리스트 조회")
@@ -132,14 +132,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/nana/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getNanaFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getNanaFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllCategoryFavorites(memberInfoDto, NANA, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "맛집 찜리스트 조회", description = "맛집 찜리스트 조회")
@@ -149,14 +149,14 @@ public class FavoriteController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/restaurant/list")
-  public BaseResponse<FavoriteResponse.FavoriteCardPageDto> getRestaurantFavoriteList(
+  public BaseResponse<FavoriteResponse.PreviewPageDto> getRestaurantFavoriteList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    FavoriteResponse.FavoriteCardPageDto favoriteCardPageDto =
+    FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
         favoriteService.getAllCategoryFavorites(memberInfoDto, RESTAURANT, page, size);
-    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoriteCardPageDto);
+    return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 
   @Operation(summary = "좋아요 토글", description = "좋아요 토글 기능 (좋아요 상태 -> 좋아요 취소 상태, 좋아요 취소 상태 -> 좋아요 상태)")

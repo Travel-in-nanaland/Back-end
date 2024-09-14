@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.festival.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,5 +24,5 @@ public interface FestivalRepositoryCustom {
   Page<FestivalCompositeDto> searchCompositeDtoByMonth(Language locale, Pageable pageable,
       LocalDate startDate, LocalDate endDate, List<String> addressFilterList);
 
-  PostCardDto findPostCardDto(Long postId, Language language);
+  PostPreviewDto findPostPreviewDto(Long postId, Language language);
 }

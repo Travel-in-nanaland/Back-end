@@ -7,8 +7,8 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
@@ -135,9 +135,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public PostCardDto findPostCardDto(Long postId, Language language) {
+  public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
     return queryFactory
-        .select(new QPostCardDto(
+        .select(new QPostPreviewDto(
             market.id,
             marketTrans.title,
             imageFile.originUrl,

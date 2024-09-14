@@ -2,7 +2,7 @@ package com.jeju.nanaland.domain.notification.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
@@ -41,8 +41,8 @@ public class FavoriteNotificationService {
       Long postId = favorite.getPost().getId();
       Language language = member.getLanguage();
 
-      PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
-      String postTitle = postCardDto.getTitle();
+      PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
+      String postTitle = postPreviewDto.getTitle();
       String notificationTitle = getFavoriteNotificationTitle(postTitle, member.getNickname(),
           language);
       String content = "";
