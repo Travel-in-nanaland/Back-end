@@ -1,7 +1,9 @@
 package com.jeju.nanaland.domain.notice.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.NOTICE_NOT_FOUND;
+import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -17,7 +19,6 @@ import com.jeju.nanaland.domain.notice.dto.NoticeResponse;
 import com.jeju.nanaland.domain.notice.entity.Notice;
 import com.jeju.nanaland.domain.notice.entity.NoticeCategory;
 import com.jeju.nanaland.domain.notice.repository.NoticeRepository;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -155,11 +156,10 @@ class NoticeServiceTest {
       doReturn(Optional.empty()).when(noticeRepository).findById(any());
 
       // when: 공지사항 상세 정보 조회
-      NotFoundException result = assertThrows(NotFoundException.class,
-          () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
-
       // then: ErrorCode 검증
-      assertThat(result.getMessage()).isEqualTo(ErrorCode.NOTICE_NOT_FOUND.getMessage());
+      assertThatThrownBy(() -> noticeService.getNoticeDetail(memberInfoDto, 1L))
+          .isInstanceOf(NotFoundException.class)
+          .hasMessage(NOTICE_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -171,11 +171,10 @@ class NoticeServiceTest {
       doReturn(null).when(noticeRepository).findNoticeDetailDto(any(Language.class), any());
 
       // when: 공지사항 상세 정보 조회
-      NotFoundException result = assertThrows(NotFoundException.class,
-          () -> noticeService.getNoticeDetail(memberInfoDto, 1L));
-
       // then: ErrorCode 검증
-      assertThat(result.getMessage()).isEqualTo(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+      assertThatThrownBy(() -> noticeService.getNoticeDetail(memberInfoDto, 1L))
+          .isInstanceOf(NotFoundException.class)
+          .hasMessage(NOT_FOUND_EXCEPTION.getMessage());
     }
 
     @Test
