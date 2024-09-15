@@ -208,7 +208,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.content,
                 review.createdAt,
                 // 해당 리뷰의 좋아요 개수
-                ExpressionUtils.as(getHeartCountQuery(), "heartCount")
+                ExpressionUtils.as(getHeartCountQuery(), "heartCount"),
+                // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
+                ExpressionUtils.as(getIsReviewHeartQuery(currentMemberId), "isReviewHeart")
             )
         )
         .from(review)
