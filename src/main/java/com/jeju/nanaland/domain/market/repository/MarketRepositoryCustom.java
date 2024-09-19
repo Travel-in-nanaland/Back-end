@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.market.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import java.util.List;
@@ -18,5 +18,5 @@ public interface MarketRepositoryCustom {
   Page<MarketCompositeDto> searchCompositeDtoByKeyword(String keyword, Language locale,
       Pageable pageable);
 
-  PostCardDto findPostCardDto(Long postId, Language language);
+  PostPreviewDto findPostPreviewDto(Long postId, Language language);
 }

@@ -2,9 +2,9 @@ package com.jeju.nanaland.domain.favorite.service;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.favorite.dto.FavoritePostCardDto;
+import com.jeju.nanaland.domain.common.service.PostServiceImpl;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
@@ -29,6 +29,7 @@ public class FavoriteService {
 
   private final FavoriteRepository favoriteRepository;
   private final PostService postService;
+  private final PostServiceImpl postServiceImpl;
 
   /**
    * 모든 카테고리의 찜리스트 조회
@@ -36,10 +37,10 @@ public class FavoriteService {
    * @param memberInfoDto 회원 정보
    * @param page          페이지
    * @param size          페이지 크기
-   * @return 찜 목록 카드 정보 페이지
+   * @return FavoriteResponse.PreviewPageDto
    */
   @Transactional(readOnly = true)
-  public FavoriteResponse.FavoriteCardPageDto getAllFavorites(MemberInfoDto memberInfoDto, int page,
+  public FavoriteResponse.PreviewPageDto getAllFavorites(MemberInfoDto memberInfoDto, int page,
       int size) {
 
     Member member = memberInfoDto.getMember();
@@ -51,18 +52,18 @@ public class FavoriteService {
         favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, pageable);
 
     // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
-    List<FavoritePostCardDto> favoritePostCardDtos = favorites.stream()
+    List<FavoriteResponse.PreviewDto> favoritePreviewDtos = favorites.stream()
         .map(favorite -> {
           Category category = favorite.getCategory();
           Long postId = favorite.getPost().getId();
-          PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
-          return new FavoritePostCardDto(postCardDto);
+          PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
+          return new FavoriteResponse.PreviewDto(postPreviewDto);
         })
         .collect(Collectors.toList());
 
-    return FavoriteResponse.FavoriteCardPageDto.builder()
+    return FavoriteResponse.PreviewPageDto.builder()
         .totalElements(favorites.getTotalElements())
-        .data(favoritePostCardDtos)
+        .data(favoritePreviewDtos)
         .build();
   }
 
@@ -73,10 +74,10 @@ public class FavoriteService {
    * @param category      게시물 카테고리
    * @param page          페이지
    * @param size          페이지 크기
-   * @return 찜 목록 카드 정보 페이지
+   * @return FavoriteResponse.PreviewPageDto
    */
   @Transactional(readOnly = true)
-  public FavoriteResponse.FavoriteCardPageDto getAllCategoryFavorites(MemberInfoDto memberInfoDto,
+  public FavoriteResponse.PreviewPageDto getAllCategoryFavorites(MemberInfoDto memberInfoDto,
       Category category, int page, int size) {
 
     Member member = memberInfoDto.getMember();
@@ -88,17 +89,17 @@ public class FavoriteService {
         favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, category, pageable);
 
     // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
-    List<FavoritePostCardDto> favoritePostCardDtos = favoritePage.get()
+    List<FavoriteResponse.PreviewDto> favoritePreviewDtos = favoritePage.get()
         .map(favorite -> {
           Long postId = favorite.getPost().getId();
-          PostCardDto postCardDto = postService.getPostCardDto(postId, category, language);
-          return new FavoritePostCardDto(postCardDto);
+          PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
+          return new FavoriteResponse.PreviewDto(postPreviewDto);
         })
         .toList();
 
-    return FavoriteResponse.FavoriteCardPageDto.builder()
+    return FavoriteResponse.PreviewPageDto.builder()
         .totalElements(favoritePage.getTotalElements())
-        .data(favoritePostCardDtos)
+        .data(favoritePreviewDtos)
         .build();
   }
 
@@ -107,7 +108,7 @@ public class FavoriteService {
    *
    * @param memberInfoDto 회원 정보
    * @param likeToggleDto 찜 요청, 삭제 정보
-   * @return 찜 상태 정보
+   * @return FavoriteResponse.StatusDto
    */
   @Transactional
   public FavoriteResponse.StatusDto toggleLikeStatus(MemberInfoDto memberInfoDto,

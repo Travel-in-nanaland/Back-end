@@ -18,7 +18,7 @@ import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.dto.QImageFileDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.report.entity.claim.ReportType;
+import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MyReviewDetailDto;
@@ -57,7 +57,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(claimReport)
         .where(claimReport.member.id.eq(memberId)
             .and(claimReport.referenceId.eq(review.id))
-            .and(claimReport.reportType.eq(ReportType.REVIEW)))
+            .and(claimReport.claimReportType.eq(ClaimReportType.REVIEW)))
         .notExists();
   }
 
@@ -67,7 +67,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(claimReport)
         .where(claimReport.member.id.eq(currentMemberId)
             .and(claimReport.referenceId.eq(review.member.id))
-            .and(claimReport.reportType.eq(ReportType.MEMBER)))
+            .and(claimReport.claimReportType.eq(ClaimReportType.MEMBER)))
         .notExists();
   }
 
@@ -208,7 +208,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 review.content,
                 review.createdAt,
                 // 해당 리뷰의 좋아요 개수
-                ExpressionUtils.as(getHeartCountQuery(), "heartCount")
+                ExpressionUtils.as(getHeartCountQuery(), "heartCount"),
+                // 현재 로그인한 회원이 해당 리뷰에 좋아요를 했는지
+                ExpressionUtils.as(getIsReviewHeartQuery(currentMemberId), "isReviewHeart")
             )
         )
         .from(review)

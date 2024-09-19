@@ -44,7 +44,7 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
 
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
 
-    MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
+    MemberInfoDto memberInfoDto = memberRepository.findMemberInfoDto(
         Long.valueOf(memberId));
 
     if (memberInfoDto == null) {

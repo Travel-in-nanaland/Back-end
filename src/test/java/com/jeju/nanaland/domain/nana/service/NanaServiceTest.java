@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
@@ -66,28 +66,28 @@ public class NanaServiceTest {
   private NanaService nanaService;
 
   @Test
-  @DisplayName("나나스픽 카드 정보 조회")
+  @DisplayName("나나스픽 preview 정보 조회")
   void getPostCardDtoTest() {
     // given
     ImageFile imageFile = createImageFile(1);
     Nana nana = createNana(1, imageFile);
     NanaTitle nanaTitle = createNanaTitle(1, nana, Language.KOREAN);
-    PostCardDto postCardDto = PostCardDto.builder()
+    PostPreviewDto postPreviewDto = PostPreviewDto.builder()
         .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
         .title(nanaTitle.getHeading())
         .id(nana.getId())
         .category(Category.NANA.toString())
         .build();
-    when(nanaRepository.findPostCardDto(nullable(Long.class), eq(Language.KOREAN)))
-        .thenReturn(postCardDto);
+    when(nanaRepository.findPostPreviewDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postPreviewDto);
 
     // when
-    PostCardDto result =
-        nanaService.getPostCardDto(postCardDto.getId(), Category.NANA, Language.KOREAN);
+    PostPreviewDto result =
+        nanaService.getPostPreviewDto(postPreviewDto.getId(), Category.NANA, Language.KOREAN);
 
     // then
-    assertThat(result.getFirstImage()).isEqualTo(postCardDto.getFirstImage());
-    assertThat(result.getTitle()).isEqualTo(postCardDto.getTitle());
+    assertThat(result.getFirstImage()).isEqualTo(postPreviewDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postPreviewDto.getTitle());
   }
 
   @Test

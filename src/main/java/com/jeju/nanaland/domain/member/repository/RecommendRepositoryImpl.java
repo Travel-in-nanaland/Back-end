@@ -16,7 +16,7 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_RecommendPostDto;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -29,7 +29,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public RecommendPostDto findNatureRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findNatureRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
@@ -58,7 +58,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   }
 
   @Override
-  public RecommendPostDto findExperienceRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findExperienceRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
@@ -87,7 +87,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   }
 
   @Override
-  public RecommendPostDto findMarketRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findMarketRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
@@ -116,7 +116,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   }
 
   @Override
-  public RecommendPostDto findFestivalRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findFestivalRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
 
     return queryFactory
@@ -145,7 +145,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   }
 
   @Override
-  public RecommendPostDto findNanaRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findNanaRecommendPostDto(Long postId, Language language,
       TravelType travelType) {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(

@@ -2,6 +2,9 @@ package com.jeju.nanaland.domain.nana.repository;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import java.util.List;
@@ -24,5 +27,5 @@ public interface NanaRepositoryCustom {
 
   NanaThumbnailPost findNanaThumbnailPostDto(Long id, Language locale);
 
-  PostCardDto findPostCardDto(Long postId, Language language);
+  PostPreviewDto findPostPreviewDto(Long postId, Language language);
 }

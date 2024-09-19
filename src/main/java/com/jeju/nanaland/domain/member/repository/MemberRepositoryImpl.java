@@ -20,8 +20,14 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
+  /**
+   * 회원 정보 조회
+   * 
+   * @param memberId 회원 ID
+   * @return 회원 정보
+   */
   @Override
-  public MemberInfoDto findMemberWithLanguage(Long memberId) {
+  public MemberInfoDto findMemberInfoDto(Long memberId) {
 
     return queryFactory
         .select(new QMemberResponse_MemberInfoDto(
@@ -32,8 +38,29 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 동의일이 1년 6개월이 지나 만료된 이용약관 조회
+   * 
+   * @return 만료된 이용약관 리스트
+   */
   @Override
-  public List<Member> findInactiveMembersForWithdrawalDate() {
+  public List<MemberConsent> findAllExpiredMemberConsent() {
+    LocalDate expirationDate = LocalDate.now().minusYears(1).minusMonths(6);
+
+    return queryFactory
+        .selectFrom(memberConsent)
+        .where(memberConsent.consent.eq(true)
+            .and(memberConsent.consentDate.before(expirationDate.atStartOfDay())))
+        .fetch();
+  }
+
+  /**
+   * 비활성화 후 3개월이 지난 회원 조회
+   * 
+   * @return 비활성화 회원 리스트
+   */
+  @Override
+  public List<Member> findAllInactiveMember() {
     LocalDate threeMonthsAgo = LocalDate.now().minusMonths(3);
 
     return queryFactory
@@ -47,23 +74,18 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .fetch();
   }
 
+  /**
+   * 회원의 이용약관 조회 (필수 이용약관은 제외)
+   *
+   * @param member 회원
+   * @return 이용약관 리스트
+   */
   @Override
-  public List<MemberConsent> findMemberConsentByMember(Member member) {
+  public List<MemberConsent> findAllMemberConsent(Member member) {
     return queryFactory
         .selectFrom(memberConsent)
         .where(memberConsent.consentType.ne(ConsentType.TERMS_OF_USE)
             .and(memberConsent.member.eq(member)))
-        .fetch();
-  }
-
-  @Override
-  public List<MemberConsent> findExpiredMemberConsent() {
-    LocalDate expirationDate = LocalDate.now().minusYears(1).minusMonths(6);
-
-    return queryFactory
-        .selectFrom(memberConsent)
-        .where(memberConsent.consent.eq(true)
-            .and(memberConsent.consentDate.before(expirationDate.atStartOfDay())))
         .fetch();
   }
 }

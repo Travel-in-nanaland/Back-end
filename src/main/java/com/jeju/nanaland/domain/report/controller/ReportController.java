@@ -4,8 +4,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.POST_INFO_FIX_REPOR
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_REVIEW_REPORT_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.ClaimReportDto;
-import com.jeju.nanaland.domain.report.dto.ReportRequest.InfoFixDto;
+import com.jeju.nanaland.domain.report.dto.ReportRequest;
 import com.jeju.nanaland.domain.report.service.ReportService;
 import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.auth.AuthMember;
@@ -46,7 +45,7 @@ public class ReportController {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> requestPostInfoFix(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart("reqDto") @Valid InfoFixDto reqDto,
+      @RequestPart("reqDto") @Valid ReportRequest.InfoFixDto reqDto,
       @Parameter(
           description = "정보 수정 요청 이미지파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -68,7 +67,7 @@ public class ReportController {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> requestClaimReport(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart("reqDto") @Valid ClaimReportDto reqDto,
+      @RequestPart("reqDto") @Valid ReportRequest.ClaimReportDto reqDto,
       @Parameter(
           description = "신고 요청 파일 리스트",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)

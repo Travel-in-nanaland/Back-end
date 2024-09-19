@@ -8,8 +8,8 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -301,9 +301,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public PostCardDto findPostCardDto(Long postId, Language language) {
+  public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
     return queryFactory
-        .select(new QPostCardDto(
+        .select(new QPostPreviewDto(
             festival.id,
             festivalTrans.title,
             imageFile.originUrl,
