@@ -8,12 +8,8 @@ import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.dto.PostCardDto;
-import com.jeju.nanaland.domain.common.dto.QPostCardDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
