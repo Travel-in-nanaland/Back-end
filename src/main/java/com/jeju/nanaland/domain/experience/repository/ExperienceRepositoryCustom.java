@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface ExperienceRepositoryCustom {
 
-  ExperienceCompositeDto findCompositeDtoById(Long id, Language language);
+  ExperienceCompositeDto findExperienceCompositeDto(Long id, Language language);
 
   Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String Keyword, Language language,
       Pageable pageable);

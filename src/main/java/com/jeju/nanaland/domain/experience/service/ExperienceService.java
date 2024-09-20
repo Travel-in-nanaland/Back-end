@@ -77,7 +77,20 @@ public class ExperienceService implements PostService {
     return postPreviewDto;
   }
 
-  // 이색체험 리스트 조회
+  /**
+   * 이색체험 리스트 조회
+   *
+   * @param memberInfoDto     회원 정보
+   * @param experienceType    이색체험 타입 (ACTIVITY, CULTURE_AND_ARTS)
+   * @param keywordFilterList 키워드 필터 (LAND_LEISURE, WATER_LEISURE, AIR_LEISURE, MARINE_EXPERIENCE,
+   *                          RURAL_EXPERIENCE, HEALING_THERAPY, HISTORY, EXHIBITION, WORKSHOP,
+   *                          ART_MUSEUM, MUSEUM, PARK, PERFORMANCE, RELIGIOUS_FACILITY,
+   *                          THEME_PARK)
+   * @param addressFilterList 지역 필터
+   * @param page              페이지
+   * @param size              페이지 크기
+   * @return ExperienceResponse.PreviewPageDto
+   */
   public ExperienceResponse.PreviewPageDto getExperiencePreviews(MemberInfoDto memberInfoDto,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, int page, int size) {
@@ -108,12 +121,19 @@ public class ExperienceService implements PostService {
         .build();
   }
 
-  // 이색체험 상세 정보 조회
+  /**
+   * 이색체험 상세정보 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param postId        게시물 id
+   * @param isSearch      검색을 통해 들어왔는지 여부
+   * @return ExperienceResponse.DetailDto
+   */
   public ExperienceResponse.DetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
-    ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+    ExperienceCompositeDto experienceCompositeDto = experienceRepository.findExperienceCompositeDto(
         postId, language);
 
     // 해당 id의 포스트가 없는 경우 404 에러
