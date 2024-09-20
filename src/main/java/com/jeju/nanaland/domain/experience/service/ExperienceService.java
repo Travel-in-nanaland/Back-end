@@ -11,9 +11,7 @@ import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -80,7 +78,7 @@ public class ExperienceService implements PostService {
   }
 
   // 이색체험 리스트 조회
-  public ExperienceThumbnailDto getExperienceList(MemberInfoDto memberInfoDto,
+  public ExperienceResponse.PreviewPageDto getExperiencePreviews(MemberInfoDto memberInfoDto,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, int page, int size) {
 
@@ -88,29 +86,30 @@ public class ExperienceService implements PostService {
     Pageable pageable = PageRequest.of(page, size);
 
     // experienceType(액티비티, 문화예술)에 따른 이색체험 조회
-    Page<ExperienceThumbnail> experienceThumbnailPage = experienceRepository.findExperienceThumbnails(
-        language, experienceType, keywordFilterList, addressFilterList, pageable);
+    Page<ExperienceResponse.PreviewDto> experiencePreviewPage =
+        experienceRepository.findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(
+            language, experienceType, keywordFilterList, addressFilterList, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
-    List<ExperienceThumbnail> data = experienceThumbnailPage.getContent();
+    List<ExperienceResponse.PreviewDto> data = experiencePreviewPage.getContent();
 
     // 좋아요 여부, 리뷰 평균 추가
-    for (ExperienceThumbnail experienceThumbnail : data) {
-      Long postId = experienceThumbnail.getId();
-      experienceThumbnail.setFavorite(favoriteIds.contains(postId));
-      experienceThumbnail.setRatingAvg(reviewRepository.findTotalRatingAvg(EXPERIENCE, postId));
+    for (ExperienceResponse.PreviewDto previewDto : data) {
+      Long postId = previewDto.getId();
+      previewDto.setFavorite(favoriteIds.contains(postId));
+      previewDto.setRatingAvg(reviewRepository.findTotalRatingAvg(EXPERIENCE, postId));
     }
 
-    return ExperienceThumbnailDto.builder()
-        .totalElements(experienceThumbnailPage.getTotalElements())
+    return ExperienceResponse.PreviewPageDto.builder()
+        .totalElements(experiencePreviewPage.getTotalElements())
         .data(data)
         .build();
   }
 
   // 이색체험 상세 정보 조회
-  public ExperienceDetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
+  public ExperienceResponse.DetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
@@ -144,7 +143,7 @@ public class ExperienceService implements PostService {
             experienceTypeKeyword.getValueByLocale(language)
         ).toList();
 
-    return ExperienceDetailDto.builder()
+    return ExperienceResponse.DetailDto.builder()
         .id(experienceCompositeDto.getId())
         .title(experienceCompositeDto.getTitle())
         .intro(experienceCompositeDto.getIntro())

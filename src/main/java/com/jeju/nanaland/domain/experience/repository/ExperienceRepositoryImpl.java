@@ -9,11 +9,10 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
-import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_PreviewDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_SearchPostForReviewDto;
@@ -117,12 +116,13 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   @Override
-  public Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
-      ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
+  public Page<ExperienceResponse.PreviewDto> findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(
+      Language language, ExperienceType experienceType,
+      List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, Pageable pageable) {
 
-    List<ExperienceThumbnail> resultDto = queryFactory
-        .selectDistinct(new QExperienceResponse_ExperienceThumbnail(
+    List<ExperienceResponse.PreviewDto> resultDto = queryFactory
+        .selectDistinct(new QExperienceResponse_PreviewDto(
             experience.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
@@ -193,20 +193,21 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
   @Override
   public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
-    return queryFactory
-        .select(new QPostPreviewDto(
-            experience.id,
-            experienceTrans.title,
-            imageFile.originUrl,
-            imageFile.thumbnailUrl
-        ))
-        .from(experience)
-        .innerJoin(experience.experienceTrans, experienceTrans)
-        .innerJoin(experience.firstImageFile, imageFile)
-        .where(
-            experience.id.eq(postId),
-            experienceTrans.language.eq(language))
-        .fetchOne();
+//    return queryFactory
+//        .select(new QPostPreviewDto(
+//            experience.id,
+//            experienceTrans.title,
+//            imageFile.originUrl,
+//            imageFile.thumbnailUrl
+//        ))
+//        .from(experience)
+//        .innerJoin(experience.experienceTrans, experienceTrans)
+//        .innerJoin(experience.firstImageFile, imageFile)
+//        .where(
+//            experience.id.eq(postId),
+//            experienceTrans.language.eq(language))
+//        .fetchOne();
+    return null;
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {

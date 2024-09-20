@@ -14,7 +14,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
 import com.jeju.nanaland.domain.experience.entity.Experience;
@@ -126,8 +126,8 @@ class ExperienceServiceTest {
         .findPostImageFiles(postId);
 
     // when
-    ExperienceDetailDto result = experienceService.getExperienceDetail(memberInfoDto, postId,
-        false);
+    ExperienceResponse.DetailDto result =
+        experienceService.getExperienceDetail(memberInfoDto, postId, false);
 
     // then
     assertThat(result).extracting("title").isEqualTo("액티비티 테스트 제목1");
