@@ -15,8 +15,6 @@ import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
@@ -119,7 +117,7 @@ class ExperienceServiceTest {
         .build();
 
     doReturn(experienceCompositeDto).when(experienceRepository)
-        .findCompositeDtoById(postId, language);
+        .findExperienceCompositeDto(postId, language);
     doReturn(false).when(memberFavoriteService)
         .isPostInFavorite(memberInfoDto.getMember(), Category.EXPERIENCE, postId);
     doReturn(List.of()).when(imageFileRepository)  // 빈 이미지 리스트
@@ -144,28 +142,29 @@ class ExperienceServiceTest {
     List<Experience> experienceList = new ArrayList<>();
     experienceList.addAll(getActivityList(language, "제주시", 2));
     experienceList.addAll(getActivityList(language, "제주시", 3));
-    List<ExperienceThumbnail> experienceThumbnailList = List.of(
-        ExperienceThumbnail.builder()
+    List<ExperienceResponse.PreviewDto> experienceThumbnailList = List.of(
+        ExperienceResponse.PreviewDto.builder()
             .title("title 1")
             .build(),
-        ExperienceThumbnail.builder()
+        ExperienceResponse.PreviewDto.builder()
             .title("title 2")
             .build()
     );
-    Page<ExperienceThumbnail> experienceThumbnailPage =
+    Page<ExperienceResponse.PreviewDto> experienceThumbnailPage =
         new PageImpl<>(
             experienceThumbnailList,
             pageable,
             experienceThumbnailList.size());
 
     doReturn(experienceThumbnailPage).when(experienceRepository)
-        .findExperienceThumbnails(language, ExperienceType.ACTIVITY, List.of(), List.of(),
-            pageable);
+        .findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(language,
+            ExperienceType.ACTIVITY, List.of(), List.of(), pageable);
     doReturn(4.32).when(reviewRepository)
         .findTotalRatingAvg(Category.EXPERIENCE, null);
 
     // when
-    ExperienceThumbnailDto result = experienceService.getExperienceList(memberInfoDto,
+    ExperienceResponse.PreviewPageDto result = experienceService.getExperiencePreviews(
+        memberInfoDto,
         ExperienceType.ACTIVITY, List.of(), List.of(), 0, 12);
 
     // then
