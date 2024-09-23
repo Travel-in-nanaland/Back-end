@@ -47,7 +47,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(authHttpRequests -> authHttpRequests
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/favicon.ico",
                 "/member/join", "/member/login", "/member/reissue", "/share/**",
-                "member/forceWithdrawal", "nana/upload", "/admin/login", "/member/validateNickname")
+                "member/forceWithdrawal", "nana/upload", "/admin/login", "/member/validateNickname",
+                "/version/**")
             .permitAll()
             .requestMatchers("/favorite/**")
             .hasAnyRole("MEMBER", "ADMIN")
