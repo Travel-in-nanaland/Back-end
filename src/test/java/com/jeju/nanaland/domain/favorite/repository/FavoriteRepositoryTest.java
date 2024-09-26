@@ -62,9 +62,9 @@ public class FavoriteRepositoryTest {
   }
 
   // TODO: Category 에서 NANA_CONTENT 제외
-  @DisplayName("유저 전체 찜리스트 조회, 생성 일자 내림차순 조회")
+  @DisplayName("유저 전체 찜리스트 조회, 수정 일자 내림차순 조회")
   @Test
-  void findAllFavoritesOrderByCreatedAtDescTest() {
+  void findAllFavoritesOrderByModifiedAtDescTest() {
     // given
     Member member = createMember(Language.KOREAN);
     int nanaCount = 2;
@@ -104,7 +104,7 @@ public class FavoriteRepositoryTest {
     favorites.addAll(createFavorites(member, inactiveRestaurants, Category.RESTAURANT, "INACTIVE"));
 
     // when
-    Page<Favorite> result = favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(
+    Page<Favorite> result = favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(
         member, pageable);
 
     // then
@@ -113,10 +113,10 @@ public class FavoriteRepositoryTest {
         .allMatch(status -> status.equals("ACTIVE"));
   }
 
-  @DisplayName("유저 카테고리 찜리스트 생성 일자 내림차순 조회")
+  @DisplayName("유저 카테고리 찜리스트 수정 일자 내림차순 조회")
   @ParameterizedTest
   @EnumSource(value = Category.class, names = "NANA_CONTENT", mode = Mode.EXCLUDE)
-  void findAllFavoritesOrderByCreatedAtDescTest(Category category) {
+  void findAllFavoritesOrderByModifiedAtDescTest(Category category) {
     // given
     Member member = createMember(Language.KOREAN);
     int activeRandomSize = random.nextInt(10) + 1;
@@ -136,7 +136,7 @@ public class FavoriteRepositoryTest {
     List<Favorite> inactiveFavorites = createFavorites(member, inactivePosts, category, "INACTIVE");
 
     // when
-    Page<Favorite> result = favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(
+    Page<Favorite> result = favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(
         member, category, pageable);
 
     // then

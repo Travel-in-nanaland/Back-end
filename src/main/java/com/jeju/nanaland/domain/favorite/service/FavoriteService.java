@@ -49,7 +49,7 @@ public class FavoriteService {
 
     // favorite 테이블에서 해당 유저의 찜리스트 페이지 조회
     Page<Favorite> favorites =
-        favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, pageable);
+        favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(member, pageable);
 
     // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
     List<FavoriteResponse.PreviewDto> favoritePreviewDtos = favorites.stream()
@@ -86,7 +86,7 @@ public class FavoriteService {
 
     // favorite 테이블에서 해당 유저의 카테고리 찜리스트 페이지 조회
     Page<Favorite> favoritePage =
-        favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, category, pageable);
+        favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(member, category, pageable);
 
     // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
     List<FavoriteResponse.PreviewDto> favoritePreviewDtos = favoritePage.get()

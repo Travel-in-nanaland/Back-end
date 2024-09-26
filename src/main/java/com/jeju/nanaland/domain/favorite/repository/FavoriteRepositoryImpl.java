@@ -21,14 +21,14 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public Page<Favorite> findAllFavoritesOrderByCreatedAtDesc(Member member, Pageable pageable) {
+  public Page<Favorite> findAllFavoritesOrderByModifiedAtDesc(Member member, Pageable pageable) {
     List<Favorite> resultDto = queryFactory
         .selectFrom(favorite)
         .where(
             favorite.member.eq(member),
             favorite.status.eq("ACTIVE")
         )
-        .orderBy(favorite.createdAt.desc())
+        .orderBy(favorite.modifiedAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -45,7 +45,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
   }
 
   @Override
-  public Page<Favorite> findAllFavoritesOrderByCreatedAtDesc(Member member, Category category,
+  public Page<Favorite> findAllFavoritesOrderByModifiedAtDesc(Member member, Category category,
       Pageable pageable) {
     List<Favorite> resultDto = queryFactory
         .selectFrom(favorite)
@@ -54,7 +54,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
             favorite.category.eq(category),
             favorite.status.eq("ACTIVE")
         )
-        .orderBy(favorite.createdAt.desc())
+        .orderBy(favorite.modifiedAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
