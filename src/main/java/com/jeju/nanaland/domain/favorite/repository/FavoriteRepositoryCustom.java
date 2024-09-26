@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface FavoriteRepositoryCustom {
 
-  Page<Favorite> findAllFavoritesOrderByCreatedAtDesc(Member member, Pageable pageable);
+  Page<Favorite> findAllFavoritesOrderByModifiedAtDesc(Member member, Pageable pageable);
 
-  Page<Favorite> findAllFavoritesOrderByCreatedAtDesc(Member member, Category category,
+  Page<Favorite> findAllFavoritesOrderByModifiedAtDesc(Member member, Category category,
       Pageable pageable);
 
   List<Favorite> findAllFavoriteToSendNotification();
