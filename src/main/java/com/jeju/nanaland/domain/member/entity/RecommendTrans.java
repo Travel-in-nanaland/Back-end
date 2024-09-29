@@ -31,6 +31,8 @@ public class RecommendTrans extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Language language;
 
+  private String title;
+
   @NotNull
   @Column(columnDefinition = "VARCHAR(1024)")
   private String introduction;
