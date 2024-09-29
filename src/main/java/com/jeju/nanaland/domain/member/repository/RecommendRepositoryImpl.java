@@ -38,7 +38,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            natureTrans.title,
+            recommendTrans.title.coalesce(natureTrans.title),
             recommendTrans.introduction
         ))
         .from(recommend)
@@ -58,7 +58,8 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   }
 
   @Override
-  public MemberResponse.RecommendPostDto findExperienceRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findExperienceRecommendPostDto(Long postId,
+      Language language,
       TravelType travelType) {
 
     return queryFactory
@@ -67,7 +68,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            experienceTrans.title,
+            recommendTrans.title.coalesce(experienceTrans.title),
             recommendTrans.introduction
         ))
         .from(recommend)
@@ -96,7 +97,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            marketTrans.title,
+            recommendTrans.title.coalesce(marketTrans.title),
             recommendTrans.introduction
         ))
         .from(recommend)
@@ -116,7 +117,8 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
   }
 
   @Override
-  public MemberResponse.RecommendPostDto findFestivalRecommendPostDto(Long postId, Language language,
+  public MemberResponse.RecommendPostDto findFestivalRecommendPostDto(Long postId,
+      Language language,
       TravelType travelType) {
 
     return queryFactory
@@ -125,7 +127,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            festivalTrans.title,
+            recommendTrans.title.coalesce(festivalTrans.title),
             recommendTrans.introduction
         ))
         .from(recommend)
@@ -153,7 +155,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
             recommend.category,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            nanaTitle.heading,
+            recommendTrans.title.coalesce(nanaTitle.heading),
             recommendTrans.introduction
         ))
         .from(recommend)
