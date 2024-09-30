@@ -10,11 +10,10 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
-import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
+import com.jeju.nanaland.domain.nana.dto.QNanaResponse_PreviewDto;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -31,8 +30,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   //최신순으로 4
   @Override
-  public List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Language language) {
-    return queryFactory.select(new QNanaResponse_NanaThumbnail(
+  public List<PreviewDto> findTop4PreviewDtoOrderByCreatedAt(Language language) {
+    return queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
@@ -52,9 +51,9 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   // 모든 Nana 썸네일 가져오기
   @Override
-  public Page<NanaResponse.NanaThumbnail> findAllNanaThumbnailDto(Language language,
+  public Page<PreviewDto> findAllPreviewDtoOrderByCreatedAt(Language language,
       Pageable pageable) {
-    List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
+    List<PreviewDto> resultDto = queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
@@ -83,8 +82,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   @Override
-  public List<NanaThumbnail> findRecommendNanaThumbnailDto(Language language) {
-    return queryFactory.select(new QNanaResponse_NanaThumbnail(
+  public List<PreviewDto> findRecommendPreviewDto(Language language) {
+    return queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
@@ -103,12 +102,12 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   @Override
-  public Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Language language,
+  public Page<PreviewDto> searchNanaThumbnailDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
 
     List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
 
-    List<NanaThumbnail> resultDto = queryFactory.selectDistinct(new QNanaResponse_NanaThumbnail(
+    List<PreviewDto> resultDto = queryFactory.selectDistinct(new QNanaResponse_PreviewDto(
             nana.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
