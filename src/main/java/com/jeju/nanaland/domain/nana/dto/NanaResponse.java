@@ -96,7 +96,7 @@ public class NanaResponse {
     private boolean isFavorite;
 
     @Schema(description = "게시물 데이터")
-    private List<ContentDetailDto> contentDetailDtos;
+    private List<ContentDetailDto> nanaDetails;
 
   }
 
