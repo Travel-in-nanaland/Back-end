@@ -193,7 +193,7 @@ public class NanaServiceTest {
 
     // When
     DetailPageDto nanaDetail = nanaService.getNanaDetail(memberInfoDto, 1L, false);
-    List<ContentDetailDto> contentDetailDtos = nanaDetail.getContentDetailDtos();
+    List<ContentDetailDto> contentDetailDtos = nanaDetail.getNanaDetails();
 
     // Then
     int[] numberList = {contentDetailDtos.get(0).number, contentDetailDtos.get(1).number,
