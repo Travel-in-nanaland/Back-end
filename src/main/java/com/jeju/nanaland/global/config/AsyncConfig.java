@@ -27,6 +27,23 @@ public class AsyncConfig implements AsyncConfigurer {
     return executor;
   }
 
+  @Bean(name = "imageUploadExecutor")
+  public Executor imageUploadExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+    executor.setThreadGroupName("imageUploadExecutor");
+    executor.setCorePoolSize(10);
+    executor.setMaxPoolSize(20);
+    executor.setQueueCapacity(50);
+    executor.setKeepAliveSeconds(20);
+    executor.setThreadNamePrefix("Async ImageUploadExecutor-");
+    executor.setRejectedExecutionHandler((r, exec) -> {
+      throw new IllegalArgumentException("더 이상 비동기 요청을 처리할 수 없습니다.");
+    });
+    executor.initialize();
+    return executor;
+  }
+
   @Override
   public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
     return AsyncConfigurer.super.getAsyncUncaughtExceptionHandler();
