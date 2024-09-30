@@ -188,7 +188,7 @@ public class NanaService implements PostService {
         .heading(nanaTitle.getHeading())
         .version(nana.getVersion())
         .notice(nanaTitle.getNotice())
-        .contentDetailDtos(contentDetailDtos)
+        .nanaDetails(contentDetailDtos)
         .isFavorite(isPostInFavorite)
         .build();
 
