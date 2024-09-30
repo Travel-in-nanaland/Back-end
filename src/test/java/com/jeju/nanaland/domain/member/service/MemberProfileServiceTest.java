@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -183,9 +184,9 @@ class MemberProfileServiceTest {
           .thumbnailUrl("thumbnailUrl")
           .originUrl("originUrl")
           .build();
-
+      CompletableFuture<S3ImageDto> completableFuture = CompletableFuture.completedFuture(s3ImageDto);
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(s3ImageDto).when(s3ImageService)
+      doReturn(completableFuture).when(s3ImageService)
           .uploadImageToS3(any(MultipartFile.class), eq(true), any());
       doReturn(false).when(s3ImageService).isDefaultProfileImage(any(ImageFile.class));
 

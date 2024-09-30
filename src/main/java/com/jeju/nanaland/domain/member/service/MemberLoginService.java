@@ -22,7 +22,6 @@ import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.service.FcmTokenService;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;

@@ -19,11 +19,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -91,33 +94,37 @@ public class S3ImageService {
    * @param autoThumbnail 썸네일 생성 여부
    * @param directory     S3 저장소 접두사
    * @return originUrl, thumbnailUrl을 갖는 S3ImageDto
-   * @throws IOException
    */
-  @Transactional
-  public S3ImageDto uploadImageToS3(MultipartFile multipartFile, boolean autoThumbnail,
-      String directory)
-      throws IOException {
+  @Async("imageUploadExecutor")
+  public CompletableFuture<S3ImageDto> uploadImageToS3(MultipartFile multipartFile, boolean autoThumbnail,
+      String directory) {
 
-    //이미지 파일인지 검증
-    verifyExtension(multipartFile);
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        //이미지 파일인지 검증
+        verifyExtension(multipartFile);
 
-    //최종 파일 이름 => uuid16자리 + _ + yyMMdd
-    String uploadImageName = generateUniqueFileName(multipartFile.getOriginalFilename());
+        //최종 파일 이름 => uuid16자리 + _ + yyMMdd
+        String uploadImageName = generateUniqueFileName(multipartFile.getOriginalFilename());
 
-    //S3에 사진 올리기
-    String originalImageUrl = uploadOriginImage(multipartFile, directory, uploadImageName);
+        //S3에 사진 올리기
+        String originalImageUrl = uploadOriginImage(multipartFile, directory, uploadImageName);
 
-    //true, false로 구분해서 썸네일 만들고 안만들고 동작.
-    String thumbnailImageUrl = originalImageUrl;
-    if (autoThumbnail) { // autoThumbnail이 True인 경우 thumbnailImageUrl 갱신
-      //섬네일 생성 후 저장
-      thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
-    }
+        //true, false로 구분해서 썸네일 만들고 안만들고 동작.
+        String thumbnailImageUrl = originalImageUrl;
+        if (autoThumbnail) { // autoThumbnail이 True인 경우 thumbnailImageUrl 갱신
+          //섬네일 생성 후 저장
+          thumbnailImageUrl = makeThumbnailImageAndUpload(multipartFile, uploadImageName);
+        }
 
-    return S3ImageDto.builder()
-        .originUrl(originalImageUrl)
-        .thumbnailUrl(thumbnailImageUrl)
-        .build();
+        return S3ImageDto.builder()
+            .originUrl(originalImageUrl)
+            .thumbnailUrl(thumbnailImageUrl)
+            .build();
+      } catch (IOException e) {
+        throw new CompletionException(e);
+      }
+    });
   }
 
   /**
