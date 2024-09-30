@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.member.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.*;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WITHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
@@ -23,8 +24,12 @@ import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,6 +54,7 @@ public class MemberLoginService {
   private final FcmTokenService fcmTokenService;
   @Value("${cloud.aws.s3.memberProfileDirectory}")
   private String MEMBER_PROFILE_DIRECTORY;
+  private final String tmpLocation = System.getProperty("java.io.tmpdir");
 
   /**
    * 회원 가입
@@ -66,12 +72,12 @@ public class MemberLoginService {
 
     // 이미 가입한 경우
     if (savedMember.isPresent()) {
-      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+      throw new ConflictException(MEMBER_DUPLICATE.getMessage());
     }
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = createProfileImageFile(multipartFile);
+    ImageFile profileImageFile = imageFileService.getRandomProfileImageFile();
     Member member = createMember(joinDto, profileImageFile, nickname);
 
     // GUEST가 아닌 경우, 이용약관 저장
@@ -84,7 +90,36 @@ public class MemberLoginService {
       fcmTokenService.createFcmToken(member, joinDto.getFcmToken());
     }
 
+    // 비동기 처리
+    if (multipartFile != null && !multipartFile.isEmpty()) {
+      File convertedFile = convertMultipartFileToFile(multipartFile);
+      imageFileService.uploadMemberProfileImage(member.getId(), convertedFile);
+    }
+
     return getJwtDto(member);
+  }
+
+  /**
+   * MultiparFile을 File로 변환
+   *
+   * @param multipartFile multipartFile
+   * @return File
+   */
+  private File convertMultipartFileToFile(MultipartFile multipartFile) {
+    String originalFilename = multipartFile.getOriginalFilename();
+    if (originalFilename == null) {
+      originalFilename = "unknown_file";
+    }
+    String fileName = originalFilename.replaceAll("\\s+", "_");
+    File convertFile = new File(
+        tmpLocation + File.separator + UUID.randomUUID() + "_" + fileName);
+
+    try (FileOutputStream fileOutputStream = new FileOutputStream(convertFile)) {
+      fileOutputStream.write(multipartFile.getBytes());
+    } catch (IOException e) {
+      throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
+    }
+    return convertFile;
   }
 
   /**
@@ -114,20 +149,6 @@ public class MemberLoginService {
     if (savedMember.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
-  }
-
-  /**
-   * 프로필 사진 업로드 및 저장.
-   * 프로필 사진이 없는 경우엔, 랜덤 프로필 사진 저장
-   *
-   * @param multipartFile 프로필 사진
-   * @return 저장된 이미지 파일 또는 랜덤 프로필 사진 파일
-   */
-  private ImageFile createProfileImageFile(MultipartFile multipartFile) {
-    if (multipartFile == null) {
-      return imageFileService.getRandomProfileImageFile();
-    }
-    return imageFileService.uploadAndSaveImageFile(multipartFile, true, MEMBER_PROFILE_DIRECTORY);
   }
 
   /**
@@ -248,7 +269,7 @@ public class MemberLoginService {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
     if (!jwtUtil.verifyRefreshToken(refreshToken)) {
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
     }
 
     String memberId = jwtUtil.getMemberIdFromRefresh(refreshToken);
@@ -258,7 +279,7 @@ public class MemberLoginService {
     if (!refreshToken.equals(savedRefreshToken)) {
       // RefreshToken 삭제 및 다시 로그인하도록 UNAUTHORIZED
       jwtUtil.deleteRefreshToken(memberId);
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
     }
 
     Member member = memberRepository.findById(Long.valueOf(memberId))
@@ -346,7 +367,7 @@ public class MemberLoginService {
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
 
     if (!jwtUtil.verifyAccessToken(accessToken)) {
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
     }
 
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
