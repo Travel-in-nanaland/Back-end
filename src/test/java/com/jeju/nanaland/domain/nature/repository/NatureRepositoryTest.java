@@ -107,7 +107,7 @@ class NatureRepositoryTest {
       Pageable pageable = PageRequest.of(0, 12);
 
       // when: 7대 자연 프리뷰 페이징 조회
-      Page<NatureResponse.PreviewDto> result = natureRepository.findAllNaturePreviewDtoOrderByPriority(
+      Page<NatureResponse.PreviewDto> result = natureRepository.findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(
           Language.KOREAN, new ArrayList<>(), "", pageable);
 
       // then: 7대 자연 프리뷰 페이징 검증
@@ -115,7 +115,7 @@ class NatureRepositoryTest {
       assertThat(result.getContent()).hasSize(itemCount);
       assertThat(result.getTotalElements()).isEqualTo(itemCount);
 
-      NatureResponse.PreviewDto firstItem = result.getContent().get(0);
+      NatureResponse.PreviewDto firstItem = result.getContent().get(itemCount - 1);
       assertThat(firstItem.getTitle()).isEqualTo("title" + itemCount);
       assertThat(firstItem.getFirstImage().getOriginUrl()).isEqualTo("origin" + itemCount);
       assertThat(firstItem.getFirstImage().getThumbnailUrl()).isEqualTo("thumbnail" + itemCount);
@@ -132,7 +132,7 @@ class NatureRepositoryTest {
       Pageable pageable = PageRequest.of(0, 12);
 
       // when: 7대 자연 프리뷰 페이징 조회
-      Page<NatureResponse.PreviewDto> result = natureRepository.findAllNaturePreviewDtoOrderByPriority(
+      Page<NatureResponse.PreviewDto> result = natureRepository.findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(
           Language.KOREAN, new ArrayList<>(), keyword, pageable);
 
       // then: 7대 자연 프리뷰 페이징 검증, 키워드 포함되어 있는지 확인
@@ -140,7 +140,7 @@ class NatureRepositoryTest {
       assertThat(result.getContent()).hasSize(itemCount);
       assertThat(result.getTotalElements()).isEqualTo(itemCount);
 
-      NatureResponse.PreviewDto firstItem = result.getContent().get(0);
+      NatureResponse.PreviewDto firstItem = result.getContent().get(itemCount - 1);
       assertThat(firstItem.getTitle()).isEqualTo(keyword + "title" + itemCount);
       assertThat(firstItem.getFirstImage().getOriginUrl()).isEqualTo("origin" + itemCount);
       assertThat(firstItem.getFirstImage().getThumbnailUrl()).isEqualTo("thumbnail" + itemCount);
@@ -157,7 +157,7 @@ class NatureRepositoryTest {
       Pageable pageable = PageRequest.of(0, 12);
 
       // when: 7대 자연 프리뷰 페이징 조회
-      Page<NatureResponse.PreviewDto> result = natureRepository.findAllNaturePreviewDtoOrderByPriority(
+      Page<NatureResponse.PreviewDto> result = natureRepository.findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(
           Language.KOREAN, List.of(addressTag), "", pageable);
 
       // then: 7대 자연 프리뷰 페이징 검증, 지역필터 올바른지 확인
@@ -165,7 +165,7 @@ class NatureRepositoryTest {
       assertThat(result.getContent()).hasSize(itemCount);
       assertThat(result.getTotalElements()).isEqualTo(itemCount);
 
-      NatureResponse.PreviewDto firstItem = result.getContent().get(0);
+      NatureResponse.PreviewDto firstItem = result.getContent().get(itemCount - 1);
       assertThat(firstItem.getTitle()).isEqualTo("title" + itemCount);
       assertThat(firstItem.getFirstImage().getOriginUrl()).isEqualTo("origin" + itemCount);
       assertThat(firstItem.getFirstImage().getThumbnailUrl()).isEqualTo("thumbnail" + itemCount);
