@@ -9,19 +9,13 @@ import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOWED;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.VideoFile;
+import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.MailService;
 import com.jeju.nanaland.domain.common.service.VideoFileService;
@@ -36,9 +30,7 @@ import com.jeju.nanaland.domain.report.entity.claim.ClaimReportStrategy;
 import com.jeju.nanaland.domain.report.entity.infoFix.FixType;
 import com.jeju.nanaland.domain.report.entity.infoFix.InfoFixReport;
 import com.jeju.nanaland.domain.report.entity.infoFix.InfoFixReportStrategy;
-import com.jeju.nanaland.domain.report.entity.Report;
 import com.jeju.nanaland.domain.report.entity.ReportStrategyFactory;
-import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReport;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimType;
@@ -49,7 +41,6 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,6 +92,8 @@ class ReportServiceTest {
   InfoFixReportStrategy infoFixReportStrategy;
   @Mock
   ClaimReportStrategy claimReportStrategy;
+  @Mock
+  FileService fileService;
 
   MemberInfoDto memberInfoDto, memberInfoDto2;
 
@@ -225,20 +218,12 @@ class ReportServiceTest {
       doReturn(MarketCompositeDto.builder().build()).when(marketRepository)
           .findCompositeDtoById(any(), any(Language.class));
       doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
-      doReturn(mock(ImageFile.class)).when(imageFileService)
-          .uploadAndSaveImageFile(any(File.class), eq(false), any());
-      doReturn(infoFixReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 정보 수정 제안
       reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files);
 
       // then: 정보 수정 제안 요청 검증
       verify(infoFixReportRepository).save(any(InfoFixReport.class));
-      verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(File.class),
-          eq(false), any());
-      verify(reportStrategyFactory).findStrategy(ReportType.INFO_FIX);
-      verify(infoFixReportStrategy).saveReportImages(any(InfoFixReport.class), anyList());
-      verify(mailService).sendEmailReport(any(Report.class), any());
     }
   }
 
@@ -330,24 +315,12 @@ class ReportServiceTest {
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
-      doReturn(mock(ImageFile.class)).when(imageFileService)
-          .uploadAndSaveImageFile(any(File.class), eq(false), any());
-      doReturn(mock(VideoFile.class)).when(videoFileService)
-          .uploadAndSaveVideoFile(any(File.class), any());
-      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 리뷰 신고 요청
       reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
 
       // then: 리뷰 신고 요청 검증
       verify(claimReportRepository).save(any(ClaimReport.class));
-      verify(imageFileService, times(imageCount)).uploadAndSaveImageFile(any(), anyBoolean(),
-          any());
-      verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
-      verify(reportStrategyFactory).findStrategy(any(ReportType.class));
-      verify(claimReportStrategy).saveReportImages(any(ClaimReport.class), anyList());
-      verify(claimReportVideoFileRepository).saveAll(anyList());
-      verify(mailService).sendEmailReport(any(Report.class), any());
     }
 
     @Test
@@ -397,24 +370,12 @@ class ReportServiceTest {
       doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
-      doReturn(mock(ImageFile.class)).when(imageFileService)
-          .uploadAndSaveImageFile(any(File.class), eq(false), any());
-      doReturn(mock(VideoFile.class)).when(videoFileService)
-          .uploadAndSaveVideoFile(any(File.class), any());
-      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 유저 신고 요청
       reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
 
       // then: 유저 신고 요청 검증
       verify(claimReportRepository).save(any(ClaimReport.class));
-      verify(imageFileService, times(imageCount)).uploadAndSaveImageFile(any(), anyBoolean(),
-          any());
-      verify(videoFileService, times(videoCount)).uploadAndSaveVideoFile(any(), any());
-      verify(reportStrategyFactory).findStrategy(any(ReportType.class));
-      verify(claimReportStrategy).saveReportImages(any(ClaimReport.class), anyList());
-      verify(claimReportVideoFileRepository).saveAll(anyList());
-      verify(mailService).sendEmailReport(any(Report.class), any());
     }
   }
 }

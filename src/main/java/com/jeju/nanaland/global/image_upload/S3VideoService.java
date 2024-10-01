@@ -1,7 +1,10 @@
 package com.jeju.nanaland.global.image_upload;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_FAIL_ERROR;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
 import com.jeju.nanaland.global.image_upload.dto.S3VideoDto;
 import java.io.IOException;
@@ -9,7 +12,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,8 +76,9 @@ public class S3VideoService {
         return S3VideoDto.builder()
             .originUrl(originalVideoUrl)
             .build();
-      } catch (IOException e) {
-        throw new CompletionException(e);
+      } catch (Exception e) {
+        log.error("파일 업로드 오류: ", e);
+        throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
       }
     });
   }

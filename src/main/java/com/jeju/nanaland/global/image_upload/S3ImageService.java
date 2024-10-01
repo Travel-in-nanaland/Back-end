@@ -1,5 +1,6 @@
 package com.jeju.nanaland.global.image_upload;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.*;
 import static com.jeju.nanaland.global.exception.ErrorCode.EXTRACT_NAME_ERROR;
 
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -19,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -120,8 +120,9 @@ public class S3ImageService {
             .originUrl(originalImageUrl)
             .thumbnailUrl(thumbnailImageUrl)
             .build();
-      } catch (IOException e) {
-        throw new CompletionException(e);
+      } catch (Exception e) {
+        log.error("파일 업로드 오류: ", e);
+        throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
       }
     });
   }
