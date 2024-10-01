@@ -65,7 +65,7 @@ public class ClaimReport extends Report {
     message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
     context.setVariable("report_type", this.getClaimReportType());
     context.setVariable("claim_type", this.getClaimType());
-    context.setVariable("id", this.getId());
+    context.setVariable("id", this.getReferenceId());
     context.setVariable("content", this.getContent());
     context.setVariable("email", this.getEmail());
     return "claim-report";

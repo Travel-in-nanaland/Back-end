@@ -49,6 +49,7 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -225,7 +226,7 @@ class ReportServiceTest {
           .findCompositeDtoById(any(), any(Language.class));
       doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
-          .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+          .uploadAndSaveImageFile(any(File.class), eq(false), any());
       doReturn(infoFixReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 정보 수정 제안
@@ -233,7 +234,7 @@ class ReportServiceTest {
 
       // then: 정보 수정 제안 요청 검증
       verify(infoFixReportRepository).save(any(InfoFixReport.class));
-      verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(MultipartFile.class),
+      verify(imageFileService, times(itemCount)).uploadAndSaveImageFile(any(File.class),
           eq(false), any());
       verify(reportStrategyFactory).findStrategy(ReportType.INFO_FIX);
       verify(infoFixReportStrategy).saveReportImages(any(InfoFixReport.class), anyList());
@@ -330,9 +331,9 @@ class ReportServiceTest {
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
-          .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+          .uploadAndSaveImageFile(any(File.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
-          .uploadAndSaveVideoFile(any(MultipartFile.class), any());
+          .uploadAndSaveVideoFile(any(File.class), any());
       doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 리뷰 신고 요청
@@ -397,9 +398,9 @@ class ReportServiceTest {
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
       doReturn(mock(ImageFile.class)).when(imageFileService)
-          .uploadAndSaveImageFile(any(MultipartFile.class), eq(false), any());
+          .uploadAndSaveImageFile(any(File.class), eq(false), any());
       doReturn(mock(VideoFile.class)).when(videoFileService)
-          .uploadAndSaveVideoFile(any(MultipartFile.class), any());
+          .uploadAndSaveVideoFile(any(File.class), any());
       doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
 
       // when: 유저 신고 요청

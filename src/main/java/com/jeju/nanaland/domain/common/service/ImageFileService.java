@@ -1,27 +1,23 @@
 package com.jeju.nanaland.domain.common.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_FAIL_ERROR;
 import static com.jeju.nanaland.global.exception.ErrorCode.SERVER_ERROR;
 
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
-import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.service.MemberProfileService;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
-import com.jeju.nanaland.global.util.CustomMultipartFile;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageFileService {
 
   private final MemberProfileService memberProfileService;
+  private final FileService fileService;
   @Value("${cloud.aws.s3.memberProfileDirectory}")
   private String MEMBER_PROFILE_DIRECTORY;
   private final S3ImageService s3ImageService;
@@ -53,19 +50,16 @@ public class ImageFileService {
   }
 
   // S3에 저장될 경로 지정
-  public ImageFile uploadAndSaveImageFile(MultipartFile multipartFile, boolean autoThumbnail,
+  public ImageFile uploadAndSaveImageFile(File file, boolean autoThumbnail,
       String directory) {
     try {
+      MultipartFile multipartFile = fileService.convertFileToMultipartFile(file);
       CompletableFuture<S3ImageDto> futureS3ImageDto = s3ImageService.uploadImageToS3(multipartFile, autoThumbnail, directory);
-      S3ImageDto s3ImageDto = futureS3ImageDto.get();
+      S3ImageDto s3ImageDto = futureS3ImageDto.join();
       return saveS3ImageFile(s3ImageDto);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("스레드 중단", e);
-      throw new ServerErrorException(SERVER_ERROR.getMessage());
-    } catch (ExecutionException e) {
-      log.error("비동기 작업 실행 중 발생하는 예외 발생", e);
-      throw new ServerErrorException(SERVER_ERROR.getMessage());
+    } catch (Exception e) {
+      log.error("파일 업로드 오류: ", e);
+      throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
     }
   }
 
@@ -90,7 +84,7 @@ public class ImageFileService {
   @Async("imageUploadExecutor")
   public void uploadMemberProfileImage(Long memberId, File file) {
     try {
-      MultipartFile multipartFile = convertFileToMultipartFile(file);
+      MultipartFile multipartFile = fileService.convertFileToMultipartFile(file);
       s3ImageService.uploadImageToS3(multipartFile, true, MEMBER_PROFILE_DIRECTORY)
           .thenAccept(s3ImageDto ->
               memberProfileService.updateMemberProfileImage(memberId, s3ImageDto)
@@ -103,13 +97,5 @@ public class ImageFileService {
       log.error("Failed to convert file", e);
       CompletableFuture.failedFuture(new ServerErrorException(SERVER_ERROR.getMessage()));
     }
-  }
-
-  private MultipartFile convertFileToMultipartFile(File file) throws IOException {
-    String contentType = Files.probeContentType(file.toPath());
-    if (contentType == null) {
-      contentType = "application/octet-stream";
-    }
-    return new CustomMultipartFile(file, "file", file.getName(), contentType);
   }
 }

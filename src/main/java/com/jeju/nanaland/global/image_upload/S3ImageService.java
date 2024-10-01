@@ -8,7 +8,6 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnsupportedFileFormatException;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
-import jakarta.transaction.Transactional;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -216,7 +215,6 @@ public class S3ImageService {
    * @param directoryPath 이미지 저장된 path
    */
   // 이미지 여러 개 삭제 필요시 추후 별도 메서드 생성 예정.
-  @Transactional
   public void deleteImageS3(ImageFile imageFile, String directoryPath) {
     // 원본 파일 이름 찾기
     String filename = extractFileName(imageFile.getOriginUrl(), directoryPath);

@@ -8,6 +8,7 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -23,12 +24,9 @@ import com.jeju.nanaland.domain.notification.service.FcmTokenService;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,9 +49,9 @@ public class MemberLoginService {
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
   private final FcmTokenService fcmTokenService;
+  private final FileService fileService;
   @Value("${cloud.aws.s3.memberProfileDirectory}")
   private String MEMBER_PROFILE_DIRECTORY;
-  private final String tmpLocation = System.getProperty("java.io.tmpdir");
 
   /**
    * 회원 가입
@@ -91,34 +89,11 @@ public class MemberLoginService {
 
     // 비동기 처리
     if (multipartFile != null && !multipartFile.isEmpty()) {
-      File convertedFile = convertMultipartFileToFile(multipartFile);
+      File convertedFile = fileService.convertMultipartFileToFile(multipartFile);
       imageFileService.uploadMemberProfileImage(member.getId(), convertedFile);
     }
 
     return getJwtDto(member);
-  }
-
-  /**
-   * MultiparFile을 File로 변환
-   *
-   * @param multipartFile multipartFile
-   * @return File
-   */
-  private File convertMultipartFileToFile(MultipartFile multipartFile) {
-    String originalFilename = multipartFile.getOriginalFilename();
-    if (originalFilename == null) {
-      originalFilename = "unknown_file";
-    }
-    String fileName = originalFilename.replaceAll("\\s+", "_");
-    File convertFile = new File(
-        tmpLocation + File.separator + UUID.randomUUID() + "_" + fileName);
-
-    try (FileOutputStream fileOutputStream = new FileOutputStream(convertFile)) {
-      fileOutputStream.write(multipartFile.getBytes());
-    } catch (IOException e) {
-      throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
-    }
-    return convertFile;
   }
 
   /**
