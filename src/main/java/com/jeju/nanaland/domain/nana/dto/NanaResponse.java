@@ -15,14 +15,14 @@ public class NanaResponse {
 
   @Data
   @Builder
-  @Schema(description = "나나's pick 전체 썸네일 조회 DTO")
-  public static class NanaThumbnailDto {
+  @Schema(name = "NanaThumbnailDto", description = "나나's pick 전체 썸네일 조회 DTO")
+  public static class PreviewPageDto {
 
     @Schema(description = "총 조회 개수")
     private Long totalElements;
 
     @Schema(description = "결과 데이터")
-    private List<NanaThumbnail> data;
+    private List<PreviewDto> data;
 
 
   }
@@ -30,8 +30,8 @@ public class NanaResponse {
   @Data
   @Builder
   @AllArgsConstructor
-  @Schema(description = "나나's pick 개별 썸네일 조회 DTO")
-  public static class NanaThumbnail {
+  @Schema(name = "NanaThumbnail", description = "나나's pick 개별 썸네일 조회 DTO")
+  public static class PreviewDto {
 
     @Schema(description = "게시물 id")
     private Long id;
@@ -56,7 +56,7 @@ public class NanaResponse {
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public NanaThumbnail(Long id, String originUrl, String thumbnailUrl, String version,
+    public PreviewDto(Long id, String originUrl, String thumbnailUrl, String version,
         String subHeading,
         String heading, LocalDateTime createdAt) {
       this.id = id;
@@ -70,8 +70,8 @@ public class NanaResponse {
 
   @Data
   @Builder
-  @Schema(description = "나나's pick 개별 상세 조회 DTO")
-  public static class NanaDetailDto {
+  @Schema(name = "NanaDetailDto", description = "나나's pick 개별 상세 조회 DTO")
+  public static class DetailPageDto {
 
     @Schema(description = "게시물 ID")
     private Long id;
@@ -96,14 +96,14 @@ public class NanaResponse {
     private boolean isFavorite;
 
     @Schema(description = "게시물 데이터")
-    private List<NanaDetail> nanaDetails;
+    private List<ContentDetailDto> nanaDetails;
 
   }
 
   @Data
   @Builder
-  @Schema(description = "나나's pick 게시글 세부 내용")
-  public static class NanaDetail {
+  @Schema(name = "NanaDetail", description = "나나's pick 게시글 세부 내용")
+  public static class ContentDetailDto {
 
     @Schema(description = "순위")
     public int number;

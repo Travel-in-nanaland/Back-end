@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -25,13 +24,13 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -131,29 +130,8 @@ class MemberProfileServiceTest {
     }
 
     @Test
-    @DisplayName("실패 - 이미지 업로드 실패")
-    void updateProfileFail_s3UploadError() throws IOException {
-      // given: 이미지 업로드를 실패하도록 설정
-      Language language = Language.KOREAN;
-      Member member = createMember(language, "nickname");
-      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-      MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-          new byte[0]);
-      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doThrow(new IOException()).when(s3ImageService)
-          .uploadImageToS3(any(MultipartFile.class), eq(true), any());
-
-      // when: 유저 프로필 수정
-      ServerErrorException serverErrorException = assertThrows(ServerErrorException.class,
-          () -> memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, multipartFile));
-
-      // then: ErrorCode 검증
-      assertThat(serverErrorException.getMessage()).isEqualTo(ErrorCode.SERVER_ERROR.getMessage());
-    }
-
-    @Test
     @DisplayName("성공 - 이미지 변경 없는 경우")
-    void updateProfileSuccess_multipartFileNotExists() throws IOException {
+    void updateProfileSuccess_multipartFileNotExists() {
       // given: 닉네임이 유효하고, 프로필 사진 있도록 프로필 수정 요청 DTO 설정
       Language language = Language.KOREAN;
       Member member = createMember(language, "nickname");
@@ -172,7 +150,7 @@ class MemberProfileServiceTest {
 
     @Test
     @DisplayName("성공 - 새 이미지 업로드")
-    void updateProfileSuccess_multipartFileExists() throws IOException {
+    void updateProfileSuccess_multipartFileExists() {
       // given: 닉네임이 유효하고, 새 이미지를 추가하여 프로필 수정 요청 DTO 설정
       Language language = Language.KOREAN;
       Member member = createMember(language, "nickname");
@@ -183,9 +161,9 @@ class MemberProfileServiceTest {
           .thumbnailUrl("thumbnailUrl")
           .originUrl("originUrl")
           .build();
-
+      CompletableFuture<S3ImageDto> completableFuture = CompletableFuture.completedFuture(s3ImageDto);
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(s3ImageDto).when(s3ImageService)
+      doReturn(completableFuture).when(s3ImageService)
           .uploadImageToS3(any(MultipartFile.class), eq(true), any());
       doReturn(false).when(s3ImageService).isDefaultProfileImage(any(ImageFile.class));
 

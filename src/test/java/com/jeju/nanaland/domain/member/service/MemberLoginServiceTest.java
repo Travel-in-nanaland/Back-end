@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -248,8 +247,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService)
-          .uploadAndSaveImageFile(any(MultipartFile.class), eq(true), any());
+      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -279,8 +277,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService)
-          .uploadAndSaveImageFile(any(MultipartFile.class), eq(true), any());
+      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());

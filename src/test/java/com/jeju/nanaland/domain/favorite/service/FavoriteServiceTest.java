@@ -119,7 +119,7 @@ class FavoriteServiceTest {
     favorites.addAll(createFavorites(member, experiences, Category.EXPERIENCE, "ACTIVE"));
     favorites.addAll(createFavorites(member, restaurants, Category.RESTAURANT, "ACTIVE"));
 
-    when(favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, pageable))
+    when(favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(member, pageable))
         .thenReturn(new PageImpl<>(favorites, pageable, favorites.size()));
     when(postService.getPostPreviewDto(nullable(Long.class), any(Category.class),
         eq(Language.KOREAN)))
@@ -151,7 +151,7 @@ class FavoriteServiceTest {
     // 찜 등록
     List<Favorite> favorites = createFavorites(member, posts, category, "ACTIVE");
 
-    when(favoriteRepository.findAllFavoritesOrderByCreatedAtDesc(member, category, pageable))
+    when(favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(member, category, pageable))
         .thenReturn(new PageImpl<>(favorites, pageable, favorites.size()));
     when(postService.getPostPreviewDto(nullable(Long.class), any(Category.class),
         eq(Language.KOREAN)))

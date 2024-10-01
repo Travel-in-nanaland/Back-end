@@ -4,7 +4,7 @@ import com.jeju.nanaland.config.TestConfig;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.PostImageFile;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
@@ -192,30 +192,30 @@ class NanaRepositoryImplTest {
 
   @Test
   @DisplayName("나나's pick 베너 조회 시 최근에 추가된 4개의 나나가 나온다.")
-  void findRecentNanaThumbnailDto() {
+  void findTop4PreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    List<NanaThumbnail> recentNanaThumbnailDto = nanaRepositoryImpl.findRecentNanaThumbnailDto(
+    List<PreviewDto> recentPreviewDtoDto = nanaRepositoryImpl.findTop4PreviewDtoOrderByCreatedAt(
         Language.KOREAN);
 
     // Then
-    Assertions.assertThat(recentNanaThumbnailDto.get(0).getId())
+    Assertions.assertThat(recentPreviewDtoDto.get(0).getId())
         .isEqualTo(nana5.getId());
   }
 
   @Test
   @DisplayName("나나's pick 전체 리스트 조회 시 최신순으로 보여진다.")
-  void findAllNanaThumbnailDto() {
+  void findAllPreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    Page<NanaThumbnail> allNanaThumbnailDto = nanaRepositoryImpl.findAllNanaThumbnailDto(
+    Page<PreviewDto> allNanaThumbnailDto = nanaRepositoryImpl.findAllPreviewDtoOrderByCreatedAt(
         Language.KOREAN,
         PageRequest.of(0, 12));
-    List<NanaThumbnail> result = allNanaThumbnailDto.getContent();
+    List<PreviewDto> result = allNanaThumbnailDto.getContent();
 
     // Then
     Assertions.assertThat(result.get(0).getId()).isEqualTo(nana5.getId());
@@ -228,17 +228,17 @@ class NanaRepositoryImplTest {
     setNana();
     System.out.println("nanaTitle2.getCreatedAt " + nanaTitle2.getCreatedAt());
     // When
-    Page<NanaThumbnail> keyword = nanaRepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
+    Page<PreviewDto> keyword = nanaRepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
         Language.KOREAN, PageRequest.of(0, 12));
-    List<NanaThumbnail> content = keyword.getContent();
-    for (NanaThumbnail nanaThumbnail : content) {
-      System.out.println("nanaThumbnail = " + nanaThumbnail.toString());
+    List<PreviewDto> content = keyword.getContent();
+    for (PreviewDto previewDto : content) {
+      System.out.println("nanaThumbnail = " + previewDto.toString());
     }
 
     // Then
     boolean isSearched = false;
-    for (NanaThumbnail nanaThumbnail : content) {
-      if (nanaThumbnail.getHeading().equals("keyword")) {
+    for (PreviewDto previewDto : content) {
+      if (previewDto.getHeading().equals("keyword")) {
         isSearched = true;
       }
     }

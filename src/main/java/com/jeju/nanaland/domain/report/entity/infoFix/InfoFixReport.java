@@ -1,5 +1,7 @@
-package com.jeju.nanaland.domain.report.entity.claim;
+package com.jeju.nanaland.domain.report.entity.infoFix;
 
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.report.entity.Report;
 import com.jeju.nanaland.domain.report.entity.ReportType;
@@ -20,40 +22,49 @@ import org.thymeleaf.context.Context;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ClaimReport extends Report {
+public class InfoFixReport extends Report {
 
   @NotNull
-  private Long referenceId;
-
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  private ClaimReportType claimReportType;
+  private Long postId;
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  private ClaimType claimType;
+  private Category category;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private Language locale;
+
+  @NotNull
+  private String title;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private FixType fixType;
 
   @NotBlank
-  @Column(nullable = false)
+  @Column(columnDefinition = "TEXT")
   private String content;
 
   @Builder
-  public ClaimReport(Member member, Long referenceId, ClaimReportType claimReportType,
-      ClaimType claimType, String content, String email) {
+  public InfoFixReport(Member member, Long postId, Category category, Language locale, String title,
+      FixType fixType, String content, String email) {
     super(member, email);
-    this.referenceId = referenceId;
-    this.claimReportType = claimReportType;
-    this.claimType = claimType;
+    this.postId = postId;
+    this.category = category;
+    this.locale = locale;
+    this.title = title;
+    this.fixType = fixType;
     this.content = content;
   }
 
   @Override
   public ReportType getReportType() {
-    return ReportType.CLAIM;
+    return ReportType.INFO_FIX;
   }
 
   /**
-   * 신고 요청 메일 내용 구성
+   * 정보 수정 제안 요청 메일 내용 구성
    *
    * @param message 내용
    * @param context context
@@ -62,12 +73,13 @@ public class ClaimReport extends Report {
   @Override
   public String setReportContextAndGetTemplate(MimeMessage message, Context context)
       throws MessagingException {
-    message.setSubject("[Nanaland] 리뷰 신고 요청입니다.");
-    context.setVariable("report_type", this.getClaimReportType());
-    context.setVariable("claim_type", this.getClaimType());
-    context.setVariable("id", this.getReferenceId());
+    message.setSubject("[Nanaland] 정보 수정 요청입니다.");
+    context.setVariable("fix_type", this.getFixType());
+    context.setVariable("category", this.getCategory());
+    context.setVariable("language", this.getLocale().name());
+    context.setVariable("title", this.getTitle());
     context.setVariable("content", this.getContent());
     context.setVariable("email", this.getEmail());
-    return "claim-report";
+    return "info-fix-report";
   }
 }

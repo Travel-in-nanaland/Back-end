@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
+import static com.jeju.nanaland.global.exception.ErrorCode.SERVER_ERROR;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,16 +71,29 @@ public class MemberProfileService {
   private void updateProfileImage(MultipartFile multipartFile, Member member) {
     ImageFile profileImageFile = member.getProfileImageFile();
     try {
-      S3ImageDto s3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true,
+      CompletableFuture<S3ImageDto> futureS3ImageDto = s3ImageService.uploadImageToS3(multipartFile, true,
           MEMBER_PROFILE_DIRECTORY);
+      S3ImageDto s3ImageDto = futureS3ImageDto.get();
       if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
         s3ImageService.deleteImageS3(profileImageFile, MEMBER_PROFILE_DIRECTORY);
       }
       profileImageFile.updateImageFile(s3ImageDto);
-    } catch (IOException e) {
-      log.error("S3 image upload error : {}", e.getMessage());
-      throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.error("스레드 중단", e);
+      throw new ServerErrorException(SERVER_ERROR.getMessage());
+    } catch (ExecutionException e) {
+      log.error("비동기 작업 실행 중 발생하는 예외 발생", e);
+      throw new ServerErrorException(SERVER_ERROR.getMessage());
     }
+  }
+
+  @Transactional
+  public void updateMemberProfileImage(Long memberId, S3ImageDto s3ImageDto) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
+    ImageFile originImageFile = member.getProfileImageFile();
+    originImageFile.updateImageFile(s3ImageDto);
   }
 
   /**
