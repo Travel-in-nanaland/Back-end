@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.member.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.*;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WITHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
@@ -7,6 +8,7 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -21,10 +23,10 @@ import com.jeju.nanaland.domain.notification.entity.FcmToken;
 import com.jeju.nanaland.domain.notification.service.FcmTokenService;
 import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
-import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
 import com.jeju.nanaland.global.util.JwtUtil;
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,6 +49,7 @@ public class MemberLoginService {
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
   private final FcmTokenService fcmTokenService;
+  private final FileService fileService;
   @Value("${cloud.aws.s3.memberProfileDirectory}")
   private String MEMBER_PROFILE_DIRECTORY;
 
@@ -66,12 +69,12 @@ public class MemberLoginService {
 
     // 이미 가입한 경우
     if (savedMember.isPresent()) {
-      throw new ConflictException(ErrorCode.MEMBER_DUPLICATE.getMessage());
+      throw new ConflictException(MEMBER_DUPLICATE.getMessage());
     }
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = createProfileImageFile(multipartFile);
+    ImageFile profileImageFile = imageFileService.getRandomProfileImageFile();
     Member member = createMember(joinDto, profileImageFile, nickname);
 
     // GUEST가 아닌 경우, 이용약관 저장
@@ -82,6 +85,12 @@ public class MemberLoginService {
     // fcm 토큰 저장
     if (joinDto.getFcmToken() != null) {
       fcmTokenService.createFcmToken(member, joinDto.getFcmToken());
+    }
+
+    // 비동기 처리
+    if (multipartFile != null && !multipartFile.isEmpty()) {
+      File convertedFile = fileService.convertMultipartFileToFile(multipartFile);
+      imageFileService.uploadMemberProfileImage(member.getId(), convertedFile);
     }
 
     return getJwtDto(member);
@@ -114,20 +123,6 @@ public class MemberLoginService {
     if (savedMember.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
-  }
-
-  /**
-   * 프로필 사진 업로드 및 저장.
-   * 프로필 사진이 없는 경우엔, 랜덤 프로필 사진 저장
-   *
-   * @param multipartFile 프로필 사진
-   * @return 저장된 이미지 파일 또는 랜덤 프로필 사진 파일
-   */
-  private ImageFile createProfileImageFile(MultipartFile multipartFile) {
-    if (multipartFile == null) {
-      return imageFileService.getRandomProfileImageFile();
-    }
-    return imageFileService.uploadAndSaveImageFile(multipartFile, true, MEMBER_PROFILE_DIRECTORY);
   }
 
   /**
@@ -248,7 +243,7 @@ public class MemberLoginService {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
     if (!jwtUtil.verifyRefreshToken(refreshToken)) {
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
     }
 
     String memberId = jwtUtil.getMemberIdFromRefresh(refreshToken);
@@ -258,7 +253,7 @@ public class MemberLoginService {
     if (!refreshToken.equals(savedRefreshToken)) {
       // RefreshToken 삭제 및 다시 로그인하도록 UNAUTHORIZED
       jwtUtil.deleteRefreshToken(memberId);
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
     }
 
     Member member = memberRepository.findById(Long.valueOf(memberId))
@@ -346,7 +341,7 @@ public class MemberLoginService {
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
 
     if (!jwtUtil.verifyAccessToken(accessToken)) {
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
     }
 
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);

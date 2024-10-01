@@ -13,6 +13,7 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.VideoFile;
+import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.MailService;
 import com.jeju.nanaland.domain.common.service.VideoFileService;
@@ -42,10 +43,12 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +77,7 @@ public class ReportService {
   private final VideoFileService videoFileService;
   private final MailService mailService;
   private final ReportStrategyFactory reportStrategyFactory;
+  private final FileService fileService;
   @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
   private String INFO_FIX_REPORT_IMAGE_DIRECTORY;
   @Value("${cloud.aws.s3.claimReportFileDirectory}")
@@ -114,11 +118,11 @@ public class ReportService {
     infoFixReportRepository.save(infoFixReport);
 
     // 이미지 저장
-    List<String> imageUrls = saveImagesAndGetUrls(files, infoFixReport,
+    CompletableFuture<List<String>> futureImageUrls = saveImagesAndGetUrls(files, infoFixReport,
         INFO_FIX_REPORT_IMAGE_DIRECTORY);
 
     // 이메일 전송
-    mailService.sendEmailReport(infoFixReport, imageUrls);
+    futureImageUrls.thenAccept(imageUrls -> mailService.sendEmailReport(infoFixReport, imageUrls));
   }
 
   /**
@@ -196,14 +200,20 @@ public class ReportService {
     // 이미지, 동영상 저장
     List<MultipartFile> imageFiles = filterFilesByType(files, "image/");
     List<MultipartFile> videoFiles = filterFilesByType(files, "video/");
-    List<String> imageUrls = saveImagesAndGetUrls(imageFiles, claimReport,
-        CLAIM_REPORT_FILE_DIRECTORY);
-    List<String> videoUrls = saveVideosAndGetUrls(videoFiles, claimReport);
 
-    // 이메일 전송
-    List<String> combinedUrls = new ArrayList<>(imageUrls);
-    combinedUrls.addAll(videoUrls);
-    mailService.sendEmailReport(claimReport, combinedUrls);
+    CompletableFuture<List<String>> futureImageUrls = saveImagesAndGetUrls(imageFiles, claimReport,
+        CLAIM_REPORT_FILE_DIRECTORY);
+    CompletableFuture<List<String>> futureVideoUrls = saveVideosAndGetUrls(videoFiles, claimReport);
+
+    CompletableFuture.allOf(futureImageUrls, futureVideoUrls)
+        .thenApply(v -> {
+          List<String> imageUrls = futureImageUrls.join();
+          List<String> videoUrls = futureVideoUrls.join();
+          List<String> combinedUrls = new ArrayList<>(imageUrls);
+          combinedUrls.addAll(videoUrls);
+          return combinedUrls;
+        })
+        .thenAccept(combinedUrls -> mailService.sendEmailReport(claimReport, combinedUrls));
   }
 
   /**
@@ -289,72 +299,80 @@ public class ReportService {
   /**
    * 이미지 파일 저장, 이미지 URL 리스트 얻기
    *
-   * @param files     이미지 파일 리스트
+   * @param multipartFiles     이미지 파일 리스트
    * @param report    요청 (InfoFixReport, ClaimReport)
    * @param directory 파일 저장 위치
    * @return 이미지 URL 리스트
    */
-  private List<String> saveImagesAndGetUrls(List<MultipartFile> files, Report report,
+  private CompletableFuture<List<String>> saveImagesAndGetUrls(List<MultipartFile> multipartFiles, Report report,
       String directory) {
-    if (files == null || files.isEmpty()) {
-      return Collections.emptyList();
+    if (multipartFiles == null || multipartFiles.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptyList());
     }
     // 이미지 저장
-    List<ImageFile> saveImageFiles = saveImages(files, directory);
+    List<CompletableFuture<ImageFile>> futureImageFiles = multipartFiles.stream()
+        .map(multipartFile -> {
+          File file = fileService.convertMultipartFileToFile(multipartFile);
+          return CompletableFuture.supplyAsync(() ->
+              imageFileService.uploadAndSaveImageFile(file, false, directory));
+        })
+        .toList();
 
-    // 이미지와 Report 매핑 저장
-    ReportStrategy reportStrategy = reportStrategyFactory.findStrategy(report.getReportType());
-    reportStrategy.saveReportImages(report, saveImageFiles);
+    return CompletableFuture.allOf(futureImageFiles.toArray(new CompletableFuture[0]))
+        .thenApply(v -> {
+          // ImageFile 리스트로 변환
+          List<ImageFile> imageFiles = futureImageFiles.stream()
+              .map(CompletableFuture::join)
+              .collect(Collectors.toList());
 
-    // 이미지 URL 리스트 반환
-    return saveImageFiles.stream().map(ImageFile::getOriginUrl).collect(Collectors.toList());
-  }
+          // 이미지와 Report 매핑 저장
+          ReportStrategy reportStrategy = reportStrategyFactory.findStrategy(report.getReportType());
+          reportStrategy.saveReportImages(report, imageFiles);
 
-  /**
-   * 이미지 파일 저장
-   *
-   * @param files     이미지 파일 리스트
-   * @param directory 파일 저장 위치
-   * @return 이미지 리스트
-   */
-  private List<ImageFile> saveImages(List<MultipartFile> files, String directory) {
-    return files.stream()
-        .map(file -> imageFileService.uploadAndSaveImageFile(file, false, directory))
-        .collect(Collectors.toList());
+          // 이미지 URL 리스트 반환
+          return imageFiles.stream()
+              .map(ImageFile::getOriginUrl)
+              .collect(Collectors.toList());
+        });
   }
 
   /**
    * 동영상 파일 저장, 동영상 URL 리스트 얻기
    *
-   * @param files  동영상 파일 리스트
+   * @param multipartFiles  동영상 파일 리스트
    * @param report 요청 (InfoFixReport, ClaimReport)
    * @return 동영상 URL 리스트
    */
-  private List<String> saveVideosAndGetUrls(List<MultipartFile> files, ClaimReport report) {
-    if (files == null || files.isEmpty()) {
-      return Collections.emptyList();
+  private CompletableFuture<List<String>> saveVideosAndGetUrls(List<MultipartFile> multipartFiles, ClaimReport report) {
+    if (multipartFiles == null || multipartFiles.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptyList());
     }
+
     // 동영상 파일 저장
-    List<VideoFile> saveVideoFiles = saveVideoFiles(files);
+    List<CompletableFuture<VideoFile>> futureVideoFiles = multipartFiles.stream()
+        .map(multipartFile -> {
+          File file = fileService.convertMultipartFileToFile(multipartFile);
+          return CompletableFuture.supplyAsync(() ->
+              videoFileService.uploadAndSaveVideoFile(file, CLAIM_REPORT_FILE_DIRECTORY));
+        })
+        .toList();
 
-    // 동영상과 Report 매핑 생성 및 저장
-    List<ClaimReportVideoFile> reportVideoFiles = createReportVideoFiles(saveVideoFiles, report);
-    claimReportVideoFileRepository.saveAll(reportVideoFiles);
+    return CompletableFuture.allOf(futureVideoFiles.toArray(new CompletableFuture[0]))
+        .thenApply(v -> {
+          // VideoFile 리스트로 변환
+          List<VideoFile> videoFiles = futureVideoFiles.stream()
+              .map(CompletableFuture::join)
+              .toList();
 
-    // 동영상 URL 리스트 반환
-    return saveVideoFiles.stream().map(VideoFile::getOriginUrl).collect(Collectors.toList());
-  }
+          // 동영상과 Report 매핑 생성 및 저장
+          List<ClaimReportVideoFile> reportVideoFiles = createReportVideoFiles(videoFiles, report);
+          claimReportVideoFileRepository.saveAll(reportVideoFiles);
 
-  /**
-   * 동영상 파일 저장
-   *
-   * @param files 동영상 파일 리스트
-   * @return 동영상 리스트
-   */
-  private List<VideoFile> saveVideoFiles(List<MultipartFile> files) {
-    return files.stream()
-        .map(file -> videoFileService.uploadAndSaveVideoFile(file, CLAIM_REPORT_FILE_DIRECTORY))
-        .collect(Collectors.toList());
+          // 이미지 URL 리스트 반환
+          return videoFiles.stream()
+              .map(VideoFile::getOriginUrl)
+              .collect(Collectors.toList());
+        });
   }
 
   /**
