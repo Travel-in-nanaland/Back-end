@@ -183,7 +183,7 @@ class NatureServiceTest {
       Page<NatureResponse.PreviewDto> naturePreviewDtos = createNaturePreviews(pageSize, totalSize);
 
       doReturn(naturePreviewDtos).when(natureRepository)
-          .findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(), any());
+          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(), any(), any());
       doReturn(new ArrayList<>()).when(memberFavoriteService)
           .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -212,7 +212,7 @@ class NatureServiceTest {
           PageRequest.of(pageNumber, pageSize), 0);
 
       doReturn(naturePreviewDtos).when(natureRepository)
-          .findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(), any());
+          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(), any(), any());
       doReturn(new ArrayList<>()).when(memberFavoriteService)
           .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -235,7 +235,7 @@ class NatureServiceTest {
       List<Long> favoriteIds = List.of(1L);
 
       doReturn(naturePreviewDtos).when(natureRepository)
-          .findAllNaturePreviewDtoOrderByPriority(any(Language.class), anyList(), any(), any());
+          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(), any(), any());
       doReturn(favoriteIds).when(memberFavoriteService)
           .getFavoritePostIdsWithMember(any(Member.class));
 

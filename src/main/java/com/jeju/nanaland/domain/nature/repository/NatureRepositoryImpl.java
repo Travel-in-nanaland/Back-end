@@ -131,7 +131,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
    * @return 7대 자연 검색 페이징 정보
    */
   @Override
-  public Page<NatureResponse.PreviewDto> findAllNaturePreviewDtoOrderByPriority(Language language,
+  public Page<NatureResponse.PreviewDto> findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(Language language,
       List<String> addressFilters, String keyword, Pageable pageable) {
     List<NatureResponse.PreviewDto> resultDto = queryFactory
         .select(new QNatureResponse_PreviewDto(
@@ -148,7 +148,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .where(natureTrans.language.eq(language)
             .and(addressTagCondition(addressFilters))
             .and(natureTrans.title.contains(keyword)))
-        .orderBy(nature.priority.desc())
+        .orderBy(nature.priority.asc(), nature.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
