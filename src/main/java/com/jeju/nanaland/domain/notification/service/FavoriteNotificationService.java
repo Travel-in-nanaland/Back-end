@@ -58,6 +58,8 @@ public class FavoriteNotificationService {
           .build();
 
       notificationService.sendPushNotificationToSingleTarget(notificationWithTargetDto);
+
+      favorite.incrementNotificationCount();
     }
   }
 

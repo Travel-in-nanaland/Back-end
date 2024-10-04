@@ -136,6 +136,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   public Page<RestaurantCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
     List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
+    List<Long> idListContainHashtag = getIdListContainHashtag(keyword, language);
 
     List<RestaurantCompositeDto> resultDto = queryFactory
         .select(new QRestaurantCompositeDto(
@@ -160,6 +161,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .where(restaurantTrans.title.contains(keyword)
             .or(restaurantTrans.addressTag.contains(keyword))
             .or(restaurantTrans.content.contains(keyword))
+            .or(restaurant.id.in(idListContainHashtag))
             .or(restaurant.id.in(idListContainAllHashtags)))
         .orderBy(restaurantTrans.createdAt.desc())
         .offset(pageable.getOffset())
@@ -256,6 +258,18 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
     return queryFactory
         .select(restaurant.id)
         .from(restaurant)
+        .fetch();
+  }
+
+  private List<Long> getIdListContainHashtag(String keyword, Language language) {
+    return queryFactory
+        .select(restaurant.id)
+        .from(restaurant)
+        .leftJoin(hashtag)
+        .on(hashtag.post.id.eq(restaurant.id)
+            .and(hashtag.category.eq(Category.RESTAURANT))
+            .and(hashtag.language.eq(language)))
+        .where(hashtag.keyword.content.eq(keyword))
         .fetch();
   }
 }
