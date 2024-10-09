@@ -13,6 +13,7 @@ public enum InfoType {
   SPECIAL("이 장소만의 매력포인트", "Unique Points of This Place", "Điểm hấp dẫn của nơi này",
       "Tarikan Istimewa Tempat Ini",
       "这个地方的独特魅力"),
+  SNS("SNS", "SNS", "SNS", "SNS", "SNS"),
   AMENITY("편의시설", "Amenities", "Tiện nghi", "Kemudahan", "设施"),
   WEBSITE("홈페이지", "Website", "Trang chủ", "Website", "主页"),
   RESERVATION_LINK("예약링크", "Booking Link", "Liên kết đặt chỗ", "Pautan Tempahan", "预订链接"),
