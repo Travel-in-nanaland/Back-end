@@ -92,6 +92,8 @@ public class MemberResponse {
     private String description;
     @Schema(description = "타입")
     private String travelType;
+    @Schema(description = "타입 키")
+    private String travelTypeKey;
     @Schema(description = "해시태그 리스트")
     private List<String> hashtags;
   }
