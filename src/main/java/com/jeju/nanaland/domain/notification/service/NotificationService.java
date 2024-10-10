@@ -12,6 +12,9 @@ import com.google.firebase.messaging.Notification;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.MemberConsent;
+import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
+import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationWithTargetDto;
@@ -24,6 +27,8 @@ import com.jeju.nanaland.domain.notification.entity.NanalandNotification;
 import com.jeju.nanaland.domain.notification.repository.FcmTokenRepository;
 import com.jeju.nanaland.domain.notification.repository.MemberNotificationRepository;
 import com.jeju.nanaland.domain.notification.repository.NanalandNotificationRepository;
+import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +51,7 @@ public class NotificationService {
   private final MemberRepository memberRepository;
   private final NanalandNotificationRepository nanalandNotificationRepository;
   private final MemberNotificationRepository memberNotificationRepository;
+  private final MemberConsentRepository memberConsentRepository;
   private final FcmTokenRepository fcmTokenRepository;
 
   public NotificationResponse.NotificationListDto getNotificationList(MemberInfoDto memberInfoDto,
@@ -106,6 +112,16 @@ public class NotificationService {
 
     int currentSuccessCount = 0;
     for (List<FcmToken> tokenList : splitedTokenList) {
+      // NOTIFICATION 동의가 있는 경우에만 전송
+      tokenList = tokenList.stream()
+          .filter(token -> {
+            Member member = token.getMember();
+            Optional<MemberConsent> memberConsentOptional = memberConsentRepository
+                .findByConsentTypeAndMember(ConsentType.NOTIFICATION, member);
+            return memberConsentOptional.isPresent();
+          })
+          .toList();
+
       // 메세지 만들기
       MulticastMessage message = makeMulticastMessage(tokenList, notificationDto);
 
@@ -144,6 +160,14 @@ public class NotificationService {
     Member member = memberRepository.findMemberById(memberId)
         .orElseThrow(() -> new NotFoundException("해당 유저가 없습니다."));
     List<FcmToken> fcmTokenList = fcmTokenRepository.findAllByMember(member);
+
+    // 알림 동의 여부 조회
+    Optional<MemberConsent> memberConsentOptional = memberConsentRepository.findByConsentTypeAndMember(
+        ConsentType.NOTIFICATION, member);
+    // 알림 동의를 하지 않은 유저라면 BAD_REQUEST 에러 반환
+    if (memberConsentOptional.isEmpty() || !memberConsentOptional.get().getConsent()) {
+      throw new BadRequestException(ErrorCode.NO_NOTIFICATION_CONSENT);
+    }
 
     // FCM 토큰 검증
     List<FcmToken> validTokenList = fcmTokenList
