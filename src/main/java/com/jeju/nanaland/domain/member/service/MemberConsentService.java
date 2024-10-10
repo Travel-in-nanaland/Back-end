@@ -1,7 +1,5 @@
 package com.jeju.nanaland.domain.member.service;
 
-import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_CONSENT_NOT_FOUND;
-
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -12,6 +10,7 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +62,7 @@ public class MemberConsentService {
   }
 
   /**
-   * 매일 0시 0분 0초에 실행되는 동의 여부 관리 스케줄러.
-   * 회원이 동의한 이용약관에 대해, 동의일자가 1년 6개월이 지난 경우, false로 변환.
+   * 매일 0시 0분 0초에 실행되는 동의 여부 관리 스케줄러. 회원이 동의한 이용약관에 대해, 동의일자가 1년 6개월이 지난 경우, false로 변환.
    */
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
@@ -83,12 +81,34 @@ public class MemberConsentService {
    * @throws NotFoundException 존재하는 이용약관이 없는 경우
    */
   @Transactional
-  public void updateMemberConsent(MemberInfoDto memberInfoDto,
+  public boolean updateMemberConsent(MemberInfoDto memberInfoDto,
       MemberRequest.ConsentUpdateDto consentUpdateDto) {
+
+    ConsentType requestedConsentType = ConsentType.valueOf(consentUpdateDto.getConsentType());
+    boolean requestedConsentStatus = consentUpdateDto.getConsent();
+
     MemberConsent memberConsent = memberConsentRepository.findByConsentTypeAndMember(
-            ConsentType.valueOf(consentUpdateDto.getConsentType()),
+            requestedConsentType,
             memberInfoDto.getMember())
-        .orElseThrow(() -> new NotFoundException(MEMBER_CONSENT_NOT_FOUND.getMessage()));
-    memberConsent.updateConsent(consentUpdateDto.getConsent());
+        .orElse(null);
+
+    // 요청된 동의 내역이 없다면 생성
+    if (memberConsent == null) {
+      MemberConsent newMemberConsent = MemberConsent.builder()
+          .member(memberInfoDto.getMember())
+          .consentType(requestedConsentType)
+          .consentDate(LocalDateTime.now())
+          .consent(requestedConsentStatus)
+          .build();
+
+      memberConsentRepository.save(newMemberConsent);
+      // 처리 후 동의 상태 반환
+      return newMemberConsent.getConsent();
+    }
+
+    // 요청한 동의 상태로 변경
+    memberConsent.updateConsent(requestedConsentStatus);
+    // 처리 후 동의 상태 반환
+    return memberConsent.getConsent();
   }
 }

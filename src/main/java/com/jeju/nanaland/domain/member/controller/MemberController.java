@@ -152,7 +152,8 @@ public class MemberController {
   public BaseResponse<List<MemberResponse.RecommendPostDto>> getRecommendPostsByType(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
+        memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
@@ -168,7 +169,8 @@ public class MemberController {
   public BaseResponse<List<MemberResponse.RecommendPostDto>> getRandomRecommendedPosts(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(memberInfoDto);
+    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(
+        memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
@@ -245,12 +247,12 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @PostMapping("/consent")
-  public BaseResponse<Null> updateMemberConsent(
+  public BaseResponse<Boolean> updateMemberConsent(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestBody @Valid MemberRequest.ConsentUpdateDto consentUpdateDto
   ) {
-    memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
-    return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS);
+    boolean consent = memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
+    return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS, consent);
   }
 
   @Operation(
