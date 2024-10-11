@@ -26,7 +26,6 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -290,7 +289,7 @@ class MemberProfileServiceTest {
         assertThat(dto.getProfileImage().getThumbnailUrl()).isEqualTo(member2.getProfileImageFile().getThumbnailUrl());
         assertThat(dto.getNickname()).isEqualTo(member2.getNickname());
         assertThat(dto.getDescription()).isEqualTo(member2.getDescription());
-        assertThat(dto.getTravelType()).isEqualTo(member2.getTravelType().getTypeNameWithLocale(Language.ENGLISH));
+        assertThat(dto.getTravelType()).isEqualTo(member2.getTravelType().getTypeNameWithLocale(Language.KOREAN));
         assertThat(dto.getHashtags()).hasSize(3);
       });
 

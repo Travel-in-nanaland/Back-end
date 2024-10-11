@@ -121,18 +121,16 @@ public class MemberProfileService {
   public MemberResponse.ProfileDto getMemberProfile(MemberInfoDto memberInfoDto, Long memberId) {
     // memberId가 본인과 일치하지 않는다면, 타인 프로필 조회
     Member member = memberInfoDto.getMember();
-    boolean isMyProfile = true;
-    if (memberId != null) {
-      isMyProfile = member.getId().equals(memberId);
-      if (!isMyProfile) {
-        member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
-      }
+    Language language = member.getLanguage();
+
+    boolean isMyProfile = memberId == null || member.getId().equals(memberId);
+    if (!isMyProfile) {
+      member = memberRepository.findById(memberId)
+          .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
     }
 
     // 해시태그 조회
     TravelType travelType = member.getTravelType();
-    Language language = member.getLanguage();
     String typeName = travelType.getTypeNameWithLocale(language);
     List<String> hashtags = new ArrayList<>();
     if (travelType != TravelType.NONE) {
