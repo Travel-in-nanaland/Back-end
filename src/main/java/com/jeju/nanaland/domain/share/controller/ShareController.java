@@ -42,4 +42,12 @@ public class ShareController {
 
     return "deeplink-ms";
   }
+
+  @GetMapping("/vi")
+  public String shareVi(Model model, String category, Long id) {
+    model.addAttribute("category", category);
+    model.addAttribute("id", id);
+
+    return "deeplink-vi";
+  }
 }
