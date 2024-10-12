@@ -277,7 +277,7 @@ public class MemberController {
       @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 경우", content = @Content)
   })
   @GetMapping("/validateNickname")
-  public BaseResponse<Null> validateNickname(
+  public BaseResponse<Void> validateNickname(
       @RequestParam String nickname,
       @RequestParam(required = false) Long memberId) {
     if (memberId == null) {
