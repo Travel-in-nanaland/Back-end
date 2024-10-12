@@ -104,8 +104,12 @@ public class MemberProfileService {
    * @throws ConflictException 닉네임이 중복되는 경우
    */
   public void validateNickname(String nickname, Member member) {
+    if (nickname.equals(member.getNickname())) {
+      return;
+    }
+
     Optional<Member> savedMember = memberRepository.findByNickname(nickname);
-    if (savedMember.isPresent() && !savedMember.get().equals(member)) {
+    if (savedMember.isPresent()) {
       throw new ConflictException(NICKNAME_DUPLICATE.getMessage());
     }
   }
