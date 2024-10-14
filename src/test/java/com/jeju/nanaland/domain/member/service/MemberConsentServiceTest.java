@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -19,7 +20,6 @@ import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
-import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -120,9 +120,30 @@ class MemberConsentServiceTest {
     return consentUpdateDto;
   }
 
+  @Test
+  @DisplayName("만료된 이용약관 확인 및 업데이트 성공 TEST")
+  void checkTermsValidity() {
+
+    // given: 이용약관 설정
+    List<MemberConsent> memberConsents = List.of(
+        createMemberConsent(ConsentType.TERMS_OF_USE, true),
+        createMemberConsent(ConsentType.MARKETING, true)
+    );
+
+    doReturn(memberConsents).when(memberRepository).findAllExpiredMemberConsent();
+
+    // when: 만료된 이용약관 확인 및 업데이트
+    memberConsentService.checkTermsValidity();
+
+    // then: 각 동의 항목이 false인지 검증
+    assertThat(memberConsents)
+        .allSatisfy(memberConsent -> assertThat(memberConsent.getConsent()).isFalse());
+  }
+
   @Nested
   @DisplayName("이용약관 저장 TEST")
   class CreateMemberConsents {
+
     @Test
     @DisplayName("실패 - TERMS_OF_USE가 true가 아닌 경우")
     void createMemberConsentsFail_termsOfUseFalse() {
@@ -170,7 +191,8 @@ class MemberConsentServiceTest {
       List<MemberRequest.ConsentItemDto> consentItems = List.of(
           createConsentItem(ConsentType.TERMS_OF_USE, true),
           createConsentItem(ConsentType.MARKETING, true),
-          createConsentItem(ConsentType.LOCATION_SERVICE, true)
+          createConsentItem(ConsentType.LOCATION_SERVICE, true),
+          createConsentItem(ConsentType.NOTIFICATION, true)
       );
 
       // when: 이용약관 생성
@@ -181,60 +203,68 @@ class MemberConsentServiceTest {
 
       List<MemberConsent> capturedMemberConsents = argumentCaptor.getValue();
       assertThat(capturedMemberConsents)
-          .hasSize(3)
+          .hasSize(4)
           .allSatisfy(memberConsent -> {
             assertThat(memberConsent.getMember()).isEqualTo(member);
             assertThat(memberConsent.getConsent()).isTrue();
             assertThat(memberConsent.getConsentDate()).isNotNull();
           });
-      assertThat(capturedMemberConsents.get(0).getConsentType()).isEqualTo(ConsentType.TERMS_OF_USE);
+      assertThat(capturedMemberConsents.get(0).getConsentType()).isEqualTo(
+          ConsentType.TERMS_OF_USE);
       assertThat(capturedMemberConsents.get(1).getConsentType()).isEqualTo(ConsentType.MARKETING);
       assertThat(capturedMemberConsents.get(2).getConsentType()).isEqualTo(
           ConsentType.LOCATION_SERVICE);
+      assertThat(capturedMemberConsents.get(3).getConsentType()).isEqualTo(
+          ConsentType.NOTIFICATION);
     }
-  }
-
-  @Test
-  @DisplayName("만료된 이용약관 확인 및 업데이트 성공 TEST")
-  void checkTermsValidity() {
-
-    // given: 이용약관 설정
-    List<MemberConsent> memberConsents = List.of(
-        createMemberConsent(ConsentType.TERMS_OF_USE, true),
-        createMemberConsent(ConsentType.MARKETING, true)
-    );
-
-    doReturn(memberConsents).when(memberRepository).findAllExpiredMemberConsent();
-
-    // when: 만료된 이용약관 확인 및 업데이트
-    memberConsentService.checkTermsValidity();
-
-    // then: 각 동의 항목이 false인지 검증
-    assertThat(memberConsents)
-        .allSatisfy(memberConsent -> assertThat(memberConsent.getConsent()).isFalse());
   }
 
   @Nested
   @DisplayName("이용약관 업데이트 TEST")
   class UpdateMemberConsent {
 
+//    @ParameterizedTest
+//    @DisplayName("실패 - memberConsent를 찾을 수 없는 경우")
+//    @EnumSource(value = ConsentType.class, names = "TERMS_OF_USE", mode = Mode.EXCLUDE)
+//    void updateMemberConsentFail_memberConsentNotFound(ConsentType consentType) {
+//
+//      // given: 이용약관 수정 DTO 설정 및 memberConsent를 찾을 수 없도록 설정
+//      MemberRequest.ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType, false);
+//      doReturn(Optional.empty()).when(memberConsentRepository)
+//          .findByConsentTypeAndMember(consentType, member);
+//
+//      // when: 이용약관 동의 여부 수정
+//      NotFoundException notFoundException = assertThrows(NotFoundException.class,
+//          () -> memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto));
+//
+//      // then: ErrorCode 검증
+//      assertThat(notFoundException.getMessage()).isEqualTo(
+//          ErrorCode.MEMBER_CONSENT_NOT_FOUND.getMessage());
+//    }
+
+
     @ParameterizedTest
-    @DisplayName("실패 - memberConsent를 찾을 수 없는 경우")
+    @DisplayName("memberConsent를 찾을 수 없는 경우")
     @EnumSource(value = ConsentType.class, names = "TERMS_OF_USE", mode = Mode.EXCLUDE)
     void updateMemberConsentFail_memberConsentNotFound(ConsentType consentType) {
 
       // given: 이용약관 수정 DTO 설정 및 memberConsent를 찾을 수 없도록 설정
       MemberRequest.ConsentUpdateDto consentUpdateDto = createConsentUpdateDto(consentType, false);
+      MemberConsent newMemberConsent = MemberConsent.builder()
+          .member(member)
+          .consentType(consentType)
+          .consent(false)
+          .build();
       doReturn(Optional.empty()).when(memberConsentRepository)
           .findByConsentTypeAndMember(consentType, member);
+      doReturn(newMemberConsent).when(memberConsentRepository)
+          .save(any(MemberConsent.class));
 
       // when: 이용약관 동의 여부 수정
-      NotFoundException notFoundException = assertThrows(NotFoundException.class,
-          () -> memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto));
+      boolean consent = memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
 
-      // then: ErrorCode 검증
-      assertThat(notFoundException.getMessage()).isEqualTo(
-          ErrorCode.MEMBER_CONSENT_NOT_FOUND.getMessage());
+      // then: 해당
+      assertThat(consent).isEqualTo(newMemberConsent.getConsent());
     }
 
     @ParameterizedTest

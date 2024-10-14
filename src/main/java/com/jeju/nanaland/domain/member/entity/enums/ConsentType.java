@@ -1,5 +1,5 @@
 package com.jeju.nanaland.domain.member.entity.enums;
 
 public enum ConsentType {
-  TERMS_OF_USE, MARKETING, LOCATION_SERVICE
+  TERMS_OF_USE, MARKETING, LOCATION_SERVICE, NOTIFICATION
 }

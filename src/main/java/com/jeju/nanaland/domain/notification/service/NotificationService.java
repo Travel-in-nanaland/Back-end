@@ -12,6 +12,9 @@ import com.google.firebase.messaging.Notification;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
+import com.jeju.nanaland.domain.member.entity.MemberConsent;
+import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
+import com.jeju.nanaland.domain.member.repository.MemberConsentRepository;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationWithTargetDto;
@@ -46,6 +49,7 @@ public class NotificationService {
   private final MemberRepository memberRepository;
   private final NanalandNotificationRepository nanalandNotificationRepository;
   private final MemberNotificationRepository memberNotificationRepository;
+  private final MemberConsentRepository memberConsentRepository;
   private final FcmTokenRepository fcmTokenRepository;
 
   public NotificationResponse.NotificationListDto getNotificationList(MemberInfoDto memberInfoDto,
@@ -80,6 +84,21 @@ public class NotificationService {
 
     Language language = notificationDto.getLanguage();
 
+    // 동일한 알림 정보가 있다면 가져오고 없다면 생성
+    NanalandNotification nanalandNotification = getNanalandNotification(notificationDto);
+    if (nanalandNotification == null) {
+      nanalandNotification = saveNanalandNotification(notificationDto);
+    }
+
+    // 전송한 알림 정보를 유저와 매핑
+    List<Member> members = memberRepository.findAll();
+    for (Member member : members) {
+      // 전송한 알림이 매핑이 안되어 있다면 추가
+      if (getMemberNotification(member, nanalandNotification) == null) {
+        saveMemberNotification(member, nanalandNotification);
+      }
+    }
+
     // 알림 전송 요청 언어를 사용하는 모든 토큰 조회, 검증
     List<FcmToken> validTokenList = fcmTokenRepository.findAllByMemberLanguage(language)
         .stream()
@@ -98,14 +117,18 @@ public class NotificationService {
     // 한번에 전송 가능한 단위인 500개로 분할
     List<List<FcmToken>> splitedTokenList = splitTokenList(validTokenList);
 
-    // 동일한 알림 정보가 있다면 가져오고 없다면 생성
-    NanalandNotification nanalandNotification = getNanalandNotification(notificationDto);
-    if (nanalandNotification == null) {
-      nanalandNotification = saveNanalandNotification(notificationDto);
-    }
-
     int currentSuccessCount = 0;
     for (List<FcmToken> tokenList : splitedTokenList) {
+      // NOTIFICATION 동의가 있는 경우에만 전송
+      tokenList = tokenList.stream()
+          .filter(token -> {
+            Member member = token.getMember();
+            Optional<MemberConsent> memberConsentOptional = memberConsentRepository
+                .findByConsentTypeAndMember(ConsentType.NOTIFICATION, member);
+            return memberConsentOptional.isPresent();
+          })
+          .toList();
+
       // 메세지 만들기
       MulticastMessage message = makeMulticastMessage(tokenList, notificationDto);
 
@@ -116,15 +139,6 @@ public class NotificationService {
         BatchResponse batchResponse = responseApiFuture.get();
         currentSuccessCount += batchResponse.getSuccessCount();
         log.info("전체 알림 전송 성공: {}개", currentSuccessCount);
-
-        // 전송한 알림 정보를 유저와 매핑
-        for (FcmToken token : tokenList) {
-          Member member = token.getMember();
-          // 전송한 알림이 매핑이 안되어 있다면 추가
-          if (getMemberNotification(member, nanalandNotification) == null) {
-            saveMemberNotification(member, nanalandNotification);
-          }
-        }
       }
       // ApiFuture 에러 처리, 쓰레드 인터럽트 에러 처리
       catch (ExecutionException | InterruptedException e) {
@@ -143,8 +157,28 @@ public class NotificationService {
     Long memberId = notificationWithTargetDto.getMemberId();
     Member member = memberRepository.findMemberById(memberId)
         .orElseThrow(() -> new NotFoundException("해당 유저가 없습니다."));
-    List<FcmToken> fcmTokenList = fcmTokenRepository.findAllByMember(member);
 
+    // 동일한 알림 정보가 있다면 가져오고 없다면 생성
+    NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
+    NanalandNotification nanalandNotification = getNanalandNotification(notificationDto);
+    if (nanalandNotification == null) {
+      nanalandNotification = saveNanalandNotification(notificationDto);
+    }
+
+    // 전송한 알림이 유저와 매핑이 안되어 있다면 추가
+    if (getMemberNotification(member, nanalandNotification) == null) {
+      saveMemberNotification(member, nanalandNotification);
+    }
+
+    // 알림 동의 여부 조회
+    Optional<MemberConsent> memberConsentOptional = memberConsentRepository.findByConsentTypeAndMember(
+        ConsentType.NOTIFICATION, member);
+    // 알림 동의를 하지 않은 유저라면 푸시알림을 보내지 않고 종료
+    if (memberConsentOptional.isEmpty() || !memberConsentOptional.get().getConsent()) {
+      return;
+    }
+
+    List<FcmToken> fcmTokenList = fcmTokenRepository.findAllByMember(member);
     // FCM 토큰 검증
     List<FcmToken> validTokenList = fcmTokenList
         .stream()
@@ -163,13 +197,6 @@ public class NotificationService {
       throw new NotFoundException("해당 유저의 유효한 fcm 토큰 정보가 없습니다.");
     }
 
-    // 동일한 알림 정보가 있다면 가져오고 없다면 생성
-    NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
-    NanalandNotification nanalandNotification = getNanalandNotification(notificationDto);
-    if (nanalandNotification == null) {
-      nanalandNotification = saveNanalandNotification(notificationDto);
-    }
-
     // 메세지 만들기
     MulticastMessage message = makeMulticastMessage(validTokenList, notificationDto);
 
@@ -185,11 +212,6 @@ public class NotificationService {
     catch (ExecutionException | InterruptedException e) {
       log.error("알림 전송 실패: {}", e.getMessage());
       throw new RuntimeException(e);
-    }
-
-    // 전송한 알림이 매핑이 안되어 있다면 추가
-    if (getMemberNotification(member, nanalandNotification) == null) {
-      saveMemberNotification(member, nanalandNotification);
     }
   }
 

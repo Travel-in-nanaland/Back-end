@@ -6,6 +6,10 @@ public class BadRequestException extends RuntimeException {
     super(ErrorCode.BAD_REQUEST_EXCEPTION.getMessage());
   }
 
+  public BadRequestException(ErrorCode errorCode) {
+    super(errorCode.getMessage());
+  }
+
   public BadRequestException(String errorMessage) {
     super(errorMessage);
   }

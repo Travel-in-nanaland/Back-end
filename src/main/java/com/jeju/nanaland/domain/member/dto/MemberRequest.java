@@ -2,10 +2,10 @@ package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -125,7 +125,7 @@ public class MemberRequest {
   public static class ConsentUpdateDto {
 
     @Schema(description = "이용약관", example = "MARKETING",
-        allowableValues = {"MARKETING", "LOCATION_SERVICE"})
+        allowableValues = {"MARKETING", "LOCATION_SERVICE", "NOTIFICATION"})
     @NotNull
     @EnumValid(
         enumClass = ConsentType.class,
