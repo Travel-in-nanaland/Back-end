@@ -30,7 +30,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -278,6 +280,10 @@ public class MemberController {
   })
   @GetMapping("/validateNickname")
   public BaseResponse<Void> validateNickname(
+      @Pattern(
+          regexp = "^[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF][a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]{0,10}[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]$",
+          message = "닉네임 형식이 올바르지 않습니다.")
+      @NotBlank
       @RequestParam String nickname,
       @RequestParam(required = false) Long memberId) {
     if (memberId == null) {
