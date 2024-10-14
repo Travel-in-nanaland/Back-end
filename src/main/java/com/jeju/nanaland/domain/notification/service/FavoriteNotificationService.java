@@ -58,6 +58,8 @@ public class FavoriteNotificationService {
           .build();
 
       notificationService.sendPushNotificationToSingleTarget(notificationWithTargetDto);
+
+      favorite.incrementNotificationCount();
     }
   }
 
@@ -75,7 +77,7 @@ public class FavoriteNotificationService {
 
   private String getRandomTitleKR(String postTitle, String nickname) {
     List<String> titles = List.of(
-        postTitle + " 님! " + postTitle + "으로 떠나보는거 어때요? ✈\uFE0F",
+        nickname + " 님! " + postTitle + "으로 떠나보는거 어때요? ✈\uFE0F",
         nickname + " 님은, 취향을 다시 보러 가보자구\uD83D\uDE0E",
         "여행이 고민이신, " + nickname + " 님! 여기 기억나세요...?\uD83D\uDCF8",
         "한 켠에 있던 나의 버킷리스트 꺼내보기\uD83D\uDCEC"

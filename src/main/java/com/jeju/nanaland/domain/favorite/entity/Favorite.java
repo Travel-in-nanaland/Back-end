@@ -67,4 +67,8 @@ public class Favorite extends BaseEntity {
   public void setStatusInactive() {
     this.status = "INACTIVE";
   }
+
+  public void incrementNotificationCount() {
+    this.notificationCount += 1;
+  }
 }

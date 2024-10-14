@@ -11,11 +11,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 @RequiredArgsConstructor
+@Slf4j
 public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
@@ -73,20 +75,26 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
 
   @Override
   public List<Favorite> findAllFavoriteToSendNotification() {
+    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime threeMonthsAgo = now.minusMonths(3);
+    LocalDateTime twoWeeksAgo = now.minusWeeks(2);
+
     return queryFactory
         .selectFrom(favorite)
-        .where(favoriteNotificationAfter3MonthsCondition().or(
-            favoriteNotificationAfter2WeeksCondition()))
+        .where(
+            favoriteNotification3MonthsCondition(threeMonthsAgo)
+                .or(favoriteNotification2WeeksCondition(twoWeeksAgo))
+        )
         .fetch();
   }
 
-  private BooleanExpression favoriteNotificationAfter3MonthsCondition() {
+  private BooleanExpression favoriteNotification3MonthsCondition(LocalDateTime threeMonthsAgo) {
     return favorite.notificationCount.eq(1)
-        .and(favorite.createdAt.before(LocalDateTime.now().minusMonths(3)));
+        .and(favorite.createdAt.before(threeMonthsAgo));
   }
 
-  private BooleanExpression favoriteNotificationAfter2WeeksCondition() {
+  private BooleanExpression favoriteNotification2WeeksCondition(LocalDateTime twoWeeksAgo) {
     return favorite.notificationCount.eq(0)
-        .and(favorite.createdAt.before(LocalDateTime.now().minusWeeks(2)));
+        .and(favorite.createdAt.before(twoWeeksAgo));
   }
 }
