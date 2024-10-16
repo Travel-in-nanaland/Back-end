@@ -14,22 +14,22 @@ public class ExperienceResponse {
 
   @Data
   @Builder
-  @Schema(description = "이색체험 게시물 페이징 정보")
-  public static class ExperienceThumbnailDto {
+  @Schema(name = "ExperienceThumbnailDto", description = "이색체험 게시물 페이징 정보")
+  public static class PreviewPageDto {
 
     @Schema(description = "이색체험 전체 게시물 수")
     private Long totalElements;
 
     @Schema(description = "이색체험 게시물 결과 리스트")
-    private List<ExperienceThumbnail> data;
+    private List<PreviewDto> data;
   }
 
   @Data
   @Setter
   @Builder
   @AllArgsConstructor
-  @Schema(description = "이색체험 게시물 정보")
-  public static class ExperienceThumbnail {
+  @Schema(name = "ExperienceThumbnail", description = "이색체험 게시물 정보")
+  public static class PreviewDto {
 
     @Schema(description = "이색체험 게시물 id")
     private Long id;
@@ -53,7 +53,7 @@ public class ExperienceResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public ExperienceThumbnail(Long id, String originUrl, String thumbnailUrl, String title,
+    public PreviewDto(Long id, String originUrl, String thumbnailUrl, String title,
         String addressTag) {
       this.id = id;
       this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
@@ -64,8 +64,8 @@ public class ExperienceResponse {
 
   @Data
   @Builder
-  @Schema(description = "이색체험 상세 정보")
-  public static class ExperienceDetailDto {
+  @Schema(name = "ExperienceDetailDto", description = "이색체험 상세 정보")
+  public static class DetailDto {
 
     @Schema(description = "이색체험 게시물 id")
     private Long id;

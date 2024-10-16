@@ -386,7 +386,7 @@ public class SearchService {
               getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
         }
         case EXPERIENCE -> {
-          CompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+          CompositeDto experienceCompositeDto = experienceRepository.findExperienceCompositeDto(
               postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(

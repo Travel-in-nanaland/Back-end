@@ -11,9 +11,7 @@ import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -79,8 +77,21 @@ public class ExperienceService implements PostService {
     return postPreviewDto;
   }
 
-  // 이색체험 리스트 조회
-  public ExperienceThumbnailDto getExperienceList(MemberInfoDto memberInfoDto,
+  /**
+   * 이색체험 리스트 조회
+   *
+   * @param memberInfoDto     회원 정보
+   * @param experienceType    이색체험 타입 (ACTIVITY, CULTURE_AND_ARTS)
+   * @param keywordFilterList 키워드 필터 (LAND_LEISURE, WATER_LEISURE, AIR_LEISURE, MARINE_EXPERIENCE,
+   *                          RURAL_EXPERIENCE, HEALING_THERAPY, HISTORY, EXHIBITION, WORKSHOP,
+   *                          ART_MUSEUM, MUSEUM, PARK, PERFORMANCE, RELIGIOUS_FACILITY,
+   *                          THEME_PARK)
+   * @param addressFilterList 지역 필터
+   * @param page              페이지
+   * @param size              페이지 크기
+   * @return ExperienceResponse.PreviewPageDto
+   */
+  public ExperienceResponse.PreviewPageDto getExperiencePreviews(MemberInfoDto memberInfoDto,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, int page, int size) {
 
@@ -88,33 +99,41 @@ public class ExperienceService implements PostService {
     Pageable pageable = PageRequest.of(page, size);
 
     // experienceType(액티비티, 문화예술)에 따른 이색체험 조회
-    Page<ExperienceThumbnail> experienceThumbnailPage = experienceRepository.findExperienceThumbnails(
-        language, experienceType, keywordFilterList, addressFilterList, pageable);
+    Page<ExperienceResponse.PreviewDto> experiencePreviewPage =
+        experienceRepository.findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(
+            language, experienceType, keywordFilterList, addressFilterList, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
-    List<ExperienceThumbnail> data = experienceThumbnailPage.getContent();
+    List<ExperienceResponse.PreviewDto> data = experiencePreviewPage.getContent();
 
     // 좋아요 여부, 리뷰 평균 추가
-    for (ExperienceThumbnail experienceThumbnail : data) {
-      Long postId = experienceThumbnail.getId();
-      experienceThumbnail.setFavorite(favoriteIds.contains(postId));
-      experienceThumbnail.setRatingAvg(reviewRepository.findTotalRatingAvg(EXPERIENCE, postId));
+    for (ExperienceResponse.PreviewDto previewDto : data) {
+      Long postId = previewDto.getId();
+      previewDto.setFavorite(favoriteIds.contains(postId));
+      previewDto.setRatingAvg(reviewRepository.findTotalRatingAvg(EXPERIENCE, postId));
     }
 
-    return ExperienceThumbnailDto.builder()
-        .totalElements(experienceThumbnailPage.getTotalElements())
+    return ExperienceResponse.PreviewPageDto.builder()
+        .totalElements(experiencePreviewPage.getTotalElements())
         .data(data)
         .build();
   }
 
-  // 이색체험 상세 정보 조회
-  public ExperienceDetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
+  /**
+   * 이색체험 상세정보 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param postId        게시물 id
+   * @param isSearch      검색을 통해 들어왔는지 여부
+   * @return ExperienceResponse.DetailDto
+   */
+  public ExperienceResponse.DetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
-    ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+    ExperienceCompositeDto experienceCompositeDto = experienceRepository.findExperienceCompositeDto(
         postId, language);
 
     // 해당 id의 포스트가 없는 경우 404 에러
@@ -144,7 +163,7 @@ public class ExperienceService implements PostService {
             experienceTypeKeyword.getValueByLocale(language)
         ).toList();
 
-    return ExperienceDetailDto.builder()
+    return ExperienceResponse.DetailDto.builder()
         .id(experienceCompositeDto.getId())
         .title(experienceCompositeDto.getTitle())
         .intro(experienceCompositeDto.getIntro())

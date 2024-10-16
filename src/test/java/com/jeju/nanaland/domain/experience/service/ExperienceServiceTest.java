@@ -14,9 +14,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
@@ -26,7 +24,6 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -60,26 +59,26 @@ class ExperienceServiceTest {
   @Mock
   ReviewRepository reviewRepository;
 
-  @Test
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
   @DisplayName("이색체험 preview 정보 조회")
-  void getPostCardDtoTest() {
+  void getPostCardDtoTest(Language language) {
     // given
     ImageFile imageFile = createImageFile();
-    Experience experience = createExperience(imageFile);
-    ExperienceTrans experienceTrans = createExperienceTrans(experience);
+    Experience experience = createExperience(imageFile, ExperienceType.ACTIVITY);
+    ExperienceTrans experienceTrans = createExperienceTrans(language, experience);
     PostPreviewDto postPreviewDto = PostPreviewDto.builder()
         .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
         .title(experienceTrans.getTitle())
         .id(experience.getId())
         .category(Category.EXPERIENCE.toString())
         .build();
-    when(experienceRepository.findPostPreviewDto(nullable(Long.class), eq(Language.KOREAN)))
+    when(experienceRepository.findPostPreviewDto(nullable(Long.class), eq(language)))
         .thenReturn(postPreviewDto);
 
     // when
     PostPreviewDto result =
-        experienceService.getPostPreviewDto(postPreviewDto.getId(), Category.MARKET,
-            Language.KOREAN);
+        experienceService.getPostPreviewDto(postPreviewDto.getId(), Category.EXPERIENCE, language);
 
     // then
     assertThat(result.getFirstImage()).isEqualTo(postPreviewDto.getFirstImage());
@@ -99,77 +98,114 @@ class ExperienceServiceTest {
         .thenReturn(Optional.ofNullable(experience));
 
     // when
-    Post post = experienceService.getPost(1L, Category.MARKET);
+    Post post = experienceService.getPost(1L, Category.EXPERIENCE);
 
     // then
     assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
   }
 
   @Test
-  @DisplayName("액티비티 상세조회")
-  void getActivityList() {
+  @DisplayName("이색체험 상세조회")
+  void getExperienceDetailTest() {
     // given
-    ExperienceType experienceType = ExperienceType.ACTIVITY;
     Language language = Language.KOREAN;
     MemberInfoDto memberInfoDto = getMemberInfoDto(language, TravelType.NONE);
     Long postId = 1L;
-    List<Experience> experienceList = getActivityList(language, "제주시", 1);
     ExperienceCompositeDto experienceCompositeDto = ExperienceCompositeDto.builder()
-        .title("액티비티 테스트 제목1")
+        .title(UUID.randomUUID().toString())
         .build();
 
     doReturn(experienceCompositeDto).when(experienceRepository)
-        .findCompositeDtoById(postId, language);
+        .findExperienceCompositeDto(postId, language);
     doReturn(false).when(memberFavoriteService)
         .isPostInFavorite(memberInfoDto.getMember(), Category.EXPERIENCE, postId);
     doReturn(List.of()).when(imageFileRepository)  // 빈 이미지 리스트
         .findPostImageFiles(postId);
 
     // when
-    ExperienceDetailDto result = experienceService.getExperienceDetail(memberInfoDto, postId,
-        false);
+    ExperienceResponse.DetailDto result =
+        experienceService.getExperienceDetail(memberInfoDto, postId, false);
 
     // then
-    assertThat(result).extracting("title").isEqualTo("액티비티 테스트 제목1");
+    assertThat(result.getTitle()).isEqualTo(experienceCompositeDto.getTitle());
   }
 
-  @Test
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
   @DisplayName("액티비티 리스트 조회")
-  void getExperienceListTest() {
+  void getActivitiesTest(Language language) {
     // given
-    ExperienceType experienceType = ExperienceType.ACTIVITY;
-    Language language = Language.KOREAN;
     MemberInfoDto memberInfoDto = getMemberInfoDto(language, TravelType.NONE);
     Pageable pageable = PageRequest.of(0, 12);
-    List<Experience> experienceList = new ArrayList<>();
-    experienceList.addAll(getActivityList(language, "제주시", 2));
-    experienceList.addAll(getActivityList(language, "제주시", 3));
-    List<ExperienceThumbnail> experienceThumbnailList = List.of(
-        ExperienceThumbnail.builder()
-            .title("title 1")
+
+    List<ExperienceResponse.PreviewDto> previewDtos = List.of(
+        ExperienceResponse.PreviewDto.builder()
+            .title(UUID.randomUUID().toString())
+            .addressTag("제주시")
             .build(),
-        ExperienceThumbnail.builder()
-            .title("title 2")
+        ExperienceResponse.PreviewDto.builder()
+            .title(UUID.randomUUID().toString())
+            .addressTag("서귀포시")
             .build()
     );
-    Page<ExperienceThumbnail> experienceThumbnailPage =
+    Page<ExperienceResponse.PreviewDto> previewPage =
         new PageImpl<>(
-            experienceThumbnailList,
+            previewDtos,
             pageable,
-            experienceThumbnailList.size());
+            previewDtos.size());
 
-    doReturn(experienceThumbnailPage).when(experienceRepository)
-        .findExperienceThumbnails(language, ExperienceType.ACTIVITY, List.of(), List.of(),
-            pageable);
+    doReturn(previewPage).when(experienceRepository)
+        .findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(language,
+            ExperienceType.ACTIVITY, List.of(), List.of(), pageable);
     doReturn(4.32).when(reviewRepository)
         .findTotalRatingAvg(Category.EXPERIENCE, null);
 
     // when
-    ExperienceThumbnailDto result = experienceService.getExperienceList(memberInfoDto,
-        ExperienceType.ACTIVITY, List.of(), List.of(), 0, 12);
+    ExperienceResponse.PreviewPageDto result = experienceService.getExperiencePreviews(
+        memberInfoDto, ExperienceType.ACTIVITY, List.of(), List.of(), 0, 12);
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(2);
+    assertThat(result.getTotalElements()).isEqualTo(previewDtos.size());
+    assertThat(result.getData()).isEqualTo(previewDtos);
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("문화예술 리스트 조회")
+  void getCultureAndArtsTest(Language language) {
+    // given
+    MemberInfoDto memberInfoDto = getMemberInfoDto(language, TravelType.NONE);
+    Pageable pageable = PageRequest.of(0, 12);
+
+    List<ExperienceResponse.PreviewDto> previewDtos = List.of(
+        ExperienceResponse.PreviewDto.builder()
+            .title(UUID.randomUUID().toString())
+            .addressTag("제주시")
+            .build(),
+        ExperienceResponse.PreviewDto.builder()
+            .title(UUID.randomUUID().toString())
+            .addressTag("서귀포시")
+            .build()
+    );
+    Page<ExperienceResponse.PreviewDto> previewPage =
+        new PageImpl<>(
+            previewDtos,
+            pageable,
+            previewDtos.size());
+
+    doReturn(previewPage).when(experienceRepository)
+        .findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(language,
+            ExperienceType.CULTURE_AND_ARTS, List.of(), List.of(), pageable);
+    doReturn(4.32).when(reviewRepository)
+        .findTotalRatingAvg(Category.EXPERIENCE, null);
+
+    // when
+    ExperienceResponse.PreviewPageDto result = experienceService.getExperiencePreviews(
+        memberInfoDto, ExperienceType.CULTURE_AND_ARTS, List.of(), List.of(), 0, 12);
+
+    // then
+    assertThat(result.getTotalElements()).isEqualTo(previewDtos.size());
+    assertThat(result.getData()).isEqualTo(previewDtos);
   }
 
   ImageFile createImageFile() {
@@ -179,17 +215,18 @@ class ExperienceServiceTest {
         .build();
   }
 
-  Experience createExperience(ImageFile imageFile) {
+  Experience createExperience(ImageFile imageFile, ExperienceType experienceType) {
     return Experience.builder()
         .priority(0L)
         .firstImageFile(imageFile)
+        .experienceType(experienceType)
         .build();
   }
 
-  ExperienceTrans createExperienceTrans(Experience experience) {
+  ExperienceTrans createExperienceTrans(Language language, Experience experience) {
     return ExperienceTrans.builder()
         .experience(experience)
-        .language(Language.KOREAN)
+        .language(language)
         .title(UUID.randomUUID().toString())
         .content(UUID.randomUUID().toString())
         .build();
@@ -205,54 +242,5 @@ class ExperienceServiceTest {
         .member(member)
         .language(language)
         .build();
-  }
-
-  private List<Experience> getActivityList(Language language, String addressTag, int size) {
-    List<Experience> experienceList = new ArrayList<>();
-    for (int i = 1; i <= size; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("originUrl" + i)
-          .thumbnailUrl("thumbnailUrl" + i)
-          .build();
-      Experience experience = Experience.builder()
-          .firstImageFile(imageFile)
-          .priority(0L)
-          .experienceType(ExperienceType.ACTIVITY)
-          .build();
-      ExperienceTrans experienceTrans = ExperienceTrans.builder()
-          .experience(experience)
-          .title("activity title " + i)
-          .language(language)
-          .addressTag(addressTag)
-          .build();
-
-      experienceList.add(experience);
-    }
-
-    return experienceList;
-  }
-
-  private List<Experience> getCultureAndArtsList(Language language, String addressTag, int size) {
-    List<Experience> cultureAndArtsList = new ArrayList<>();
-    for (int i = 1; i <= size; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("originUrl" + i)
-          .thumbnailUrl("thumbnailUrl" + i)
-          .build();
-      Experience experience = Experience.builder()
-          .firstImageFile(imageFile)
-          .priority(0L)
-          .experienceType(ExperienceType.CULTURE_AND_ARTS)
-          .build();
-      ExperienceTrans experienceTrans = ExperienceTrans.builder()
-          .experience(experience)
-          .title("culture and arts title " + i)
-          .language(language)
-          .addressTag(addressTag)
-          .build();
-      cultureAndArtsList.add(experience);
-    }
-
-    return cultureAndArtsList;
   }
 }

@@ -6,10 +6,9 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
-import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Recommend;
@@ -167,7 +166,7 @@ public class MemberTypeService {
 
   private MemberResponse.RecommendPostDto getExperiencePostDto(Member member, Long postId,
       Language language) {
-    ExperienceCompositeDto compositeDto = experienceRepository.findCompositeDtoById(postId,
+    ExperienceCompositeDto compositeDto = experienceRepository.findExperienceCompositeDto(postId,
         language);
     MemberResponse.RecommendPostDto recommendPostDto = MemberResponse.RecommendPostDto.builder()
         .id(compositeDto.getId())

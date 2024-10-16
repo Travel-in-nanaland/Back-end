@@ -11,9 +11,9 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_PreviewDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_SearchPostForReviewDto;
@@ -39,7 +39,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public ExperienceCompositeDto findCompositeDtoById(Long id, Language language) {
+  public ExperienceCompositeDto findExperienceCompositeDto(Long id, Language language) {
     return queryFactory
         .select(new QExperienceCompositeDto(
             experience.id,
@@ -61,7 +61,10 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
-        .where(experience.id.eq(id).and(experienceTrans.language.eq(language)))
+        .where(
+            experience.id.eq(id),
+            experienceTrans.language.eq(language)
+        )
         .fetchOne();
   }
 
@@ -93,10 +96,12 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experienceTrans.title.contains(keyword)
-            .or(experienceTrans.addressTag.contains(keyword))
-            .or(experienceTrans.content.contains(keyword))
-            .or(experience.id.in(idListContainAllHashtags)))
+        .where(
+            experienceTrans.title.contains(keyword)
+                .or(experienceTrans.addressTag.contains(keyword))
+                .or(experienceTrans.content.contains(keyword))
+                .or(experience.id.in(idListContainAllHashtags))
+        )
         .orderBy(experienceTrans.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -108,21 +113,24 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experienceTrans.title.contains(keyword)
-            .or(experienceTrans.addressTag.contains(keyword))
-            .or(experienceTrans.content.contains(keyword))
-            .or(experience.id.in(idListContainAllHashtags)));
+        .where(
+            experienceTrans.title.contains(keyword)
+                .or(experienceTrans.addressTag.contains(keyword))
+                .or(experienceTrans.content.contains(keyword))
+                .or(experience.id.in(idListContainAllHashtags))
+        );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
-      ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
+  public Page<ExperienceResponse.PreviewDto> findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(
+      Language language, ExperienceType experienceType,
+      List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, Pageable pageable) {
 
-    List<ExperienceThumbnail> resultDto = queryFactory
-        .selectDistinct(new QExperienceResponse_ExperienceThumbnail(
+    List<ExperienceResponse.PreviewDto> resultDto = queryFactory
+        .selectDistinct(new QExperienceResponse_PreviewDto(
             experience.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
@@ -134,12 +142,16 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .innerJoin(experience.experienceTrans, experienceTrans)
         .innerJoin(experienceKeyword)
         .on(experienceKeyword.experience.id.eq(experience.id))
-        .where(experienceTrans.language.eq(language)
-            .and(experience.experienceType.eq(experienceType))  // 이색체험 타입(액티비티/문화예술)
-            .and(addressTagCondition(addressFilterList))  // 지역필터
-            .and(keywordCondition(keywordFilterList)))  // 키워드 필터
-        .orderBy(experience.priority.desc(),  // 우선순위 정렬
-            experience.createdAt.desc())  // 최신순 정렬
+        .where(
+            experienceTrans.language.eq(language),
+            experience.experienceType.eq(experienceType), // 이색체험 타입(액티비티/문화예술)
+            addressTagCondition(addressFilterList), // 지역필터
+            keywordCondition(keywordFilterList)  // 키워드 필터
+        )
+        .orderBy(
+            experience.priority.desc(),  // 우선순위 정렬
+            experience.createdAt.desc()  // 최신순 정렬
+        )
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -151,10 +163,12 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .innerJoin(experience.experienceTrans, experienceTrans)
         .innerJoin(experienceKeyword)
         .on(experienceKeyword.experience.id.eq(experience.id))
-        .where(experienceTrans.language.eq(language)
-            .and(experience.experienceType.eq(experienceType))
-            .and(addressTagCondition(addressFilterList))
-            .and(keywordCondition(keywordFilterList)));
+        .where(
+            experienceTrans.language.eq(language),
+            experience.experienceType.eq(experienceType),
+            addressTagCondition(addressFilterList),
+            keywordCondition(keywordFilterList)
+        );
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -214,12 +228,13 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .select(experience.id)
         .from(experience)
         .leftJoin(hashtag)
-        .on(hashtag.post.id.eq(experience.id)
-            .and(hashtag.category.eq(Category.EXPERIENCE))
-            .and(hashtag.language.eq(language)))
+        .on(hashtag.post.id.eq(experience.id),
+            hashtag.category.eq(Category.EXPERIENCE),
+            hashtag.language.eq(language)
+        )
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(experience.id)
-        .having(experience.id.count().eq(splitKeyword(keyword).stream().count()))
+        .having(experience.id.count().eq((long) splitKeyword(keyword).size()))
         .fetch();
   }
 
@@ -234,18 +249,11 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   private BooleanExpression addressTagCondition(List<String> addressFilterList) {
-    if (addressFilterList.isEmpty()) {
-      return null;
-    } else {
-      return experienceTrans.addressTag.in(addressFilterList);
-    }
+    return addressFilterList.isEmpty() ? null : experienceTrans.addressTag.in(addressFilterList);
   }
 
   private BooleanExpression keywordCondition(List<ExperienceTypeKeyword> keywordFilterList) {
-    if (keywordFilterList.isEmpty()) {
-      return null;
-    } else {
-      return experienceKeyword.experienceTypeKeyword.in(keywordFilterList);
-    }
+    return keywordFilterList.isEmpty() ? null
+        : experienceKeyword.experienceTypeKeyword.in(keywordFilterList);
   }
 }

@@ -3,8 +3,7 @@ package com.jeju.nanaland.domain.experience.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.EXPERIENCE_DETAIL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.EXPERIENCE_LIST_SUCCESS;
 
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.service.ExperienceService;
@@ -41,7 +40,7 @@ public class ExperienceController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/list")
-  public BaseResponse<ExperienceThumbnailDto> getExperienceList(
+  public BaseResponse<ExperienceResponse.PreviewPageDto> getExperienceList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
       @RequestParam(defaultValue = "") List<ExperienceTypeKeyword> keywordFilterList,
@@ -49,10 +48,10 @@ public class ExperienceController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ExperienceThumbnailDto thumbnailDto = experienceService.getExperienceList(memberInfoDto,
-        experienceType, keywordFilterList, addressFilterList, page, size);
+    ExperienceResponse.PreviewPageDto previewPageDto = experienceService.getExperiencePreviews(
+        memberInfoDto, experienceType, keywordFilterList, addressFilterList, page, size);
 
-    return BaseResponse.success(EXPERIENCE_LIST_SUCCESS, thumbnailDto);
+    return BaseResponse.success(EXPERIENCE_LIST_SUCCESS, previewPageDto);
   }
 
   @Operation(summary = "이색체험 상세 정보 조회", description = "이색체험 상세 정보 조회")
@@ -64,13 +63,13 @@ public class ExperienceController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<ExperienceDetailDto> getExperienceDetail(
+  public BaseResponse<ExperienceResponse.DetailDto> getExperienceDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam(defaultValue = "false") boolean isSearch) {
 
-    ExperienceDetailDto experienceDetail = experienceService.getExperienceDetail(memberInfoDto,
+    ExperienceResponse.DetailDto detailDto = experienceService.getExperienceDetail(memberInfoDto,
         id, isSearch);
-    return BaseResponse.success(EXPERIENCE_DETAIL_SUCCESS, experienceDetail);
+    return BaseResponse.success(EXPERIENCE_DETAIL_SUCCESS, detailDto);
   }
 }

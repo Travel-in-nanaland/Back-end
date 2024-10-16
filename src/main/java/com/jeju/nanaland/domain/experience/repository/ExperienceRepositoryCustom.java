@@ -3,7 +3,7 @@ package com.jeju.nanaland.domain.experience.repository;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.ExperienceResponse;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
@@ -14,13 +14,14 @@ import org.springframework.data.domain.Pageable;
 
 public interface ExperienceRepositoryCustom {
 
-  ExperienceCompositeDto findCompositeDtoById(Long id, Language language);
+  ExperienceCompositeDto findExperienceCompositeDto(Long id, Language language);
 
   Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String Keyword, Language language,
       Pageable pageable);
 
-  Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
-      ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
+  Page<ExperienceResponse.PreviewDto> findAllExperiencePreviewDtoOrderByPriorityDescAndCreatedAtDesc(
+      Language language, ExperienceType experienceType,
+      List<ExperienceTypeKeyword> keywordFilterList,
       List<String> addressFilterList, Pageable pageable);
 
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSet(Long postId);
