@@ -2,8 +2,7 @@ package com.jeju.nanaland.domain.festival.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.FESTIVAL_LIST_SUCCESS;
 
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalResponse;
 import com.jeju.nanaland.domain.festival.service.FestivalService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.global.BaseResponse;
@@ -44,7 +43,7 @@ public class FestivalController {
   @Parameter(name = "startDate", description = "날짜는 yyyyMMdd 형태 ex) 20240430 / endDate도 동일,"
       + " 날짜 선택 안했을 경우 startDate, endDate 파라미터에 추가 안해주시면 됩니다.(이 경우 오늘 날짜 포함한 축제 반환)")
   @GetMapping("/this-month")
-  public BaseResponse<FestivalThumbnailDto> getThisMonthFestivalList(
+  public BaseResponse<FestivalResponse.PreviewPageDto> getThisMonthFestivalList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
@@ -64,14 +63,14 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/past")
-  public BaseResponse<FestivalThumbnailDto> getPastFestivalList(
+  public BaseResponse<FestivalResponse.PreviewPageDto> getPastFestivalList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
-      @RequestParam(defaultValue = "") List<String> addressFilterList) {
+      @RequestParam(defaultValue = "") List<String> addressFilters) {
 
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
-        festivalService.getPastFestivalList(memberInfoDto, page, size, addressFilterList));
+        festivalService.getPastFestivalList(memberInfoDto, page, size, addressFilters));
   }
 
   @Operation(summary = "계절별 축제 리스트 조회", description = "계절별 축제 리스트 조회 (페이징)")
@@ -82,7 +81,7 @@ public class FestivalController {
   })
   @Parameter(name = "season", description = "spring, summer, autumn, winter 형태로 입력 받음. (default 값은 따로 없으며 프론트에서 월로 구분하여 초기 값 세팅 해주어야 합니다.)")
   @GetMapping("/season")
-  public BaseResponse<FestivalThumbnailDto> getSeasonFestivalList(
+  public BaseResponse<FestivalResponse.PreviewPageDto> getSeasonFestivalList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
@@ -101,12 +100,12 @@ public class FestivalController {
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @GetMapping("/{id}")
-  public BaseResponse<FestivalDetailDto> getFestivalDetail(
+  public BaseResponse<FestivalResponse.DetailDto> getFestivalDetail(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam(defaultValue = "false") boolean isSearch) {
-    FestivalDetailDto festivalDetailDto = festivalService.getFestivalDetail(memberInfoDto, id,
+    FestivalResponse.DetailDto detailDto = festivalService.getFestivalDetail(memberInfoDto, id,
         isSearch);
-    return BaseResponse.success(SuccessCode.FESTIVAL_DETAIL_SUCCESS, festivalDetailDto);
+    return BaseResponse.success(SuccessCode.FESTIVAL_DETAIL_SUCCESS, detailDto);
   }
 }

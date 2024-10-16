@@ -49,18 +49,18 @@ class FestivalRepositoryTest {
     setFestival();
 
     // When
-    Page<FestivalCompositeDto> festivalCompositeDtoPage = festivalRepository.searchCompositeDtoByOnGoing(
+    Page<FestivalCompositeDto> festivalCompositeDtoPage = festivalRepository.findAllFestivalCompositDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>());
 
     List<FestivalCompositeDto> onGoingFestivalWithoutAddressFilter = festivalCompositeDtoPage.getContent();
 
-    List<FestivalCompositeDto> onGoingFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
+    List<FestivalCompositeDto> onGoingFestivalWithAddressFilter = festivalRepository.findAllFestivalCompositDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of("제주시"))).getContent();
 
-    List<FestivalCompositeDto> finishFestivalWithoutAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
+    List<FestivalCompositeDto> finishFestivalWithoutAddressFilter = festivalRepository.findAllFestivalCompositDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>()).getContent();
 
-    List<FestivalCompositeDto> finishFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
+    List<FestivalCompositeDto> finishFestivalWithAddressFilter = festivalRepository.findAllFestivalCompositDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of("한림"))).getContent();
 
     // Then
@@ -81,14 +81,14 @@ class FestivalRepositoryTest {
     setFestival();
 
     // When
-    Page<FestivalCompositeDto> springFestivalPage = festivalRepository.searchCompositeDtoBySeason(
+    Page<FestivalCompositeDto> springFestivalPage = festivalRepository.findAllFestivalCompositeDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), "봄");
     List<FestivalCompositeDto> springFestival = springFestivalPage.getContent();
-    List<FestivalCompositeDto> summerFestival = festivalRepository.searchCompositeDtoBySeason(
+    List<FestivalCompositeDto> summerFestival = festivalRepository.findAllFestivalCompositeDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), "여름").getContent();
-    List<FestivalCompositeDto> autumnFestival = festivalRepository.searchCompositeDtoBySeason(
+    List<FestivalCompositeDto> autumnFestival = festivalRepository.findAllFestivalCompositeDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), "가을").getContent();
-    List<FestivalCompositeDto> winterFestival = festivalRepository.searchCompositeDtoBySeason(
+    List<FestivalCompositeDto> winterFestival = festivalRepository.findAllFestivalCompositeDtoOrderByEndDate(
         Language.KOREAN, PageRequest.of(0, 5), "겨울").getContent();
 
     // Then
@@ -108,11 +108,11 @@ class FestivalRepositoryTest {
     setFestival();
 
     // When
-    Page<FestivalCompositeDto> allFestivalPage = festivalRepository.searchCompositeDtoByMonth(
+    Page<FestivalCompositeDto> allFestivalPage = festivalRepository.findAllFestivalCompositeDtoByEndDate(
         Language.KOREAN, PageRequest.of(0, 5),
         LocalDate.of(1999, 1, 1), LocalDate.of(2040, 1, 1), new ArrayList<>());
     List<FestivalCompositeDto> allFestival = allFestivalPage.getContent();
-    List<FestivalCompositeDto> festivalByDate = festivalRepository.searchCompositeDtoByMonth(
+    List<FestivalCompositeDto> festivalByDate = festivalRepository.findAllFestivalCompositeDtoByEndDate(
         Language.KOREAN, PageRequest.of(0, 5),
         LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 13), new ArrayList<>()).getContent();
 

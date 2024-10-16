@@ -18,7 +18,7 @@ import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
-import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalResponse.DetailDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
@@ -123,17 +123,17 @@ class FestivalServiceTest {
     FestivalCompositeDto msFestivalCompositeDto = createFestivalCompositeDto(Language.MALAYSIA,
         startDate, endDate);
 
-    when(festivalRepository.findCompositeDtoById(1L,
+    when(festivalRepository.findFestivalCompositeDto(1L,
         krMemberInfoDto.getLanguage())).thenReturn(krFestivalCompositeDto);
-    when(festivalRepository.findCompositeDtoById(1L,
+    when(festivalRepository.findFestivalCompositeDto(1L,
         msMemberInfoDto.getLanguage())).thenReturn(msFestivalCompositeDto);
     when(memberFavoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong()))
         .thenReturn(false);
 
     // When
-    FestivalDetailDto krFestivalDetail = festivalService.getFestivalDetail(krMemberInfoDto, 1L,
+    DetailDto krFestivalDetail = festivalService.getFestivalDetail(krMemberInfoDto, 1L,
         false);
-    FestivalDetailDto msFestivalDetail = festivalService.getFestivalDetail(msMemberInfoDto, 1L,
+    DetailDto msFestivalDetail = festivalService.getFestivalDetail(msMemberInfoDto, 1L,
         false);
 
     // Then

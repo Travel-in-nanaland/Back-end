@@ -365,7 +365,7 @@ public class SearchService {
               .build());
         }
         case FESTIVAL -> {
-          CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
+          CompositeDto festivalCompositeDto = festivalRepository.findFestivalCompositeDto(
               postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(

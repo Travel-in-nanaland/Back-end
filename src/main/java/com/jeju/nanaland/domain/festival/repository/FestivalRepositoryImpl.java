@@ -29,7 +29,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public FestivalCompositeDto findCompositeDtoById(Long id, Language language) {
+  public FestivalCompositeDto findFestivalCompositeDto(Long id, Language language) {
     return queryFactory
         .select(new QFestivalCompositeDto(
             festival.id,
@@ -138,9 +138,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Language language,
+  public Page<FestivalCompositeDto> findAllFestivalCompositDtoOrderByEndDate(Language language,
       Pageable pageable,
-      boolean onGoing, List<String> addressFilterList) {
+      boolean onGoing, List<String> addressFilters) {
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
             festival.id,
@@ -167,7 +167,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
             .and(festivalTrans.language.eq(language))
-            .and(addressTagCondition(addressFilterList))
+            .and(addressTagCondition(addressFilters))
         )
         .orderBy(festival.endDate.desc()) // 최근에 끝난 순
         .offset(pageable.getOffset())
@@ -182,13 +182,14 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(festival.onGoing.eq(onGoing)
             .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
-            .and(addressTagCondition(addressFilterList)));
+            .and(addressTagCondition(addressFilters)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoBySeason(Language language, Pageable pageable,
+  public Page<FestivalCompositeDto> findAllFestivalCompositeDtoOrderByEndDate(Language language,
+      Pageable pageable,
       String season) {
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
@@ -235,8 +236,9 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByMonth(Language language, Pageable pageable,
-      LocalDate startDate, LocalDate endDate, List<String> addressFilterList) {
+  public Page<FestivalCompositeDto> findAllFestivalCompositeDtoByEndDate(Language language,
+      Pageable pageable,
+      LocalDate startDate, LocalDate endDate, List<String> addressFilters) {
     List<FestivalCompositeDto> resultDto = queryFactory
         .select(new QFestivalCompositeDto(
             festival.id,
@@ -269,7 +271,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                     .and(festival.endDate.goe(endDate))))
 
                 .and(festivalTrans.language.eq(language)
-                    .and(addressTagCondition(addressFilterList)))
+                    .and(addressTagCondition(addressFilters)))
                 .and(festival.status.eq(Status.ACTIVE))
         )
         .orderBy(festival.endDate.asc()) // 종료일 오름차 순 (곧 종료되는)
@@ -292,7 +294,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                     .and(festival.endDate.goe(endDate))))
 
                 .and(festivalTrans.language.eq(language)
-                    .and(addressTagCondition(addressFilterList)))
+                    .and(addressTagCondition(addressFilters)))
 
                 .and(festival.status.eq(Status.ACTIVE))
         );

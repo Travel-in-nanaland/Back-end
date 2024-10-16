@@ -166,7 +166,7 @@ public class ReportService {
     return switch (category) {
       case NATURE -> natureRepository.findNatureCompositeDto(postId, language);
       case MARKET -> marketRepository.findCompositeDtoById(postId, language);
-      case FESTIVAL -> festivalRepository.findCompositeDtoById(postId, language);
+      case FESTIVAL -> festivalRepository.findFestivalCompositeDto(postId, language);
       case EXPERIENCE -> experienceRepository.findCompositeDtoById(postId, language);
       case RESTAURANT -> restaurantRepository.findCompositeDtoById(postId, language);
       default -> null;
