@@ -20,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @RestControllerAdvice
 @Slf4j
@@ -43,8 +44,8 @@ public class ControllerAdvice {
 
   // 400에러 (bad request)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ExceptionHandler(BadRequestException.class)
-  public BaseResponse<String> handleBadRequestException(BadRequestException e) {
+  @ExceptionHandler({BadRequestException.class, HandlerMethodValidationException.class})
+  public BaseResponse<String> handleBadRequestException(Exception e) {
     return BaseResponse.error(BAD_REQUEST_EXCEPTION, e.getMessage());
   }
 
