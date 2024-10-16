@@ -39,7 +39,7 @@ public class ReviewRequest {
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
             "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
     )
-    @Size(min = 3, message = "최소 3개 선택 가능합니다.")
+    @Size(min = 1, message = "최소 1개 선택 가능합니다.")
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")
     private List<String> reviewKeywords;
 
@@ -70,7 +70,7 @@ public class ReviewRequest {
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
             "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
     )
-    @Size(min = 3, message = "최소 3개 선택 가능합니다.")
+    @Size(min = 1, message = "최소 1개 선택 가능합니다.")
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")
     private List<String> reviewKeywords;
 
