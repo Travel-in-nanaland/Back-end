@@ -7,6 +7,7 @@ import static com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKey
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
@@ -96,7 +97,7 @@ class ExperienceRepositoryTest {
 
     // when
     Page<ExperienceThumbnail> result = experienceRepository.findExperienceThumbnails(language,
-        ExperienceType.ACTIVITY, List.of(), List.of("서귀포시"), pageable);
+        ExperienceType.ACTIVITY, List.of(), List.of(AddressTag.SEOGWIPO), pageable);
 
     // then
     assertThat(result.getTotalElements()).isEqualTo(2);

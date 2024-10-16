@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.market.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -50,7 +51,7 @@ class MarketRepositoryTest {
     }
 
     Language locale = Language.KOREAN;
-    List<String> addressFilter = Arrays.asList("제주시");
+    List<AddressTag> addressFilter = Arrays.asList(AddressTag.JEJU);
     Pageable pageable = PageRequest.of(0, 2);
 
     // when
