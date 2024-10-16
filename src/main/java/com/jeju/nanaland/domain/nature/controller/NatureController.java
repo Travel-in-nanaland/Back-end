@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.nature.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.NATURE_LIST_SUCCESS;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.service.NatureService;
@@ -41,7 +42,7 @@ public class NatureController {
   @GetMapping("/list")
   public BaseResponse<NatureResponse.PreviewPageDto> getNaturePreview(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam(defaultValue = "") List<String> addressFilterList,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "") String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {

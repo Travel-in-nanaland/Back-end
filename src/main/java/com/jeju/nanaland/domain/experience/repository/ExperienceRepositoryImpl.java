@@ -6,6 +6,7 @@ import static com.jeju.nanaland.domain.experience.entity.QExperienceKeyword.expe
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
@@ -119,7 +120,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   @Override
   public Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
-      List<String> addressFilterList, Pageable pageable) {
+      List<AddressTag> addressTags, Pageable pageable) {
 
     List<ExperienceThumbnail> resultDto = queryFactory
         .selectDistinct(new QExperienceResponse_ExperienceThumbnail(
@@ -136,7 +137,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .on(experienceKeyword.experience.id.eq(experience.id))
         .where(experienceTrans.language.eq(language)
             .and(experience.experienceType.eq(experienceType))  // 이색체험 타입(액티비티/문화예술)
-            .and(addressTagCondition(addressFilterList))  // 지역필터
+            .and(addressTagCondition(language, addressTags))  // 지역필터
             .and(keywordCondition(keywordFilterList)))  // 키워드 필터
         .orderBy(experience.priority.desc(),  // 우선순위 정렬
             experience.createdAt.desc())  // 최신순 정렬
@@ -153,7 +154,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .on(experienceKeyword.experience.id.eq(experience.id))
         .where(experienceTrans.language.eq(language)
             .and(experience.experienceType.eq(experienceType))
-            .and(addressTagCondition(addressFilterList))
+            .and(addressTagCondition(language, addressTags))
             .and(keywordCondition(keywordFilterList)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
@@ -233,11 +234,13 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     return tokenList;
   }
 
-  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
-    if (addressFilterList.isEmpty()) {
+  private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
+    if (addressTags.isEmpty()) {
       return null;
     } else {
-      return experienceTrans.addressTag.in(addressFilterList);
+      List<String> addressTagFilters = addressTags.stream()
+          .map(address -> address.getValueByLocale(language)).toList();
+      return experienceTrans.addressTag.in(addressTagFilters);
     }
   }
 

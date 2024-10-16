@@ -7,6 +7,7 @@ import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantKeyword.rest
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantMenu.restaurantMenu;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restaurantTrans;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
@@ -42,7 +43,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
 
   @Override
   public Page<RestaurantThumbnail> findRestaurantThumbnails(Language language,
-      List<RestaurantTypeKeyword> keywordFilter, List<String> addressFilter, Pageable pageable) {
+      List<RestaurantTypeKeyword> keywordFilter, List<AddressTag> addressTags, Pageable pageable) {
     List<RestaurantThumbnail> resultDto = queryFactory
         .selectDistinct(new QRestaurantResponse_RestaurantThumbnail(
             restaurant.id,
@@ -58,7 +59,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .on(restaurantKeyword.restaurant.eq(restaurant))
         .where(restaurantTrans.language.eq(language)
             .and(keywordCondition(keywordFilter))
-            .and(addressTagCondition(addressFilter)))
+            .and(addressTagCondition(language, addressTags)))
         .orderBy(restaurant.priority.desc(),
             restaurant.createdAt.desc())
         .offset(pageable.getOffset())
@@ -74,7 +75,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .on(restaurantKeyword.restaurant.eq(restaurant))
         .where(restaurantTrans.language.eq(language)
             .and(keywordCondition(keywordFilter))
-            .and(addressTagCondition(addressFilter)));
+            .and(addressTagCondition(language, addressTags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -200,11 +201,13 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .fetchOne();
   }
 
-  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
-    if (addressFilterList.isEmpty()) {
+  private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
+    if (addressTags.isEmpty()) {
       return null;
     } else {
-      return restaurantTrans.addressTag.in(addressFilterList);
+      List<String> addressTagFilters = addressTags.stream()
+          .map(address -> address.getValueByLocale(language)).toList();
+      return restaurantTrans.addressTag.in(addressTagFilters);
     }
   }
 

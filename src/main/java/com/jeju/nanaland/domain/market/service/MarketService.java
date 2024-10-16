@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.market.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
@@ -73,12 +74,12 @@ public class MarketService implements PostService {
 
   // 전통시장 리스트 조회
   public MarketResponse.MarketThumbnailDto getMarketList(MemberInfoDto memberInfoDto,
-      List<String> addressFilterList, int page, int size) {
+      List<AddressTag> addressTags, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Language locale = memberInfoDto.getLanguage();
     Page<MarketThumbnail> marketThumbnailPage = marketRepository.findMarketThumbnails(locale,
-        addressFilterList, pageable);
+        addressTags, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(

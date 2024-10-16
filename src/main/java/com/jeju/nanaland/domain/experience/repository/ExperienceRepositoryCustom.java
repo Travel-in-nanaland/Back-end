@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.experience.repository;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
@@ -16,12 +17,12 @@ public interface ExperienceRepositoryCustom {
 
   ExperienceCompositeDto findCompositeDtoById(Long id, Language language);
 
-  Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String Keyword, Language language,
+  Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable);
 
   Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
-      List<String> addressFilterList, Pageable pageable);
+      List<AddressTag> addressTags, Pageable pageable);
 
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSet(Long postId);
 

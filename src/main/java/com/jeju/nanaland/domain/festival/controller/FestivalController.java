@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.festival.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.FESTIVAL_LIST_SUCCESS;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnailDto;
 import com.jeju.nanaland.domain.festival.service.FestivalService;
@@ -48,7 +49,7 @@ public class FestivalController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
-      @RequestParam(defaultValue = "") List<String> addressFilterList,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
       LocalDate startDate,
       @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
@@ -68,7 +69,7 @@ public class FestivalController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
-      @RequestParam(defaultValue = "") List<String> addressFilterList) {
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList) {
 
     return BaseResponse.success(FESTIVAL_LIST_SUCCESS,
         festivalService.getPastFestivalList(memberInfoDto, page, size, addressFilterList));

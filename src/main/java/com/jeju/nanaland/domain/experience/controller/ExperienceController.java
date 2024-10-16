@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.experience.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.EXPERIENCE_DETAIL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.EXPERIENCE_LIST_SUCCESS;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnailDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
@@ -45,7 +46,7 @@ public class ExperienceController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
       @RequestParam(defaultValue = "") List<ExperienceTypeKeyword> keywordFilterList,
-      @RequestParam(defaultValue = "") List<String> addressFilterList,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 

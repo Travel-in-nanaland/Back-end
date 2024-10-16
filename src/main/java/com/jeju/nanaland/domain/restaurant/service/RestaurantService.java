@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.restaurant.service;
 import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
 import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
@@ -83,13 +84,13 @@ public class RestaurantService implements PostService {
 
   // 맛집 리스트 조회
   public RestaurantThumbnailDto getRestaurantList(MemberInfoDto memberInfoDto,
-      List<RestaurantTypeKeyword> keywordFilterList, List<String> addressFilterList,
+      List<RestaurantTypeKeyword> keywordFilterList, List<AddressTag> addressTags,
       int page, int size) {
 
     Language language = memberInfoDto.getLanguage();
     Pageable pageable = PageRequest.of(page, size);
     Page<RestaurantThumbnail> restaurantThumbnailPage = restaurantRepository.findRestaurantThumbnails(
-        language, keywordFilterList, addressFilterList, pageable);
+        language, keywordFilterList, addressTags, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(

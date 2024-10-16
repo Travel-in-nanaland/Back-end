@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.market.repository;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
@@ -12,7 +13,7 @@ public interface MarketRepositoryCustom {
 
   MarketCompositeDto findCompositeDtoById(Long id, Language locale);
 
-  Page<MarketThumbnail> findMarketThumbnails(Language locale, List<String> addressFilterList,
+  Page<MarketThumbnail> findMarketThumbnails(Language locale, List<AddressTag> addressTags,
       Pageable pageable);
 
   Page<MarketCompositeDto> searchCompositeDtoByKeyword(String keyword, Language locale,
