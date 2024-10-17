@@ -35,6 +35,8 @@ public class FavoriteNotificationService {
 
     List<Favorite> favorites = favoriteRepository.findAllFavoriteToSendNotification();
 
+    log.info("좋아요 알림 개수: {}", favorites.size());
+
     for (Favorite favorite : favorites) {
       Member member = favorite.getMember();
       Category category = favorite.getCategory();
