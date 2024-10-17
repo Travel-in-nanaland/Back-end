@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.festival.repository;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -16,13 +17,13 @@ public interface FestivalRepositoryCustom {
       Pageable pageable);
 
   Page<FestivalCompositeDto> searchCompositeDtoByOnGoing(Language locale, Pageable pageable,
-      boolean onGoing, List<String> addressFilterList);
+      boolean onGoing, List<AddressTag> addressTags);
 
   Page<FestivalCompositeDto> searchCompositeDtoBySeason(Language locale, Pageable pageable,
       String season);
 
   Page<FestivalCompositeDto> searchCompositeDtoByMonth(Language locale, Pageable pageable,
-      LocalDate startDate, LocalDate endDate, List<String> addressFilterList);
+      LocalDate startDate, LocalDate endDate, List<AddressTag> addressTags);
 
   PostPreviewDto findPostPreviewDto(Long postId, Language language);
 }

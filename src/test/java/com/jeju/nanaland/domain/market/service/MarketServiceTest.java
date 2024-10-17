@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
@@ -109,7 +110,7 @@ class MarketServiceTest {
   void marketThumbnailPagingTest() {
     // given
     Language locale = Language.KOREAN;
-    List<String> filterList = Arrays.asList("제주시");
+    List<AddressTag> filterList = Arrays.asList(AddressTag.JEJU);
     MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
     Pageable pageable = PageRequest.of(0, 2);
 

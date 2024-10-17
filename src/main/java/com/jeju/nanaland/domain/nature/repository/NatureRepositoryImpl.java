@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
@@ -125,14 +126,14 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
    * 7대 자연 프리뷰 페이징 조회
    *
    * @param language       언어
-   * @param addressFilters 지역명
+   * @param addressTags    지역명
    * @param keyword        키워드
    * @param pageable       페이징 정보
    * @return 7대 자연 검색 페이징 정보
    */
   @Override
   public Page<NatureResponse.PreviewDto> findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(Language language,
-      List<String> addressFilters, String keyword, Pageable pageable) {
+      List<AddressTag> addressTags, String keyword, Pageable pageable) {
     List<NatureResponse.PreviewDto> resultDto = queryFactory
         .select(new QNatureResponse_PreviewDto(
                 nature.id,
@@ -146,7 +147,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .innerJoin(nature.natureTrans, natureTrans)
         .innerJoin(nature.firstImageFile, imageFile)
         .where(natureTrans.language.eq(language)
-            .and(addressTagCondition(addressFilters))
+            .and(addressTagCondition(language, addressTags))
             .and(natureTrans.title.contains(keyword)))
         .orderBy(nature.priority.asc(), nature.createdAt.desc())
         .offset(pageable.getOffset())
@@ -158,7 +159,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .from(nature)
         .innerJoin(nature.natureTrans, natureTrans)
         .where(natureTrans.language.eq(language)
-            .and(addressTagCondition(addressFilters))
+            .and(addressTagCondition(language, addressTags))
             .and(natureTrans.title.contains(keyword)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
@@ -191,14 +192,16 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   /**
    * 지역명 필터 여부에 따른 조건문 설정
    *
-   * @param addressFilters 지역명
+   * @param addressTags 지역명
    * @return BooleanExpression
    */
-  private BooleanExpression addressTagCondition(List<String> addressFilters) {
-    if (addressFilters.isEmpty()) {
+  private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
+    if (addressTags.isEmpty()) {
       return null;
     } else {
-      return natureTrans.addressTag.in(addressFilters);
+      List<String> addressTagFilters = addressTags.stream()
+          .map(address -> address.getValueByLocale(language)).toList();
+      return natureTrans.addressTag.in(addressTagFilters);
     }
   }
 

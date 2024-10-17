@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.nature.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
@@ -73,18 +74,18 @@ public class NatureService implements PostService {
    * 7대 자연 프리뷰 리스트 조회
    *
    * @param memberInfoDto  회원 정보
-   * @param addressFilters 지역명
+   * @param addressTags    지역명
    * @param keyword        키워드
    * @param page           페이지 Number
    * @param size           페이지 Size
    * @return 7대 자연 프리뷰 리스트
    */
   public NatureResponse.PreviewPageDto getNaturePreview(MemberInfoDto memberInfoDto,
-      List<String> addressFilters, String keyword, int page, int size) {
+      List<AddressTag> addressTags, String keyword, int page, int size) {
 
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureResponse.PreviewDto> naturePreviewDto = natureRepository.findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(
-        memberInfoDto.getLanguage(), addressFilters, keyword, pageable);
+        memberInfoDto.getLanguage(), addressTags, keyword, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(

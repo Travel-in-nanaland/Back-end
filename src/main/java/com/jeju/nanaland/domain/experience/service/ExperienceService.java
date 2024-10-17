@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.experience.service;
 
 import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.PostCategory;
@@ -82,14 +83,14 @@ public class ExperienceService implements PostService {
   // 이색체험 리스트 조회
   public ExperienceThumbnailDto getExperienceList(MemberInfoDto memberInfoDto,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
-      List<String> addressFilterList, int page, int size) {
+      List<AddressTag> addressTags, int page, int size) {
 
     Language language = memberInfoDto.getLanguage();
     Pageable pageable = PageRequest.of(page, size);
 
     // experienceType(액티비티, 문화예술)에 따른 이색체험 조회
     Page<ExperienceThumbnail> experienceThumbnailPage = experienceRepository.findExperienceThumbnails(
-        language, experienceType, keywordFilterList, addressFilterList, pageable);
+        language, experienceType, keywordFilterList, addressTags, pageable);
 
     // 좋아요 여부
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(

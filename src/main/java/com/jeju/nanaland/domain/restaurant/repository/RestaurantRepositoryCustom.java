@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.restaurant.repository;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
@@ -15,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 public interface RestaurantRepositoryCustom {
 
   Page<RestaurantThumbnail> findRestaurantThumbnails(Language language,
-      List<RestaurantTypeKeyword> keywordFilter, List<String> addressFilter, Pageable pageable);
+      List<RestaurantTypeKeyword> keywordFilter, List<AddressTag> addressTags, Pageable pageable);
 
   RestaurantCompositeDto findCompositeDtoById(Long postId, Language language);
 

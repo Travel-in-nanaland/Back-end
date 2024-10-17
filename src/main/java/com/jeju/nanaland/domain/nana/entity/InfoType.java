@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 public enum InfoType {
-  ADDRESS("주소", "Address", "Địa chỉ", "Alamat", "地址"),
+  ADDRESS("주소", "AddressTag", "Địa chỉ", "Alamat", "地址"),
   PARKING("주차", "Parking", "Chỗ đậu xe", "Tempat Letak Kereta", "停车"),
   SPECIAL("이 장소만의 매력포인트", "Unique Points of This Place", "Điểm hấp dẫn của nơi này",
       "Tarikan Istimewa Tempat Ini",

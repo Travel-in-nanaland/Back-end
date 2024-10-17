@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.nature.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
@@ -152,8 +153,8 @@ class NatureRepositoryTest {
     void findAllNaturePreviewDtoOrderByPriority_addressFilter() {
       // given: 지역명 포함하여 7대 자연 설정
       int itemCount = 7;
-      String addressTag = "애월";
-      createNatureItems(itemCount, "", addressTag);
+      AddressTag addressTag = AddressTag.AEWOL;
+      createNatureItems(itemCount, "", addressTag.getKr());
       Pageable pageable = PageRequest.of(0, 12);
 
       // when: 7대 자연 프리뷰 페이징 조회
@@ -169,7 +170,7 @@ class NatureRepositoryTest {
       assertThat(firstItem.getTitle()).isEqualTo("title" + itemCount);
       assertThat(firstItem.getFirstImage().getOriginUrl()).isEqualTo("origin" + itemCount);
       assertThat(firstItem.getFirstImage().getThumbnailUrl()).isEqualTo("thumbnail" + itemCount);
-      assertThat(firstItem.getAddressTag()).isEqualTo(addressTag);
+      assertThat(firstItem.getAddressTag()).isEqualTo(addressTag.getKr());
     }
   }
 }

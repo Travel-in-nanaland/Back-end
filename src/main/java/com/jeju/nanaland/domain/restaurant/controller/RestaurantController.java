@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.restaurant.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.RESTAURANT_DETAIL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.RESTAURANT_LIST_SUCCESS;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantDetailDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantResponse.RestaurantThumbnailDto;
@@ -43,7 +44,7 @@ public class RestaurantController {
   public BaseResponse<RestaurantThumbnailDto> getRestaurantList(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam(defaultValue = "") List<RestaurantTypeKeyword> keywordFilter,
-      @RequestParam(defaultValue = "") List<String> addressFilterList,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 

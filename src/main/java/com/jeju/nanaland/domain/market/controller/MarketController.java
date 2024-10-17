@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.market.controller;
 import static com.jeju.nanaland.global.exception.SuccessCode.MARKET_DETAIL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.MARKET_LIST_SUCCESS;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
 import com.jeju.nanaland.domain.market.service.MarketService;
@@ -41,7 +42,7 @@ public class MarketController {
   @GetMapping("/list")
   public BaseResponse<MarketResponse.MarketThumbnailDto> getMarketList(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam(defaultValue = "") List<String> addressFilterList,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 

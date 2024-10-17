@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.festival.repository;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -55,13 +56,13 @@ class FestivalRepositoryTest {
     List<FestivalCompositeDto> onGoingFestivalWithoutAddressFilter = festivalCompositeDtoPage.getContent();
 
     List<FestivalCompositeDto> onGoingFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of("제주시"))).getContent();
+        Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of(AddressTag.JEJU))).getContent();
 
     List<FestivalCompositeDto> finishFestivalWithoutAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
         Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>()).getContent();
 
     List<FestivalCompositeDto> finishFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of("한림"))).getContent();
+        Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of(AddressTag.HALLIM))).getContent();
 
     // Then
     Assertions.assertThat(festivalCompositeDtoPage.getTotalElements()).isEqualTo(3);

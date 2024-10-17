@@ -5,6 +5,7 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.market.entity.QMarket.market;
 import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
@@ -55,8 +56,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
   @Override
   public Page<MarketThumbnail> findMarketThumbnails(Language language,
-      List<String> addressFilterList,
-      Pageable pageable) {
+      List<AddressTag> addressTags, Pageable pageable) {
     List<MarketThumbnail> resultDto = queryFactory
         .select(new QMarketResponse_MarketThumbnail(
             market.id,
@@ -69,7 +69,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .innerJoin(market.firstImageFile, imageFile)
         .innerJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.eq(language)
-            .and(addressTagCondition(addressFilterList)))
+            .and(addressTagCondition(language, addressTags)))
         .orderBy(market.priority.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -80,7 +80,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .from(market)
         .innerJoin(market.marketTrans, marketTrans)
         .where(marketTrans.language.eq(language)
-            .and(addressTagCondition(addressFilterList)));
+            .and(addressTagCondition(language, addressTags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
@@ -176,11 +176,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     return tokenList;
   }
 
-  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
-    if (addressFilterList.isEmpty()) {
+  private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
+    if (addressTags.isEmpty()) {
       return null;
     } else {
-      return marketTrans.addressTag.in(addressFilterList);
+      List<String> addressTagFilters = addressTags.stream()
+          .map(address -> address.getValueByLocale(language)).toList();
+      return marketTrans.addressTag.in(addressTagFilters);
     }
   }
 }

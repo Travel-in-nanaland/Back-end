@@ -3,6 +3,7 @@ package com.jeju.nanaland.domain.festival.service;
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.DayOfWeek;
 import com.jeju.nanaland.domain.common.data.Language;
@@ -83,12 +84,12 @@ public class FestivalService implements PostService {
 
   // 종료된 축제 리스트 조회
   public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
-      List<String> addressFilterList) {
+      List<AddressTag> addressTags) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
-        memberInfoDto.getLanguage(), pageable, false, addressFilterList);
+        memberInfoDto.getLanguage(), pageable, false, addressTags);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
@@ -99,7 +100,7 @@ public class FestivalService implements PostService {
 
   // 이번 달 축제 리스트 조회
   public FestivalThumbnailDto getThisMonthFestivalList(MemberInfoDto memberInfoDto, int page,
-      int size, List<String> addressFilterList, LocalDate startDate, LocalDate endDate) {
+      int size, List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate) {
     Pageable pageable = PageRequest.of(page, size);
     if (startDate == null && endDate == null) {
       // 오늘 날짜 가져오기
@@ -113,7 +114,7 @@ public class FestivalService implements PostService {
     }
     // compositeDto로 기간에 맞는 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByMonth(
-        memberInfoDto.getLanguage(), pageable, startDate, endDate, addressFilterList);
+        memberInfoDto.getLanguage(), pageable, startDate, endDate, addressTags);
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
         memberInfoDto.getMember());
