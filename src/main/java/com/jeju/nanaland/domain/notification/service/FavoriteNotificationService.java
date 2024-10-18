@@ -17,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class FavoriteNotificationService {
 
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
   @Transactional
-  @Scheduled(cron = "0 45 10 * * *")
+  @Scheduled(cron = "0 25 11 * * *")
   public void sendMyFavoriteNotification() {
 
     List<Favorite> favorites = favoriteRepository.findAllFavoriteToSendNotification();
@@ -64,8 +66,12 @@ public class FavoriteNotificationService {
         notificationService.sendPushNotificationToSingleTarget(notificationWithTargetDto);
       } catch (NotFoundException e) {
         log.error("알림 전송 오류 발생: {}", e.getMessage());
+        TransactionStatus status = TransactionAspectSupport.currentTransactionStatus();
+        log.info("isRollbackOnly flag: {}", status.isRollbackOnly());
       } catch (Exception e) {
-        log.error("알림 전송 오류 발생: {}", e.getMessage());
+        log.error("알 수 없는 오류 발생: {}", e.getMessage());
+        TransactionStatus status = TransactionAspectSupport.currentTransactionStatus();
+        log.info("isRollbackOnly flag: {}", status.isRollbackOnly());
       }
       favorite.incrementNotificationCount();
     }
