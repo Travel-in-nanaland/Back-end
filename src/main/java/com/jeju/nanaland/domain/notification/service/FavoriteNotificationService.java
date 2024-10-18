@@ -33,7 +33,7 @@ public class FavoriteNotificationService {
 
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
   @Transactional
-  @Scheduled(cron = "0 25 11 * * *")
+  @Scheduled(cron = "0 0 10 * * *")
   public void sendMyFavoriteNotification() {
 
     List<Favorite> favorites = favoriteRepository.findAllFavoriteToSendNotification();
