@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationDto;
 import com.jeju.nanaland.domain.notification.data.NotificationRequest.NotificationWithTargetDto;
 import com.jeju.nanaland.domain.notification.entity.eums.NotificationCategory;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class FavoriteNotificationService {
 
   // 매일 10시에 나의 찜 알림 대상에게 알림 전송
   @Transactional
-  @Scheduled(cron = "0 0 10 * * *")
+  @Scheduled(cron = "0 20 10 * * *")
   public void sendMyFavoriteNotification() {
 
     List<Favorite> favorites = favoriteRepository.findAllFavoriteToSendNotification();
@@ -59,8 +60,13 @@ public class FavoriteNotificationService {
               .build())
           .build();
 
-      notificationService.sendPushNotificationToSingleTarget(notificationWithTargetDto);
-
+      try {
+        notificationService.sendPushNotificationToSingleTarget(notificationWithTargetDto);
+      } catch (NotFoundException e) {
+        log.error("알림 전송 오류 발생: {}", e.getMessage());
+      } catch (Exception e) {
+        log.error("알림 전송 오류 발생: {}", e.getMessage());
+      }
       favorite.incrementNotificationCount();
     }
   }
