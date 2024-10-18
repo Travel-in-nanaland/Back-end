@@ -29,6 +29,7 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
         .on(nanalandNotification.id.eq(memberNotification.nanalandNotification.id))
         .innerJoin(QMember.member)
         .on(QMember.member.id.eq(memberNotification.memberId))
+        .where(QMember.member.eq(member))
         .orderBy(nanalandNotification.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -40,7 +41,8 @@ public class NanalandNotificationRepositoryImpl implements NanalandNotificationR
         .innerJoin(memberNotification)
         .on(nanalandNotification.id.eq(memberNotification.nanalandNotification.id))
         .innerJoin(QMember.member)
-        .on(QMember.member.id.eq(memberNotification.memberId));
+        .on(QMember.member.id.eq(memberNotification.memberId))
+        .where(QMember.member.eq(member));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
