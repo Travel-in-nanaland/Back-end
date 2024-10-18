@@ -156,7 +156,7 @@ public class NotificationService {
     // 타겟 토큰 조회
     Long memberId = notificationWithTargetDto.getMemberId();
     Member member = memberRepository.findMemberById(memberId)
-        .orElseThrow(() -> new NotFoundException("해당 유저가 없습니다."));
+        .orElseThrow(() -> new NotFoundException("해당 유저가 없습니다. memberId: " + memberId));
 
     // 동일한 알림 정보가 있다면 가져오고 없다면 생성
     NotificationDto notificationDto = notificationWithTargetDto.getNotificationDto();
