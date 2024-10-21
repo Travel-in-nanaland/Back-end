@@ -37,7 +37,7 @@ public class ReviewRequest {
         description = "게시물 카테고리",
         example = "[\"ANNIVERSARY\", \"CUTE\", \"PET\" ]",
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
-            "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
+            "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM", "NONE"}
     )
     @Size(min = 1, message = "최소 1개 선택 가능합니다.")
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")

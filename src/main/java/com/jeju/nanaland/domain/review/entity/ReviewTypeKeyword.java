@@ -23,7 +23,8 @@ public enum ReviewTypeKeyword {
   OUTLET(Type.AMENITIES, "콘센트 사용 가능", "Outlet available", "提供电源插座", "Soket tersedia", "Có ổ cắm điện"),
   LARGE(Type.AMENITIES, "넓은 장소", "Wide", "宽敞", "Luas", "Rộng rãi"),
   PARK(Type.AMENITIES, "주차장", "Parking lot", "停车场", "Tempat letak kereta", "Bãi đậu xe"),
-  BATHROOM(Type.AMENITIES, "깨끗한 화장실", "Clean toilet", "洁净的卫生间", "Tandas bersih", "Nhà vệ sinh sạch sẽ");
+  BATHROOM(Type.AMENITIES, "깨끗한 화장실", "Clean toilet", "洁净的卫生间", "Tandas bersih", "Nhà vệ sinh sạch sẽ"),
+  NONE(Type.ETC, "", "", "", "", "");
 
   private final Type type;
   private final String kr;
@@ -52,6 +53,6 @@ public enum ReviewTypeKeyword {
   }
 
   public enum Type {
-    MOOD, COMPANION, AMENITIES
+    MOOD, COMPANION, AMENITIES, ETC
   }
 }
