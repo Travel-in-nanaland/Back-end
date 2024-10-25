@@ -191,7 +191,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).saveRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -218,7 +218,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).saveRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -246,7 +246,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).saveRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -276,7 +276,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).saveRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());

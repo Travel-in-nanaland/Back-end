@@ -38,10 +38,14 @@ public class ProfileImageService {
       "Gray.png", "DeepBlue.png");
   private final Random random = new Random();
 
-  public ImageFile getRandomProfileImageFile() {
-    String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
-    S3ImageDto s3ImageDto = s3ImageService.getS3Urls(selectedProfile, MEMBER_PROFILE_DIRECTORY);
+  public ImageFile saveRandomProfileImageFile() {
+    S3ImageDto s3ImageDto = getRandomImageFile();
     return saveS3ImageFile(s3ImageDto);
+  }
+
+  public S3ImageDto getRandomImageFile() {
+    String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
+    return s3ImageService.getS3Urls(selectedProfile, MEMBER_PROFILE_DIRECTORY);
   }
 
   public ImageFile saveS3ImageFile(S3ImageDto s3ImageDto) {
@@ -54,12 +58,9 @@ public class ProfileImageService {
 
   @Transactional
   public void setRandomProfileImage(Member member) {
-    ImageFile randomProfileImageFile = getRandomProfileImageFile();
+    S3ImageDto s3ImageDto = getRandomImageFile();
     ImageFile profileImageFile = member.getProfileImageFile();
-    profileImageFile.updateImageFile(
-        randomProfileImageFile.getOriginUrl(),
-        randomProfileImageFile.getThumbnailUrl()
-    );
+    profileImageFile.updateImageFile(s3ImageDto.getOriginUrl(), s3ImageDto.getThumbnailUrl());
   }
 
   /**

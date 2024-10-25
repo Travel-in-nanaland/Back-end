@@ -72,7 +72,7 @@ public class MemberLoginService {
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = profileImageService.getRandomProfileImageFile();
+    ImageFile profileImageFile = profileImageService.saveRandomProfileImageFile();
     Member member = createMember(joinDto, profileImageFile, nickname);
 
     // GUEST가 아닌 경우, 이용약관 저장

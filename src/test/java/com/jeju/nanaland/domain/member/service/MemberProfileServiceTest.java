@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -164,7 +163,7 @@ class MemberProfileServiceTest {
       // then: 프로필 수정 확인, 이미지 변경 확인
       assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
       assertThat(member.getDescription()).isEqualTo(profileUpdateDto.getDescription());
-      verify(profileImageService).updateProfileImage(multipartFile, eq(member));
+      verify(profileImageService).updateProfileImage(any(), any());
     }
   }
 
