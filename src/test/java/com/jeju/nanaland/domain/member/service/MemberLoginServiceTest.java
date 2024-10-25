@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -65,7 +64,7 @@ class MemberLoginServiceTest {
   @Mock
   private JwtUtil jwtUtil;
   @Mock
-  private ImageFileService imageFileService;
+  private ProfileImageService profileImageService;
   @Mock
   private MemberConsentService memberConsentService;
   @Mock
@@ -192,7 +191,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -219,7 +218,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -247,7 +246,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -277,7 +276,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
+      doReturn(imageFile).when(profileImageService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());

@@ -205,9 +205,11 @@ public class MemberController {
   public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestPart @Valid MemberRequest.ProfileUpdateDto reqDto,
-      @RequestPart(required = false) MultipartFile multipartFile) {
+      @RequestPart(required = false) MultipartFile multipartFile,
+      @RequestParam(defaultValue = "false") boolean isImageDelete) {
 
-    memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile);
+    memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile, isImageDelete);
+    log.info("응답 완료!");
     return BaseResponse.success(UPDATE_MEMBER_PROFILE_SUCCESS);
   }
 

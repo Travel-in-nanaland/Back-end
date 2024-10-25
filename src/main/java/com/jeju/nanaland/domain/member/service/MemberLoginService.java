@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,8 +49,7 @@ public class MemberLoginService {
   private final ImageFileService imageFileService;
   private final FcmTokenService fcmTokenService;
   private final FileService fileService;
-  @Value("${cloud.aws.s3.memberProfileDirectory}")
-  private String MEMBER_PROFILE_DIRECTORY;
+  private final ProfileImageService profileImageService;
 
   /**
    * 회원 가입
@@ -74,7 +72,7 @@ public class MemberLoginService {
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = imageFileService.getRandomProfileImageFile();
+    ImageFile profileImageFile = profileImageService.getRandomProfileImageFile();
     Member member = createMember(joinDto, profileImageFile, nickname);
 
     // GUEST가 아닌 경우, 이용약관 저장
