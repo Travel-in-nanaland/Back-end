@@ -21,23 +21,30 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 public class LogAspect {
 
+  // 모든 파일
   @Pointcut(
       "execution(* com.jeju.nanaland..*.*(..))")
   public void all() {
   }
 
+  // 컨트롤러
   @Pointcut("execution(* com.jeju.nanaland..*Controller*.*(..))")
   public void controllerPointcut() {
   }
 
+  // 서비스
   @Pointcut("execution(* com.jeju.nanaland..*Service*.*(..))")
   public void servicePointcut() {
   }
 
+  // 레포지토리
   @Pointcut("execution(* com.jeju.nanaland..*Repository*.*(..))")
   public void repositoryPointcut() {
   }
 
+  // 컨트롤러단에서 로그 찍기.
+  // 모든 메서드 (레포,서비스에 있는)가 단일 로그로 찍히게 되면 동시 요청이 있을 때 사용자 별 로그가 겹침
+  // request에 stringBuilder를 포함시켜서 로그 저장함
   // 메서드 호출 전: HTTP 메서드, 함수명, 파라미터 출력 및 시간 측정 시작
   @Before("controllerPointcut()")
   public void logBeforeController(JoinPoint joinPoint) {
@@ -64,7 +71,7 @@ public class LogAspect {
         .append(" / Parameters: ").append(params).append("\n");
   }
 
-  // 서비스 및 레포지토리 메서드의 개별 실행 시간 측정
+  // 서비스 및 레포지토리 메서드의 개별 실행 시간 측정해서 stringbuilder에 저장
   @Around("repositoryPointcut()||servicePointcut()")
   public Object logServiceAndRepositoryExecutionTime(ProceedingJoinPoint joinPoint)
       throws Throwable {
@@ -83,12 +90,13 @@ public class LogAspect {
     } finally {
       long executionTime = System.currentTimeMillis() - start;
       if (logBuilder != null) {
-        logBuilder.append("Execution time of ").append(joinPoint.getSignature())
+        logBuilder.append("\nExecution time of ").append(joinPoint.getSignature())
             .append(" : ").append(executionTime).append(" ms\n");
       }
     }
   }
 
+  // 정상적으로 controller에서 return이 되면
   // 메서드 실행 후 총 시간 계산
   @AfterReturning("controllerPointcut()")
   public void logAfterController(JoinPoint joinPoint) {
@@ -102,9 +110,9 @@ public class LogAspect {
 
     StringBuilder logBuilder = (StringBuilder) request.getAttribute("logBuilder");
     if (logBuilder != null && !isExceptionHandlerMethod(joinPoint)) {
-      logBuilder.append("Total execution time of controller method ")
+      logBuilder.append("\nTotal execution time of controller method ")
           .append(joinPoint.getSignature().getName()).append(" : ")
-          .append(totalTime).append(" ms");
+          .append(totalTime).append(" ms\n");
 
       // 최종 로그 한 번에 출력
       log.info(logBuilder.toString());
@@ -112,6 +120,9 @@ public class LogAspect {
     }
   }
 
+  // 에러 발생 시
+  // 컨트롤러 단도 포함하면 에러 로그가 두번 찍힘
+  // 에러 발생 (로그 한번) -> controllerAdvice에 의해 에러 값 return(로그 한번 더 찍힘)
   @AfterThrowing(pointcut = "all() && !controllerPointcut()", throwing = "exception")
   public void logException(JoinPoint joinPoint, Throwable exception) {
     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -121,10 +132,13 @@ public class LogAspect {
 
     // 로깅
     if (logBuilder != null) {
+      logBuilder.append("\nException Occurred From : ").append(signature)
+          .append(", Exception Message : ").append(exception.toString());
       log.error(logBuilder.toString());
+    } else {
+      log.error("\nException Occurred From : {}, Exception Message : {}",
+          signature, exception.toString());
     }
-    log.error("Exception Occurred From : {}, Exception Message : {}",
-        signature, exception.toString());
   }
 
   private boolean isExceptionHandlerMethod(JoinPoint joinPoint) {
@@ -143,79 +157,5 @@ public class LogAspect {
       }
     }
   }
-//  // 컨트롤러 메서드 호출 시 개별 메서드 실행 시간 측정
-//  @Around("controllerPointcut()")
-//  public Object logControllerExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-//    long start = System.currentTimeMillis();
-//    try {
-//      return joinPoint.proceed();
-//    } finally {
-//      long executionTime = System.currentTimeMillis() - start;
-//      log.info("Execution time of Controller {} : {} ms", joinPoint.getSignature(), executionTime);
-//    }
-//  }
-
-//  @Around("all()")
-//  public Object logging(ProceedingJoinPoint joinPoint) throws Throwable {
-//    long start = System.currentTimeMillis();
-//    try {
-//      Object result = joinPoint.proceed();
-//      return result;
-//    } finally {
-//      long end = System.currentTimeMillis();
-//      long timeinMs = end - start;
-//      log.info("!!!{} | time = {}ms", joinPoint.getSignature(), timeinMs);
-//    }
-//  }
-//
-//  @Around("controllerPointcut()")
-//  public Object logging2(ProceedingJoinPoint joinPoint) throws Throwable {
-//    long start = System.currentTimeMillis();
-//    try {
-//      Object result = joinPoint.proceed();
-//      return result;
-//    } finally {
-//      long end = System.currentTimeMillis();
-//      long timeinMs = end - start;
-//      log.info("????{} | time = {}ms", joinPoint.getSignature(), timeinMs);
-//    }
-//  }
-
-//  @Before("controllerPointcut()")
-//  public void before(JoinPoint joinPoint) {
-//    // HTTP 요청 정보를 가져오기 위해 사용
-//    HttpServletRequest request =
-//        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-//
-//    // HTTP 메서드(GET, POST, 등)
-//    String httpMethod = request.getMethod();
-//
-//    // 호출된 메서드명
-//    String methodName = joinPoint.getSignature().getName();
-//
-//    // 파라미터들
-//    Object[] args = joinPoint.getArgs();
-//    String params = Arrays.toString(args);
-//
-//    // 로깅
-//    log.info("-----------------");
-//    log.info("HTTP Method: {}", httpMethod);
-//    log.info("Before Method Execution: {}", methodName);
-//    log.info("Parameters: {}", params);
-//    log.info("-----------------");
-//  }
-
-  //  @AfterReturning("controllerPointcut()")
-//  public void afterReturning(JoinPoint joinPoint) {
-//  }
-//
-
-//  @After("controllerPointcut()")
-//  public void after(JoinPoint joinPoint) {
-//  }
-  //  @Around 메서드가 빈 상태로 있거나 proceed()를 호출하지 않으면 컨트롤러가 응답을 반환하지 않게 됩니다.
-//  @Around("controllerPointcut()")
-//  public void around(ProceedingJoinPoint joinPoint) throws Throwable {
-//  }
 }
 

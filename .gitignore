@@ -16,6 +16,9 @@ TestController.java
 
 data.sql
 
+## slack 로그 모니터링
+logback-spring.xml
+
 ### STS ###
 .apt_generated
 .classpath
