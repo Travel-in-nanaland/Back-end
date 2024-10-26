@@ -40,6 +40,13 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.DEV_YML }}" | base64 --decode > src/main/resources/application.yml
           find src
+
+      # 2.5) secret설정한 DEV_LOGBACK_SPRING 등록
+      - name: Set DEV_LOGBACK
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.DEV_LOGBACK}}" | base64 --decode > src/main/resources/logback-spring.xml
+
       # 2.5) secret설정한 DEV_APPSPEC 등록
       - name: Set DEV_APPSPEC
         run: |
@@ -50,7 +57,7 @@ jobs:
           mkdir scripts
           echo "${{ secrets.DEV_EXECUTE_DEPLOY_SH }}" > scripts/execute-deploy.sh
           cat scripts/execute-deploy.sh
-          
+
       # 2.5) secret 설정한 firesbase json key 등록
       - name: Set firebase json key
         run: |
