@@ -59,6 +59,11 @@ dependencies {
 
     // FCM - notification
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // AOP - for logging
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    implementation 'com.github.maricn:logback-slack-appender:1.4.0'
 }
 test {
     systemProperty "spring.profiles.active", "test"
