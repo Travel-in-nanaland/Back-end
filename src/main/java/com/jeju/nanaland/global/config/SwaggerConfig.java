@@ -1,5 +1,7 @@
 package com.jeju.nanaland.global.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -9,6 +11,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@OpenAPIDefinition(
+    servers = {
+        @Server(url = "http://13.125.110.80:8083", description = "DEV"),
+        @Server(url = "https://nanaland.site", description = "PROD"),
+        @Server(url = "http://localhost:8080", description = "LOCAL")
+    }
+)
 @Configuration
 public class SwaggerConfig {
 
