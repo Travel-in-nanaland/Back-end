@@ -7,6 +7,8 @@ import com.jeju.nanaland.global.util.CustomMultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class FileService {
   private final String tmpLocation = System.getProperty("java.io.tmpdir");
+  private static final int BUFFER_SIZE = 8192;
 
   public File convertMultipartFileToFile(MultipartFile multipartFile) {
     String originalFilename = multipartFile.getOriginalFilename();
@@ -29,8 +32,13 @@ public class FileService {
     File convertFile = new File(
         tmpLocation + File.separator + UUID.randomUUID() + "_" + fileName);
 
-    try (FileOutputStream fileOutputStream = new FileOutputStream(convertFile)) {
-      fileOutputStream.write(multipartFile.getBytes());
+    try (InputStream inputStream = multipartFile.getInputStream();
+        OutputStream outputStream = new FileOutputStream(convertFile)) {
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int bytesRead;
+      while ((bytesRead = inputStream.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, bytesRead);
+      }
     } catch (IOException e) {
       throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
     }
