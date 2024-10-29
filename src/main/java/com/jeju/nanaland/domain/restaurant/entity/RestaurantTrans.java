@@ -39,6 +39,7 @@ public class RestaurantTrans extends BaseEntity {
 
   private String addressTag;
 
+  @Column(columnDefinition = "VARCHAR(1024)")
   private String service;
 
   @Builder
