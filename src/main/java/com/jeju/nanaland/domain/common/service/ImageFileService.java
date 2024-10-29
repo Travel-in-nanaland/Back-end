@@ -58,7 +58,7 @@ public class ImageFileService {
       S3ImageDto s3ImageDto = futureS3ImageDto.join();
       return saveS3ImageFile(s3ImageDto);
     } catch (Exception e) {
-      log.error("파일 업로드 오류: ", e);
+      log.error("파일 업로드 오류: {}", e.getMessage());
       throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
     }
   }
@@ -90,11 +90,11 @@ public class ImageFileService {
               memberProfileService.updateMemberProfileImage(memberId, s3ImageDto)
           )
           .exceptionally(e -> {
-            log.error("Failed upload profile image", e);
+            log.error("파일 업로드 오류: {}", e.getMessage());
             throw new CompletionException(new ServerErrorException(SERVER_ERROR.getMessage()));
           });
     } catch (IOException e) {
-      log.error("Failed to convert file", e);
+      log.error("파일 변환 오류: {}", e.getMessage());
       CompletableFuture.failedFuture(new ServerErrorException(SERVER_ERROR.getMessage()));
     }
   }

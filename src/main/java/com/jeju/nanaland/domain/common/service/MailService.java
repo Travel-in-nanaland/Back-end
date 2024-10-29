@@ -43,7 +43,7 @@ public class MailService {
       MimeMessage mimeMessage = createReportMail(report, urls);
       javaMailSender.send(mimeMessage);
     } catch (Exception e) {
-      log.error(e.getMessage());
+      log.error("이메일 전송 오류 : {}", e.getMessage());
       throw new ServerErrorException(MAIL_FAIL_ERROR.getMessage());
     }
   }

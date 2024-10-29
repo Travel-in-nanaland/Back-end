@@ -77,7 +77,7 @@ public class S3VideoService {
             .originUrl(originalVideoUrl)
             .build();
       } catch (Exception e) {
-        log.error("파일 업로드 오류: ", e);
+        log.error("파일 업로드 오류: {}", e.getMessage());
         throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
       }
     });
