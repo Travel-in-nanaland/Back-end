@@ -80,10 +80,10 @@ public class MemberProfileService {
       profileImageFile.updateImageFile(s3ImageDto);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      log.error("스레드 중단", e);
+      log.error("스레드 중단: {}", e.getMessage());
       throw new ServerErrorException(SERVER_ERROR.getMessage());
     } catch (ExecutionException e) {
-      log.error("비동기 작업 실행 중 발생하는 예외 발생", e);
+      log.error("비동기 작업 실행 중 발생하는 예외 발생 : {}", e.getMessage());
       throw new ServerErrorException(SERVER_ERROR.getMessage());
     }
   }

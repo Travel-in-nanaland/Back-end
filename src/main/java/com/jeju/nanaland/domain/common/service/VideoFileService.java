@@ -39,7 +39,7 @@ public class VideoFileService {
       S3VideoDto s3VideoDto = futureVideoDto.join();
       return saveS3VideoFile(s3VideoDto);
     } catch (IOException e) {
-      log.error("파일 업로드 오류: ", e);
+      log.error("파일 업로드 오류: {}", e.getMessage());
       throw new ServerErrorException(FILE_FAIL_ERROR.getMessage());
     }
   }
