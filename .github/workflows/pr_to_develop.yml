@@ -1,9 +1,7 @@
-name: Run Test When Push Or PR To Develop
+name: (build, test) Develop branch when PR to develop
 
 # develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
 on:
-  push:
-    branches: [ "develop" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -109,15 +107,3 @@ jobs:
       # 4) gradle 빌드
       - name: Build with Gradle
         run: ./gradlew clean build -x test -i
-
-#  deploy:
-#    needs: [ test,build ]
-#    runs-on: ubuntu-latest
-#    environment: production
-#
-#    steps:
-#      # 1) 기본 체크아웃
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#      - name: result
-#        run: echo "SUCCESS"
