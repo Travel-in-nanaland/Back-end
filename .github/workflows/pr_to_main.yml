@@ -92,7 +92,7 @@ jobs:
       - name: Set YML
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.PROD_YML }}" | base64 --decode > src/main/resources/application.yml
+          echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
           find src
       # # 4) gradle 테스트 빌드
       # - name: Build Test with Gradle
