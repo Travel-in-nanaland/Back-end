@@ -3,38 +3,40 @@ package com.jeju.nanaland.domain.member.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.LanguageRepository;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,39 +44,23 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
+@Execution(ExecutionMode.CONCURRENT)
 class MemberProfileServiceTest {
 
   @Mock
   private MemberRepository memberRepository;
   @Mock
-  private LanguageRepository languageRepository;
-  @Mock
   private S3ImageService s3ImageService;
   @InjectMocks
   private MemberProfileService memberProfileService;
 
-  private ProfileUpdateDto profileUpdateDto;
-  private MemberTravelType memberTravelType;
+  private MemberRequest.ProfileUpdateDto profileUpdateDto;
   private ImageFile imageFile;
 
   @BeforeEach
   void setUp() {
     profileUpdateDto = createProfileUpdateDto();
-    memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
-  }
-
-  private Language createLanguage(Locale locale) {
-    return Language.builder()
-        .locale(locale)
-        .dateFormat("yy-MM-dd")
-        .build();
-  }
-
-  private MemberTravelType createMemberTravelType() {
-    return MemberTravelType.builder()
-        .travelType(TravelType.GAMGYUL)
-        .build();
   }
 
   private ImageFile createImageFile() {
@@ -84,17 +70,17 @@ class MemberProfileServiceTest {
         .build();
   }
 
-  private Member createMember(Language language) {
+  private Member createMember(Language language, String nickname) {
     return spy(Member.builder()
         .language(language)
         .email("test@example.com")
         .profileImageFile(imageFile)
-        .nickname("testNickname")
+        .nickname(nickname)
         .gender("male")
         .birthDate(LocalDate.now())
         .provider(Provider.GOOGLE)
         .providerId("123")
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.GAMGYUL)
         .build());
   }
 
@@ -105,8 +91,8 @@ class MemberProfileServiceTest {
         .build();
   }
 
-  private ProfileUpdateDto createProfileUpdateDto() {
-    profileUpdateDto = new ProfileUpdateDto();
+  private MemberRequest.ProfileUpdateDto createProfileUpdateDto() {
+    profileUpdateDto = new MemberRequest.ProfileUpdateDto();
     profileUpdateDto.setNickname("updateNickname");
     profileUpdateDto.setDescription("updateDescription");
     return profileUpdateDto;
@@ -120,109 +106,212 @@ class MemberProfileServiceTest {
         .build();
   }
 
-  @Test
-  @DisplayName("프로필 수정 실패 - 닉네임이 중복되는 경우")
-  void updateProfileFail() {
-    // given
-    Language language = createLanguage(Locale.KOREAN);
-    Member member = createMember(language);
-    Member member2 = createMember(language);
-    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-    MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-        new byte[0]);
+  @Nested
+  @DisplayName("유저 프로필 수정 TEST")
+  class UpdateProfile {
+    @Test
+    @DisplayName("실패 - 닉네임이 중복되는 경우")
+    void updateProfileFail_nicknameDuplicate() {
+      // given: 이미 해당 닉네임을 사용 중인 회원이 존재하도록 프로필 수정 요청 DTO 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      Member member2 = createMember(language, "nickname");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
 
-    doReturn(Optional.of(member2)).when(memberRepository).findByNickname(any());
+      doReturn(Optional.of(member2)).when(memberRepository).findByNickname(any(String.class));
 
-    // when
+      // when: 유저 프로필 수정
+      ConflictException conflictException = assertThrows(ConflictException.class,
+          () -> memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, null));
 
-    ConflictException conflictException = assertThrows(ConflictException.class,
-        () -> memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, multipartFile));
+      // then: ErrorCode 검증
+      assertThat(conflictException.getMessage()).isEqualTo(ErrorCode.NICKNAME_DUPLICATE.getMessage());
+    }
 
-    // then
-    assertThat(conflictException.getMessage()).isEqualTo(ErrorCode.NICKNAME_DUPLICATE.getMessage());
+    @Test
+    @DisplayName("성공 - 이미지 변경 없는 경우")
+    void updateProfileSuccess_multipartFileNotExists() {
+      // given: 닉네임이 유효하고, 프로필 사진 있도록 프로필 수정 요청 DTO 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+
+      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
+
+      // when: 유저 프로필 수정
+      memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, null);
+
+      // then: 프로필 수정 확인, 이미지 변경 없음 확인
+      assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
+      assertThat(member.getDescription()).isEqualTo(profileUpdateDto.getDescription());
+      verify(s3ImageService, never()).uploadImageToS3(any(MultipartFile.class), anyBoolean(), any(String.class));
+    }
+
+    @Test
+    @DisplayName("성공 - 새 이미지 업로드")
+    void updateProfileSuccess_multipartFileExists() {
+      // given: 닉네임이 유효하고, 새 이미지를 추가하여 프로필 수정 요청 DTO 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+      MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
+          new byte[0]);
+      S3ImageDto s3ImageDto = S3ImageDto.builder()
+          .thumbnailUrl("thumbnailUrl")
+          .originUrl("originUrl")
+          .build();
+      CompletableFuture<S3ImageDto> completableFuture = CompletableFuture.completedFuture(s3ImageDto);
+      doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
+      doReturn(completableFuture).when(s3ImageService)
+          .uploadImageToS3(any(MultipartFile.class), eq(true), any());
+      doReturn(false).when(s3ImageService).isDefaultProfileImage(any(ImageFile.class));
+
+      // when: 유저 프로필 수정
+      memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, multipartFile);
+
+      // then: 프로필 수정 확인, 이미지 변경 확인
+      assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
+      assertThat(member.getDescription()).isEqualTo(profileUpdateDto.getDescription());
+      assertThat(member.getProfileImageFile().getOriginUrl()).isEqualTo(s3ImageDto.getOriginUrl());
+      assertThat(member.getProfileImageFile().getThumbnailUrl()).isEqualTo(s3ImageDto.getThumbnailUrl());
+      verify(s3ImageService).uploadImageToS3(any(MultipartFile.class), anyBoolean(), any());
+      verify(s3ImageService).deleteImageS3(any(ImageFile.class), any());
+    }
+  }
+
+  @Nested
+  @DisplayName("유저 프로필 조회 TEST")
+  class GetMemberProfile {
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 회원인 경우")
+    void getMemberProfileFail_memberNotFound() {
+      // given: 회원이 존재하지 않도록 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+
+      doReturn(1L).when(member).getId();
+
+      // when: 유저 프로필 조회
+      NotFoundException notFoundException = assertThrows(NotFoundException.class,
+          () -> memberProfileService.getMemberProfile(memberInfoDto, 2L));
+
+      // then: ErrorCode 검증
+      assertThat(notFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("성공 - memberId가 null인 경우 내 프로필 조회")
+    void getMemberProfileSuccess_memberIdNull() {
+      // given: 회원 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+      List<MemberConsent> memberConsents = List.of(
+          createMemberConsent(ConsentType.MARKETING, member),
+          createMemberConsent(ConsentType.LOCATION_SERVICE, member)
+      );
+      doReturn(1L).when(member).getId();
+      doReturn(memberConsents).when(memberRepository).findAllMemberConsent(member);
+
+      // when: memberId가 null이므로 내 프로필 조회
+      MemberResponse.ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, null);
+
+      // then: 프로필 조회 확인, 이용약관 조회 확인
+      assertThat(profileDto).satisfies(dto -> {
+        assertThat(dto.getConsentItems()).hasSize(2);
+        assertThat(dto.getEmail()).isEqualTo(member.getEmail());
+        assertThat(dto.getProvider()).isEqualTo(member.getProvider().name());
+        assertThat(dto.getProfileImage().getThumbnailUrl()).isEqualTo(member.getProfileImageFile().getThumbnailUrl());
+        assertThat(dto.getNickname()).isEqualTo(member.getNickname());
+        assertThat(dto.getDescription()).isEqualTo(member.getDescription());
+        assertThat(dto.getTravelType()).isEqualTo(member.getTravelType().getTypeNameWithLocale(Language.KOREAN));
+        assertThat(dto.getHashtags()).hasSize(3);
+      });
+
+      verify(memberRepository).findAllMemberConsent(member);
+    }
+
+    @Test
+    @DisplayName("성공 - memberId가 회원의 Id와 동일한 경우 내 프로필 조회")
+    void getMemberProfileSuccess_memberIdEquals() {
+      // given: 회원 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+      List<MemberConsent> memberConsents = List.of(
+          createMemberConsent(ConsentType.MARKETING, member),
+          createMemberConsent(ConsentType.LOCATION_SERVICE, member)
+      );
+      doReturn(1L).when(member).getId();
+      doReturn(memberConsents).when(memberRepository).findAllMemberConsent(member);
+
+      // when: memberId가 동일하므로 내 프로필 조회
+      MemberResponse.ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, 1L);
+
+      // then: 프로필 조회 확인, 이용약관 조회 확인
+      assertThat(profileDto).satisfies(dto -> {
+        assertThat(dto.getConsentItems()).hasSize(2);
+        assertThat(dto.getEmail()).isEqualTo(member.getEmail());
+        assertThat(dto.getProvider()).isEqualTo(member.getProvider().name());
+        assertThat(dto.getProfileImage().getThumbnailUrl()).isEqualTo(member.getProfileImageFile().getThumbnailUrl());
+        assertThat(dto.getNickname()).isEqualTo(member.getNickname());
+        assertThat(dto.getDescription()).isEqualTo(member.getDescription());
+        assertThat(dto.getTravelType()).isEqualTo(member.getTravelType().getTypeNameWithLocale(Language.KOREAN));
+        assertThat(dto.getHashtags()).hasSize(3);
+      });
+
+      verify(memberRepository).findAllMemberConsent(member);
+    }
+
+    @Test
+    @DisplayName("성공 - memberId가 회원의 Id와 다른 경우 타인 프로필 조회")
+    void getMemberProfileSuccess_memberIdNotEquals() {
+      // given: 현재 회원, 조회할 회원 설정
+      Language language = Language.KOREAN;
+      Member member = createMember(language, "nickname");
+      Language language2 = Language.ENGLISH;
+      Member member2 = createMember(language2, "nickname2");
+      MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
+
+      doReturn(1L).when(member).getId();
+      doReturn(Optional.of(member2)).when(memberRepository).findById(2L);
+
+      // when: 현재 회원과 memberId가 다르므로 타인 프로필 조회
+      MemberResponse.ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, 2L);
+
+      // then: 프로필 조회 확인, 이용약관 조회하지 않음 확인
+      assertThat(profileDto).satisfies(dto -> {
+        assertThat(dto.getConsentItems()).isEmpty();
+        assertThat(dto.getEmail()).isEqualTo(member2.getEmail());
+        assertThat(dto.getProvider()).isEqualTo(member2.getProvider().name());
+        assertThat(dto.getProfileImage().getThumbnailUrl()).isEqualTo(member2.getProfileImageFile().getThumbnailUrl());
+        assertThat(dto.getNickname()).isEqualTo(member2.getNickname());
+        assertThat(dto.getDescription()).isEqualTo(member2.getDescription());
+        assertThat(dto.getTravelType()).isEqualTo(member2.getTravelType().getTypeNameWithLocale(Language.KOREAN));
+        assertThat(dto.getHashtags()).hasSize(3);
+      });
+
+      verify(memberRepository, never()).findAllMemberConsent(any(Member.class));
+    }
   }
 
   @Test
-  @DisplayName("프로필 수정 성공")
-  void updateProfileSuccess() throws IOException {
-    // given
-    Language language = createLanguage(Locale.KOREAN);
-    Member member = createMember(language);
-    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-    MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-        new byte[0]);
-    S3ImageDto s3ImageDto = S3ImageDto.builder()
-        .originUrl("updateOriginUrl")
-        .thumbnailUrl("updateThumbnailUrl")
-        .build();
-
-    doReturn(Optional.empty()).when(memberRepository).findByNickname(any());
-    doReturn(s3ImageDto).when(s3ImageService).uploadOriginImageToS3(multipartFile, true);
-
-    // when
-    memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, multipartFile);
-
-    // then
-    assertThat(member.getProfileImageFile().getOriginUrl()).isEqualTo(s3ImageDto.getOriginUrl());
-    assertThat(member.getProfileImageFile().getThumbnailUrl()).isEqualTo(
-        s3ImageDto.getThumbnailUrl());
-    assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
-    assertThat(member.getDescription()).isEqualTo(profileUpdateDto.getDescription());
-
-    verify(memberRepository, times(1)).findByNickname(any());
-  }
-
-  @Test
-  @DisplayName("프로필 조회")
-  void getMemberProfile() {
-    // given
-    Language language = createLanguage(Locale.KOREAN);
-    Member member = createMember(language);
-    MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-    List<MemberConsent> memberConsents = List.of(
-        createMemberConsent(ConsentType.MARKETING, member),
-        createMemberConsent(ConsentType.LOCATION_SERVICE, member)
-    );
-    doReturn(memberConsents).when(memberRepository).findMemberConsentByMember(member);
-
-    // when
-    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
-
-    // then
-    assertThat(profileDto.getConsentItems()).hasSize(2);
-    assertThat(profileDto.getEmail()).isEqualTo(member.getEmail());
-    assertThat(profileDto.getProvider()).isEqualTo(member.getProvider().name());
-    assertThat(profileDto.getProfileImageUrl()).isEqualTo(
-        member.getProfileImageFile().getThumbnailUrl());
-    assertThat(profileDto.getNickname()).isEqualTo(member.getNickname());
-    assertThat(profileDto.getDescription()).isEqualTo(member.getDescription());
-    assertThat(profileDto.getLevel()).isEqualTo(member.getLevel());
-    assertThat(profileDto.getTravelType()).isEqualTo(
-        member.getMemberTravelType().getTravelType().getTypeNameWithLocale(language.getLocale()));
-    assertThat(profileDto.getHashtags()).hasSize(3);
-
-    verify(memberRepository, times(1)).findMemberConsentByMember(any());
-  }
-
-  @Test
-  @DisplayName("언어 변경")
+  @DisplayName("언어 설정 변경 TEST")
   void updateLanguage() {
-    // given
-    Language language = createLanguage(Locale.KOREAN);
-    Member member = createMember(language);
+    // given: 언어 변경 요청 DTO 설정
+    Language language = Language.KOREAN;
+    Member member = createMember(language, "nickname");
     MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-    Language language2 = createLanguage(Locale.ENGLISH);
-    LanguageUpdateDto languageUpdateDto = new LanguageUpdateDto();
-    languageUpdateDto.setLocale(Locale.ENGLISH.name());
+    Language language2 = Language.ENGLISH;
+    MemberRequest.LanguageUpdateDto languageUpdateDto = new MemberRequest.LanguageUpdateDto();
+    languageUpdateDto.setLocale(Language.ENGLISH.name());
 
-    doReturn(language2).when(languageRepository).findByLocale(any());
-
-    // when
+    // when: 언어 설정 변경
     memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
 
-    // then
+    // then: 변경된 언어 확인
     assertThat(member.getLanguage()).isEqualTo(language2);
-
-    verify(languageRepository, times(1)).findByLocale(any());
   }
 }

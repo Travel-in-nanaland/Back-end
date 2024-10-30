@@ -1,9 +1,10 @@
 package com.jeju.nanaland.domain.market.entity;
 
-import com.jeju.nanaland.domain.common.entity.Common;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
@@ -16,7 +17,12 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Market extends Common {
+@DiscriminatorValue("MARKET")
+public class Market extends Post {
+
+  private String contentId;
+
+  private String contact;
 
   @Column(columnDefinition = "VARCHAR(2048)")
   private String homepage;
@@ -25,8 +31,11 @@ public class Market extends Common {
   private List<MarketTrans> marketTrans;
 
   @Builder
-  public Market(String contentId, ImageFile imageFile, String contact, String homepage) {
-    super(contentId, imageFile, contact);
+  public Market(ImageFile firstImageFile, Long priority, String contentId, String contact,
+      String homepage) {
+    super(firstImageFile, priority);
+    this.contentId = contentId;
+    this.contact = contact;
     this.homepage = homepage;
     this.marketTrans = new ArrayList<>();
   }

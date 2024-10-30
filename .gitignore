@@ -9,11 +9,15 @@ application.yml
 application-test.yml
 appspec.yml
 scripts/
+src/main/resources/firebase/**
 
 ## test를 위한 controller
 TestController.java
 
 data.sql
+
+## slack 로그 모니터링
+logback-spring.xml
 
 ### STS ###
 .apt_generated

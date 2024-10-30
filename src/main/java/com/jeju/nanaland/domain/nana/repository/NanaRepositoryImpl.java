@@ -6,13 +6,14 @@ import static com.jeju.nanaland.domain.nana.entity.QNana.nana;
 import static com.jeju.nanaland.domain.nana.entity.QNanaContent.nanaContent;
 import static com.jeju.nanaland.domain.nana.entity.QNanaTitle.nanaTitle;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
-import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnail;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
+import com.jeju.nanaland.domain.nana.dto.QNanaResponse_PreviewDto;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -29,18 +30,20 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   //최신순으로 4
   @Override
-  public List<NanaResponse.NanaThumbnail> findRecentNanaThumbnailDto(Locale locale) {
-    return queryFactory.select(new QNanaResponse_NanaThumbnail(
+  public List<PreviewDto> findTop4PreviewDtoOrderByCreatedAt(Language language) {
+    return queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
+            nanaTitle.subHeading,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nana.createdAt
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
-        .where((nanaTitle.language.locale.eq(locale)))
+        .leftJoin(nana.firstImageFile, imageFile)
+        .where((nanaTitle.language.eq(language)))
         .orderBy(nanaTitle.createdAt.desc())
         .limit(4L)
         .fetch();
@@ -48,19 +51,21 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
 
   // 모든 Nana 썸네일 가져오기
   @Override
-  public Page<NanaResponse.NanaThumbnail> findAllNanaThumbnailDto(Locale locale,
+  public Page<PreviewDto> findAllPreviewDtoOrderByCreatedAt(Language language,
       Pageable pageable) {
-    List<NanaThumbnail> resultDto = queryFactory.select(new QNanaResponse_NanaThumbnail(
+    List<PreviewDto> resultDto = queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
+            nanaTitle.subHeading,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nana.createdAt
         ))
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
-        .where((nanaTitle.language.locale.eq(locale)))
+        .leftJoin(nana.firstImageFile, imageFile)
+        .where((nanaTitle.language.eq(language)))
         .orderBy(nanaTitle.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -70,33 +75,55 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .select(nanaTitle.count())
         .from(nanaTitle)
         .leftJoin(nanaTitle.nana, nana)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
-        .where((nanaTitle.language.locale.eq(locale)));
+        .leftJoin(nana.firstImageFile, imageFile)
+        .where((nanaTitle.language.eq(language)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
   @Override
-  public Page<NanaThumbnail> searchNanaThumbnailDtoByKeyword(String keyword, Locale locale,
-      Pageable pageable) {
-
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, locale);
-
-    List<NanaThumbnail> resultDto = queryFactory.selectDistinct(new QNanaResponse_NanaThumbnail(
+  public List<PreviewDto> findRecommendPreviewDto(Language language) {
+    return queryFactory.select(new QNanaResponse_PreviewDto(
             nana.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nana.version,
+            nanaTitle.subHeading,
             nanaTitle.heading,
-            nanaTitle.subHeading
+            nana.createdAt
+        ))
+        .from(nanaTitle)
+        .leftJoin(nanaTitle.nana, nana)
+        .leftJoin(nana.firstImageFile, imageFile)
+        .where((nanaTitle.language.eq(language)))
+        .orderBy(nanaTitle.modifiedAt.desc())
+        .limit(4L)
+        .fetch();
+  }
+
+  @Override
+  public Page<PreviewDto> searchNanaThumbnailDtoByKeyword(String keyword, Language language,
+      Pageable pageable) {
+
+    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
+
+    List<PreviewDto> resultDto = queryFactory.selectDistinct(new QNanaResponse_PreviewDto(
+            nana.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            nana.version,
+            nanaTitle.subHeading,
+            nanaTitle.heading,
+            nana.createdAt
         ))
         .from(nana)
-        .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
+        .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
-            .or(nana.id.in(idListContainAllHashtags)))
+            .or(nanaContent.id.in(idListContainAllHashtags)))
         .orderBy(nanaTitle.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -105,43 +132,62 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(nana.id.countDistinct())
         .from(nana)
-        .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
+        .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where(nanaTitle.heading.contains(keyword)
             .or(nanaContent.title.contains(keyword))
             .or(nanaContent.content.contains(keyword))
-            .or(nana.id.in(idListContainAllHashtags)));
+            .or(nanaContent.id.in(idListContainAllHashtags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
-  public NanaThumbnailPost findNanaThumbnailPostDto(Long id, Locale locale) {
+  @Override
+  public PostPreviewDto findPostPreviewDto(Long postId, Language language) {
+    return queryFactory
+        .select(new QPostPreviewDto(
+            nana.id,
+            nanaTitle.heading,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(nana)
+        .innerJoin(nanaTitle).on(nana.eq(nanaTitle.nana))
+        .innerJoin(nana.firstImageFile, imageFile)
+        .where(
+            nana.id.eq(postId),
+            nanaTitle.language.eq(language))
+        .fetchOne();
+  }
+
+  public NanaThumbnailPost findNanaThumbnailPostDto(Long id, Language language) {
     return queryFactory
         .select(new QNanaResponse_NanaThumbnailPost(
             nanaTitle.id,
+            imageFile.originUrl,
             imageFile.thumbnailUrl,
             nanaTitle.heading
         ))
         .from(nanaTitle)
-        .leftJoin(nana.nanaTitleImageFile, imageFile)
+        .leftJoin(nana.firstImageFile, imageFile)
         .where(nanaTitle.nana.id.eq(id)
-            .and(nanaTitle.language.locale.eq(locale)))
+            .and(nanaTitle.language.eq(language)))
         .fetchOne();
   }
 
-  private List<Long> getIdListContainAllHashtags(String keyword, Locale locale) {
+  private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(nana.id)
         .from(nana)
         .leftJoin(nanaTitle)
-        .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.locale.eq(locale)))
+        .on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent)
         .on(nanaContent.nanaTitle.eq(nanaTitle))
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(nanaContent.id)
-            .and(hashtag.category.content.eq(CategoryContent.NANA_CONTENT))
-            .and(hashtag.language.locale.eq(locale)))
+        .on(hashtag.post.id.eq(nanaContent.id)
+            .and(hashtag.category.eq(Category.NANA_CONTENT))
+            .and(hashtag.language.eq(language)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(nana.id)
         .having(nana.id.count().eq(splitKeyword(keyword).stream().count()))

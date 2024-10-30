@@ -22,7 +22,7 @@ public class NanaRequest {
     public static class NanaContentDto {
 
       private int number;
-      private MultipartFile nanaContentImage;
+      private List<MultipartFile> nanaContentImages;
       private String subTitle;
       private String title;
       private String content;

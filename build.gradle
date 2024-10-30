@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.jeju'
-version = '1.0.1'
+version = '2.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = '17'
@@ -59,6 +59,14 @@ dependencies {
 
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // FCM - notification
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // AOP - for logging
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    implementation 'com.github.maricn:logback-slack-appender:1.4.0'
 }
 
 springBoot {

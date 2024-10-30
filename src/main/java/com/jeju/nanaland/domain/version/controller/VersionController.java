@@ -10,11 +10,11 @@ public class VersionController {
 
   @GetMapping("/aos")
   public String getAosVersion() {
-    return "1.0.1";
+    return "2.0.1";
   }
 
   @GetMapping("/ios")
   public String getIosVersion() {
-    return "1.0.1";
+    return "2.0.1";
   }
 }

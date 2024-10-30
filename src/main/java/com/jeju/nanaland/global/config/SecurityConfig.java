@@ -47,13 +47,19 @@ public class SecurityConfig {
         .authorizeHttpRequests(authHttpRequests -> authHttpRequests
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/favicon.ico",
                 "/member/join", "/member/login", "/member/reissue", "/share/**",
-                "member/forceWithdrawal", "nana/upload", "/actuator/**", "/version/**")
+                "member/forceWithdrawal", "nana/upload", "/admin/login", "/member/validateNickname",
+                "/version/**")
             .permitAll()
             .requestMatchers("/favorite/**")
             .hasAnyRole("MEMBER", "ADMIN")
             .requestMatchers(HttpMethod.PATCH, "/member/profile")
             .hasAnyRole("MEMBER", "ADMIN")
             .requestMatchers(HttpMethod.POST, "/nana/upload")
+            .permitAll()
+            .requestMatchers("/notification/send/*")
+            .hasRole("ADMIN")
+            // admin 페이지
+            .requestMatchers(HttpMethod.GET, "/admin/**")
             .permitAll()
             .anyRequest().authenticated());
 
@@ -73,4 +79,5 @@ public class SecurityConfig {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
 }

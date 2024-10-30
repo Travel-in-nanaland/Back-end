@@ -1,23 +1,25 @@
 package com.jeju.nanaland.domain.member.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.entity.Favorite;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import static com.jeju.nanaland.global.exception.ErrorCode.CATEGORY_NOT_FOUND;
+
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
+import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.member.dto.MemberRequest;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest.UpdateTypeDto;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
-import com.jeju.nanaland.domain.member.repository.MemberTravelTypeRepository;
 import com.jeju.nanaland.domain.member.repository.RecommendRepository;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,92 +31,114 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MemberTypeService {
 
-  private final MemberTravelTypeRepository memberTravelTypeRepository;
+  private static final Random RANDOM = new Random();
   private final RecommendRepository recommendRepository;
-  private final FavoriteRepository favoriteRepository;
+  private final MemberFavoriteService memberFavoriteService;
+  private final RestaurantRepository restaurantRepository;
+  private final ExperienceRepository experienceRepository;
 
+  // 유저 타입 갱신
   @Transactional
-  public void updateMemberType(MemberInfoDto memberInfoDto, UpdateTypeDto updateTypeDto) {
+  public void updateMemberType(MemberInfoDto memberInfoDto,
+      MemberRequest.UpdateTypeDto updateTypeDto) {
 
     Member member = memberInfoDto.getMember();
     String newTravelType = updateTypeDto.getType();
-    MemberTravelType newType = memberTravelTypeRepository.findByTravelType(
-        TravelType.valueOf(newTravelType));
 
-    // Enum에는 있지만 DB에는 없는 경우
-    if (newType == null) {
-      String errorMessage = newTravelType + "에 해당하는 타입 정보가 없습니다.";
-      log.error(errorMessage);
-      throw new NotFoundException(errorMessage);
-    }
-
-    member.updateMemberTravelType(newType);
+    member.updateTravelType(TravelType.valueOf(newTravelType));
   }
 
-  public List<RecommendPostDto> getRecommendResultPostsByType(MemberInfoDto memberInfoDto) {
+  // 추천 게시물 2개 반환
+  public List<MemberResponse.RecommendPostDto> getRecommendPostsByType(
+      MemberInfoDto memberInfoDto) {
 
     Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-    MemberTravelType memberTravelType = member.getMemberTravelType();
-    TravelType travelType = member.getMemberTravelType().getTravelType();
+    Language locale = memberInfoDto.getLanguage();
+    TravelType travelType = member.getTravelType();
+
+    // 타입이 NONE이면 랜덤으로 NONE이 아닌 하나의 타입 선택
     if (travelType == TravelType.NONE) {
-      // 타입이 NONE이면 랜덤으로 NONE이 아닌 하나의 타입 선택
-      memberTravelType = memberTravelTypeRepository.findByTravelType(getRandomTravelType());
-      travelType = memberTravelType.getTravelType();
+      travelType = getRandomTravelType();
     }
 
-    List<Recommend> recommends = recommendRepository.findAllByMemberTravelType(memberTravelType);
+    // 해당 여행 타입의 추천 게시물 모두 조회, 2개 이하라면 NotFoundException 반환
+    List<Recommend> recommends = recommendRepository.findAllByTravelType(travelType);
     if (recommends == null || recommends.size() < 2) {
       String errorMessage = travelType.name() + "에 해당하는 추천 게시물이 없거나 너무 적습니다.";
       log.error(errorMessage);
       throw new NotFoundException(errorMessage);
     }
 
-    recommends = getRandomTwoPosts(recommends);
-    List<RecommendPostDto> result = new ArrayList<>();
+    // Recommend 정보를 RecommendPostDto 형태로 변환
+    List<MemberResponse.RecommendPostDto> result = new ArrayList<>();
     for (Recommend recommend : recommends) {
-      Long postId = recommend.getPostId();
+      Long postId = recommend.getPost().getId();
       Category category = recommend.getCategory();
 
-      // recommend 테이블의 이미지를 사용
-      result.add(getRecommendResultPostDto(member, postId, locale, travelType, category));
-    }
-
-    return result;
-  }
-
-  public List<RecommendPostDto> getRandomRecommendedPosts(MemberInfoDto memberInfoDto) {
-
-    Member member = memberInfoDto.getMember();
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-
-    // 이색체험 제외하고 모두 조회
-    List<Recommend> recommends = recommendRepository.findAllWithoutExperience();
-    if (recommends == null || recommends.size() < 2) {
-      String errorMessage = "추천 게시물이 없거나 너무 적습니다.";
-      log.error(errorMessage);
-      throw new NotFoundException(errorMessage);
-    }
-    recommends = getRandomTwoPosts(recommends);
-
-    List<RecommendPostDto> result = new ArrayList<>();
-    for (Recommend recommend : recommends) {
-      Long postId = recommend.getPostId();
-      Category category = recommend.getCategory();
-      TravelType travelType = recommend.getMemberTravelType().getTravelType();
-
-      // 해당 포스트의 이미지를 사용
       result.add(getRecommendPostDto(member, postId, locale, travelType, category));
     }
 
     return result;
   }
 
-  private RecommendPostDto getRecommendPostDto(Member member, Long postId, Locale locale,
-      TravelType travelType, Category category) {
+  // 랜덤 추천 게시물 2개 반환
+  public List<MemberResponse.RecommendPostDto> getRandomRecommendedPosts(
+      MemberInfoDto memberInfoDto) {
 
-    CategoryContent categoryContent = category.getContent();
-    RecommendPostDto recommendPostDto = switch (categoryContent) {
+    Member member = memberInfoDto.getMember();
+    Language language = memberInfoDto.getLanguage();
+
+    // 랜덤으로 추천 게시물 2개 조회
+    int totalCount = 0;
+    List<Long> recommendIds = recommendRepository.findAllIds();
+    List<Long> experienceIds = experienceRepository.findAllIds();
+    List<Long> restaurantIds = restaurantRepository.findAllIds();
+    totalCount += recommendIds.size();
+    totalCount += experienceIds.size();
+    totalCount += restaurantIds.size();
+
+    int index1 = RANDOM.nextInt(totalCount);
+    int index2;
+    do {
+      index2 = RANDOM.nextInt(totalCount);
+    } while (index1 == index2);
+    List<Integer> indexList = List.of(index1, index2);
+
+    List<MemberResponse.RecommendPostDto> result = new ArrayList<>();
+    for (Integer randomIndex : indexList) {
+      // 랜덤 게시물이 recommend 에 있는 경우
+      if (randomIndex < recommendIds.size()) {
+        Recommend recommend = recommendRepository.findById(recommendIds.get(randomIndex))
+            .orElseThrow(() -> new NotFoundException("해당 추천 게시물이 존재하지 않습니다."));
+
+        Long postId = recommend.getPost().getId();
+        TravelType travelType = recommend.getTravelType();
+        Category category = recommend.getCategory();
+        result.add(getRecommendPostDto(member, postId, language, travelType, category));
+      }
+      // 랜덤 게시물이 이색체험인 경우
+      else if (randomIndex < recommendIds.size() + experienceIds.size()) {
+        randomIndex -= recommendIds.size();
+        Long postId = experienceIds.get(randomIndex);
+        result.add(getExperiencePostDto(member, postId, language));
+      }
+      // 랜덤 게시물이 맛집인 경우
+      else {
+        randomIndex -= recommendIds.size();
+        randomIndex -= experienceIds.size();
+        Long postId = restaurantIds.get(randomIndex);
+        result.add(getRestaurantPostDto(member, postId, language));
+      }
+    }
+
+    return result;
+  }
+
+  // RecommendPostDto 반환
+  private MemberResponse.RecommendPostDto getRecommendPostDto(Member member, Long postId,
+      Language locale, TravelType travelType, Category category) {
+
+    MemberResponse.RecommendPostDto recommendPostDto = switch (category) {
       case NATURE -> recommendRepository.findNatureRecommendPostDto(postId, locale, travelType);
 
       case FESTIVAL -> recommendRepository.findFestivalRecommendPostDto(postId, locale, travelType);
@@ -126,69 +150,66 @@ public class MemberTypeService {
 
       case NANA -> recommendRepository.findNanaRecommendPostDto(postId, locale, travelType);
 
-      default -> throw new NotFoundException("해당 추천 게시물 정보가 존재하지 않습니다.");
+      default -> throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage());
     };
 
     if (recommendPostDto == null) {
-      String errorMessage = postId + ", " + category.getContent().name() + "게시물이 없습니다.";
+      String errorMessage = postId + ", " + category.name() + "게시물이 없습니다.";
       log.error(errorMessage);
       throw new NotFoundException(errorMessage);
     }
 
-    Optional<Favorite> favorite = favoriteRepository.findByMemberAndCategoryAndPostId(member,
-        category, postId);
-    if (favorite.isPresent()) {
-      recommendPostDto.setFavorite(true);
-    }
+    // 좋아요 여부 체크
+    recommendPostDto.setFavorite(memberFavoriteService.isPostInFavorite(member, category, postId));
 
     return recommendPostDto;
   }
 
-  private RecommendPostDto getRecommendResultPostDto(Member member, Long postId, Locale locale,
-      TravelType travelType, Category category) {
+  private MemberResponse.RecommendPostDto getExperiencePostDto(Member member, Long postId,
+      Language language) {
+    ExperienceCompositeDto compositeDto = experienceRepository.findCompositeDtoById(postId,
+        language);
+    MemberResponse.RecommendPostDto recommendPostDto = MemberResponse.RecommendPostDto.builder()
+        .id(compositeDto.getId())
+        .category(Category.EXPERIENCE.name())
+        .title(compositeDto.getTitle())
+        .firstImage(compositeDto.getFirstImage())
+        .build();
 
-    CategoryContent categoryContent = category.getContent();
-    RecommendPostDto recommendResultPostDto = switch (categoryContent) {
-      case NATURE ->
-          recommendRepository.findNatureRecommendResultPostDto(postId, locale, travelType);
+    // 좋아요 여부 체크
+    recommendPostDto.setFavorite(
+        memberFavoriteService.isPostInFavorite(member, Category.EXPERIENCE, postId));
 
-      case FESTIVAL ->
-          recommendRepository.findFestivalRecommendResultPostDto(postId, locale, travelType);
-
-      case EXPERIENCE ->
-          recommendRepository.findExperienceRecommendResultPostDto(postId, locale, travelType);
-
-      case MARKET ->
-          recommendRepository.findMarketRecommendResultPostDto(postId, locale, travelType);
-
-      case NANA -> recommendRepository.findNanaRecommendResultPostDto(postId, locale, travelType);
-
-      default -> throw new NotFoundException("해당 추천 게시물 정보가 존재하지 않습니다.");
-    };
-
-    if (recommendResultPostDto == null) {
-      String errorMessage = postId + ", " + category.getContent().name() + "게시물이 없습니다.";
-      log.error(errorMessage);
-      throw new NotFoundException(errorMessage);
-    }
-
-    Optional<Favorite> favorite = favoriteRepository.findByMemberAndCategoryAndPostId(member,
-        category, postId);
-    if (favorite.isPresent()) {
-      recommendResultPostDto.setFavorite(true);
-    }
-
-    return recommendResultPostDto;
+    return recommendPostDto;
   }
 
+  private MemberResponse.RecommendPostDto getRestaurantPostDto(Member member, Long postId,
+      Language language) {
+    RestaurantCompositeDto compositeDto = restaurantRepository.findCompositeDtoById(postId,
+        language);
+    MemberResponse.RecommendPostDto recommendPostDto = MemberResponse.RecommendPostDto.builder()
+        .id(compositeDto.getId())
+        .category(Category.RESTAURANT.name())
+        .title(compositeDto.getTitle())
+        .firstImage(compositeDto.getFirstImage())
+        .build();
+
+    // 좋아요 여부 체크
+    recommendPostDto.setFavorite(
+        memberFavoriteService.isPostInFavorite(member, Category.RESTAURANT, postId));
+
+    return recommendPostDto;
+  }
+
+  // TravelType 랜덤
   private TravelType getRandomTravelType() {
-    Random random = new Random();
     List<TravelType> values = new ArrayList<>(List.of(TravelType.values()));
     values.remove(TravelType.NONE);
 
-    return values.get(random.nextInt(values.size()));
+    return values.get(RANDOM.nextInt(values.size()));
   }
 
+  // 타입 별 추천 게시물 개수가 많아질 경우에 사용
   private List<Recommend> getRandomTwoPosts(List<Recommend> recommends) {
     if (recommends.size() == 2) {
       return recommends;
@@ -196,12 +217,11 @@ public class MemberTypeService {
 
     int randomIdx;
     List<Recommend> result = new ArrayList<>();
-    Random random = new Random();
-    randomIdx = random.nextInt(recommends.size());
+    randomIdx = RANDOM.nextInt(recommends.size());
     result.add(recommends.get(randomIdx));
     recommends.remove(randomIdx);
 
-    randomIdx = random.nextInt(recommends.size());
+    randomIdx = RANDOM.nextInt(recommends.size());
     result.add(recommends.get(randomIdx));
 
     return result;

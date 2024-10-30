@@ -1,5 +1,6 @@
 package com.jeju.nanaland.domain.search.dto;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.Builder;
@@ -23,6 +24,9 @@ public class SearchResponse {
 
     @Schema(description = "전통시장 조회 결과")
     private ResultDto market;
+
+    @Schema(description = "제주 맛집 조회 결과")
+    private ResultDto restaurant;
 
     @Schema(description = "나나스픽 조회 결과")
     private ResultDto nana;
@@ -50,7 +54,7 @@ public class SearchResponse {
     private String category;
 
     @Schema(description = "게시물 썸네일 이미지")
-    private String thumbnailUrl;
+    private ImageFileDto firstImage;
 
     @Schema(description = "제목")
     private String title;
@@ -69,8 +73,8 @@ public class SearchResponse {
     @Schema(description = "제목")
     private String title;
 
-    @Schema(description = "썸네일 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @Schema(description = "게시물 카테고리")
     private String category;

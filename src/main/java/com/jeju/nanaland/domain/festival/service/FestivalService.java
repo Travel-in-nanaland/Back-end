@@ -1,11 +1,19 @@
 package com.jeju.nanaland.domain.festival.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
+import static com.jeju.nanaland.global.exception.ErrorCode.REQUEST_VALIDATION_EXCEPTION;
 
-import com.jeju.nanaland.domain.common.entity.DayOfWeek;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.entity.Status;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.common.data.AddressTag;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.DayOfWeek;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
+import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalThumbnail;
@@ -22,6 +30,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,29 +42,65 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FestivalService {
+public class FestivalService implements PostService {
 
   private final FestivalRepository festivalRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
+  private final ImageFileService imageFileService;
 
+  /**
+   * Festival 객체 조회
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @return Post
+   * @throws NotFoundException 게시물 id에 해당하는 축제 게시물이 존재하지 않는 경우
+   */
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return festivalRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+  }
+
+  /**
+   * 게시물 preview 정보 조회 - (postId, category, imageFile, title)
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @param language 언어 정보
+   * @return PostPreviewDto
+   * @throws NotFoundException (게시물 id, langugae)를 가진 축제 정보가 존재하지 않는 경우
+   */
+  @Override
+  public PostPreviewDto getPostPreviewDto(Long postId, Category category, Language language) {
+    PostPreviewDto postPreviewDto = festivalRepository.findPostPreviewDto(postId, language);
+    Optional.ofNullable(postPreviewDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+
+    postPreviewDto.setCategory(PostCategory.FESTIVAL.toString());
+    return postPreviewDto;
+  }
+
+  // 종료된 축제 리스트 조회
   public FestivalThumbnailDto getPastFestivalList(MemberInfoDto memberInfoDto, int page, int size,
-      List<String> addressFilterList) {
+      List<AddressTag> addressTags) {
     Pageable pageable = PageRequest.of(page, size);
 
     // compositeDto로 종료된 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByOnGoing(
-        memberInfoDto.getLanguage().getLocale(), pageable, false, addressFilterList);
+        memberInfoDto.getLanguage(), pageable, false, addressTags);
 
-    List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
+        memberInfoDto.getMember());
 
     return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
         favoriteIds);
   }
 
+  // 이번 달 축제 리스트 조회
   public FestivalThumbnailDto getThisMonthFestivalList(MemberInfoDto memberInfoDto, int page,
-      int size,
-      List<String> addressFilterList, LocalDate startDate, LocalDate endDate) {
+      int size, List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate) {
     Pageable pageable = PageRequest.of(page, size);
     if (startDate == null && endDate == null) {
       // 오늘 날짜 가져오기
@@ -63,21 +108,22 @@ public class FestivalService {
       startDate = now;
       endDate = now;
     } else {
-      assert startDate != null; // null 검사하기
-      if (startDate.isAfter(endDate)) {
+      if (startDate != null && startDate.isAfter(endDate)) {
         throw new BadRequestException(ErrorCode.START_DATE_AFTER_END_DATE.getMessage());
       }
     }
     // compositeDto로 기간에 맞는 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoByMonth(
-        memberInfoDto.getLanguage().getLocale(), pageable, startDate, endDate, addressFilterList);
+        memberInfoDto.getLanguage(), pageable, startDate, endDate, addressTags);
 
-    List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
+        memberInfoDto.getMember());
 
     return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
         favoriteIds);
   }
 
+  // 계절별 축제 리스트 조회
   public FestivalThumbnailDto getSeasonFestivalList(MemberInfoDto memberInfoDto, int page, int size,
       String season) {
     Pageable pageable = PageRequest.of(page, size);
@@ -87,19 +133,21 @@ public class FestivalService {
 
     // compositeDto로 계절별 festival 가져오기
     Page<FestivalCompositeDto> festivalCompositeDtoList = festivalRepository.searchCompositeDtoBySeason(
-        memberInfoDto.getLanguage().getLocale(), pageable, seasonKoreanValue);
+        memberInfoDto.getLanguage(), pageable, seasonKoreanValue);
 
-    List<Long> favoriteIds = getMemberFavoriteFestivalIds(memberInfoDto);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(
+        memberInfoDto.getMember());
 
     return getFestivalThumbnailDtoByCompositeDto(memberInfoDto, festivalCompositeDtoList,
         favoriteIds);
 
   }
 
+  // 축제 상세 정보 조회
   public FestivalDetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long id,
       boolean isSearch) {
     FestivalCompositeDto compositeDtoById = festivalRepository.findCompositeDtoById(id,
-        memberInfoDto.getLanguage().getLocale());
+        memberInfoDto.getLanguage());
 
     if (compositeDtoById == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
@@ -109,12 +157,11 @@ public class FestivalService {
       searchService.updateSearchVolumeV1(FESTIVAL, id);
     }
 
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL,
-        id);
+    boolean isPostInFavorite =
+        memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL, id);
 
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())
-        .originUrl(compositeDtoById.getOriginUrl())
         .addressTag(compositeDtoById.getAddressTag())
         .title(compositeDtoById.getTitle())
         .content(compositeDtoById.getContent())
@@ -127,6 +174,8 @@ public class FestivalService {
             compositeDtoById.getStartDate(),
             compositeDtoById.getEndDate()))
         .isFavorite(isPostInFavorite)
+        .images(imageFileService.getPostImageFilesByPostIdIncludeFirstImage(id,
+            compositeDtoById.getFirstImage()))
         .build();
 
 
@@ -144,6 +193,7 @@ public class FestivalService {
     }
   }
 
+  // 매년 2년이 지난 축제는 INACTIVE 처리
   @Transactional
   @Scheduled(cron = "0 0 0 1 1 *") // 매년 1월1일
   protected void updateActiveToInActive() {
@@ -155,6 +205,7 @@ public class FestivalService {
     }
   }
 
+  // FestivalThumbnailDto 생성
   private FestivalThumbnailDto getFestivalThumbnailDtoByCompositeDto(
       MemberInfoDto memberInfoDto, Page<FestivalCompositeDto> festivalCompositeDtoList,
       List<Long> favoriteIds) {
@@ -164,11 +215,12 @@ public class FestivalService {
       // LocalDate 타입의 startDate, endDate를 24. 04. 01 ~ 24. 05. 13형태로 formatting
       String period = formatLocalDateToStringWithoutDayOfWeek(memberInfoDto, dto.getStartDate(),
           dto.getEndDate());
+
       thumbnails.add(
           FestivalThumbnail.builder()
               .id(dto.getId())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
-              .thumbnailUrl(dto.getThumbnailUrl())
               .period(period)
               .addressTag(dto.getAddressTag())
               .isFavorite(favoriteIds.contains(dto.getId()))
@@ -181,7 +233,7 @@ public class FestivalService {
         .build();
   }
 
-  // 2024.04.01(월) ~ 2024.05.13(화)
+  // 2024.04.01(월) ~ 2024.05.13(화) 형태로 formatting
   private String formatLocalDateToStringWithDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
     String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
@@ -189,16 +241,16 @@ public class FestivalService {
     String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern(nationalDateFormat));
     String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern(nationalDateFormat));
 
-// LocalDate 타입의 startDate, endDate를 04.1(월) ~ 05.13(수)형태로 formatting
-    String startDayOfWeek = getDayOfWeekByLocale(memberInfoDto.getLanguage().getLocale(),
+    // LocalDate 타입의 startDate, endDate를 04.1(월) ~ 05.13(수)형태로 formatting
+    String startDayOfWeek = getDayOfWeekByLocale(memberInfoDto.getLanguage(),
         startDate);
-    String endDayOfWeek = getDayOfWeekByLocale(memberInfoDto.getLanguage().getLocale(), endDate);
+    String endDayOfWeek = getDayOfWeekByLocale(memberInfoDto.getLanguage(), endDate);
     return formattedStartDate + "(" + startDayOfWeek + ")" + " ~ " + formattedEndDate + "("
         + endDayOfWeek
         + ")";
   }
 
-  // 24.04.01 ~ 24.05.13
+  // 24.04.01 ~ 24.05.13 형태로 formatting
   private String formatLocalDateToStringWithoutDayOfWeek(MemberInfoDto memberInfoDto,
       LocalDate startDate, LocalDate endDate) {
 
@@ -211,24 +263,22 @@ public class FestivalService {
     String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern(finalDateFormat));
     String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern(finalDateFormat));
 
-// LocalDate 타입의 startDate, endDate를 24.04.1 ~ 24.05.13 형태로 formatting
+    // LocalDate 타입의 startDate, endDate를 24.04.1 ~ 24.05.13 형태로 formatting
     return formattedStartDate + " ~ " + formattedEndDate;
   }
 
+  // 계절 분류
   private String seasonValueChangeToKorean(String season) {
     return switch (season) {
       case "spring" -> "봄";
       case "summer" -> "여름";
       case "autumn" -> "가을";
       case "winter" -> "겨울";
-      default -> throw new BadRequestException("계절 정보 오류");
+      default -> throw new BadRequestException(REQUEST_VALIDATION_EXCEPTION.getMessage());
     };
   }
 
-  private List<Long> getMemberFavoriteFestivalIds(MemberInfoDto memberInfoDto) {
-    return favoriteService.getMemberFavoritePostIds(memberInfoDto.getMember(), FESTIVAL);
-  }
-
+  // 요일을 DayOfWeek 타입으로 변환
   private DayOfWeek getIntDayOfWeek(LocalDate date) {
     /*
       getDayOfWeek().getValue()는 월요일이 1부터 시작,
@@ -237,7 +287,8 @@ public class FestivalService {
     return DayOfWeek.values()[date.getDayOfWeek().getValue() - 1];
   }
 
-  public String getDayOfWeekByLocale(Locale locale, LocalDate date) {
+  // 요일을 언어별 값으로 변환
+  public String getDayOfWeekByLocale(Language locale, LocalDate date) {
     return getIntDayOfWeek(date).getValueByLocale(locale);
   }
 }

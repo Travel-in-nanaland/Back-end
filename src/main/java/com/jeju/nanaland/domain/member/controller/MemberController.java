@@ -9,18 +9,12 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUC
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_CONSENT_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_PROFILE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.VALID_NICKNAME_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ConsentUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.JoinDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LanguageUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.LoginDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.ProfileUpdateDto;
-import com.jeju.nanaland.domain.member.dto.MemberRequest.WithdrawalDto;
+import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.ProfileDto;
-import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
 import com.jeju.nanaland.domain.member.service.MemberConsentService;
 import com.jeju.nanaland.domain.member.service.MemberLoginService;
 import com.jeju.nanaland.domain.member.service.MemberProfileService;
@@ -36,7 +30,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +45,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,7 +73,7 @@ public class MemberController {
   @PostMapping(value = "/join",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<JwtDto> join(
-      @RequestPart(value = "reqDto") @Valid JoinDto joinDto,
+      @RequestPart(value = "reqDto") @Valid MemberRequest.JoinDto joinDto,
       @RequestPart(required = false) MultipartFile multipartFile) {
     JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
     return BaseResponse.success(JOIN_SUCCESS, jwtDto);
@@ -88,7 +86,7 @@ public class MemberController {
       @ApiResponse(responseCode = "404", description = "회원 가입이 필요한 경우", content = @Content)
   })
   @PostMapping("/login")
-  public BaseResponse<JwtDto> login(@RequestBody @Valid LoginDto loginDto) {
+  public BaseResponse<JwtDto> login(@RequestBody @Valid MemberRequest.LoginDto loginDto) {
     JwtDto jwtDto = memberLoginService.login(loginDto);
     return BaseResponse.success(LOGIN_SUCCESS, jwtDto);
   }
@@ -101,12 +99,13 @@ public class MemberController {
   @PostMapping("/logout")
   public BaseResponse<Null> logout(@AuthMember MemberInfoDto memberInfoDto,
       @Parameter(name = "accessToken", hidden = true)
-      @RequestHeader("Authorization") String accessToken) {
-    memberLoginService.logout(memberInfoDto, accessToken);
+      @RequestHeader("Authorization") String accessToken,
+      @RequestParam(required = false) String fcmToken) {
+    memberLoginService.logout(memberInfoDto, accessToken, fcmToken);
     return BaseResponse.success(SuccessCode.LOGOUT_SUCCESS);
   }
 
-  @Operation(summary = "AccessToken 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
+  @Operation(summary = "JWT 재발급", description = "RefreshToken으로 AccessToken이 재발급됩니다."
       + "header에 AccessToken이 아닌 RefreshToken을 담아 요청해주세요.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
@@ -116,8 +115,9 @@ public class MemberController {
   @GetMapping("/reissue")
   public BaseResponse<JwtDto> reissue(
       @Parameter(name = "refreshToken", hidden = true)
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-    JwtDto jwtDto = memberLoginService.reissue(refreshToken);
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken,
+      @RequestParam(required = false) String fcmToken) {
+    JwtDto jwtDto = memberLoginService.reissue(refreshToken, fcmToken);
     return BaseResponse.success(REISSUE_TOKEN_SUCCESS, jwtDto);
   }
 
@@ -152,10 +152,11 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommended")
-  public BaseResponse<List<RecommendPostDto>> getRecommendedPosts(
+  public BaseResponse<List<MemberResponse.RecommendPostDto>> getRecommendPostsByType(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRecommendResultPostsByType(memberInfoDto);
+    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
+        memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
@@ -168,10 +169,11 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/recommended/random")
-  public BaseResponse<List<RecommendPostDto>> getRandomRecommendedPosts(
+  public BaseResponse<List<MemberResponse.RecommendPostDto>> getRandomRecommendedPosts(
       @AuthMember MemberInfoDto memberInfoDto) {
 
-    List<RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(memberInfoDto);
+    List<MemberResponse.RecommendPostDto> result = memberTypeService.getRandomRecommendedPosts(
+        memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
@@ -185,7 +187,7 @@ public class MemberController {
   @PostMapping("/withdrawal")
   public BaseResponse<Null> withdrawal(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid WithdrawalDto withdrawalType) {
+      @RequestBody @Valid MemberRequest.WithdrawalDto withdrawalType) {
     memberLoginService.withdrawal(memberInfoDto, withdrawalType);
     return BaseResponse.success(WITHDRAWAL_SUCCESS);
   }
@@ -203,7 +205,7 @@ public class MemberController {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart @Valid ProfileUpdateDto reqDto,
+      @RequestPart @Valid MemberRequest.ProfileUpdateDto reqDto,
       @RequestPart(required = false) MultipartFile multipartFile) {
 
     memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile);
@@ -212,16 +214,18 @@ public class MemberController {
 
   @Operation(
       summary = "유저 프로필 조회",
-      description = "유저 이메일, provider, 프로필 썸네일 이미지, 닉네임, 설명, 레벨, 해시태그 리스트 반환")
+      description = "유저 이메일, provider, 프로필 썸네일 이미지, 닉네임, 설명, 해시태그 리스트 반환."
+          + "id를 입력하지 않으면 내 프로필이 조회됩니다.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @GetMapping("/profile")
-  public BaseResponse<ProfileDto> getMemberProfile(
-      @AuthMember MemberInfoDto memberInfoDto) {
+  public BaseResponse<MemberResponse.ProfileDto> getMemberProfile(
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(required = false) Long id) {
 
-    ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto);
+    MemberResponse.ProfileDto profileDto = memberProfileService.getMemberProfile(memberInfoDto, id);
     return BaseResponse.success(GET_MEMBER_PROFILE_SUCCESS, profileDto);
   }
 
@@ -234,7 +238,7 @@ public class MemberController {
   @PostMapping("/language")
   public BaseResponse<Null> updateLanguage(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid LanguageUpdateDto languageUpdateDto) {
+      @RequestBody @Valid MemberRequest.LanguageUpdateDto languageUpdateDto) {
     memberProfileService.updateLanguage(memberInfoDto, languageUpdateDto);
     return BaseResponse.success(UPDATE_LANGUAGE_SUCCESS);
   }
@@ -246,12 +250,12 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
   })
   @PostMapping("/consent")
-  public BaseResponse<Null> updateMemberConsent(
+  public BaseResponse<Boolean> updateMemberConsent(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestBody @Valid ConsentUpdateDto consentUpdateDto
+      @RequestBody @Valid MemberRequest.ConsentUpdateDto consentUpdateDto
   ) {
-    memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
-    return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS);
+    boolean consent = memberConsentService.updateMemberConsent(memberInfoDto, consentUpdateDto);
+    return BaseResponse.success(UPDATE_MEMBER_CONSENT_SUCCESS, consent);
   }
 
   @Operation(
@@ -268,5 +272,30 @@ public class MemberController {
   ) {
     memberLoginService.forceWithdrawal(accessToken);
     return BaseResponse.success(WITHDRAWAL_SUCCESS);
+  }
+
+  @Operation(
+      summary = "닉네임 중복 확인")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "필요한 입력이 없거나 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "409", description = "닉네임이 중복되는 경우", content = @Content)
+  })
+  @GetMapping("/validateNickname")
+  public BaseResponse<Void> validateNickname(
+      @Pattern(
+          regexp = "^[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF][a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF ]{0,10}[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]$",
+          message = "닉네임 형식이 올바르지 않습니다.")
+      @NotBlank
+      @Size(min = 2, max = 12, message = "닉네임은 2자 이상 12자 이하여야 합니다")
+      @RequestParam String nickname,
+      @RequestParam(required = false) Long memberId) {
+    if (memberId == null) {
+      memberLoginService.validateNickname(nickname);
+    } else {
+      memberProfileService.validateNickname(nickname, memberId);
+    }
+    return BaseResponse.success(VALID_NICKNAME_SUCCESS);
   }
 }

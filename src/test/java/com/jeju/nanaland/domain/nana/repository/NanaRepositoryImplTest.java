@@ -1,16 +1,14 @@
 package com.jeju.nanaland.domain.nana.repository;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
+import com.jeju.nanaland.domain.common.entity.PostImageFile;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
-import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -32,30 +30,17 @@ class NanaRepositoryImplTest {
   Nana nana1, nana2, nana3, nana4, nana5;
   NanaTitle nanaTitle1, nanaTitle2, nanaTitle3, nanaTitle4, nanaTitle5;
   NanaContent nanaContent1, nanaContent2, nanaContent3;
-  @PersistenceContext
+  @Autowired
   private EntityManager em;
   @Autowired
-  private NanaRepositoryImpl nanarepositoryImpl;
-  @Autowired
-  private NanaRepository nanaRepository;
-  @Autowired
-  private NanaTitleRepository nanaTitleRepository;
-  @Autowired
-  private NanaContentRepository nanaContentRepository;
+  private NanaRepositoryImpl nanaRepositoryImpl;
+
 
   // nana 5개, 각 nana에 nanaTitle 1개(nana 1개당 nanaTitle 1개씩 -korean만),nanaTitle1에 nanaContent 3개
   private void setNana() {
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
-    language2 = Language.builder()
-        .locale(Locale.CHINESE)
-        .dateFormat("yyyy-MM-dd")
-        .build();
-    em.persist(language2);
+    language2 = Language.CHINESE;
 
     imageFile1 = ImageFile.builder()
         .originUrl("originUrl1")
@@ -89,41 +74,45 @@ class NanaRepositoryImplTest {
 
     nana1 = Nana.builder()
         .version("ver1")
-        .nanaTitleImageFile(imageFile1)
+        .firstImageFile(imageFile1)
+        .priority(0L)
         .build();
-    nanaRepository.save(nana1);
+    em.persist(nana1);
 
     nana2 = Nana.builder()
         .version("ver2")
-        .nanaTitleImageFile(imageFile2)
+        .firstImageFile(imageFile2)
+        .priority(0L)
         .build();
-    nanaRepository.save(nana2);
+    em.persist(nana2);
 
     nana3 = Nana.builder()
         .version("ver3")
-        .nanaTitleImageFile(imageFile3)
+        .firstImageFile(imageFile3)
+        .priority(0L)
         .build();
-    nanaRepository.save(nana3);
+    em.persist(nana3);
 
     nana4 = Nana.builder()
         .version("ver4")
-        .nanaTitleImageFile(imageFile4)
+        .firstImageFile(imageFile4)
+        .priority(0L)
         .build();
-    nanaRepository.save(nana4);
+    em.persist(nana4);
 
     nana5 = Nana.builder()
         .version("ver5")
-        .nanaTitleImageFile(imageFile5)
+        .firstImageFile(imageFile5)
+        .priority(0L)
         .build();
-    nanaRepository.save(nana5);
+    em.persist(nana5);
 
     nanaTitle1 = NanaTitle.builder()
         .notice("notice1")
-
         .language(language)
         .nana(nana1)
         .build();
-    nanaTitleRepository.save(nanaTitle1);
+    em.persist(nanaTitle1);
 
     //nana3=> active = true / language2=> chinese
     nanaTitle2 = NanaTitle.builder()
@@ -132,103 +121,101 @@ class NanaRepositoryImplTest {
         .language(language)
         .nana(nana2)
         .build();
-    nanaTitleRepository.save(nanaTitle2);
+    em.persist(nanaTitle2);
 
     nanaTitle3 = NanaTitle.builder()
         .notice("notice3")
         .language(language)
         .nana(nana3)
         .build();
-    nanaTitleRepository.save(nanaTitle3);
+    em.persist(nanaTitle3);
 
     nanaTitle4 = NanaTitle.builder()
         .notice("notice4")
         .language(language)
         .nana(nana4)
         .build();
-    nanaTitleRepository.save(nanaTitle4);
+    em.persist(nanaTitle4);
     nanaTitle5 = NanaTitle.builder()
         .notice("notice5")
         .language(language)
         .nana(nana5)
         .build();
-    nanaTitleRepository.save(nanaTitle5);
+    em.persist(nanaTitle5);
 
     nanaContent1 = NanaContent.builder()
         .subTitle("subtitle1")
         .nanaTitle(nanaTitle1)
         .content("content")
-        .number(1)
+        .priority(1L)
         .title("title")
         .build();
-    nanaContentRepository.save(nanaContent1);
+    em.persist(nanaContent1);
 
     nanaContent2 = NanaContent.builder()
         .subTitle("subtitle2")
         .nanaTitle(nanaTitle1)
         .content("content2")
-        .number(2)
+        .priority(2L)
         .title("title2")
         .build();
-    nanaContentRepository.save(nanaContent2);
+    em.persist(nanaContent2);
 
     nanaContent3 = NanaContent.builder()
         .subTitle("subtitle3")
         .nanaTitle(nanaTitle1)
         .content("content3")
-        .number(2)
+        .priority(3L)
         .title("title3")
         .build();
-    nanaContentRepository.save(nanaContent3);
+    em.persist(nanaContent3);
 
-    NanaContentImage nanaContentImage1 = NanaContentImage.builder()
+    PostImageFile postImageFile1 = PostImageFile.builder()
+        .post(nanaContent1)
         .imageFile(imageFile1)
-        .nana(nana1)
-        .number(1)
         .build();
+    em.persist(postImageFile1);
 
-    NanaContentImage nanaContentImage2 = NanaContentImage.builder()
+    PostImageFile postImageFile2 = PostImageFile.builder()
+        .post(nanaContent1)
         .imageFile(imageFile2)
-        .nana(nana1)
-        .number(2)
         .build();
+    em.persist(postImageFile2);
 
-    NanaContentImage nanaContentImage3 = NanaContentImage.builder()
+    PostImageFile postImageFile3 = PostImageFile.builder()
+        .post(nanaContent1)
         .imageFile(imageFile3)
-        .nana(nana1)
-        .number(3)
         .build();
+    em.persist(postImageFile3);
 
-    nana1.updateNanaContentImageList(
-        List.of(nanaContentImage1, nanaContentImage2, nanaContentImage3));
   }
 
   @Test
   @DisplayName("나나's pick 베너 조회 시 최근에 추가된 4개의 나나가 나온다.")
-  void findRecentNanaThumbnailDto() {
+  void findTop4PreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    List<NanaThumbnail> recentNanaThumbnailDto = nanarepositoryImpl.findRecentNanaThumbnailDto(
-        Locale.KOREAN);
+    List<PreviewDto> recentPreviewDtoDto = nanaRepositoryImpl.findTop4PreviewDtoOrderByCreatedAt(
+        Language.KOREAN);
 
     // Then
-    Assertions.assertThat(recentNanaThumbnailDto.get(0).getId())
+    Assertions.assertThat(recentPreviewDtoDto.get(0).getId())
         .isEqualTo(nana5.getId());
   }
 
   @Test
   @DisplayName("나나's pick 전체 리스트 조회 시 최신순으로 보여진다.")
-  void findAllNanaThumbnailDto() {
+  void findAllPreviewDtoOrderByCreatedAt() {
     // Given
     setNana();
 
     // When
-    Page<NanaThumbnail> allNanaThumbnailDto = nanarepositoryImpl.findAllNanaThumbnailDto(
-        Locale.KOREAN,
+    Page<PreviewDto> allNanaThumbnailDto = nanaRepositoryImpl.findAllPreviewDtoOrderByCreatedAt(
+        Language.KOREAN,
         PageRequest.of(0, 12));
-    List<NanaThumbnail> result = allNanaThumbnailDto.getContent();
+    List<PreviewDto> result = allNanaThumbnailDto.getContent();
 
     // Then
     Assertions.assertThat(result.get(0).getId()).isEqualTo(nana5.getId());
@@ -241,34 +228,33 @@ class NanaRepositoryImplTest {
     setNana();
     System.out.println("nanaTitle2.getCreatedAt " + nanaTitle2.getCreatedAt());
     // When
-    Page<NanaThumbnail> keyword = nanarepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
-        Locale.KOREAN, PageRequest.of(0, 12));
-    List<NanaThumbnail> content = keyword.getContent();
-    for (NanaThumbnail nanaThumbnail : content) {
-      System.out.println("nanaThumbnail = " + nanaThumbnail.toString());
+    Page<PreviewDto> keyword = nanaRepositoryImpl.searchNanaThumbnailDtoByKeyword("keyword",
+        Language.KOREAN, PageRequest.of(0, 12));
+    List<PreviewDto> content = keyword.getContent();
+    for (PreviewDto previewDto : content) {
+      System.out.println("nanaThumbnail = " + previewDto.toString());
     }
 
     // Then
     boolean isSearched = false;
-    for (NanaThumbnail nanaThumbnail : content) {
-      if (nanaThumbnail.getSubHeading().equals("keyword")) {
+    for (PreviewDto previewDto : content) {
+      if (previewDto.getHeading().equals("keyword")) {
         isSearched = true;
       }
     }
     Assertions.assertThat(isSearched).isTrue();
   }
 
-  /**
-   * 나중에 TestUtil merge 하면 복구
-   */
 //  @Test
 //  void findNanaThumbnailPostDto() {
 //    // Given
 //    setNana();
 //
 //    // When
-//    NanaThumbnailPost nanaThumbnailPostDto = nanarepositoryImpl.findNanaThumbnailPostDto(
-//        nanaTitle3.getId(), Locale.KOREAN);
+//    NanaThumbnailPost nanaThumbnailPostDto = nanaRepositoryImpl.findNanaThumbnailPostDto(
+//        nanaTitle3.getId(), Language.KOREAN);
+//    System.out.println("nanaTitle3 = " + nanaTitle3.getId());
+//    System.out.println("nanaThumbnailPostDto.toString() = " + nanaThumbnailPostDto.toString());
 //
 //    // Then
 //    Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());

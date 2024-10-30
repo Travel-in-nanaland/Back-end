@@ -1,15 +1,19 @@
 package com.jeju.nanaland.domain.nature.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
-import static com.jeju.nanaland.domain.common.entity.QLanguage.language;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Locale;
+import com.jeju.nanaland.domain.common.data.AddressTag;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.QNatureResponse_PreviewDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -25,15 +29,22 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
+  /**
+   * 7대 자연 정보 조회
+   *
+   * @param natureId 7대자연 ID
+   * @param language 언어
+   * @return 7대 자연 정보
+   */
   @Override
-  public NatureCompositeDto findCompositeDtoById(Long id, Locale locale) {
+  public NatureCompositeDto findNatureCompositeDto(Long natureId, Language language) {
     return queryFactory
         .select(new QNatureCompositeDto(
             nature.id,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nature.contact,
-            language.locale,
+            natureTrans.language,
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
@@ -45,19 +56,27 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.fee
         ))
         .from(nature)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .where(nature.id.eq(id)
-            .and(natureTrans.language.locale.eq(locale))
+        .where(nature.id.eq(natureId)
+            .and(natureTrans.language.eq(language))
         )
         .fetchOne();
   }
 
+  /**
+   * 7대 자연 검색 페이징 조회
+   *
+   * @param keyword  검색어
+   * @param language 언어
+   * @param pageable 페이징 정보
+   * @return 7대 자연 검색 페이징 정보
+   */
   @Override
-  public Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Locale locale,
+  public Page<NatureCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable) {
 
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, locale);
+    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
 
     List<NatureCompositeDto> resultDto = queryFactory
         .select(new QNatureCompositeDto(
@@ -65,7 +84,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             nature.contact,
-            natureTrans.language.locale,
+            natureTrans.language,
             natureTrans.title,
             natureTrans.content,
             natureTrans.address,
@@ -77,9 +96,9 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
             natureTrans.fee
         ))
         .from(nature)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .on(natureTrans.language.locale.eq(locale))
+        .on(natureTrans.language.eq(language))
         .where(natureTrans.title.contains(keyword)
             .or(natureTrans.addressTag.contains(keyword))
             .or(natureTrans.content.contains(keyword))
@@ -92,9 +111,9 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(nature.countDistinct())
         .from(nature)
-        .leftJoin(nature.imageFile, imageFile)
+        .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
-        .on(natureTrans.language.locale.eq(locale))
+        .on(natureTrans.language.eq(language))
         .where(natureTrans.title.contains(keyword)
             .or(natureTrans.addressTag.contains(keyword))
             .or(natureTrans.content.contains(keyword))
@@ -103,33 +122,34 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
+  /**
+   * 7대 자연 프리뷰 페이징 조회
+   *
+   * @param language       언어
+   * @param addressTags    지역명
+   * @param keyword        키워드
+   * @param pageable       페이징 정보
+   * @return 7대 자연 검색 페이징 정보
+   */
   @Override
-  public Page<NatureCompositeDto> findNatureThumbnails(Locale locale,
-      List<String> addressFilterList, String keyword, Pageable pageable) {
-    List<NatureCompositeDto> resultDto = queryFactory
-        .select(new QNatureCompositeDto(
-            nature.id,
-            imageFile.originUrl,
-            imageFile.thumbnailUrl,
-            nature.contact,
-            language.locale,
-            natureTrans.title,
-            natureTrans.content,
-            natureTrans.address,
-            natureTrans.addressTag,
-            natureTrans.intro,
-            natureTrans.details,
-            natureTrans.time,
-            natureTrans.amenity,
-            natureTrans.fee
-        ))
+  public Page<NatureResponse.PreviewDto> findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(Language language,
+      List<AddressTag> addressTags, String keyword, Pageable pageable) {
+    List<NatureResponse.PreviewDto> resultDto = queryFactory
+        .select(new QNatureResponse_PreviewDto(
+                nature.id,
+                natureTrans.title,
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                natureTrans.addressTag
+            )
+        )
         .from(nature)
-        .leftJoin(nature.natureTrans, natureTrans)
-        .leftJoin(nature.imageFile, imageFile)
-        .where(natureTrans.language.locale.eq(locale)
-            .and(addressTagCondition(addressFilterList))
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(natureTrans.language.eq(language)
+            .and(addressTagCondition(language, addressTags))
             .and(natureTrans.title.contains(keyword)))
-        .orderBy(nature.createdAt.desc())
+        .orderBy(nature.priority.asc(), nature.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -137,36 +157,81 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(nature.count())
         .from(nature)
-        .leftJoin(nature.natureTrans, natureTrans)
-        .where(natureTrans.language.locale.eq(locale)
-            .and(addressTagCondition(addressFilterList))
+        .innerJoin(nature.natureTrans, natureTrans)
+        .where(natureTrans.language.eq(language)
+            .and(addressTagCondition(language, addressTags))
             .and(natureTrans.title.contains(keyword)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
-  private BooleanExpression addressTagCondition(List<String> addressFilterList) {
-    if (addressFilterList.isEmpty()) {
+  /**
+   * 7대 자연 프리뷰 정보 조회
+   *
+   * @param natureId 7대자연 ID
+   * @param language 언어
+   * @return 7대 자연 프리뷰 정보
+   */
+  @Override
+  public PostPreviewDto findPostPreviewDto(Long natureId, Language language) {
+    return queryFactory
+        .select(new QPostPreviewDto(
+            nature.id,
+            natureTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(nature)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(nature.id.eq(natureId),
+            natureTrans.language.eq(language))
+        .fetchOne();
+  }
+
+  /**
+   * 지역명 필터 여부에 따른 조건문 설정
+   *
+   * @param addressTags 지역명
+   * @return BooleanExpression
+   */
+  private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
+    if (addressTags.isEmpty()) {
       return null;
     } else {
-      return natureTrans.addressTag.in(addressFilterList);
+      List<String> addressTagFilters = addressTags.stream()
+          .map(address -> address.getValueByLocale(language)).toList();
+      return natureTrans.addressTag.in(addressTagFilters);
     }
   }
 
-  private List<Long> getIdListContainAllHashtags(String keyword, Locale locale) {
+  /**
+   * 해시태그가 포함된 7대 자연 ID 리스트 조회
+   *
+   * @param keyword  키워드
+   * @param language 언어
+   * @return 7대 자연 ID 리스트
+   */
+  private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(nature.id)
         .from(nature)
         .leftJoin(hashtag)
-        .on(hashtag.postId.eq(nature.id)
-            .and(hashtag.category.content.eq(CategoryContent.NATURE))
-            .and(hashtag.language.locale.eq(locale)))
+        .on(hashtag.post.id.eq(nature.id)
+            .and(hashtag.category.eq(Category.NATURE))
+            .and(hashtag.language.eq(language)))
         .where(hashtag.keyword.content.in(splitKeyword(keyword)))
         .groupBy(nature.id)
-        .having(nature.id.count().eq(splitKeyword(keyword).stream().count()))
+        .having(nature.id.count().eq((long) splitKeyword(keyword).size()))
         .fetch();
   }
 
+  /**
+   * 키워드 분리
+   *
+   * @param keyword 키워드
+   * @return 분리된 키워드 리스트
+   */
   private List<String> splitKeyword(String keyword) {
     String[] tokens = keyword.split("\\s+");
     List<String> tokenList = new ArrayList<>();

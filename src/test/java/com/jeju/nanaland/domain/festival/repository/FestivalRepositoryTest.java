@@ -1,9 +1,9 @@
 package com.jeju.nanaland.domain.festival.repository;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.AddressTag;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(TestConfig.class)
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class FestivalRepositoryTest {
 
   @Autowired
@@ -39,7 +40,7 @@ class FestivalRepositoryTest {
   @DisplayName("축제 검색")
   void searchFestivalTest() {
     Pageable pageable = PageRequest.of(0, 12);
-    festivalRepository.searchCompositeDtoByKeyword("쇼핑", Locale.KOREAN, pageable);
+    festivalRepository.searchCompositeDtoByKeyword("쇼핑", Language.KOREAN, pageable);
   }
 
   @Test
@@ -50,18 +51,18 @@ class FestivalRepositoryTest {
 
     // When
     Page<FestivalCompositeDto> festivalCompositeDtoPage = festivalRepository.searchCompositeDtoByOnGoing(
-        Locale.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>());
+        Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>());
 
     List<FestivalCompositeDto> onGoingFestivalWithoutAddressFilter = festivalCompositeDtoPage.getContent();
 
     List<FestivalCompositeDto> onGoingFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Locale.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of("제주시"))).getContent();
+        Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of(AddressTag.JEJU))).getContent();
 
     List<FestivalCompositeDto> finishFestivalWithoutAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Locale.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>()).getContent();
+        Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>()).getContent();
 
     List<FestivalCompositeDto> finishFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Locale.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of("한림"))).getContent();
+        Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of(AddressTag.HALLIM))).getContent();
 
     // Then
     Assertions.assertThat(festivalCompositeDtoPage.getTotalElements()).isEqualTo(3);
@@ -82,14 +83,14 @@ class FestivalRepositoryTest {
 
     // When
     Page<FestivalCompositeDto> springFestivalPage = festivalRepository.searchCompositeDtoBySeason(
-        Locale.KOREAN, PageRequest.of(0, 5), "봄");
+        Language.KOREAN, PageRequest.of(0, 5), "봄");
     List<FestivalCompositeDto> springFestival = springFestivalPage.getContent();
     List<FestivalCompositeDto> summerFestival = festivalRepository.searchCompositeDtoBySeason(
-        Locale.KOREAN, PageRequest.of(0, 5), "여름").getContent();
+        Language.KOREAN, PageRequest.of(0, 5), "여름").getContent();
     List<FestivalCompositeDto> autumnFestival = festivalRepository.searchCompositeDtoBySeason(
-        Locale.KOREAN, PageRequest.of(0, 5), "가을").getContent();
+        Language.KOREAN, PageRequest.of(0, 5), "가을").getContent();
     List<FestivalCompositeDto> winterFestival = festivalRepository.searchCompositeDtoBySeason(
-        Locale.KOREAN, PageRequest.of(0, 5), "겨울").getContent();
+        Language.KOREAN, PageRequest.of(0, 5), "겨울").getContent();
 
     // Then
     Assertions.assertThat(springFestivalPage.getTotalElements()).isEqualTo(3);
@@ -109,11 +110,11 @@ class FestivalRepositoryTest {
 
     // When
     Page<FestivalCompositeDto> allFestivalPage = festivalRepository.searchCompositeDtoByMonth(
-        Locale.KOREAN, PageRequest.of(0, 5),
+        Language.KOREAN, PageRequest.of(0, 5),
         LocalDate.of(1999, 1, 1), LocalDate.of(2040, 1, 1), new ArrayList<>());
     List<FestivalCompositeDto> allFestival = allFestivalPage.getContent();
     List<FestivalCompositeDto> festivalByDate = festivalRepository.searchCompositeDtoByMonth(
-        Locale.KOREAN, PageRequest.of(0, 5),
+        Language.KOREAN, PageRequest.of(0, 5),
         LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 13), new ArrayList<>()).getContent();
 
     // Then
@@ -161,54 +162,55 @@ class FestivalRepositoryTest {
         .build();
     em.persist(imageFile5);
 
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-MM-dd")
-        .build();
-    em.persist(language);
+    language = Language.KOREAN;
 
     festival1 = Festival.builder()
-        .imageFile(imageFile1)
+        .firstImageFile(imageFile1)
         .onGoing(true)
         .startDate(LocalDate.of(2024, 3, 10))
         .endDate(LocalDate.of(2028, 3, 1))
         .season("봄,여름,가을,겨울")
+        .priority(0L)
         .build();
     em.persist(festival1);
 
     festival2 = Festival.builder()
-        .imageFile(imageFile2)
+        .firstImageFile(imageFile2)
         .onGoing(true)
         .startDate(LocalDate.of(2024, 3, 10))
         .endDate(LocalDate.of(2028, 3, 2))
         .season("가을")
+        .priority(0L)
         .build();
     em.persist(festival2);
 
     festival3 = Festival.builder()
-        .imageFile(imageFile3)
+        .firstImageFile(imageFile3)
         .onGoing(true)
         .startDate(LocalDate.of(2024, 3, 10))
         .endDate(LocalDate.of(2026, 3, 3))
         .season("겨울")
+        .priority(0L)
         .build();
     em.persist(festival3);
 
     festival4 = Festival.builder()
-        .imageFile(imageFile4)
+        .firstImageFile(imageFile4)
         .onGoing(false)
         .startDate(LocalDate.of(2022, 3, 10))
         .endDate(LocalDate.of(2023, 3, 4))
         .season("봄,여름")
+        .priority(0L)
         .build();
     em.persist(festival4);
 
     festival5 = Festival.builder()
-        .imageFile(imageFile5)
+        .firstImageFile(imageFile5)
         .onGoing(false)
         .startDate(LocalDate.of(2000, 4, 10))
         .endDate(LocalDate.of(2002, 3, 5))
         .season("봄,겨울")
+        .priority(0L)
         .build();
     em.persist(festival5);
 
@@ -251,7 +253,6 @@ class FestivalRepositoryTest {
         .addressTag("한림")
         .build();
     em.persist(festivalTrans5);
-
 
   }
 }

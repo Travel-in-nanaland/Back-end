@@ -1,44 +1,37 @@
 package com.jeju.nanaland.domain.nana.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA_CONTENT;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NANA_CONTENT;
+import static com.jeju.nanaland.global.exception.ErrorCode.NANA_TITLE_NOT_FOUND;
 
-import com.jeju.nanaland.domain.common.entity.Category;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.repository.CategoryRepository;
-import com.jeju.nanaland.domain.common.repository.LanguageRepository;
-import com.jeju.nanaland.domain.common.service.ImageFileService;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.PostCategory;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
-import com.jeju.nanaland.domain.hashtag.service.HashtagService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
-import com.jeju.nanaland.domain.nana.dto.NanaRequest;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailDto;
-import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
-import com.jeju.nanaland.domain.nana.entity.NanaContentImage;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
-import com.jeju.nanaland.domain.nana.repository.NanaAdditionalInfoRepository;
-import com.jeju.nanaland.domain.nana.repository.NanaContentImageRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaContentRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nana.repository.NanaTitleRepository;
 import com.jeju.nanaland.domain.search.service.SearchService;
-import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -46,309 +39,296 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @RequiredArgsConstructor
-public class NanaService {
+public class NanaService implements PostService {
 
-  private final CategoryRepository categoryRepository;
   private final NanaRepository nanaRepository;
   private final NanaTitleRepository nanaTitleRepository;
   private final NanaContentRepository nanaContentRepository;
   private final HashtagRepository hashtagRepository;
-  private final FavoriteService favoriteService;
+  private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
-  private final ImageFileService imageFileService;
-  private final LanguageRepository languageRepository;
-  private final NanaContentImageRepository nanaContentImageRepository;
-  private final NanaAdditionalInfoRepository nanaAdditionalInfoRepository;
-  private final HashtagService hashtagService;
+  private final ImageFileRepository imageFileRepository;
 
-  //메인페이지에 보여지는 4개의 nana
-  public List<NanaThumbnail> getMainNanaThumbnails(Locale locale) {
-    return nanaRepository.findRecentNanaThumbnailDto(locale);
+
+  /**
+   * Nana 객체 조회
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @return Post
+   * @throws NotFoundException 게시물 id에 해당하는 나나스픽 게시물이 존재하지 않는 경우
+   */
+  @Override
+  public Post getPost(Long postId, Category category) {
+    return nanaRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
   }
 
-  //나나 들어갔을 때 보여줄 모든 nana
-  public NanaThumbnailDto getNanaThumbnails(Locale locale, int page, int size) {
-    Pageable pageable = PageRequest.of(page, size);
-    Page<NanaThumbnail> resultDto = nanaRepository.findAllNanaThumbnailDto(locale,
-        pageable);
+  /**
+   * 게시물 preview 정보 조회 - (postId, category, imageFile, title)
+   *
+   * @param postId   게시물 id
+   * @param category 게시물 카테고리
+   * @param language 언어 정보
+   * @return PostPreviewDto
+   * @throws NotFoundException (게시물 id, langugae)를 가진 나나스픽 정보가 존재하지 않는 경우
+   */
+  @Override
+  public PostPreviewDto getPostPreviewDto(Long postId, Category category, Language language) {
+    PostPreviewDto postPreviewDto = nanaRepository.findPostPreviewDto(postId, language);
+    Optional.ofNullable(postPreviewDto)
+        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
 
-    List<NanaThumbnail> thumbnails = new ArrayList<>();
-    for (NanaThumbnail dto : resultDto) {
-      thumbnails.add(
-          NanaThumbnail.builder()
-              .id(dto.getId())
-              .thumbnailUrl(dto.getThumbnailUrl())
-              .version(dto.getVersion())
-              .subHeading(dto.getSubHeading())
-              .heading(dto.getHeading())
-              .build());
-    }
-    return NanaThumbnailDto.builder()
+    postPreviewDto.setCategory(PostCategory.NANA.toString());
+    return postPreviewDto;
+  }
+
+  /**
+   * 메인페이지에 보여지는 최신 4개의 nana
+   *
+   * @param locale 검색 지역 조건
+   * @return
+   */
+  public List<NanaResponse.PreviewDto> getMainPageNanaThumbnails(Language locale) {
+    return nanaRepository.findTop4PreviewDtoOrderByCreatedAt(locale);
+  }
+
+  /**
+   * 나나's pick 금주 추천 게시글 4개 (modifiedAt 으로 최신순 4개)
+   *
+   * @param locale 검색 지역 조건
+   * @return
+   */
+  public List<NanaResponse.PreviewDto> getRecommendNanaThumbnails(Language locale) {
+    List<NanaResponse.PreviewDto> recommendPreviewDtoDto = nanaRepository.findRecommendPreviewDto(
+        locale);
+    markNewestThumbnails(recommendPreviewDtoDto);
+    return recommendPreviewDtoDto;
+  }
+
+  /**
+   * 나나's pick 썸네일 리스트 조회
+   *
+   * @param locale
+   * @param page
+   * @param size
+   * @return
+   */
+  public NanaResponse.PreviewPageDto getNanaThumbnails(Language locale, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    Page<NanaResponse.PreviewDto> resultDto = nanaRepository.findAllPreviewDtoOrderByCreatedAt(
+        locale,
+        pageable);
+    List<NanaResponse.PreviewDto> resultDtoContent = resultDto.getContent();
+
+    // new 태그 붙일지 말지 결정
+    markNewestThumbnails(resultDtoContent);
+
+    return NanaResponse.PreviewPageDto.builder()
         .totalElements(resultDto.getTotalElements())
-        .data(thumbnails)
+        .data(resultDtoContent)
         .build();
   }
 
-  //나나 상세 게시물
-  public NanaResponse.NanaDetailDto getNanaDetail(MemberInfoDto memberInfoDto, Long nanaId,
+  /**
+   * 나나 상세 게시물. nanaContent는 post에 firstImage를 갖지 않는다, nanaContent는 KoreanNanaContent의 이미지를 공유한다.
+   *
+   * @param memberInfoDto
+   * @param postId
+   * @param isSearch
+   * @return
+   */
+
+  public NanaResponse.DetailPageDto getNanaDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
 
     // nana 찾아서
-    Nana nana = getNanaById(nanaId);
+    Nana nana = nanaRepository.findNanaById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
 
     // nanaTitle 찾아서
-    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
-            language)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_TITLE_NOT_FOUND.getMessage()));
+    NanaTitle nanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)
+        .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
+
+    // nanaContets 찾아서
+    List<NanaContent> nanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+        nanaTitle);
+
+    // nanaContent는 KOREAN 버전의 nanaContents의 이미지를 공유
+    List<NanaContent> koreanNanaContents = getKoreanNanaContents(language, nana, nanaContents);
 
     if (isSearch) {
       searchService.updateSearchVolumeV1(NANA, nana.getId());
     }
 
-    // nanaTitle에 맞는 nanaContent게시물 조회, nanaContent에 맞는 image 정렬
-    List<NanaContent> nanaContentList = nanaContentRepository.findAllByNanaTitleOrderByNumber(
-        nanaTitle);
-    List<NanaContentImage> nanaContentImageList = nana.getNanaContentImageList().stream()
-        .sorted(Comparator.comparingInt(NanaContentImage::getNumber))
-        .toList();
+    // nanaContent 별 이미지 리스트 조회 후 저장하기.
+    List<List<ImageFileDto>> eachNanaContentImages = getEachNanaContentsImages(koreanNanaContents);
 
-    // 서버 오류 체크 (밑에 나오느 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
-    if (nanaContentList.size() != nanaContentImageList.size()) {
+    // 서버 오류 체크 (밑에 나오는 for문을 실행하기 위해서는 nanaContentList와 nanaContentImageList의 수 일치해야함)
+    if (nanaContents.size() != eachNanaContentImages.size()) {
       throw new ServerErrorException("나나's pick의 content와 image의 수가 일치하지 않습니다.");
     }
 
-    boolean isPostInFavorite = favoriteService.isPostInFavorite(memberInfoDto.getMember(), NANA,
-        nanaTitle.getNana().getId());
+    boolean isPostInFavorite = memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(),
+        NANA, nanaTitle.getNana().getId());
 
-    Category category = categoryRepository.findByContent(NANA_CONTENT)
-        .orElseThrow(() -> new ServerErrorException("NANA_CONTENT에 해당하는 카테고리가 없습니다."));
+    List<NanaResponse.ContentDetailDto> contentDetailDtos = getNanaDetailDtosFromNanaContents(
+        nanaContents, language, eachNanaContentImages);
 
-    List<NanaResponse.NanaDetail> nanaDetails = new ArrayList<>();
-    int nanaContentImageIdx = 0;
-    for (NanaContent nanaContent : nanaContentList) {
-
-      List<Hashtag> hashtagList = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
-          language, category, nanaContent.getId());
-
-      // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
-      List<String> stringKeywordList = getStringKeywordListFromHashtagList(hashtagList);
-
-      nanaDetails.add(
-          NanaResponse.NanaDetail.builder()
-              .number(nanaContent.getNumber())
-              .subTitle(nanaContent.getSubTitle())
-              .title(nanaContent.getTitle())
-              .imageUrl(nanaContentImageList.get(nanaContentImageIdx).getImageFile().getOriginUrl())
-              .content(nanaContent.getContent())
-              .additionalInfoList(
-                  getAdditionalInfoFromNanaContentEntity(language.getLocale(), nanaContent))
-              .hashtags(stringKeywordList)
-              .build());
-      nanaContentImageIdx++;
-    }
-
-    return NanaResponse.NanaDetailDto.builder()
-        .originUrl(nana.getNanaTitleImageFile().getOriginUrl())
+    return NanaResponse.DetailPageDto.builder()
+        .id(nana.getId())
+        .firstImage(new ImageFileDto(nana.getFirstImageFile().getOriginUrl(),
+            nana.getFirstImageFile().getThumbnailUrl()))
         .subHeading(nanaTitle.getSubHeading())
         .heading(nanaTitle.getHeading())
         .version(nana.getVersion())
         .notice(nanaTitle.getNotice())
-        .nanaDetails(nanaDetails)
+        .nanaDetails(contentDetailDtos)
         .isFavorite(isPostInFavorite)
         .build();
 
   }
 
-  public HashMap<Long, List<String>> getExistNanaListInfo() {
-    HashMap<Long, List<String>> result = new HashMap<>();
-    List<Nana> nanas = nanaRepository.findAll();
-    List<NanaTitle> nanaTitles = nanaTitleRepository.findAll();
-    for (NanaTitle nanaTitle : nanaTitles) {
-      Long id = nanaTitle.getNana().getId();
-      String language = nanaTitle.getLanguage().getLocale().toString();
-
-      if (result.containsKey(id)) {
-        result.get(id).add(language);
-      } else {
-        List<String> values = new ArrayList<>();
-        values.add(language);
-        result.put(id, values);
-      }
-    }
-    return result;
-  }
-
-  @Transactional
-  public String createNanaPick(NanaRequest.NanaUploadDto nanaUploadDto) {
-    try {
-      boolean existNanaContentImages = false;
-      Nana nana;
-      Long nanaId = nanaUploadDto.getPostId();
-      Language language = languageRepository.findByLocale(
-          Locale.contains(nanaUploadDto.getLanguage()));
-      Category category = categoryRepository.findByContent(NANA_CONTENT)
-          .orElseThrow(() -> new NotFoundException("존재하지 않는 카테고리입니다."));
-
-      // 없는 nana이면 nana 만들기
-      if (!existNanaById(nanaId)) {
-        // 처음 생성하는 nana인데 title image 없을 경우 에러
-        if (nanaUploadDto.getNanaTitleImage().isEmpty()) {
-          throw new BadRequestException("처음 생성하는 Nana's pick에는 title 이미지가 필수입니다.");
-        }
-        // nana 생성해서 저장하기
-        nana = createNanaByNanaUploadDto(nanaUploadDto);
-        nanaId = nanaRepository.save(nana).getId();
-      } else {// 이미 존재하는 nana인 경우
-        nana = getNanaById(nanaId);
-
-        //존재하는 nana일 경우 해당 post가 이미 작성된 language로 요청이 올 경우 에러
-        if (existNanaTitleByNanaAndLanguage(nana, language)) {
-          throw new BadRequestException("이미 존재하는 NanaTitle의 Language입니다");
-        }
-
-        // 이미 nanaTitle이 존재하면 nanaContentImage 추가 생성 필요 없음을 표시
-        if (existNanaTitleByNana(nana)) {
-          existNanaContentImages = true;
-        }
-
-        // 기존의 content 이미지의 수와 새로 요청한 content 게시글 수가 일치하지 않을 때
-        if (nana.getNanaContentImageList().size() != nanaUploadDto.getNanaContents().size()) {
-          throw new BadRequestException(
-              "기존의 nana content 이미지 수와 현재 요청한 nana content의 수가 일치하지 않습니다.");
-        }
-      }
-
-      NanaTitle nanaTitle = NanaTitle.builder()
-          .nana(nana)
-          .language(language)
-          .subHeading(nanaUploadDto.getSubHeading())
-          .heading(nanaUploadDto.getHeading())
-          .notice(nanaUploadDto.getNotice())
-          .build();
-      nanaTitleRepository.save(nanaTitle);
-
-//      람다 안에서 외부 변수를 사용하기 위해서는 effectively final 변수를 사용해야하므로 선언
-//      존재할 경우 flag -> false / 존재하지 않을 경우 flag -> true
-      boolean createNanaContentsImageFlag = !existNanaContentImages;
-
-      //content 생성
-      nanaUploadDto.getNanaContents().forEach(nanaContentDto -> {
-            NanaContent nanaContent = nanaContentRepository.save(NanaContent.builder()
-                .nanaTitle(nanaTitle)
-                .number(nanaContentDto.getNumber())
-                .subTitle(nanaContentDto.getSubTitle())
-                .title(nanaContentDto.getTitle())
-                .content(nanaContentDto.getContent())
-                .infoList(createNanaAdditionalInfo(nanaContentDto.getAdditionalInfo(),
-                    nanaContentDto.getInfoDesc()))
-                .build());
-
-            if (createNanaContentsImageFlag) { // nanaContentImage가 존재하지 않을 경우에만 추가.
-              if (nanaContentDto.getNanaContentImage().isEmpty()) {
-                throw new BadRequestException("처음 생성하는 Nana's pick에는 content 이미지가 필수입니다. ");
-              }
-              nanaContentImageRepository.save(
-                  NanaContentImage.builder()
-                      .nana(nana)
-                      .imageFile(
-                          imageFileService.uploadAndSaveImageFile(nanaContentDto.getNanaContentImage(),
-                              false))
-                      .number(nanaContentDto.getNumber())
-                      .build()
-              );
-            }
-
-            //해시태그 생성
-            hashtagService.registerHashtag(nanaContentDto.getHashtag(),
-                language, category, nanaContent.getId());
-          }
-      );
-    } catch (Exception e) {
-      // 외부 메서드 호출 시 에러 터지면 롤백
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-      return e.getMessage();
-    }
-    return "성공~";
-
-  }
-
-  // nanaContent의 AdditionalInfo dto로 바꾸기
+  /**
+   * nanaContent Entity의 AdditionalInfo를 dto로 바꾸기
+   *
+   * @param locale
+   * @param nanaContent
+   * @return
+   */
   private List<NanaResponse.NanaAdditionalInfo> getAdditionalInfoFromNanaContentEntity(
-      Locale locale, NanaContent nanaContent) {
+      Language locale, NanaContent nanaContent) {
+    List<NanaResponse.NanaAdditionalInfo> result = new ArrayList<>();
     Set<NanaAdditionalInfo> eachInfoList = nanaContent.getInfoList();
 
-    // 순서 보장 위해 List 형으로 바꾸고
-    List<NanaAdditionalInfo> nanaAdditionalInfos = new ArrayList<>(eachInfoList);
+    // 순서 보장 위해 List 형으로 바꾸고 생성 순서로 정렬
+    if (eachInfoList != null) {
+      List<NanaAdditionalInfo> nanaAdditionalInfos = new ArrayList<>(eachInfoList);
+      // NanaAdditionalInfo에 작성된 순으로 정렬
+      nanaAdditionalInfos.sort(Comparator.comparing(info -> info.getInfoType().ordinal()));
 
-    //DTO 형태로 변환
-    List<NanaResponse.NanaAdditionalInfo> result = new ArrayList<>();
-    for (NanaAdditionalInfo info : nanaAdditionalInfos) {
-      result.add(NanaResponse.NanaAdditionalInfo.builder()
-          .infoEmoji(info.getInfoType().toString())
-          .infoKey(info.getInfoType().getValueByLocale(locale))
-          .infoValue(info.getDescription())
-          .build());
+      //DTO 형태로 변환
+      for (NanaAdditionalInfo info : nanaAdditionalInfos) {
+        result.add(NanaResponse.NanaAdditionalInfo.builder()
+            .infoEmoji(info.getInfoType().toString())
+            .infoKey(info.getInfoType().getValueByLocale(locale))
+            .infoValue(info.getDescription())
+            .build());
+      }
     }
     return result;
   }
 
-  private List<String> getStringKeywordListFromHashtagList(List<Hashtag> hashtagList) {
-    return hashtagList.stream()
+  /**
+   * 해시태그(엔티티) 리스트를 문자열 리스트로 변경
+   *
+   * @param hashtags
+   * @return
+   */
+  // 키워드 리스트 반환
+  private List<String> getStringKeywordsFromHashtags(List<Hashtag> hashtags) {
+    return hashtags.stream()
         .map(hashtag -> hashtag.getKeyword().getContent())
         .collect(Collectors.toList());
   }
 
-  private boolean existNanaById(Long id) {
-    //id가 0(생성하는 경우) 또는 존재하지 않는 나나의 id일 경우 false
-    //id가 0이 아니고 존재하는 id일 경우 true
-    return id != 0 && nanaRepository.existsById(id);
-  }
+  /**
+   * nanaContents -> nanaDetailDtos 변환
+   *
+   * @param nanaContents
+   * @param language
+   * @param eachNanaContentImages
+   * @return
+   */
+  private List<NanaResponse.ContentDetailDto> getNanaDetailDtosFromNanaContents(
+      List<NanaContent> nanaContents, Language language,
+      List<List<ImageFileDto>> eachNanaContentImages) {
+    List<NanaResponse.ContentDetailDto> result = new ArrayList<>();
+    int nanaContentImageIdx = 0;
+    for (NanaContent nanaContent : nanaContents) {
 
-  private boolean existNanaTitleByNana(Nana nana) {
-    return nanaTitleRepository.existsByNana(nana);
-  }
+      List<Hashtag> hashtags = hashtagRepository.findAllByLanguageAndCategoryAndPostId(
+          language, NANA_CONTENT, nanaContent.getId());
 
-  private boolean existNanaTitleByNanaAndLanguage(Nana nana, Language language) {
-    return nanaTitleRepository.existsByNanaAndLanguage(nana, language);
-  }
+      // 해시태그 정보 keyword 가져와서 list 형태로 바꾸기
+      List<String> stringKeywords = getStringKeywordsFromHashtags(hashtags);
 
-  private Nana createNanaByNanaUploadDto(NanaRequest.NanaUploadDto nanaUploadDto) {
-    return Nana.builder()
-        .version("Nana's Pick vol." + nanaUploadDto.getVersion())
-        .nanaTitleImageFile(
-            imageFileService.uploadAndSaveImageFile(nanaUploadDto.getNanaTitleImage(), false))
-        .build();
-  }
-
-  private Nana getNanaById(Long id) {
-    return nanaRepository.findNanaById(id)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
-
-  }
-
-  private Set<NanaAdditionalInfo> createNanaAdditionalInfo(List<String> infoTypeList,
-      List<String> descriptionList) {
-    if (infoTypeList.size() != descriptionList.size()) {
-      throw new BadRequestException("nana Upload 중 infoTye과 description의 수가 일치하지 않습니다.");
+      result.add(
+          NanaResponse.ContentDetailDto.builder()
+              .number(nanaContent.getPriority().intValue())
+              .subTitle(nanaContent.getSubTitle())
+              .title(nanaContent.getTitle())
+              .images(eachNanaContentImages.get(nanaContentImageIdx))
+//              .imageUrl(eachNanaContentImages.get(nanaContentImageIdx).getImageFile().getOriginUrl())
+              .content(nanaContent.getContent())
+              .additionalInfoList(
+                  getAdditionalInfoFromNanaContentEntity(language, nanaContent))
+              .hashtags(stringKeywords)
+              .build());
+      nanaContentImageIdx++;
     }
-    Set<NanaAdditionalInfo> nanaAdditionalInfoSet = new HashSet<>();
+    return result;
+  }
 
-    for (int i = 0; i < infoTypeList.size(); i++) {
-      nanaAdditionalInfoSet.add(
-          nanaAdditionalInfoRepository.save(
-              NanaAdditionalInfo.builder()
-                  .infoType(InfoType.contains(infoTypeList.get(i)))
-                  .description(descriptionList.get(i))
-                  .build())
-      );
+  /**
+   * nanaContent 순서대로 각 게시물의 이미지 리스트 koreanContents에서 가져오기
+   *
+   * @param koreanNanaContents
+   * @return
+   */
+  private List<List<ImageFileDto>> getEachNanaContentsImages(List<NanaContent> koreanNanaContents) {
+    List<List<ImageFileDto>> eachNanaContentImages = new ArrayList<>();
+
+    for (NanaContent nanaContent : koreanNanaContents) { // 각 korean nanaContent에 맞는 사진들 가져오기
+
+      // content의 이미지 postImageFile에서 여러 개 찾아오기
+      List<ImageFileDto> contentImageFiles = new ArrayList<>(imageFileRepository.findPostImageFiles(
+          nanaContent.getId()));
+
+      if (contentImageFiles.isEmpty()) {// 사진 없으면 서버 에러
+        throw new ServerErrorException(ErrorCode.SERVER_ERROR.getMessage());
+      }
+      eachNanaContentImages.add(contentImageFiles);
     }
-    return nanaAdditionalInfoSet;
+    return eachNanaContentImages;
+  }
+
+  /**
+   * korean nanaTitle 찾기. nanaContent의 이미지는 korean nanaContent의 이미지를 공유하기 때문에 찾아놔야함
+   *
+   * @param language
+   * @param nana
+   * @param nanaContents
+   * @return
+   */
+  private List<NanaContent> getKoreanNanaContents(Language language, Nana nana,
+      List<NanaContent> nanaContents) {
+    List<NanaContent> koreanNanaContents;
+    if (language == Language.KOREAN) {
+      koreanNanaContents = nanaContents;
+    } else {
+      NanaTitle koreanNanaTitle = nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana,
+              Language.KOREAN)
+          .orElseThrow(() -> new NotFoundException(NANA_TITLE_NOT_FOUND.getMessage()));
+      koreanNanaContents = nanaContentRepository.findAllByNanaTitleOrderByPriority(
+          koreanNanaTitle);
+    }
+    return koreanNanaContents;
+  }
+
+  /**
+   * new 태그 붙일지 말지 결정. 현재 정책은 가장 최신 게시물에 new
+   *
+   * @param thumbnails
+   */
+  private void markNewestThumbnails(List<NanaResponse.PreviewDto> thumbnails) {
+    thumbnails.stream()
+        .max(Comparator.comparing(NanaResponse.PreviewDto::getCreatedAt))
+        .ifPresent(thumbnail -> thumbnail.setNewest(true));
   }
 }

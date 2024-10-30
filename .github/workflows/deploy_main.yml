@@ -1,0 +1,199 @@
+name: (build, test) -> deploy - Main branch CI/CD to EC2 when push to Main
+
+# develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
+on:
+  push:
+    branches: [ "main" ]
+
+# flow에서 사용할 변수
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET_NAME: nanaland-github-actions-s3-bucket
+  CODE_DEPLOY_APPLICATION_NAME: nanaland-codedeploy-app
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: nanaland-codedeploy-deployment-group
+
+
+permissions: write-all
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      # 1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) JDK 17 셋팅
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+
+      # 2.5) secret설정한 test yml 등록
+      - name: Set Test YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
+          find src    
+
+      # 2.7) caching을 사용한 속도 향상
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 3) gradlew 권한 설정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Test with Gradle
+        run: SPRING_PROFILES_ACTIVE=[test] ./gradlew test -i
+
+      # 테스트 결과 확인하기
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
+        with:
+          files: build/test-results/**/*.xml
+
+        # cache 관련 파일 제거
+      - name: Cleanup Gradle Cache
+        if: ${{ always() }}
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
+
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      # 1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) JDK 17 셋팅
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 2.5) secret설정한 yml 등록
+      - name: Set YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
+          find src
+      # # 4) gradle 테스트 빌드
+      # - name: Build Test with Gradle
+      #   run: ./gradlew test -i
+      #   # run: ./gradlew clean build -i
+      #   # working-directory: ${{ env.working-directory }}
+
+      # 3) gradlew 권한 설정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 4) gradle 빌드
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test -i
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [ test, build ] # test와 build 작업이 성공적으로 완료된 경우에만 실행
+
+    steps:
+      # 1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2) JDK 17 셋팅
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 2.5) secret설정한 yml 등록
+      - name: Set PROD_YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.YML }}" | base64 --decode > src/main/resources/application.yml
+          find src  
+
+      # 2.5) secret설정한 LOGBACK_SPRING 등록
+      - name: Set PROD_LOGBACK
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.DEV_LOGBACK}}" | base64 --decode > src/main/resources/logback-spring.xml 
+
+      # 2.5) secret설정한 APPSPEC 등록
+      - name: Set APPSPEC
+        run: |
+          echo "${{ secrets.APPSPEC }}" | base64 --decode > ./appspec.yml
+
+      # 2.5) secret설정한 EXECUTE_DEPLOY_SH 등록
+      - name: Set EXECUTE_DEPLOY_SH
+        run: |
+          mkdir scripts
+          echo "${{ secrets.EXECUTE_DEPLOY_SH }}" > scripts/execute-deploy.sh
+          cat scripts/execute-deploy.sh
+
+      # 2.5) secret 설정한 firesbase json key 등록
+      - name: Set firebase json key
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_JSON_KEY }}" | base64 --decode > src/main/resources/firebase/nanaland-firebase-key.json
+          find src
+
+      # 3) gradlew 권한 설정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # # 4) gradle 테스트 빌드
+      # - name: Build Test with Gradle
+      #   run: ./gradlew test -i
+      #   # run: ./gradlew clean build -i
+      #   # working-directory: ${{ env.working-directory }}
+
+      # 4) gradle 빌드
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test -i
+        # working-directory: ${{ env.working-directory }}
+      
+      # AWS 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # AWS S3에 업로드
+      - name: Upload to AWS S3
+        run: |
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+
+      # AWS EC2에 Deploy
+      - name: Deploy to AWS EC2 from S3
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip

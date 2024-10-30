@@ -1,10 +1,11 @@
 package com.jeju.nanaland.domain.festival.entity;
 
-import com.jeju.nanaland.domain.common.entity.Common;
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Status;
+import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,14 +25,21 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @SQLRestriction("status = 'ACTIVE'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Festival extends Common {
+@DiscriminatorValue("FESTIVAL")
+public class Festival extends Post {
 
   @Enumerated(value = EnumType.STRING)
   @Column(name = "status")
   private Status status = Status.ACTIVE;
 
+  private String contentId;
+
+  private String contact;
+
   private LocalDate startDate;
+
   private LocalDate endDate;
+
   private String season;
 
   @Column(columnDefinition = "VARCHAR(2048)")
@@ -44,9 +52,11 @@ public class Festival extends Common {
   private boolean onGoing;
 
   @Builder
-  public Festival(String contentId, ImageFile imageFile, String contact, LocalDate startDate,
-      LocalDate endDate, String season, String homepage, boolean onGoing) {
-    super(contentId, imageFile, contact);
+  public Festival(ImageFile firstImageFile, Long priority, String contentId, String contact,
+      LocalDate startDate, LocalDate endDate, String season, String homepage, boolean onGoing) {
+    super(firstImageFile, priority);
+    this.contentId = contentId;
+    this.contact = contact;
     this.startDate = startDate;
     this.endDate = endDate;
     this.season = season;

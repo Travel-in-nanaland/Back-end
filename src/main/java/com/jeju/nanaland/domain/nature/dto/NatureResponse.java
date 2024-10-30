@@ -1,30 +1,34 @@
 package com.jeju.nanaland.domain.nature.dto;
 
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
 public class NatureResponse {
 
   @Getter
   @Builder
-  @Schema(description = "7대 자연 게시물 페이징 정보")
-  public static class NatureThumbnailDto {
+  @Schema(name = "NaturePreviewPageDto", description = "7대 자연 전체 리스트 조회 DTO")
+  public static class PreviewPageDto {
 
     @Schema(description = "7대 자연 전체 게시물 수")
     private Long totalElements;
 
     @Schema(description = "7대 자연 게시물 결과 리스트")
-    private List<NatureThumbnail> data;
+    private List<PreviewDto> data;
 
   }
 
-  @Getter
+  @Data
   @Builder
-
-  public static class NatureThumbnail {
+  @AllArgsConstructor
+  @Schema(name = "NaturePreviewDto", description = "7대 자연 프리뷰 정보 DTO")
+  public static class PreviewDto {
 
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
@@ -32,8 +36,8 @@ public class NatureResponse {
     @Schema(description = "제목")
     private String title;
 
-    @Schema(description = "썸네일 이미지 url")
-    private String thumbnailUrl;
+    @Schema(description = "게시물 썸네일 이미지")
+    private ImageFileDto firstImage;
 
     @Schema(description = "주소 태그")
     private String addressTag;
@@ -42,26 +46,22 @@ public class NatureResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public NatureThumbnail(Long id, String title, String thumbnailUrl, String addressTag,
-        boolean isFavorite) {
+    public PreviewDto(Long id, String title, String originUrl, String thumbnailUrl,
+        String addressTag) {
       this.id = id;
       this.title = title;
-      this.thumbnailUrl = thumbnailUrl;
+      this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.addressTag = addressTag;
-      this.isFavorite = isFavorite;
     }
   }
 
   @Getter
   @Builder
-  @Schema(description = "7대 자연 상세 정보")
-  public static class NatureDetailDto {
+  @Schema(name = "NatureDetailDto", description = "7대 자연 상세 정보")
+  public static class DetailDto {
 
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
-
-    @Schema(description = "원본 이미지 url")
-    private String originUrl;
 
     @Schema(description = "주소 태그")
     private String addressTag;
@@ -95,5 +95,8 @@ public class NatureResponse {
 
     @Schema(description = "좋아요 여부")
     private boolean isFavorite;
+
+    @Schema(description = "이미지 리스트")
+    private List<ImageFileDto> images;
   }
 }

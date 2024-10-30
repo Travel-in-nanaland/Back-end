@@ -1,10 +1,12 @@
 package com.jeju.nanaland.domain.hashtag.entity;
 
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.BaseEntity;
-import com.jeju.nanaland.domain.common.entity.Category;
-import com.jeju.nanaland.domain.common.entity.Language;
-import jakarta.persistence.Column;
+import com.jeju.nanaland.domain.common.entity.Post;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -27,15 +29,14 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "LanguageKeywordCategoryPostUnique",
-            columnNames = {"language_id", "keyword_id", "category_id", "post_id"}
+            columnNames = {"language", "keyword_id", "category", "post_id"}
         )
     }
 )
 public class Hashtag extends BaseEntity {
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "language_id", nullable = false)
+  @Enumerated(EnumType.STRING)
   private Language language;
 
   @NotNull
@@ -44,11 +45,11 @@ public class Hashtag extends BaseEntity {
   private Keyword keyword;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "category_id", nullable = false)
+  @Enumerated(EnumType.STRING)
   private Category category;
 
   @NotNull
-  @Column(nullable = false)
-  private Long postId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "post_id", nullable = false)
+  private Post post;
 }

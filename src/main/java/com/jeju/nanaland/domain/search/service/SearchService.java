@@ -1,28 +1,31 @@
 package com.jeju.nanaland.domain.search.service;
 
-import static com.jeju.nanaland.domain.common.data.CategoryContent.EXPERIENCE;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.FESTIVAL;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.MARKET;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NANA;
-import static com.jeju.nanaland.domain.common.data.CategoryContent.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
+import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
+import static com.jeju.nanaland.domain.common.data.Category.MARKET;
+import static com.jeju.nanaland.domain.common.data.Category.NANA;
+import static com.jeju.nanaland.domain.common.data.Category.NATURE;
+import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
-import com.jeju.nanaland.domain.favorite.service.FavoriteService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnail;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
+import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
+import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
@@ -53,14 +56,14 @@ public class SearchService {
   private final ExperienceRepository experienceRepository;
   private final MarketRepository marketRepository;
   private final FestivalRepository festivalRepository;
-  private final FavoriteService favoriteService;
+  private final RestaurantRepository restaurantRepository;
+  private final MemberFavoriteService memberFavoriteService;
   private final RedisTemplate<String, String> redisTemplate;
 
-  public SearchResponse.AllCategoryDto searchAllResultDto(MemberInfoDto memberInfoDto,
-      String keyword) {
+  // 카테고리 검색
+  public SearchResponse.AllCategoryDto searchAll(MemberInfoDto memberInfoDto, String keyword) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
-    Member member = memberInfoDto.getMember();
+    Language locale = memberInfoDto.getLanguage();
 
     // Redis에 해당 검색어 count + 1
     updateSearchCountV1(keyword, locale);
@@ -69,35 +72,35 @@ public class SearchService {
     int page = 0;
     int size = 2;
     return SearchResponse.AllCategoryDto.builder()
-        .nature(searchNatureResultDto(memberInfoDto, keyword, page, size))
-        .festival(searchFestivalResultDto(memberInfoDto, keyword, page, size))
-        .market(searchMarketResultDto(memberInfoDto, keyword, page, size))
-        .experience(searchExperienceResultDto(memberInfoDto, keyword, page, size))
-        .nana(searchNanaResultDto(memberInfoDto, keyword, page, size))
+        .nature(searchNature(memberInfoDto, keyword, page, size))
+        .festival(searchFestival(memberInfoDto, keyword, page, size))
+        .market(searchMarket(memberInfoDto, keyword, page, size))
+        .experience(searchExperience(memberInfoDto, keyword, page, size))
+        .restaurant(searchRestaurant(memberInfoDto, keyword, page, size))
+        .nana(searchNana(memberInfoDto, keyword, page, size))
         .build();
   }
 
-  public SearchResponse.ResultDto searchNatureResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 자연 검색
+  public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, NATURE);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (NatureCompositeDto dto : resultPage) {
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(NATURE.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -109,27 +112,26 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchFestivalResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 축제 검색
+  public SearchResponse.ResultDto searchFestival(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, FESTIVAL);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (FestivalCompositeDto dto : resultPage) {
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(FESTIVAL.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -141,27 +143,26 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchExperienceResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 이색체험 검색
+  public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, EXPERIENCE);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (ExperienceCompositeDto dto : resultPage) {
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(EXPERIENCE.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -173,19 +174,17 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchMarketResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 전통시장 검색
+  public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
     Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, MARKET);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
     for (MarketCompositeDto dto : resultPage) {
@@ -193,7 +192,7 @@ public class SearchService {
           ThumbnailDto.builder()
               .id(dto.getId())
               .category(MARKET.name())
-              .thumbnailUrl(dto.getThumbnailUrl())
+              .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
               .build());
@@ -205,27 +204,55 @@ public class SearchService {
         .build();
   }
 
-  public SearchResponse.ResultDto searchNanaResultDto(
-      MemberInfoDto memberInfoDto,
-      String keyword,
-      int page,
-      int size) {
+  // 제주 맛집 검색
+  public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
 
-    Locale locale = memberInfoDto.getLanguage().getLocale();
+    Language locale = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<NanaThumbnail> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
+    Page<RestaurantCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
         keyword, locale, pageable);
 
-    List<Long> favoriteIds = favoriteService.getMemberFavoritePostIds(member, NANA);
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (NanaThumbnail thumbnail : resultPage) {
+    for (RestaurantCompositeDto dto : resultPage) {
+      thumbnails.add(
+          ThumbnailDto.builder()
+              .id(dto.getId())
+              .category(RESTAURANT.name())
+              .firstImage(dto.getFirstImage())
+              .title(dto.getTitle())
+              .isFavorite(favoriteIds.contains(dto.getId()))
+              .build());
+    }
+
+    return SearchResponse.ResultDto.builder()
+        .totalElements(resultPage.getTotalElements())
+        .data(thumbnails)
+        .build();
+  }
+
+  // 나나스픽 검색
+  public SearchResponse.ResultDto searchNana(MemberInfoDto memberInfoDto, String keyword,
+      int page, int size) {
+
+    Language locale = memberInfoDto.getLanguage();
+    Member member = memberInfoDto.getMember();
+    Pageable pageable = PageRequest.of(page, size);
+    Page<PreviewDto> resultPage = nanaRepository.searchNanaThumbnailDtoByKeyword(
+        keyword, locale, pageable);
+
+    List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
+
+    List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
+    for (PreviewDto thumbnail : resultPage) {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(thumbnail.getId())
               .category(NANA.name())
-              .thumbnailUrl(thumbnail.getThumbnailUrl())
+              .firstImage(thumbnail.getFirstImage())
               .title(thumbnail.getHeading())
               .isFavorite(favoriteIds.contains(thumbnail.getId()))
               .build());
@@ -237,7 +264,8 @@ public class SearchService {
         .build();
   }
 
-  public List<String> getPopularSearch(Locale locale) {
+  // 인기 검색어 조회
+  public List<String> getPopularSearch(Language locale) {
     String language = locale.name();
 
     // version 1
@@ -259,7 +287,7 @@ public class SearchService {
   }
 
   // version1 : 인기검색어 정보 삭제하지 않고 계속 누적됨
-  private void updateSearchCountV1(String title, Locale locale) {
+  private void updateSearchCountV1(String title, Language locale) {
     String language = locale.name();
     String key = "ranking_" + language;
 
@@ -267,7 +295,7 @@ public class SearchService {
   }
 
   // version2 : 인기검색어 정보 1시간마다 갱신됨
-  private void updateSearchCountV2(String title, Locale locale) {
+  private void updateSearchCountV2(String title, Language locale) {
     String language = locale.name();
     String key0 = "ranking_" + language + "_0";
     String key1 = "ranking_" + language + "_1";
@@ -303,24 +331,25 @@ public class SearchService {
     }
   }
 
-  public void updateSearchVolumeV1(CategoryContent categoryContent, Long id) {
+  public void updateSearchVolumeV1(Category categoryContent, Long id) {
     String value = categoryContent + SEARCH_VOLUME_REGEX + id;
     redisTemplate.opsForZSet().incrementScore(SEARCH_VOLUME_KEY, value, 1);
   }
 
+  // 검색량 UP 게시물 조회
   public List<SearchVolumeDto> getTopSearchVolumePosts(MemberInfoDto memberInfoDto) {
     List<String> topSearchVolumeList = getTopSearchVolumeList();
 
     List<SearchVolumeDto> searchVolumeDtoList = new ArrayList<>();
     for (String element : topSearchVolumeList) {
       String[] parts = element.split(SEARCH_VOLUME_REGEX);
-      CategoryContent categoryContent = CategoryContent.valueOf(parts[0]);
+      Category categoryContent = Category.valueOf(parts[0]);
       Long postId = Long.valueOf(parts[1]);
 
       switch (categoryContent) {
         case NANA -> {
           NanaThumbnailPost nanaThumbnailPostDto = nanaRepository.findNanaThumbnailPostDto(
-              postId, memberInfoDto.getLanguage().getLocale()
+              postId, memberInfoDto.getLanguage()
           );
           if (nanaThumbnailPostDto == null) {
             throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
@@ -328,37 +357,37 @@ public class SearchService {
           searchVolumeDtoList.add(SearchVolumeDto.builder()
               .id(nanaThumbnailPostDto.getId())
               .title(nanaThumbnailPostDto.getHeading())
-              .thumbnailUrl(nanaThumbnailPostDto.getThumbnailUrl())
+              .firstImage(nanaThumbnailPostDto.getFirstImage())
               .category(categoryContent.name())
               .isFavorite(
-                  favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+                  memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
                       nanaThumbnailPostDto.getId()))
               .build());
         }
         case FESTIVAL -> {
           CompositeDto festivalCompositeDto = festivalRepository.findCompositeDtoById(
-              postId, memberInfoDto.getLanguage().getLocale());
+              postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, festivalCompositeDto));
         }
         case NATURE -> {
-          CompositeDto natureCompositeDto = natureRepository.findCompositeDtoById(postId,
-              memberInfoDto.getLanguage().getLocale());
+          CompositeDto natureCompositeDto = natureRepository.findNatureCompositeDto(postId,
+              memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, natureCompositeDto));
         }
         case MARKET -> {
           CompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
-              memberInfoDto.getLanguage().getLocale());
+              memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
         }
         case EXPERIENCE -> {
           CompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
-              postId, memberInfoDto.getLanguage().getLocale());
+              postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, experienceCompositeDto));
@@ -370,17 +399,18 @@ public class SearchService {
   }
 
   private SearchVolumeDto getSearchVolumeDto(MemberInfoDto memberInfoDto,
-      CategoryContent categoryContent, CompositeDto compositeDto) {
+      Category categoryContent, CompositeDto compositeDto) {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
     }
+
     return SearchVolumeDto.builder()
         .id(compositeDto.getId())
+        .firstImage(compositeDto.getFirstImage())
         .title(compositeDto.getTitle())
-        .thumbnailUrl(compositeDto.getThumbnailUrl())
         .category(categoryContent.name())
         .isFavorite(
-            favoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+            memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
                 compositeDto.getId()))
         .build();
   }

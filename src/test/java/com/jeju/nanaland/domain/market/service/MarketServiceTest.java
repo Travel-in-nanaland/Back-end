@@ -1,97 +1,208 @@
 package com.jeju.nanaland.domain.market.service;
 
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+
+import com.jeju.nanaland.domain.common.data.AddressTag;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.common.entity.Post;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
+import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
+import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnailDto;
 import com.jeju.nanaland.domain.market.entity.Market;
+import com.jeju.nanaland.domain.market.entity.MarketTrans;
+import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
-import com.jeju.nanaland.domain.member.entity.enums.Provider;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
+@Execution(ExecutionMode.CONCURRENT)
 class MarketServiceTest {
 
-  @Autowired
-  EntityManager em;
-  @Autowired
+  @InjectMocks
   MarketService marketService;
-  @Autowired
-  FavoriteRepository favoriteRepository;
 
-  Language language;
-  Member member1, member2;
-  MemberInfoDto memberInfoDto1, memberInfoDto2;
+  @Mock
+  MarketRepository marketRepository;
+  @Mock
+  MemberFavoriteService memberFavoriteService;
+  @Mock
+  ImageFileRepository imageFileRepository;
+  @Mock
+  private ImageFileService imageFileService;
 
-  Market market;
-  Category category;
-
-  @BeforeEach
-  void init() {
-    ImageFile imageFile1 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
+  @Test
+  @DisplayName("전통시장 preview 정보 조회")
+  void getPostCardDtoTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Market market = createMarket(imageFile);
+    MarketTrans marketTrans = createMarketTrans(market);
+    PostPreviewDto postPreviewDto = PostPreviewDto.builder()
+        .firstImage(new ImageFileDto(imageFile.getOriginUrl(), imageFile.getThumbnailUrl()))
+        .title(marketTrans.getTitle())
+        .id(market.getId())
+        .category(Category.MARKET.toString())
         .build();
-    em.persist(imageFile1);
+    when(marketRepository.findPostPreviewDto(nullable(Long.class), eq(Language.KOREAN)))
+        .thenReturn(postPreviewDto);
 
-    ImageFile imageFile2 = ImageFile.builder()
-        .originUrl("origin")
-        .thumbnailUrl("thumbnail")
+    // when
+    PostPreviewDto result =
+        marketService.getPostPreviewDto(postPreviewDto.getId(), Category.MARKET, Language.KOREAN);
+
+    // then
+    assertThat(result.getFirstImage()).isEqualTo(postPreviewDto.getFirstImage());
+    assertThat(result.getTitle()).isEqualTo(postPreviewDto.getTitle());
+  }
+
+  @Test
+  @DisplayName("전통시장 Post 조회")
+  void getPostTest() {
+    // given
+    ImageFile imageFile = createImageFile();
+    Market market = Market.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
         .build();
-    em.persist(imageFile2);
+    when(marketRepository.findById(nullable(Long.class)))
+        .thenReturn(Optional.ofNullable(market));
 
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-mm-dd")
+    // when
+    Post post = marketService.getPost(1L, Category.MARKET);
+
+    // then
+    assertThat(post.getFirstImageFile()).isEqualTo(imageFile);
+  }
+
+  @Test
+  @DisplayName("전통시장 썸네일 페이징")
+  void marketThumbnailPagingTest() {
+    // given
+    Language locale = Language.KOREAN;
+    List<AddressTag> filterList = Arrays.asList(AddressTag.JEJU);
+    MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
+    Pageable pageable = PageRequest.of(0, 2);
+
+    doReturn(getMarketThumbnailList()).when(marketRepository)
+        .findMarketThumbnails(locale, filterList, pageable);
+    doReturn(new ArrayList<>()).when(memberFavoriteService)
+        .getFavoritePostIdsWithMember(any(Member.class));
+
+    // when
+    MarketThumbnailDto result = marketService.getMarketList(memberInfoDto, filterList, 0, 2);
+
+    // then
+    assertThat(result.getTotalElements()).isEqualTo(10);
+    assertThat(result.getData().size()).isEqualTo(2);
+    assertThat(result.getData().get(0).getTitle()).isEqualTo("market title 1");
+  }
+
+  @Test
+  @DisplayName("전통시장 상세조회")
+  void marketDetailTest() {
+    // given
+    Language locale = Language.KOREAN;
+    MemberInfoDto memberInfoDto = createMemberInfoDto(locale, TravelType.NONE);
+    MarketCompositeDto marketDetailDto = MarketCompositeDto.builder()
+        .firstImage(new ImageFileDto("first origin url", "first thumbnail url"))
         .build();
-    em.persist(language);
+    List<ImageFileDto> images = List.of(
+        marketDetailDto.getFirstImage(),
+        new ImageFileDto("origin url 1", "thumbnail url 1"),
+        new ImageFileDto("origin url 2", "thumbnail url 2")
+    );
 
-    member1 = Member.builder()
-        .email("test@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("123456789")
-        .nickname("nickname1")
+    doReturn(marketDetailDto).when(marketRepository)
+        .findCompositeDtoById(any(Long.class), eq(locale));
+    doReturn(false).when(memberFavoriteService)
+        .isPostInFavorite(any(Member.class), any(Category.class), any(Long.class));
+    doReturn(images).when(imageFileService)
+        .getPostImageFilesByPostIdIncludeFirstImage(1L, marketDetailDto.getFirstImage());
+
+    // when
+    MarketDetailDto result = marketService.getMarketDetail(memberInfoDto, 1L, false);
+
+    // then
+    assertThat(result.getImages().size()).isEqualTo(3);
+  }
+
+  ImageFile createImageFile() {
+    return ImageFile.builder()
+        .originUrl(UUID.randomUUID().toString())
+        .thumbnailUrl(UUID.randomUUID().toString())
+        .build();
+  }
+
+  Market createMarket(ImageFile imageFile) {
+    return Market.builder()
+        .priority(0L)
+        .firstImageFile(imageFile)
+        .build();
+  }
+
+  MarketTrans createMarketTrans(Market market) {
+    return MarketTrans.builder()
+        .market(market)
+        .language(Language.KOREAN)
+        .title(UUID.randomUUID().toString())
+        .content(UUID.randomUUID().toString())
+        .build();
+  }
+
+  // totalElement: 10, MarketThumbnail 데이터가 2개인 Page 생성
+  private Page<MarketThumbnail> getMarketThumbnailList() {
+    List<MarketThumbnail> marketThumbnailList = new ArrayList<>();
+    for (int i = 1; i < 3; i++) {
+      marketThumbnailList.add(
+          MarketThumbnail.builder()
+              .title("market title " + i)
+              .addressTag("제주시")
+              .build());
+    }
+
+    return new PageImpl<>(marketThumbnailList, PageRequest.of(0, 2), 10);
+  }
+
+  private MemberInfoDto createMemberInfoDto(Language language, TravelType travelType) {
+    Member member = Member.builder()
         .language(language)
-        .profileImageFile(imageFile1)
+        .travelType(travelType)
         .build();
-    em.persist(member1);
 
-    member2 = Member.builder()
-        .email("test2@naver.com")
-        .provider(Provider.KAKAO)
-        .providerId("1234567890")
-        .nickname("nickname2")
+    return MemberInfoDto.builder()
+        .member(member)
         .language(language)
-        .profileImageFile(imageFile2)
         .build();
-    em.persist(member2);
-
-    memberInfoDto1 = MemberInfoDto.builder()
-        .language(language)
-        .member(member1)
-        .build();
-
-    memberInfoDto2 = MemberInfoDto.builder()
-        .language(language)
-        .member(member2)
-        .build();
-
-    market = Market.builder()
-        .imageFile(imageFile1)
-        .build();
-    em.persist(market);
-
-    category = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    em.persist(category);
   }
 }

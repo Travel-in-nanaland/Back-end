@@ -1,11 +1,11 @@
 package com.jeju.nanaland.domain.member.dto;
 
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.member.entity.WithdrawalType;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +24,7 @@ public class MemberRequest {
 
     @Schema(description = "이용약관 동의 여부")
     @Valid
-    List<ConsentItem> consentItems;
+    List<ConsentItemDto> consentItems;
 
     @Schema(description = "이메일(필수) - GUEST이면 GUEST@nanaland.com로 임시 지정하여 요청", example = "ABD123@kakao.com")
     @Pattern(
@@ -46,10 +46,10 @@ public class MemberRequest {
     private String providerId;
 
     @Schema(description = "언어(필수)", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
-        enumClass = Locale.class,
+        enumClass = Language.class,
         message = "Locale이 유효하지 않습니다."
     )
     private String locale;
@@ -62,8 +62,14 @@ public class MemberRequest {
 
     @Schema(description = "닉네임(필수) - GUEST이면 GUEST로 임시 지정하여 요청")
     @NotBlank
-    @Size(max = 12, message = "닉네임 최대 길이 초과")
+    @Size(min = 2, max = 12, message = "닉네임은 2자 이상 12자 이하여야 합니다")
+    @Pattern(
+        regexp = "^[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF][a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF ]{0,10}[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]$",
+        message = "닉네임 형식이 올바르지 않습니다.")
     private String nickname;
+
+    @Schema(description = "fcm 토큰")
+    private String fcmToken;
   }
 
   @Data
@@ -71,10 +77,10 @@ public class MemberRequest {
   public static class LoginDto {
 
     @Schema(description = "언어", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
-        enumClass = Locale.class,
+        enumClass = Language.class,
         message = "Locale이 유효하지 않습니다."
     )
     private String locale;
@@ -91,10 +97,14 @@ public class MemberRequest {
     @Schema(description = "소셜 로그인 Provider ID", example = "1234567890")
     @NotBlank
     private String providerId;
+
+    @Schema(description = "fcm 토큰")
+    private String fcmToken;
   }
 
   @Data
-  public static class ConsentItem {
+  @Schema(description = "이용약관 동의 여부")
+  public static class ConsentItemDto {
 
     @Schema(description = "이용약관", example = "TERMS_OF_USE",
         allowableValues = {"TERMS_OF_USE", "MARKETING", "LOCATION_SERVICE"})
@@ -111,10 +121,11 @@ public class MemberRequest {
   }
 
   @Data
+  @Schema(description = "이용약관 수정 요청 DTO")
   public static class ConsentUpdateDto {
 
     @Schema(description = "이용약관", example = "MARKETING",
-        allowableValues = {"MARKETING", "LOCATION_SERVICE"})
+        allowableValues = {"MARKETING", "LOCATION_SERVICE", "NOTIFICATION"})
     @NotNull
     @EnumValid(
         enumClass = ConsentType.class,
@@ -171,7 +182,10 @@ public class MemberRequest {
 
     @Schema(description = "닉네임")
     @NotBlank
-    @Size(max = 12, message = "닉네임 최대 길이 초과")
+    @Size(min = 2, max = 12, message = "닉네임은 2자 이상 12자 이하여야 합니다")
+    @Pattern(
+        regexp = "^[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF][a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF ]{0,10}[a-zA-Z0-9\\uAC00-\\uD7AF\\u3131-\\u318E\\u4E00-\\u9FFF\\u00C0-\\u024F\\u1E00-\\u1EFF]$",
+        message = "닉네임 형식이 올바르지 않습니다.")
     private String nickname;
 
     @Schema(description = "소개")
@@ -184,10 +198,10 @@ public class MemberRequest {
   public static class LanguageUpdateDto {
 
     @Schema(description = "언어", example = "KOREAN",
-        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA"})
+        allowableValues = {"KOREAN", "ENGLISH", "CHINESE", "MALAYSIA", "VIETNAMESE"})
     @NotNull
     @EnumValid(
-        enumClass = Locale.class,
+        enumClass = Language.class,
         message = "Locale이 유효하지 않습니다."
     )
     private String locale;

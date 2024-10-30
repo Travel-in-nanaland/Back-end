@@ -3,19 +3,17 @@ package com.jeju.nanaland.domain.member.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
+import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
-import com.jeju.nanaland.domain.common.entity.Status;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.MemberConsent;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.MemberWithdrawal;
-import com.jeju.nanaland.domain.member.entity.WithdrawalType;
 import com.jeju.nanaland.domain.member.entity.enums.ConsentType;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.member.entity.enums.WithdrawalType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -32,6 +30,7 @@ import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @Import(TestConfig.class)
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class MemberRepositoryTest {
 
   @Autowired
@@ -43,33 +42,19 @@ class MemberRepositoryTest {
   @InjectMocks
   private MemberRepositoryImpl memberRepository;
 
-  private MemberTravelType memberTravelType;
   private ImageFile imageFile;
   private Language language;
 
   @BeforeEach
   public void setUp() {
     memberRepository = new MemberRepositoryImpl(queryFactory);
-    memberTravelType = createMemberTravelType();
     imageFile = createImageFile();
     language = createLanguage();
   }
 
   private Language createLanguage() {
-    language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yy-MM-dd")
-        .build();
-    entityManager.persist(language);
+    language = Language.KOREAN;
     return language;
-  }
-
-  private MemberTravelType createMemberTravelType() {
-    memberTravelType = MemberTravelType.builder()
-        .travelType(TravelType.NONE)
-        .build();
-    entityManager.persist(memberTravelType);
-    return memberTravelType;
   }
 
   private ImageFile createImageFile() {
@@ -91,13 +76,13 @@ class MemberRepositoryTest {
         .birthDate(LocalDate.now())
         .provider(Provider.GOOGLE)
         .providerId("123")
-        .memberTravelType(memberTravelType)
+        .travelType(TravelType.NONE)
         .build();
     entityManager.persist(member);
     return member;
   }
 
-  private void createMemberConsent(ConsentType consentType, boolean consent,
+  private MemberConsent createMemberConsent(ConsentType consentType, boolean consent,
       LocalDateTime consentDate, Member member) {
     MemberConsent memberConsent = MemberConsent.builder()
         .consentType(consentType)
@@ -106,6 +91,7 @@ class MemberRepositoryTest {
         .member(member)
         .build();
     entityManager.persist(memberConsent);
+    return memberConsent;
   }
 
   private void createMemberWithdrawal(Member member) {
@@ -119,72 +105,80 @@ class MemberRepositoryTest {
   }
 
   @Test
-  @DisplayName("memberId로 language를 join하여 member 조회")
-  void findMemberWithLanguage() {
-    // given
+  @DisplayName("회원 정보 조회 TEST")
+  void findMemberInfoDto() {
+    // given: 회원 설정
     Member member = createMember(language);
 
-    // when
-    MemberInfoDto memberWithLanguage = memberRepository.findMemberWithLanguage(member.getId());
+    // when: MemberInfoDto 조회
+    MemberInfoDto memberInfoDto = memberRepository.findMemberInfoDto(member.getId());
 
-    // then
-    assertThat(memberWithLanguage).isNotNull();
-    assertThat(memberWithLanguage.getMember().getId()).isEqualTo(member.getId());
-    assertThat(memberWithLanguage.getMember().getLanguage()).isEqualTo(language);
-    assertThat(memberWithLanguage.getMember().getStatus()).isEqualTo(Status.ACTIVE);
+    // then: MemberInfoDto(member, language) 확인
+    assertThat(memberInfoDto).isNotNull();
+    assertThat(memberInfoDto.getMember().getId()).isEqualTo(member.getId());
+    assertThat(memberInfoDto.getMember().getEmail()).isEqualTo(member.getEmail());
+    assertThat(memberInfoDto.getMember().getNickname()).isEqualTo(member.getNickname());
+    assertThat(memberInfoDto.getMember().getLanguage()).isEqualTo(language);
+    assertThat(memberInfoDto.getMember().getStatus()).isEqualTo(Status.ACTIVE);
   }
 
   @Test
-  @DisplayName("1년 6개월이 지나 만료된 이용약관 조회")
-  void findExpiredMemberConsent() {
-    // given
+  @DisplayName("동의일이 1년 6개월이 지나 만료된 이용약관 조회 TEST")
+  void findAllExpiredMemberConsent() {
+    // given: 회원 설정, 만료된 이용약관 설정
     Member member = createMember(language);
     LocalDateTime pastDate = LocalDate.now().minusYears(1).minusMonths(7).atStartOfDay();
 
-    createMemberConsent(ConsentType.TERMS_OF_USE, true, pastDate, member);
+    MemberConsent expiredConsent = createMemberConsent(ConsentType.TERMS_OF_USE, true, pastDate,
+        member);
     createMemberConsent(ConsentType.MARKETING, true, null, member);
     createMemberConsent(ConsentType.LOCATION_SERVICE, false, pastDate, member);
 
-    // when
-    List<MemberConsent> expiredMemberConsent = memberRepository.findExpiredMemberConsent();
+    // when: 동의일이 1년 6개월이 지나 만료된 이용약관 조회
+    List<MemberConsent> expiredMemberConsents = memberRepository.findAllExpiredMemberConsent();
 
-    // then
-    assertThat(expiredMemberConsent).hasSize(1);
-    assertThat(expiredMemberConsent.get(0).getConsentType()).isEqualTo(ConsentType.TERMS_OF_USE);
+    // then: 조회된 이용약관 확인
+    assertThat(expiredMemberConsents).hasSize(1);
+    assertThat(expiredMemberConsents.get(0)).isEqualTo(expiredConsent);
+    assertThat(expiredMemberConsents.get(0).getConsentType()).isEqualTo(ConsentType.TERMS_OF_USE);
+    assertThat(expiredMemberConsents.get(0).getConsent()).isTrue();
+    assertThat(expiredMemberConsents.get(0).getConsentDate()).isEqualTo(pastDate);
   }
 
   @Test
-  @DisplayName("탈퇴일이 3개월이 지난 회원 리스트 조회")
-  void findInactiveMembersForWithdrawalDate() {
-    // given
+  @DisplayName("비활성화 후 3개월이 지난 회원 조회 TEST")
+  void findAllInactiveMember() {
+    // given: 비활성화 및 탈퇴한 회원 설정
     Member member = createMember(language);
     createMemberWithdrawal(member);
 
-    // when
-    List<Member> inactiveMembersForWithdrawalDate = memberRepository.findInactiveMembersForWithdrawalDate();
+    // when: 비활성화 후 3개월이 지난 회원 조회
+    List<Member> inactiveMembers = memberRepository.findAllInactiveMember();
 
-    // then
-    assertThat(inactiveMembersForWithdrawalDate).hasSize(1);
-    assertThat(inactiveMembersForWithdrawalDate.get(0).getId()).isEqualTo(member.getId());
+    // then: 조회된 회원 확인
+    assertThat(inactiveMembers).hasSize(1);
+    assertThat(inactiveMembers.get(0)).isEqualTo(member);
+    assertThat(inactiveMembers.get(0).getId()).isEqualTo(member.getId());
+    assertThat(inactiveMembers.get(0).getStatus()).isEqualTo(Status.INACTIVE);
   }
 
   @Test
-  @DisplayName("회원의 TERMS_OF_USE를 제외한 이용약관 조회")
-  void findMemberConsentByMember() {
-    // given
+  @DisplayName("회원의 이용약관 조회 TEST")
+  void findAllMemberConsent() {
+    // given: 회원 설정, 이용약관 설정
     Member member = createMember(language);
-    createMemberConsent(ConsentType.MARKETING, true, null, member);
-    createMemberConsent(ConsentType.LOCATION_SERVICE, false, null, member);
+    MemberConsent marketingConsent = createMemberConsent(ConsentType.MARKETING, true, null, member);
+    MemberConsent locationConsent = createMemberConsent(ConsentType.LOCATION_SERVICE, false, null,
+        member);
 
-    // when
-    List<MemberConsent> memberConsentByMember = memberRepository.findMemberConsentByMember(member);
+    // when: 회원의 이용약관 조회
+    List<MemberConsent> memberConsents = memberRepository.findAllMemberConsent(member);
 
-    // then
-    assertThat(memberConsentByMember).hasSize(2);
-    assertThat(memberConsentByMember.get(0).getConsentType()).isEqualTo(ConsentType.MARKETING);
-    assertThat(memberConsentByMember.get(0).getConsent()).isTrue();
-    assertThat(memberConsentByMember.get(1).getConsentType()).isEqualTo(
-        ConsentType.LOCATION_SERVICE);
-    assertThat(memberConsentByMember.get(1).getConsent()).isFalse();
+    // then: 조회된 이용약관 확인
+    assertThat(memberConsents).containsExactlyInAnyOrder(marketingConsent, locationConsent);
+    assertThat(memberConsents).extracting("consentType")
+        .containsExactlyInAnyOrder(ConsentType.MARKETING, ConsentType.LOCATION_SERVICE);
+    assertThat(memberConsents).extracting("consent")
+        .containsExactlyInAnyOrder(true, false);
   }
 }

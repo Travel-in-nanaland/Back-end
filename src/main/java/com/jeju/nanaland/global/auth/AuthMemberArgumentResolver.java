@@ -33,17 +33,18 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
 
   @Override
   public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
     String bearerAccessToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
 
+    // null이 아닌 경우, 로그아웃을 통해 이미 블랙리스트에 담긴 것을 의미
     if (redisUtil.getValue(accessToken) != null) {
       throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
     }
 
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
 
-    MemberInfoDto memberInfoDto = memberRepository.findMemberWithLanguage(
+    MemberInfoDto memberInfoDto = memberRepository.findMemberInfoDto(
         Long.valueOf(memberId));
 
     if (memberInfoDto == null) {

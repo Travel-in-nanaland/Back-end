@@ -1,5 +1,7 @@
 package com.jeju.nanaland.global.auth;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import java.util.List;
@@ -24,7 +26,7 @@ public class MemberDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
 
     Member member = memberRepository.findMemberById(Long.parseLong(memberId))
-        .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 계정입니다."));
+        .orElseThrow(() -> new UsernameNotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
     List<SimpleGrantedAuthority> authorities = member.getRoleSet().stream()
         .map(role -> new SimpleGrantedAuthority(role.name()))

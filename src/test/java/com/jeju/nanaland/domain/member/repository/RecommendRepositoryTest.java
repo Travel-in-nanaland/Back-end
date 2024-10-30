@@ -1,11 +1,9 @@
 package com.jeju.nanaland.domain.member.repository;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.data.CategoryContent;
-import com.jeju.nanaland.domain.common.entity.Category;
+import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.entity.Language;
-import com.jeju.nanaland.domain.common.entity.Locale;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
 import com.jeju.nanaland.domain.festival.entity.Festival;
@@ -13,7 +11,6 @@ import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.market.entity.MarketTrans;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.RecommendPostDto;
-import com.jeju.nanaland.domain.member.entity.MemberTravelType;
 import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.RecommendTrans;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
@@ -21,17 +18,26 @@ import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @Import(TestConfig.class)
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class RecommendRepositoryTest {
 
   @Autowired
@@ -39,6 +45,39 @@ public class RecommendRepositoryTest {
 
   @Autowired
   EntityManager em;
+
+  Map<Category, TriFunction<Language, TravelType, String, Recommend>> initFuncMap;
+
+  Map<Category, TriFunction<Long, Language, TravelType, RecommendPostDto>> findRecommendPostDtoMap;
+
+  Map<Category, String[]> titleAndIntroductionMap;
+
+  @PostConstruct
+  void initMap() {
+    initFuncMap = new HashMap<>();
+    initFuncMap.put(Category.NATURE, this::initNatureRecommend);
+    initFuncMap.put(Category.MARKET, this::initMarketRecommend);
+    initFuncMap.put(Category.FESTIVAL, this::initFestivalRecommend);
+    initFuncMap.put(Category.EXPERIENCE, this::initExperienceRecommend);
+    initFuncMap.put(Category.NANA, this::initNanaRecommend);
+
+    findRecommendPostDtoMap = new HashMap<>();
+    findRecommendPostDtoMap.put(Category.NATURE, recommendRepository::findNatureRecommendPostDto);
+    findRecommendPostDtoMap.put(Category.MARKET, recommendRepository::findMarketRecommendPostDto);
+    findRecommendPostDtoMap.put(Category.FESTIVAL,
+        recommendRepository::findFestivalRecommendPostDto);
+    findRecommendPostDtoMap.put(Category.EXPERIENCE,
+        recommendRepository::findExperienceRecommendPostDto);
+    findRecommendPostDtoMap.put(Category.NANA, recommendRepository::findNanaRecommendPostDto);
+
+    titleAndIntroductionMap = new HashMap<>();
+    titleAndIntroductionMap.put(Category.NATURE, new String[]{"7대자연 제목", "7대자연 설명"});
+    titleAndIntroductionMap.put(Category.MARKET, new String[]{"전통시장 제목", "전통시장 설명"});
+    titleAndIntroductionMap.put(Category.FESTIVAL, new String[]{"축제 제목", "축제 설명"});
+    titleAndIntroductionMap.put(Category.EXPERIENCE, new String[]{"이색체험 제목", "이색체험 설명"});
+    titleAndIntroductionMap.put(Category.NANA, new String[]{"이색체험 제목", "이색체험 설명"});
+
+  }
 
   @DisplayName("타입을 통해 추천 게시물 조회")
   @Test
@@ -49,127 +88,65 @@ public class RecommendRepositoryTest {
      * 한국어, 감귤 아이스크림 타입 Recommend에 nature, experience, nana 추가
      */
     Language language = initLanguageKorean();
-    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
-    initNatureRecommend(language, memberTravelType);
-    initExperienceRecommend(language, memberTravelType);
-    initNanaRecommend(language, memberTravelType);
+    TravelType travelType = TravelType.GAMGYUL_ICECREAM;
+    initNatureRecommend(language, travelType, null);
+    initExperienceRecommend(language, travelType, null);
+    initNanaRecommend(language, travelType, null);
 
     // when
-    List<Recommend> result = recommendRepository.findAllByMemberTravelType(memberTravelType);
+    List<Recommend> result = recommendRepository.findAllByTravelType(travelType);
 
     // then
     Assertions.assertThat(result.size()).isEqualTo(3);
   }
 
-  @DisplayName("7대자연 추천 게시물 조회")
-  @Test
-  void findNatureRecommendPostDtoTest() {
+
+  @ParameterizedTest
+  @EnumSource(value = Category.class, names = {"RESTAURANT", "NANA_CONTENT"}, mode = Mode.EXCLUDE)
+  @DisplayName("추천 게시물 별도 제목이 없을 때 조회")
+  void findRecommendPostDtoTest(Category category) {
     // given
     Language language = initLanguageKorean();
-    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
-    Recommend recommend = initNatureRecommend(language, memberTravelType);
+    TravelType travelType = TravelType.GAMGYUL_ICECREAM;
+    Recommend recommend = initFuncMap.get(category).apply(language, travelType, null);
 
     // when
-    RecommendPostDto recommendPostDto = recommendRepository.findNatureRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+    RecommendPostDto recommendPostDto = findRecommendPostDtoMap.get(category).apply(
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
-    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("7대자연 설명");
+    Assertions.assertThat(recommendPostDto.getTitle())
+        .isEqualTo(titleAndIntroductionMap.get(category)[0]); // title
+    Assertions.assertThat(recommendPostDto.getIntroduction())
+        .isEqualTo(titleAndIntroductionMap.get(category)[1]); // introduction
   }
 
-  @DisplayName("전통시장 추천 게시물 조회")
-  @Test
-  void findMarketRecommendPostDtoTest() {
+  @ParameterizedTest
+  @EnumSource(value = Category.class, names = {"RESTAURANT", "NANA_CONTENT"}, mode = Mode.EXCLUDE)
+  @DisplayName("추천 게시물 별도 제목이 있을 때")
+  void findRecommendPostDtoWithRecommendTitleTest(Category category) {
     // given
     Language language = initLanguageKorean();
-    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
-    Recommend recommend = initMarketRecommend(language, memberTravelType);
+    TravelType travelType = TravelType.GAMGYUL_ICECREAM;
+    String randomTitle = UUID.randomUUID().toString();
+    Recommend recommend = initFuncMap.get(category).apply(language, travelType, randomTitle);
 
     // when
-    RecommendPostDto recommendPostDto = recommendRepository.findMarketRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
+    RecommendPostDto recommendPostDto = findRecommendPostDtoMap.get(category).apply(
+        recommend.getPost().getId(), Language.KOREAN, TravelType.GAMGYUL_ICECREAM);
 
     // then
-    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("전통시장 설명");
-  }
-
-  @DisplayName("축제 추천 게시물 조회")
-  @Test
-  void findFestivalRecommendPostDtoTest() {
-    // given
-    Language language = initLanguageKorean();
-    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
-    Recommend recommend = initFestivalRecommend(language, memberTravelType);
-
-    // when
-    RecommendPostDto recommendPostDto = recommendRepository.findFestivalRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
-
-    // then
-    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("축제 설명");
-  }
-
-  @DisplayName("이색체험 추천 게시물 조회")
-  @Test
-  void findExperienceRecommendPostDtoTest() {
-    // given
-    Language language = initLanguageKorean();
-    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
-    Recommend recommend = initExperienceRecommend(language, memberTravelType);
-
-    // when
-    RecommendPostDto recommendPostDto = recommendRepository.findExperienceRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
-
-    // then
-    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("이색체험 설명");
-  }
-
-  @DisplayName("나나스픽 추천 게시물 조회")
-  @Test
-  void findNanaRecommendPostDtoTest() {
-    // given
-    Language language = initLanguageKorean();
-    MemberTravelType memberTravelType = initMemberTravelType(TravelType.GAMGYUL_ICECREAM);
-    Recommend recommend = initNanaRecommend(language, memberTravelType);
-
-    // when
-    RecommendPostDto recommendPostDto = recommendRepository.findNanaRecommendPostDto(
-        recommend.getPostId(), Locale.KOREAN, TravelType.GAMGYUL_ICECREAM);
-
-    // then
-    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getIntroduction)
-        .isEqualTo("나나스픽 설명");
+    Assertions.assertThat(recommendPostDto).extracting(RecommendPostDto::getTitle)
+        .isEqualTo(randomTitle);
   }
 
   Language initLanguageKorean() {
-    Language language = Language.builder()
-        .locale(Locale.KOREAN)
-        .dateFormat("yyyy-mm-dd")
-        .build();
-    em.persist(language);
-
+    Language language = Language.KOREAN;
     return language;
   }
 
-  MemberTravelType initMemberTravelType(TravelType travelType) {
-    MemberTravelType memberTravelType = MemberTravelType.builder()
-        .travelType(travelType)
-        .build();
-    em.persist(memberTravelType);
-
-    return memberTravelType;
-  }
-
-  Recommend initNatureRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.NATURE)
-        .build();
-    em.persist(category);
+  Recommend initNatureRecommend(Language language, TravelType travelType, String recommendTitle) {
+    Category category = Category.NATURE;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -178,26 +155,28 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Nature nature = Nature.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(nature);
     NatureTrans natureTrans = NatureTrans.builder()
-        .title("7대자연 제목")
+        .title(titleAndIntroductionMap.get(category)[0])
         .nature(nature)
         .language(language)
         .build();
     em.persist(natureTrans);
 
     Recommend recommend = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(nature.getId())
+        .travelType(travelType)
+        .post(nature)
         .category(category)
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
         .recommend(recommend)
-        .introduction("7대자연 설명")
+        .title(recommendTitle)
+        .introduction(titleAndIntroductionMap.get(category)[1])
         .language(language)
         .build();
     em.persist(recommendTrans);
@@ -205,11 +184,8 @@ public class RecommendRepositoryTest {
     return recommend;
   }
 
-  Recommend initMarketRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.MARKET)
-        .build();
-    em.persist(category);
+  Recommend initMarketRecommend(Language language, TravelType travelType, String recommendTitle) {
+    Category category = Category.MARKET;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -218,26 +194,28 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Market market = Market.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(market);
     MarketTrans marketTrans = MarketTrans.builder()
-        .title("전통시장 제목")
+        .title(titleAndIntroductionMap.get(category)[0])
         .market(market)
         .language(language)
         .build();
     em.persist(marketTrans);
 
     Recommend recommend = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(market.getId())
+        .travelType(travelType)
+        .post(market)
         .category(category)
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
         .recommend(recommend)
-        .introduction("전통시장 설명")
+        .title(recommendTitle)
+        .introduction(titleAndIntroductionMap.get(category)[1])
         .language(language)
         .build();
     em.persist(recommendTrans);
@@ -245,11 +223,8 @@ public class RecommendRepositoryTest {
     return recommend;
   }
 
-  Recommend initFestivalRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.FESTIVAL)
-        .build();
-    em.persist(category);
+  Recommend initFestivalRecommend(Language language, TravelType travelType, String recommendTitle) {
+    Category category = Category.FESTIVAL;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -258,26 +233,28 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Festival festival = Festival.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(festival);
     FestivalTrans festivalTrans = FestivalTrans.builder()
-        .title("축제 제목")
+        .title(titleAndIntroductionMap.get(category)[0])
         .festival(festival)
         .language(language)
         .build();
     em.persist(festivalTrans);
 
     Recommend recommend = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(festival.getId())
+        .travelType(travelType)
+        .post(festival)
         .category(category)
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
         .recommend(recommend)
-        .introduction("축제 설명")
+        .title(recommendTitle)
+        .introduction(titleAndIntroductionMap.get(category)[1])
         .language(language)
         .build();
     em.persist(recommendTrans);
@@ -285,11 +262,9 @@ public class RecommendRepositoryTest {
     return recommend;
   }
 
-  Recommend initExperienceRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.EXPERIENCE)
-        .build();
-    em.persist(category);
+  Recommend initExperienceRecommend(Language language, TravelType travelType,
+      String recommendTitle) {
+    Category category = Category.EXPERIENCE;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -298,26 +273,28 @@ public class RecommendRepositoryTest {
     em.persist(imageFile);
 
     Experience experience = Experience.builder()
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(experience);
     ExperienceTrans experienceTrans = ExperienceTrans.builder()
-        .title("이색체험 제목")
+        .title(titleAndIntroductionMap.get(category)[0])
         .experience(experience)
         .language(language)
         .build();
     em.persist(experienceTrans);
 
     Recommend recommend = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(experience.getId())
+        .travelType(travelType)
+        .post(experience)
         .category(category)
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
         .recommend(recommend)
-        .introduction("이색체험 설명")
+        .title(recommendTitle)
+        .introduction(titleAndIntroductionMap.get(category)[1])
         .language(language)
         .build();
     em.persist(recommendTrans);
@@ -325,11 +302,8 @@ public class RecommendRepositoryTest {
     return recommend;
   }
 
-  Recommend initNanaRecommend(Language language, MemberTravelType memberTravelType) {
-    Category category = Category.builder()
-        .content(CategoryContent.NANA)
-        .build();
-    em.persist(category);
+  Recommend initNanaRecommend(Language language, TravelType travelType, String recommendTitle) {
+    Category category = Category.NANA;
 
     ImageFile imageFile = ImageFile.builder()
         .originUrl("origin url")
@@ -339,26 +313,28 @@ public class RecommendRepositoryTest {
 
     Nana nana = Nana.builder()
         .version("1")
-        .nanaTitleImageFile(imageFile)
+        .firstImageFile(imageFile)
+        .priority(0L)
         .build();
     em.persist(nana);
     NanaTitle nanaTitle = NanaTitle.builder()
-        .heading("나나스픽 제목")
+        .heading(titleAndIntroductionMap.get(category)[0])
         .nana(nana)
         .language(language)
         .build();
     em.persist(nanaTitle);
 
     Recommend recommend = Recommend.builder()
-        .memberTravelType(memberTravelType)
-        .postId(nana.getId())
+        .travelType(travelType)
+        .post(nana)
         .category(category)
-        .imageFile(imageFile)
+        .firstImageFile(imageFile)
         .build();
     em.persist(recommend);
     RecommendTrans recommendTrans = RecommendTrans.builder()
         .recommend(recommend)
-        .introduction("나나스픽 설명")
+        .title(recommendTitle)
+        .introduction(titleAndIntroductionMap.get(category)[1])
         .language(language)
         .build();
     em.persist(recommendTrans);
