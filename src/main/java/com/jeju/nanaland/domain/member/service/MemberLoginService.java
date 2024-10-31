@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.service;
 
-import static com.jeju.nanaland.global.exception.ErrorCode.*;
+import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_TOKEN;
+import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_DUPLICATE;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_WITHDRAWAL_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
@@ -97,9 +98,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 닉네임 설정.
-   * GUEST 유형의 경우 UUID를 사용하여 랜덤 닉네임 생성.
-   * GUEST가 아닌 경우, 제공된 닉네임을 반환.
+   * 닉네임 설정. GUEST 유형의 경우 UUID를 사용하여 랜덤 닉네임 생성. GUEST가 아닌 경우, 제공된 닉네임을 반환.
    *
    * @param joinDto 회원 가입 정보
    * @return 생성된 닉네임
@@ -112,8 +111,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 닉네임 중복 확인.
-   * 회원 가입 하기 전에 사용되는 메서드로, 본인 닉네임과 비교하지 않음
+   * 닉네임 중복 확인. 회원 가입 하기 전에 사용되는 메서드로, 본인 닉네임과 비교하지 않음
    *
    * @param nickname 닉네임
    * @throws ConflictException 닉네임이 중복되는 경우
@@ -153,9 +151,8 @@ public class MemberLoginService {
   }
 
   /**
-   * 로그인.
-   * 회원의 상태(Status)가 INACTIVE라면, ACTIVE로 수정.
-   * 회원의 언어(Language)가 다르다면, 언어 수정 FcmToken이 없다면, 생성 및 timestamp 갱신.
+   * 로그인. 회원의 상태(Status)가 INACTIVE라면, ACTIVE로 수정. 회원의 언어(Language)가 다르다면, 언어 수정 FcmToken이 없다면, 생성 및
+   * timestamp 갱신.
    *
    * @param loginDto 로그인 정보
    * @return JWT
@@ -171,10 +168,13 @@ public class MemberLoginService {
     updateLanguageDifferent(loginDto, member);
 
     // fcm 토큰이 없다면 생성, timestamp 갱신
-    FcmToken fcmToken = fcmTokenService.getFcmToken(member, loginDto.getFcmToken());
-    if (fcmToken == null && loginDto.getFcmToken() != null) {
-      fcmToken = fcmTokenService.createFcmToken(member, loginDto.getFcmToken());
-      fcmToken.updateTimestampToNow();
+    if (loginDto.getFcmToken() != null) {
+      FcmToken fcmToken = fcmTokenService.getFcmToken(member, loginDto.getFcmToken());
+      if (fcmToken == null) {
+        fcmTokenService.createFcmToken(member, loginDto.getFcmToken());
+      } else {
+        fcmToken.updateTimestampToNow();
+      }
     }
 
     return getJwtDto(member);
@@ -260,19 +260,20 @@ public class MemberLoginService {
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
 
     // fcm 토큰이 없다면 생성, timestamp 갱신
-    FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(member, fcmToken);
-    if (fcmTokenInstance == null && fcmToken != null) {
-      fcmTokenInstance = fcmTokenService.createFcmToken(member, fcmToken);
-      fcmTokenInstance.updateTimestampToNow();
+    if (fcmToken != null) {
+      FcmToken fcmTokenInstance = fcmTokenService.getFcmToken(member, fcmToken);
+      if (fcmTokenInstance == null) {
+        fcmTokenService.createFcmToken(member, fcmToken);
+      } else {
+        fcmTokenInstance.updateTimestampToNow();
+      }
     }
 
     return getJwtDto(member);
   }
 
   /**
-   * 로그아웃.
-   * accessToken의 재사용 방지를 위해 블랙리스트에 추가.
-   * RefreshToken과 FcmToken 삭제.
+   * 로그아웃. accessToken의 재사용 방지를 위해 블랙리스트에 추가. RefreshToken과 FcmToken 삭제.
    *
    * @param memberInfoDto     회원 정보
    * @param bearerAccessToken Bearer RefreshToken
@@ -297,8 +298,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 회원 탈퇴(비활성화).
-   * 회원의 상태(Status)를 INACTIVE로 변환, 회원 탈퇴 정보를 저장.
+   * 회원 탈퇴(비활성화). 회원의 상태(Status)를 INACTIVE로 변환, 회원 탈퇴 정보를 저장.
    *
    * @param memberInfoDto 회원 정보
    * @param withdrawalDto 회원 탈퇴 요청 정보
@@ -316,8 +316,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 매일 0시 0분 0초에 실행되는 회원 탈퇴 스케줄러.
-   * 비활성화 후 3개월이 지난 회원 탈퇴 처리
+   * 매일 0시 0분 0초에 실행되는 회원 탈퇴 스케줄러. 비활성화 후 3개월이 지난 회원 탈퇴 처리
    */
   @Transactional
   @Scheduled(cron = "0 0 0 * * *")
@@ -330,8 +329,7 @@ public class MemberLoginService {
   }
 
   /**
-   * 강제 회원 탈퇴.
-   * 회원의 탈퇴일을 4개월 전으로 수정 후, 회원 탈퇴 스케줄러를 실행.
+   * 강제 회원 탈퇴. 회원의 탈퇴일을 4개월 전으로 수정 후, 회원 탈퇴 스케줄러를 실행.
    *
    * @param bearerAccessToken Bearer AccessToken
    * @throws NotFoundException 존재하는 회원이 없거나, 존재하는 회원 탈퇴 정보가 없는 경우
