@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -20,6 +22,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(
+    name = "fcm_token",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "memberTokenUniqueConstraint",
+            columnNames = {"member_id", "token"}
+        )
+    }
+)
 public class FcmToken {
 
   @Id
