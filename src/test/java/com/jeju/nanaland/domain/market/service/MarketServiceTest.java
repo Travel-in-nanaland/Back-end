@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketDetailDto;
@@ -60,6 +61,8 @@ class MarketServiceTest {
   ImageFileRepository imageFileRepository;
   @Mock
   private ImageFileService imageFileService;
+  @Mock
+  private PostViewCountService postViewCountService;
 
   @Test
   @DisplayName("전통시장 preview 정보 조회")
@@ -144,7 +147,7 @@ class MarketServiceTest {
     );
 
     doReturn(marketDetailDto).when(marketRepository)
-        .findCompositeDtoById(any(Long.class), eq(locale));
+        .findCompositeDtoByIdWithPessimisticLock(any(Long.class), eq(locale));
     doReturn(false).when(memberFavoriteService)
         .isPostInFavorite(any(Member.class), any(Category.class), any(Long.class));
     doReturn(images).when(imageFileService)

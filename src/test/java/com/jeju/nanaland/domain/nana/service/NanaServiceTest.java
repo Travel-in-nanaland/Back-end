@@ -13,6 +13,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -62,6 +63,8 @@ public class NanaServiceTest {
   private HashtagRepository hashtagRepository;
   @Mock
   private ImageFileRepository imageFileRepository;
+  @Mock
+  private PostViewCountService postViewCountService;
   @InjectMocks
   private NanaService nanaService;
 
@@ -177,7 +180,7 @@ public class NanaServiceTest {
     List<List<ImageFileDto>> nanaContentImages = createNanaContentImage();
     Category category = Category.NANA;
 
-    when(nanaRepository.findNanaById(anyLong())).thenReturn(Optional.of(nana));
+    when(nanaRepository.findNanaByIdWithPessimisticLock(anyLong())).thenReturn(Optional.of(nana));
     when(nanaTitleRepository.findNanaTitleByNanaAndLanguage(nana, language)).thenReturn(
         Optional.of(nanaTitle));
     when(nanaContentRepository.findAllByNanaTitleOrderByPriority(nanaTitle)).thenReturn(

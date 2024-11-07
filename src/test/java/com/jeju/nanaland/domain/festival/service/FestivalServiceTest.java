@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -50,6 +51,8 @@ class FestivalServiceTest {
   private MemberFavoriteService memberFavoriteService;
   @Mock
   private ImageFileService imageFileService;
+  @Mock
+  private PostViewCountService postViewCountService;
 
 
   @Mock
@@ -123,9 +126,9 @@ class FestivalServiceTest {
     FestivalCompositeDto msFestivalCompositeDto = createFestivalCompositeDto(Language.MALAYSIA,
         startDate, endDate);
 
-    when(festivalRepository.findCompositeDtoById(1L,
+    when(festivalRepository.findCompositeDtoByIdWithPessimisticLock(1L,
         krMemberInfoDto.getLanguage())).thenReturn(krFestivalCompositeDto);
-    when(festivalRepository.findCompositeDtoById(1L,
+    when(festivalRepository.findCompositeDtoByIdWithPessimisticLock(1L,
         msMemberInfoDto.getLanguage())).thenReturn(msFestivalCompositeDto);
     when(memberFavoriteService.isPostInFavorite(any(), eq(FESTIVAL), anyLong()))
         .thenReturn(false);
