@@ -18,7 +18,7 @@ public class FileRequest {
   public static class InitCommandDto {
 
     @NotBlank
-    @Schema(description = "원본 파일명 (확장자 포함)")
+    @Schema(description = "원본 파일명 (확장자 포함)", example = "해수욕장.jpg")
     private String originalFileName;
 
     @NotNull

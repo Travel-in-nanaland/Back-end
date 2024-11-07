@@ -1,5 +1,6 @@
 package com.jeju.nanaland.global.file.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_UPLOAD_FAIL;
 import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_EXTENSION_TYPE;
 import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_SIZE;
 import static com.jeju.nanaland.global.exception.ErrorCode.NO_FILE_EXTENSION;
@@ -13,6 +14,7 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.file.data.FileCategory;
 import com.jeju.nanaland.global.file.dto.FileRequest;
 import com.jeju.nanaland.global.file.dto.FileResponse;
@@ -70,13 +72,16 @@ public class FileUploadService {
     metadata.setContentLength(initCommandDto.getFileSize());
 
     // Upload ID 발급
-    InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucket, fileKey)
-        .withObjectMetadata(metadata);
-    InitiateMultipartUploadResult initResponse = amazonS3.initiateMultipartUpload(initRequest);
-    String uploadId = initResponse.getUploadId();
+    try {
+      InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucket,
+          fileKey)
+          .withObjectMetadata(metadata);
+      InitiateMultipartUploadResult initResponse = amazonS3.initiateMultipartUpload(initRequest);
+      String uploadId = initResponse.getUploadId();
 
     int partCount = calculatePartCount(initCommandDto.getFileSize());
     List<PresignedUrlInfo> presignedUrlInfos = new ArrayList<>();
+
     // 파트별 Pre-Signed URL 발급
     for (int partNumber = 1; partNumber <= partCount; partNumber++) {
       GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileKey)
@@ -98,6 +103,10 @@ public class FileUploadService {
         .fileKey(fileKey)
         .presignedUrlInfos(presignedUrlInfos)
         .build();
+    } catch (Exception e) {
+      log.error("Pre-Signed URL Init 실패 : {}", e.getMessage());
+      throw new ServerErrorException(FILE_UPLOAD_FAIL.getMessage());
+    }
   }
 
   private void validateFileSize(@NotNull Long fileSize) {
@@ -168,14 +177,19 @@ public class FileUploadService {
   }
 
   public void uploadComplete(@Valid FileRequest.CompleteCommandDto completeCommandDto) {
-    CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest()
-        .withBucketName(bucket)
-        .withKey(completeCommandDto.getFileKey())
-        .withUploadId(completeCommandDto.getUploadId())
-        .withPartETags(completeCommandDto.getParts().stream()
-            .map(partInfo -> new PartETag(partInfo.getPartNumber(), partInfo.getETag()))
-            .toList());
+    try {
+      CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest()
+          .withBucketName(bucket)
+          .withKey(completeCommandDto.getFileKey())
+          .withUploadId(completeCommandDto.getUploadId())
+          .withPartETags(completeCommandDto.getParts().stream()
+              .map(partInfo -> new PartETag(partInfo.getPartNumber(), partInfo.getETag()))
+              .toList());
 
-    amazonS3.completeMultipartUpload(completeMultipartUploadRequest);
+      amazonS3.completeMultipartUpload(completeMultipartUploadRequest);
+    } catch (Exception e) {
+      log.error("Pre-Signed URL Complete 실패 : {}", e.getMessage());
+      throw new ServerErrorException(FILE_UPLOAD_FAIL.getMessage());
+    }
   }
 }

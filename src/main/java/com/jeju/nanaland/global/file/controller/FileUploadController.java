@@ -7,6 +7,10 @@ import com.jeju.nanaland.global.BaseResponse;
 import com.jeju.nanaland.global.file.dto.FileRequest;
 import com.jeju.nanaland.global.file.dto.FileResponse;
 import com.jeju.nanaland.global.file.service.FileUploadService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,11 @@ public class FileUploadController {
 
   private final FileUploadService fileUploadService;
 
+  @Operation(summary = "Pre-Signed URL 업로드 시작 API")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
   @PostMapping("/upload-init")
   public BaseResponse<FileResponse.InitResultDto> uploadInit(
       @RequestBody @Valid FileRequest.InitCommandDto initCommandDto
@@ -33,6 +42,11 @@ public class FileUploadController {
     return BaseResponse.success(GET_PRESIGNED_URL_SUCCESS, initResultDto);
   }
 
+  @Operation(summary = "Pre-Signed URL 업로드 완료 API")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
+  })
   @PostMapping("/upload-complete")
   public BaseResponse<Void> uploadComplete(
       @RequestBody @Valid FileRequest.CompleteCommandDto completeCommandDto
