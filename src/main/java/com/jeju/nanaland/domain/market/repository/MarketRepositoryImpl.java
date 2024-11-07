@@ -17,6 +17,7 @@ import com.jeju.nanaland.domain.market.dto.QMarketResponse_MarketThumbnail;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,32 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .where(market.id.eq(id).and(marketTrans.language.eq(language)))
+        .fetchOne();
+  }
+
+  @Override
+  public MarketCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language language) {
+    return queryFactory
+        .select(new QMarketCompositeDto(
+            market.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            market.contact,
+            market.homepage,
+            marketTrans.language,
+            marketTrans.title,
+            marketTrans.content,
+            marketTrans.address,
+            marketTrans.addressTag,
+            marketTrans.time,
+            marketTrans.intro,
+            marketTrans.amenity
+        ))
+        .from(market)
+        .leftJoin(market.firstImageFile, imageFile)
+        .leftJoin(market.marketTrans, marketTrans)
+        .where(market.id.eq(id).and(marketTrans.language.eq(language)))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .fetchOne();
   }
 

@@ -26,6 +26,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -107,10 +108,50 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   }
 
   @Override
+  public RestaurantCompositeDto findCompositeDtoByIdWithPessimisticLock(Long postId,
+      Language language) {
+    return queryFactory
+        .select(new QRestaurantCompositeDto(
+            restaurant.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            restaurant.contact,
+            restaurantTrans.language,
+            restaurantTrans.title,
+            restaurantTrans.content,
+            restaurantTrans.address,
+            restaurantTrans.addressTag,
+            restaurantTrans.time,
+            restaurant.homepage,
+            restaurant.instagram,
+            restaurantTrans.service
+        ))
+        .from(restaurant)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .innerJoin(restaurant.firstImageFile, imageFile)
+        .where(restaurant.id.eq(postId)
+            .and(restaurantTrans.language.eq(language)))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+        .fetchOne();
+  }
+
+  @Override
   public Set<RestaurantTypeKeyword> getRestaurantTypeKeywordSet(Long postId) {
     Map<Long, Set<RestaurantTypeKeyword>> map = queryFactory
         .selectFrom(restaurantKeyword)
         .where(restaurantKeyword.restaurant.id.eq(postId))
+        .transform(GroupBy.groupBy(restaurantKeyword.restaurant.id)
+            .as(GroupBy.set(restaurantKeyword.restaurantTypeKeyword)));
+
+    return map.getOrDefault(postId, Collections.emptySet());
+  }
+
+  @Override
+  public Set<RestaurantTypeKeyword> getRestaurantTypeKeywordSetWithPessimisticLock(Long postId) {
+    Map<Long, Set<RestaurantTypeKeyword>> map = queryFactory
+        .selectFrom(restaurantKeyword)
+        .where(restaurantKeyword.restaurant.id.eq(postId))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .transform(GroupBy.groupBy(restaurantKeyword.restaurant.id)
             .as(GroupBy.set(restaurantKeyword.restaurantTypeKeyword)));
 
@@ -130,6 +171,24 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurantMenu.firstImageFile, imageFile)
         .where(restaurantMenu.restaurantTrans.restaurant.id.eq(postId)
             .and(restaurantTrans.language.eq(language)))
+        .fetch();
+  }
+
+  @Override
+  public List<RestaurantMenuDto> getRestaurantMenuListWithPessimisticLock(Long postId,
+      Language language) {
+    return queryFactory
+        .select(new QRestaurantResponse_RestaurantMenuDto(
+            restaurantMenu.menuName,
+            restaurantMenu.price,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl
+        ))
+        .from(restaurantMenu)
+        .leftJoin(restaurantMenu.firstImageFile, imageFile)
+        .where(restaurantMenu.restaurantTrans.restaurant.id.eq(postId)
+            .and(restaurantTrans.language.eq(language)))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .fetch();
   }
 

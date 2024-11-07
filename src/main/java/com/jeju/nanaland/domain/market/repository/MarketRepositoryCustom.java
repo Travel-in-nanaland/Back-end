@@ -13,6 +13,8 @@ public interface MarketRepositoryCustom {
 
   MarketCompositeDto findCompositeDtoById(Long id, Language locale);
 
+  MarketCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language locale);
+
   Page<MarketThumbnail> findMarketThumbnails(Language locale, List<AddressTag> addressTags,
       Pageable pageable);
 

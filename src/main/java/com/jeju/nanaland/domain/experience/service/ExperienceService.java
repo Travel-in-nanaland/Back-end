@@ -113,8 +113,9 @@ public class ExperienceService implements PostService {
         .build();
   }
 
-  @Transactional
+
   // 이색체험 상세 정보 조회
+  @Transactional
   public ExperienceDetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
@@ -149,6 +150,7 @@ public class ExperienceService implements PostService {
             experienceTypeKeyword.getValueByLocale(language)
         ).toList();
 
+    // 조회 수 증가
     postViewCountService.increaseViewCount(postId, member.getId());
 
     return ExperienceDetailDto.builder()

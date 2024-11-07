@@ -2,9 +2,9 @@ package com.jeju.nanaland.domain.common.service;
 
 import com.jeju.nanaland.domain.common.repository.PostRepository;
 import com.jeju.nanaland.global.util.RedisUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

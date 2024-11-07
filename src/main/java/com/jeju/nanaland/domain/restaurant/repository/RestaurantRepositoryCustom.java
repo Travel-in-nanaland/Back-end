@@ -20,9 +20,15 @@ public interface RestaurantRepositoryCustom {
 
   RestaurantCompositeDto findCompositeDtoById(Long postId, Language language);
 
+  RestaurantCompositeDto findCompositeDtoByIdWithPessimisticLock(Long postId, Language language);
+
   Set<RestaurantTypeKeyword> getRestaurantTypeKeywordSet(Long postId);
 
+  Set<RestaurantTypeKeyword> getRestaurantTypeKeywordSetWithPessimisticLock(Long postId);
+
   List<RestaurantMenuDto> getRestaurantMenuList(Long postId, Language language);
+
+  List<RestaurantMenuDto> getRestaurantMenuListWithPessimisticLock(Long postId, Language language);
 
   Page<RestaurantCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable);

@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class NatureService implements PostService {
   private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
+  private final PostViewCountService postViewCountService;
 
   /**
    * Nature 객체 조회
@@ -73,11 +76,11 @@ public class NatureService implements PostService {
   /**
    * 7대 자연 프리뷰 리스트 조회
    *
-   * @param memberInfoDto  회원 정보
-   * @param addressTags    지역명
-   * @param keyword        키워드
-   * @param page           페이지 Number
-   * @param size           페이지 Size
+   * @param memberInfoDto 회원 정보
+   * @param addressTags   지역명
+   * @param keyword       키워드
+   * @param page          페이지 Number
+   * @param size          페이지 Size
    * @return 7대 자연 프리뷰 리스트
    */
   public NatureResponse.PreviewPageDto getNaturePreview(MemberInfoDto memberInfoDto,
@@ -111,9 +114,11 @@ public class NatureService implements PostService {
    * @return 7대 자연 상세 정보
    * @throws NotFoundException 존재하는 7대 자연이 없는 경우
    */
+  @Transactional
   public NatureResponse.DetailDto getNatureDetail(MemberInfoDto memberInfoDto, Long natureId,
       boolean isSearch) {
-    NatureCompositeDto natureCompositeDto = natureRepository.findNatureCompositeDto(natureId,
+    NatureCompositeDto natureCompositeDto = natureRepository.findNatureCompositeDtoWithPessimisticLock(
+        natureId,
         memberInfoDto.getLanguage());
 
     if (natureCompositeDto == null) {
@@ -128,6 +133,9 @@ public class NatureService implements PostService {
     // 좋아요 여부 확인
     boolean isFavorite =
         memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), NATURE, natureId);
+
+    // 조회 수 증가
+    postViewCountService.increaseViewCount(natureId, memberInfoDto.getMember().getId());
 
     return NatureResponse.DetailDto.builder()
         .id(natureCompositeDto.getId())

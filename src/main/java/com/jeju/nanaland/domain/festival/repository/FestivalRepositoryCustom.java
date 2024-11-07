@@ -13,6 +13,8 @@ public interface FestivalRepositoryCustom {
 
   FestivalCompositeDto findCompositeDtoById(Long id, Language locale);
 
+  FestivalCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language locale);
+
   Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Language locale,
       Pageable pageable);
 
