@@ -11,6 +11,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
@@ -35,6 +36,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +48,7 @@ public class ExperienceService implements PostService {
   private final ImageFileRepository imageFileRepository;
   private final SearchService searchService;
   private final ReviewRepository reviewRepository;
+  private final PostViewCountService postViewCountService;
 
   /**
    * Experience 객체 조회
@@ -110,12 +113,13 @@ public class ExperienceService implements PostService {
         .build();
   }
 
+  @Transactional
   // 이색체험 상세 정보 조회
   public ExperienceDetailDto getExperienceDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
-    ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+    ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoByIdWithPessimisticLock(
         postId, language);
 
     // 해당 id의 포스트가 없는 경우 404 에러
@@ -138,12 +142,14 @@ public class ExperienceService implements PostService {
     images.addAll(imageFileRepository.findPostImageFiles(postId));
 
     // 키워드
-    Set<ExperienceTypeKeyword> keywordSet = experienceRepository.getExperienceTypeKeywordSet(
+    Set<ExperienceTypeKeyword> keywordSet = experienceRepository.getExperienceTypeKeywordSetWithWithPessimisticLock(
         postId);
     List<String> keywords = keywordSet.stream()
         .map(experienceTypeKeyword ->
             experienceTypeKeyword.getValueByLocale(language)
         ).toList();
+
+    postViewCountService.increaseViewCount(postId, member.getId());
 
     return ExperienceDetailDto.builder()
         .id(experienceCompositeDto.getId())

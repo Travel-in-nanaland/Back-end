@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.common.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,6 +28,9 @@ public abstract class Post extends BaseEntity {
 
   @NotNull
   private Long priority;
+
+  @Column(name = "view_count", nullable = false, columnDefinition = "int default 0")
+  private int viewCount;
 
   protected Post(ImageFile firstImageFile, Long priority) {
     this.firstImageFile = firstImageFile;

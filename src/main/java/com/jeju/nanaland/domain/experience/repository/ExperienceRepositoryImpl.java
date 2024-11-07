@@ -24,6 +24,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +64,35 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .where(experience.id.eq(id).and(experienceTrans.language.eq(language)))
+        .fetchOne();
+  }
+
+  @Override
+  public ExperienceCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id,
+      Language language) {
+    return queryFactory
+        .select(new QExperienceCompositeDto(
+            experience.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            experience.contact,
+            experience.homepage,
+            experienceTrans.language,
+            experienceTrans.title,
+            experienceTrans.content,
+            experienceTrans.address,
+            experienceTrans.addressTag,
+            experienceTrans.intro,
+            experienceTrans.details,
+            experienceTrans.time,
+            experienceTrans.amenity,
+            experienceTrans.fee
+        ))
+        .from(experience)
+        .leftJoin(experience.firstImageFile, imageFile)
+        .leftJoin(experience.experienceTrans, experienceTrans)
+        .where(experience.id.eq(id).and(experienceTrans.language.eq(language)))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .fetchOne();
   }
 
@@ -165,6 +195,19 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     Map<Long, Set<ExperienceTypeKeyword>> map = queryFactory
         .selectFrom(experienceKeyword)
         .where(experienceKeyword.experience.id.eq(postId))
+        .transform(GroupBy.groupBy(experienceKeyword.experience.id)
+            .as(GroupBy.set(experienceKeyword.experienceTypeKeyword)));
+
+    return map.getOrDefault(postId, Collections.emptySet());
+  }
+
+  @Override
+  public Set<ExperienceTypeKeyword> getExperienceTypeKeywordSetWithWithPessimisticLock(
+      Long postId) {
+    Map<Long, Set<ExperienceTypeKeyword>> map = queryFactory
+        .selectFrom(experienceKeyword)
+        .where(experienceKeyword.experience.id.eq(postId))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)  // 비관적 락 추가
         .transform(GroupBy.groupBy(experienceKeyword.experience.id)
             .as(GroupBy.set(experienceKeyword.experienceTypeKeyword)));
 
