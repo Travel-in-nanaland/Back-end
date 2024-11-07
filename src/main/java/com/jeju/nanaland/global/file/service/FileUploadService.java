@@ -82,6 +82,8 @@ public class FileUploadService {
           .build());
     }
     return InitResultDto.builder()
+        .uploadId(uploadId)
+        .fileKey(fileKey)
         .presignedUrlInfos(presignedUrlInfos)
         .build();
   }

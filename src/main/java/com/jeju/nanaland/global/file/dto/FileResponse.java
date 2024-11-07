@@ -11,7 +11,10 @@ public class FileResponse {
   @Builder
   @Schema(description = "파트별 Pre-Signed URL 정보")
   public static class InitResultDto {
-
+    @Schema(description = "UPLOAD ID")
+    private String uploadId;
+    @Schema(description = "파일 키")
+    private String fileKey;
     @Schema(description = "Pre-Signed URL 정보 리스트")
     List<PresignedUrlInfo> presignedUrlInfos;
   }
@@ -20,7 +23,6 @@ public class FileResponse {
   @Builder
   @Schema(description = "Pre-Signed URL 정보 리스트")
   public static class PresignedUrlInfo {
-
     private int partNumber;
     private String preSignedUrl;
   }
