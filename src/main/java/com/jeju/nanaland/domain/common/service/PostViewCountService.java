@@ -15,7 +15,10 @@ public class PostViewCountService {
 
   @Transactional
   public void increaseViewCount(Long postId, Long memberId) {
-    String redisKey = "post_viewed_" + memberId + "_" + postId;
+
+    // 8083은 dev, 도메인은 prod로 프로필을 설정하는 것이 어떨까요?
+    String env = System.getProperty("spring.profiles.active");
+    String redisKey = env + "_post_viewed_" + memberId + "_" + postId;
 
     // 30분 -> 1800초
     long cacheDurationSeconds = 1800L;
