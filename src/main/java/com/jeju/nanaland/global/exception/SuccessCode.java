@@ -85,7 +85,8 @@ public enum SuccessCode {
   SEND_NOTIFICATION_SUCCESS(CREATED, "알림 전송 성공"),
 
   // file
-  GET_PRESIGNED_URL_SUCCESS(OK, "Pre-Signed URL 발급 성공");
+  GET_PRESIGNED_URL_SUCCESS(OK, "Pre-Signed URL 발급 성공"),
+  COMPLETE_PRESIGNED_URL_SUCCESS(OK, "Pre-Signed URL 업로드 완료 성공");
 
   private final HttpStatus httpStatus;
   private final String message;

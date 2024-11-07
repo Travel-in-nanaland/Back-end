@@ -1,5 +1,6 @@
 package com.jeju.nanaland.global.file.controller;
 
+import static com.jeju.nanaland.global.exception.SuccessCode.COMPLETE_PRESIGNED_URL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_PRESIGNED_URL_SUCCESS;
 
 import com.jeju.nanaland.global.BaseResponse;
@@ -30,5 +31,13 @@ public class FileUploadController {
   ){
     FileResponse.InitResultDto initResultDto = fileUploadService.uploadInit(initCommandDto);
     return BaseResponse.success(GET_PRESIGNED_URL_SUCCESS, initResultDto);
+  }
+
+  @PostMapping("/upload-complete")
+  public BaseResponse<Void> uploadComplete(
+      @RequestBody @Valid FileRequest.CompleteCommandDto completeCommandDto
+  ) {
+    fileUploadService.uploadComplete(completeCommandDto);
+    return BaseResponse.success(COMPLETE_PRESIGNED_URL_SUCCESS);
   }
 }

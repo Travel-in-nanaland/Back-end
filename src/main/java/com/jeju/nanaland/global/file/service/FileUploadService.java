@@ -6,15 +6,19 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NO_FILE_EXTENSION;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
+import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.file.data.FileCategory;
 import com.jeju.nanaland.global.file.dto.FileRequest;
 import com.jeju.nanaland.global.file.dto.FileResponse;
 import com.jeju.nanaland.global.file.dto.FileResponse.InitResultDto;
 import com.jeju.nanaland.global.file.dto.FileResponse.PresignedUrlInfo;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.net.URL;
@@ -53,19 +57,27 @@ public class FileUploadService {
     validateFileSize(initCommandDto.getFileSize());
 
     // 파일 형식 유효성 검사
-    validateFileExtension(initCommandDto.getOriginalFileName(), initCommandDto.getFileCategory());
+    String contentType = validateFileExtension(initCommandDto.getOriginalFileName(),
+        initCommandDto.getFileCategory());
 
     // S3 key 생성
     String fileKey = generateUniqueFileKey(initCommandDto.getOriginalFileName(),
         initCommandDto.getFileCategory());
 
-    InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucket, fileKey);
+    // ObjectMetadata 설정
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentType(contentType);
+    metadata.setContentLength(initCommandDto.getFileSize());
+
+    // Upload ID 발급
+    InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucket, fileKey)
+        .withObjectMetadata(metadata);
     InitiateMultipartUploadResult initResponse = amazonS3.initiateMultipartUpload(initRequest);
     String uploadId = initResponse.getUploadId();
 
     int partCount = calculatePartCount(initCommandDto.getFileSize());
-
     List<PresignedUrlInfo> presignedUrlInfos = new ArrayList<>();
+    // 파트별 Pre-Signed URL 발급
     for (int partNumber = 1; partNumber <= partCount; partNumber++) {
       GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileKey)
           .withMethod(HttpMethod.PUT)
@@ -95,7 +107,7 @@ public class FileUploadService {
     }
   }
 
-  private void validateFileExtension(@NotBlank String originalFileName, String fileCategory) {
+  private String validateFileExtension(@NotBlank String originalFileName, String fileCategory) {
     if (originalFileName == null || !originalFileName.contains(".")) {
       throw new BadRequestException(NO_FILE_EXTENSION.getMessage());
     }
@@ -107,6 +119,16 @@ public class FileUploadService {
     if (!FileCategory.valueOf(fileCategory).getAllowedExtensions().contains(extension)) {
       throw new BadRequestException(INVALID_FILE_EXTENSION_TYPE.getMessage());
     }
+
+    return switch (extension) {
+      case "jpg", "jpeg" -> "image/jpeg";
+      case "png" -> "image/png";
+      case "webp" -> "image/gif";
+      case "mp4" -> "video/mp4";
+      case "mov" -> "video/quicktime";
+      case "webm" -> "video/webm";
+      default -> "application/octet-stream";
+    };
   }
 
   private String generateUniqueFileKey(String originalFileName, String fileCategory) {
@@ -120,7 +142,7 @@ public class FileUploadService {
     String fileName = uniqueId + "_" + formattedDate + extension;
 
     return String.format("%s/%s",
-        getDirectory(FileCategory.valueOf(fileCategory)),
+        getDirectory(FileCategory.valueOf(fileCategory)).replaceFirst("^/", ""),
         fileName);
   }
 
@@ -143,5 +165,17 @@ public class FileUploadService {
     expTimeMillis += 1000 * 60 * 30;
     expiration.setTime(expTimeMillis);
     return expiration;
+  }
+
+  public void uploadComplete(@Valid FileRequest.CompleteCommandDto completeCommandDto) {
+    CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest()
+        .withBucketName(bucket)
+        .withKey(completeCommandDto.getFileKey())
+        .withUploadId(completeCommandDto.getUploadId())
+        .withPartETags(completeCommandDto.getParts().stream()
+            .map(partInfo -> new PartETag(partInfo.getPartNumber(), partInfo.getETag()))
+            .toList());
+
+    amazonS3.completeMultipartUpload(completeMultipartUploadRequest);
   }
 }

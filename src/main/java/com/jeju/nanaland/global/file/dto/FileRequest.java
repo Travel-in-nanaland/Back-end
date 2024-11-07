@@ -4,7 +4,9 @@ import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.global.file.data.FileCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -33,5 +35,30 @@ public class FileRequest {
         allowableValues = {"MEMBER_PROFILE", "REVIEW", "INFO_FIX_REPORT", "CLAIM_REPORT"}
     )
     private String fileCategory;
+  }
+
+  @Schema(description = "파일 업로드 완료 요청 Dto")
+  @Data
+  @Builder
+  public static class CompleteCommandDto {
+
+    @NotBlank
+    @Schema(description = "UPLOAD ID")
+    private String uploadId;
+
+    @NotBlank
+    @Schema(description = "파일 키")
+    private String fileKey;
+
+    @NotEmpty
+    @Schema(description = "파트 정보 리스트")
+    private List<PartInfo> parts;
+  }
+
+  @Data
+  @Builder
+  public static class PartInfo {
+    private int partNumber;
+    private String eTag;
   }
 }
