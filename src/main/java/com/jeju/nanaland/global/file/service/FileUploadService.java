@@ -1,5 +1,6 @@
 package com.jeju.nanaland.global.file.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_S3_NOT_FOUNE;
 import static com.jeju.nanaland.global.exception.ErrorCode.FILE_UPLOAD_FAIL;
 import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_EXTENSION_TYPE;
 import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_SIZE;
@@ -7,6 +8,7 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NO_FILE_EXTENSION;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
@@ -14,12 +16,14 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.global.exception.BadRequestException;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.file.data.FileCategory;
 import com.jeju.nanaland.global.file.dto.FileRequest;
 import com.jeju.nanaland.global.file.dto.FileResponse;
 import com.jeju.nanaland.global.file.dto.FileResponse.InitResultDto;
 import com.jeju.nanaland.global.file.dto.FileResponse.PresignedUrlInfo;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -41,6 +45,7 @@ import org.springframework.stereotype.Service;
 public class FileUploadService {
 
   private final AmazonS3 amazonS3;
+  private final AmazonS3Client amazonS3Client;
 
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
@@ -52,6 +57,10 @@ public class FileUploadService {
   private String INFO_FIX_REPORT_DIRECTORY;
   @Value("${cloud.aws.s3.claimReportFileDirectory}")
   private String CLAIM_REPORT_DIRECTORY;
+  @Value("/thumbnail_images")
+  private String THUMBNAIL_DIRECTORY;
+  @Value("thumbnail_")
+  private String THUMBNAIL_PREFIX;
   private static final int PART_SIZE = 5 * 1024 * 1024;
 
   public FileResponse.InitResultDto uploadInit(FileRequest.InitCommandDto initCommandDto) {
@@ -191,5 +200,24 @@ public class FileUploadService {
       log.error("Pre-Signed URL Complete 실패 : {}", e.getMessage());
       throw new ServerErrorException(FILE_UPLOAD_FAIL.getMessage());
     }
+  }
+
+  public S3ImageDto getS3ImageUrls(String fileKey, FileCategory fileCategory) {
+    if (!amazonS3Client.doesObjectExist(bucket + getDirectory(fileCategory), fileKey)) {
+      throw new NotFoundException(FILE_S3_NOT_FOUNE.getMessage());
+    }
+    String originUrl = amazonS3.getUrl(bucket  + getDirectory(fileCategory), fileKey).toString();
+
+    if (!amazonS3Client.doesObjectExist(bucket + THUMBNAIL_DIRECTORY, THUMBNAIL_PREFIX + fileKey)) {
+      return S3ImageDto.builder()
+          .originUrl(originUrl)
+          .thumbnailUrl(originUrl)
+          .build();
+    }
+    String thumbnailUrl = amazonS3.getUrl(bucket + THUMBNAIL_DIRECTORY, THUMBNAIL_PREFIX + fileKey).toString();
+    return S3ImageDto.builder()
+        .originUrl(originUrl)
+        .thumbnailUrl(thumbnailUrl)
+        .build();
   }
 }

@@ -66,6 +66,8 @@ public enum ErrorCode {
   KEYWORD_NOT_FOUND(NOT_FOUND, "존재하지 않는 키워드 입니다."),
   INFO_TYPE_NOT_FOUND(NOT_FOUND, "존재하지 않는 InfoType 입니다."),
   LANGUAGE_NOT_FOUND(NOT_FOUND, "지원하지 않는 언어입니다."),
+  FILE_S3_NOT_FOUNE(NOT_FOUND, "파일을 S3에서 찾을 수 없습니다."),
+
 
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
