@@ -72,8 +72,7 @@ public class ReviewController {
       @ApiResponse(responseCode = "404", description = "입력한 값이 존재하지 않는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping(value = "/{id}",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{id}")
   public BaseResponse<String> saveReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
