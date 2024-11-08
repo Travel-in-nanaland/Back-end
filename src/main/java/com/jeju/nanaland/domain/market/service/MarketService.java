@@ -10,6 +10,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +40,7 @@ public class MarketService implements PostService {
   private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
+  private final PostViewCountService postViewCountService;
 
   /**
    * Market 객체 조회
@@ -98,10 +101,12 @@ public class MarketService implements PostService {
   }
 
   // 전통시장 상세 정보 조회
+  @Transactional
   public MarketResponse.MarketDetailDto getMarketDetail(MemberInfoDto memberInfoDto, Long id,
       boolean isSearch) {
 
-    MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(id,
+    MarketCompositeDto marketCompositeDto = marketRepository.findCompositeDtoByIdWithPessimisticLock(
+        id,
         memberInfoDto.getLanguage());
 
     if (marketCompositeDto == null) {
@@ -116,6 +121,9 @@ public class MarketService implements PostService {
     // 좋아요 여부 확인
     boolean isFavorite =
         memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), MARKET, id);
+
+    // 조회 수 증가
+    postViewCountService.increaseViewCount(id, memberInfoDto.getMember().getId());
 
     return MarketResponse.MarketDetailDto.builder()
         .id(marketCompositeDto.getId())

@@ -12,6 +12,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -36,6 +37,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +49,7 @@ public class RestaurantService implements PostService {
   private final ReviewRepository reviewRepository;
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
+  private final PostViewCountService postViewCountService;
 
   /**
    * Restaurant 객체 조회
@@ -111,11 +114,12 @@ public class RestaurantService implements PostService {
   }
 
   // 맛집 상세 정보 조회
+  @Transactional
   public RestaurantDetailDto getRestaurantDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
-    RestaurantCompositeDto restaurantCompositeDto = restaurantRepository.findCompositeDtoById(
+    RestaurantCompositeDto restaurantCompositeDto = restaurantRepository.findCompositeDtoByIdWithPessimisticLock(
         postId, language);
 
     // 해당 id의 포스트가 없는 경우 404 에러
@@ -138,7 +142,7 @@ public class RestaurantService implements PostService {
     images.addAll(imageFileRepository.findPostImageFiles(postId));
 
     // 키워드
-    Set<RestaurantTypeKeyword> keywordSet = restaurantRepository.getRestaurantTypeKeywordSet(
+    Set<RestaurantTypeKeyword> keywordSet = restaurantRepository.getRestaurantTypeKeywordSetWithPessimisticLock(
         postId);
     List<String> keywords = keywordSet.stream()
         .map(experienceTypeKeyword ->
@@ -146,8 +150,12 @@ public class RestaurantService implements PostService {
         ).toList();
 
     // 메뉴
-    List<RestaurantMenuDto> menuDtoList = restaurantRepository.getRestaurantMenuList(postId,
+    List<RestaurantMenuDto> menuDtoList = restaurantRepository.getRestaurantMenuListWithPessimisticLock(
+        postId,
         language);
+
+    // 조회 수 증가
+    postViewCountService.increaseViewCount(postId, member.getId());
 
     return RestaurantDetailDto.builder()
         .id(restaurantCompositeDto.getId())

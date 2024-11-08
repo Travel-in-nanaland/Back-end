@@ -12,6 +12,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.repository.HashtagRepository;
@@ -39,6 +40,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +53,7 @@ public class NanaService implements PostService {
   private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileRepository imageFileRepository;
+  private final PostViewCountService postViewCountService;
 
 
   /**
@@ -141,14 +144,14 @@ public class NanaService implements PostService {
    * @param isSearch
    * @return
    */
-
+  @Transactional
   public NanaResponse.DetailPageDto getNanaDetail(MemberInfoDto memberInfoDto, Long postId,
       boolean isSearch) {
 
     Language language = memberInfoDto.getLanguage();
 
     // nana 찾아서
-    Nana nana = nanaRepository.findNanaById(postId)
+    Nana nana = nanaRepository.findNanaByIdWithPessimisticLock(postId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.NANA_NOT_FOUND.getMessage()));
 
     // nanaTitle 찾아서
@@ -179,6 +182,9 @@ public class NanaService implements PostService {
 
     List<NanaResponse.ContentDetailDto> contentDetailDtos = getNanaDetailDtosFromNanaContents(
         nanaContents, language, eachNanaContentImages);
+
+    // 조회 수 증가
+    postViewCountService.increaseViewCount(postId, memberInfoDto.getMember().getId());
 
     return NanaResponse.DetailPageDto.builder()
         .id(nana.getId())
