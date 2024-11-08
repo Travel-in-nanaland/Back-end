@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -158,9 +157,8 @@ public class ReviewController {
   public BaseResponse<String> updateMyReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
-      @RequestPart(required = false) List<MultipartFile> imageList,
       @RequestPart @Valid ReviewRequest.EditReviewDto editReviewDto) {
-    reviewService.updateMyReview(memberInfoDto, id, imageList, editReviewDto);
+    reviewService.updateMyReview(memberInfoDto, id, editReviewDto);
     return BaseResponse.success(REVIEW_UPDATE_SUCCESS);
   }
 

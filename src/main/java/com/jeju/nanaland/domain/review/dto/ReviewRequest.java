@@ -81,6 +81,8 @@ public class ReviewRequest {
     @NotNull
     private List<EditImageInfoDto> editImageInfoList;
 
+    @Schema(description = "파일 키 리스트", example = "[\"fileKey1.jpg\", \"fileKey2.jpeg\", \"fileKey3.png\"]")
+    private List<String> fileKeys;
 
     @Getter
     @Builder
