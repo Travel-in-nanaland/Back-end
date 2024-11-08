@@ -13,6 +13,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalResponse.FestivalDetailDto;
@@ -25,7 +26,6 @@ import com.jeju.nanaland.domain.search.service.SearchService;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +49,7 @@ public class FestivalService implements PostService {
   private final MemberFavoriteService memberFavoriteService;
   private final SearchService searchService;
   private final ImageFileService imageFileService;
+  private final PostViewCountService postViewCountService;
 
   /**
    * Festival 객체 조회
@@ -144,9 +146,11 @@ public class FestivalService implements PostService {
   }
 
   // 축제 상세 정보 조회
+  @Transactional
   public FestivalDetailDto getFestivalDetail(MemberInfoDto memberInfoDto, Long id,
       boolean isSearch) {
-    FestivalCompositeDto compositeDtoById = festivalRepository.findCompositeDtoById(id,
+    FestivalCompositeDto compositeDtoById = festivalRepository.findCompositeDtoByIdWithPessimisticLock(
+        id,
         memberInfoDto.getLanguage());
 
     if (compositeDtoById == null) {
@@ -159,6 +163,9 @@ public class FestivalService implements PostService {
 
     boolean isPostInFavorite =
         memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), FESTIVAL, id);
+
+    // 조회 수 증가
+    postViewCountService.increaseViewCount(id, memberInfoDto.getMember().getId());
 
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())

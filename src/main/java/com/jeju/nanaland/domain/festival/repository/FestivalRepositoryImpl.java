@@ -16,6 +16,7 @@ import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,37 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(festival.id.eq(id).and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE))
         )
+        .fetchOne();
+  }
+
+  @Override
+  public FestivalCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language language) {
+    return queryFactory
+        .select(new QFestivalCompositeDto(
+            festival.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            festival.contact,
+            festival.homepage,
+            festivalTrans.language,
+            festivalTrans.title,
+            festivalTrans.content,
+            festivalTrans.address,
+            festivalTrans.addressTag,
+            festivalTrans.time,
+            festivalTrans.intro,
+            festivalTrans.fee,
+            festival.startDate,
+            festival.endDate,
+            festival.season
+        ))
+        .from(festival)
+        .leftJoin(festival.firstImageFile, imageFile)
+        .leftJoin(festival.festivalTrans, festivalTrans)
+        .where(festival.id.eq(id).and(festivalTrans.language.eq(language))
+            .and(festival.status.eq(Status.ACTIVE))
+        )
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .fetchOne();
   }
 

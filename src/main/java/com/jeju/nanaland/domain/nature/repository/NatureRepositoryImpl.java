@@ -17,6 +17,7 @@ import com.jeju.nanaland.domain.nature.dto.QNatureResponse_PreviewDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,36 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .where(nature.id.eq(natureId)
             .and(natureTrans.language.eq(language))
         )
+        .fetchOne();
+  }
+
+  @Override
+  public NatureCompositeDto findNatureCompositeDtoWithPessimisticLock(Long natureId,
+      Language language) {
+    return queryFactory
+        .select(new QNatureCompositeDto(
+            nature.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            nature.contact,
+            natureTrans.language,
+            natureTrans.title,
+            natureTrans.content,
+            natureTrans.address,
+            natureTrans.addressTag,
+            natureTrans.intro,
+            natureTrans.details,
+            natureTrans.time,
+            natureTrans.amenity,
+            natureTrans.fee
+        ))
+        .from(nature)
+        .leftJoin(nature.firstImageFile, imageFile)
+        .leftJoin(nature.natureTrans, natureTrans)
+        .where(nature.id.eq(natureId)
+            .and(natureTrans.language.eq(language))
+        )
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .fetchOne();
   }
 
@@ -125,14 +156,15 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   /**
    * 7대 자연 프리뷰 페이징 조회
    *
-   * @param language       언어
-   * @param addressTags    지역명
-   * @param keyword        키워드
-   * @param pageable       페이징 정보
+   * @param language    언어
+   * @param addressTags 지역명
+   * @param keyword     키워드
+   * @param pageable    페이징 정보
    * @return 7대 자연 검색 페이징 정보
    */
   @Override
-  public Page<NatureResponse.PreviewDto> findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(Language language,
+  public Page<NatureResponse.PreviewDto> findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(
+      Language language,
       List<AddressTag> addressTags, String keyword, Pageable pageable) {
     List<NatureResponse.PreviewDto> resultDto = queryFactory
         .select(new QNatureResponse_PreviewDto(

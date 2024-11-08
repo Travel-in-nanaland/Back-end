@@ -18,6 +18,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -63,6 +64,8 @@ class NatureServiceTest {
   private SearchService searchService;
   @Mock
   private ImageFileService imageFileService;
+  @Mock
+  private PostViewCountService postViewCountService;
 
   @BeforeEach
   void setUp() {
@@ -174,6 +177,7 @@ class NatureServiceTest {
   @Nested
   @DisplayName("7대 자연 프리뷰 페이징 조회 TEST")
   class GetNaturePreview {
+
     @Test
     @DisplayName("성공 - 기본 케이스")
     void getNaturePreviewSuccess() {
@@ -183,7 +187,8 @@ class NatureServiceTest {
       Page<NatureResponse.PreviewDto> naturePreviewDtos = createNaturePreviews(pageSize, totalSize);
 
       doReturn(naturePreviewDtos).when(natureRepository)
-          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(), any(), any());
+          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(),
+              any(), any());
       doReturn(new ArrayList<>()).when(memberFavoriteService)
           .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -212,7 +217,8 @@ class NatureServiceTest {
           PageRequest.of(pageNumber, pageSize), 0);
 
       doReturn(naturePreviewDtos).when(natureRepository)
-          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(), any(), any());
+          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(),
+              any(), any());
       doReturn(new ArrayList<>()).when(memberFavoriteService)
           .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -235,7 +241,8 @@ class NatureServiceTest {
       List<Long> favoriteIds = List.of(1L);
 
       doReturn(naturePreviewDtos).when(natureRepository)
-          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(), any(), any());
+          .findAllNaturePreviewDtoOrderByPriorityAndCreatedAtDesc(any(Language.class), anyList(),
+              any(), any());
       doReturn(favoriteIds).when(memberFavoriteService)
           .getFavoritePostIdsWithMember(any(Member.class));
 
@@ -254,11 +261,12 @@ class NatureServiceTest {
   @Nested
   @DisplayName("7대 자연 상세 조회 TEST")
   class GetNatureDetail {
+
     @Test
     @DisplayName("실패 - 해당 게시물이 존재하지 않는 경우")
     void getNatureDetailFail_postNotFound() {
       // given: 7대 자연 게시물이 존재하지 않도록 설정
-      doReturn(null).when(natureRepository).findNatureCompositeDto(any(), any());
+      doReturn(null).when(natureRepository).findNatureCompositeDtoWithPessimisticLock(any(), any());
 
       // when: 7대 자연 상세 조회
       // then: ErrorCode 검증
@@ -278,13 +286,15 @@ class NatureServiceTest {
           new ImageFileDto("origin url 2", "thumbnail url 2")
       );
 
-      doReturn(natureCompositeDto).when(natureRepository).findNatureCompositeDto(any(), any());
+      doReturn(natureCompositeDto).when(natureRepository)
+          .findNatureCompositeDtoWithPessimisticLock(any(), any());
       doReturn(true).when(memberFavoriteService).isPostInFavorite(any(), any(), any());
       doReturn(images).when(imageFileService)
           .getPostImageFilesByPostIdIncludeFirstImage(1L, natureCompositeDto.getFirstImage());
 
       // when: 7대 자연 상세 조회 (검색이용)
-      NatureResponse.DetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, 1L, true);
+      NatureResponse.DetailDto natureDetail = natureService.getNatureDetail(memberInfoDto, 1L,
+          true);
 
       // then: 7대 자연 상세 정보 검증
       assertThat(natureDetail.getTitle()).isEqualTo(natureCompositeDto.getTitle());
