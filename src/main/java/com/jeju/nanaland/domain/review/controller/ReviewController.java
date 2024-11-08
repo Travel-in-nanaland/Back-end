@@ -27,7 +27,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -71,6 +70,7 @@ public class ReviewController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "입력한 값이 존재하지 않는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping(value = "/{id}",
@@ -79,10 +79,9 @@ public class ReviewController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
-      @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> imageList,
       @RequestPart @Valid ReviewRequest.CreateReviewDto createReviewDto
   ) {
-    reviewService.saveReview(memberInfoDto, id, category, createReviewDto, imageList);
+    reviewService.saveReview(memberInfoDto, id, category, createReviewDto);
     return BaseResponse.success(REVIEW_CREATED_SUCCESS);
   }
 
@@ -188,7 +187,7 @@ public class ReviewController {
   @GetMapping("/search/auto-complete")
   public BaseResponse<List<SearchPostForReviewDto>> getAutoCompleteSearchResultForReview(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam String keyword) throws ExecutionException, InterruptedException {
+      @RequestParam String keyword) {
     return BaseResponse.success(REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS,
         reviewService.getAutoCompleteSearchResultForReview(
             memberInfoDto, keyword));

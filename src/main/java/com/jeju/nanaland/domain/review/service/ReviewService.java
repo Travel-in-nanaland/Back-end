@@ -48,6 +48,7 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.file.data.FileCategory;
 import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.util.ArrayList;
@@ -115,13 +116,14 @@ public class ReviewService {
   // 리뷰 생성
   @Transactional
   public void saveReview(MemberInfoDto memberInfoDto, Long id, Category category,
-      CreateReviewDto createReviewDto, List<MultipartFile> multipartFiles) {
+      CreateReviewDto createReviewDto) {
     if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
       throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
     }
 
     Post post = getPostById(id, category);
-    if (multipartFiles != null && multipartFiles.size() > 5) {
+    List<String> fileKeys = createReviewDto.getFileKeys();
+    if (fileKeys != null && fileKeys.size() > 5) {
       throw new BadRequestException(REVIEW_IMAGE_BAD_REQUEST.getMessage());
     }
 
@@ -149,28 +151,18 @@ public class ReviewService {
     );
 
     // reviewImageFile
-    if (multipartFiles != null) {
-      List<CompletableFuture<ImageFile>> futureImageFiles = multipartFiles.stream()
-          .map(multipartFile -> CompletableFuture.supplyAsync(() -> {
-            File file = fileService.convertMultipartFileToFile(multipartFile);
-            return imageFileService.uploadAndSaveImageFile(file, true, reviewImageDirectoryPath);
-          }))
-          .toList();
+    if (fileKeys != null && !fileKeys.isEmpty()) {
+      List<ReviewImageFile> reviewImageFiles = fileKeys.stream()
+          .map((fileKey -> {
+            ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKey,
+                FileCategory.REVIEW);
+            return ReviewImageFile.builder()
+                .review(review)
+                .imageFile(imageFile)
+                .build();
+          })).toList();
 
-      CompletableFuture.allOf(futureImageFiles.toArray(new CompletableFuture[0]))
-          .thenAccept(v -> {
-            // ImageFile 리스트로 변환
-            List<ImageFile> imageFiles = futureImageFiles.stream()
-                .map(CompletableFuture::join)
-                .toList();
-            List<ReviewImageFile> reviewImageFiles = imageFiles.stream()
-                .map(imageFile -> ReviewImageFile.builder()
-                    .imageFile(imageFile)
-                    .review(review)
-                    .build())
-                .toList();
-            reviewImageFileRepository.saveAll(reviewImageFiles);
-          });
+      reviewImageFileRepository.saveAll(reviewImageFiles);
     }
   }
 
