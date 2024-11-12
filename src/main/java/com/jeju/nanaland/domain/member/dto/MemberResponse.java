@@ -78,6 +78,8 @@ public class MemberResponse {
     List<ConsentItemDto> consentItems;
     @Schema(description = "내 프로필인지 확인 여부")
     private boolean isMyProfile;
+    @Schema(description = "기본 프로필인지 확인 여부")
+    private boolean isDefault;
     @Schema(description = "유저 Id")
     private Long memberId;
     @Schema(description = "이메일")

@@ -87,6 +87,8 @@ public class MemberProfileService {
     Language language = member.getLanguage();
 
     boolean isMyProfile = memberId == null || member.getId().equals(memberId);
+    boolean isDefault = profileImageService.isDefaultProfileImage(
+        member.getProfileImageFile().getOriginUrl());
     if (!isMyProfile) {
       member = memberRepository.findById(memberId)
           .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
@@ -114,6 +116,7 @@ public class MemberProfileService {
 
     return MemberResponse.ProfileDto.builder()
         .isMyProfile(isMyProfile)
+        .isDefault(isDefault)
         .consentItems(consentItems)
         .memberId(member.getId())
         .email(member.getEmail())

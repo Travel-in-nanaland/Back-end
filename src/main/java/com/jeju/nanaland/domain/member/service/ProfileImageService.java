@@ -97,4 +97,9 @@ public class ProfileImageService {
     ImageFile originImageFile = member.getProfileImageFile();
     originImageFile.updateImageFile(s3ImageDto.getOriginUrl(), s3ImageDto.getThumbnailUrl());
   }
+
+  public boolean isDefaultProfileImage(String originUrl) {
+    return defaultProfile.stream()
+        .anyMatch(originUrl::contains);
+  }
 }
