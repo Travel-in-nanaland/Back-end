@@ -2,11 +2,9 @@ package com.jeju.nanaland.domain.member.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
-import static com.jeju.nanaland.global.exception.ErrorCode.SERVER_ERROR;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
-import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -17,16 +15,11 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
-import com.jeju.nanaland.global.image_upload.S3ImageService;
-import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,10 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class MemberProfileService {
 
-  private final S3ImageService s3ImageService;
+  private final ProfileImageService profileImageService;
   private final MemberRepository memberRepository;
-  @Value("${cloud.aws.s3.memberProfileDirectory}")
-  private String MEMBER_PROFILE_DIRECTORY;
 
   /**
    * 유저 프로필 수정
@@ -47,53 +38,21 @@ public class MemberProfileService {
    * @param memberInfoDto    회원 정보
    * @param profileUpdateDto 프로필 수정 정보
    * @param multipartFile    프로필 사진
+   * @param isImageDelete    프로필 사진 삭제 여부
    * @throws ServerErrorException 사진 업로드가 실패했을 경우
    */
   @Transactional
   public void updateProfile(MemberInfoDto memberInfoDto,
-      MemberRequest.ProfileUpdateDto profileUpdateDto, MultipartFile multipartFile) {
+      MemberRequest.ProfileUpdateDto profileUpdateDto, MultipartFile multipartFile, boolean isImageDelete) {
 
     Member member = memberInfoDto.getMember();
     validateNickname(profileUpdateDto.getNickname(), member);
     if (multipartFile != null) {
-      updateProfileImage(multipartFile, member);
+      profileImageService.updateProfileImage(multipartFile, member);
+    } else if (isImageDelete) {
+      profileImageService.setRandomProfileImage(member);
     }
     member.updateProfile(profileUpdateDto);
-  }
-
-  /**
-   * 프로필 사진 업데이트
-   *
-   * @param multipartFile 프로필 사진
-   * @param member        회원
-   */
-  private void updateProfileImage(MultipartFile multipartFile, Member member) {
-    ImageFile profileImageFile = member.getProfileImageFile();
-    try {
-      CompletableFuture<S3ImageDto> futureS3ImageDto = s3ImageService.uploadImageToS3(multipartFile,
-          true,
-          MEMBER_PROFILE_DIRECTORY);
-      S3ImageDto s3ImageDto = futureS3ImageDto.get();
-      if (!s3ImageService.isDefaultProfileImage(profileImageFile)) {
-        s3ImageService.deleteImageS3(profileImageFile, MEMBER_PROFILE_DIRECTORY);
-      }
-      profileImageFile.updateImageFile(s3ImageDto);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("스레드 중단: {}", e.getMessage());
-      throw new ServerErrorException(SERVER_ERROR.getMessage());
-    } catch (ExecutionException e) {
-      log.error("비동기 작업 실행 중 발생하는 예외 발생 : {}", e.getMessage());
-      throw new ServerErrorException(SERVER_ERROR.getMessage());
-    }
-  }
-
-  @Transactional
-  public void updateMemberProfileImage(Long memberId, S3ImageDto s3ImageDto) {
-    Member member = memberRepository.findById(memberId)
-        .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
-    ImageFile originImageFile = member.getProfileImageFile();
-    originImageFile.updateImageFile(s3ImageDto);
   }
 
   /**
