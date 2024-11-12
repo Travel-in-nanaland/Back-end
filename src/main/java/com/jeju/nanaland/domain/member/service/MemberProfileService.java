@@ -5,6 +5,8 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -18,8 +20,10 @@ import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.file.service.FileUploadService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,9 +34,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class MemberProfileService {
 
-  private final ProfileImageService profileImageService;
   private final MemberRepository memberRepository;
+  private final ImageFileRepository imageFileRepository;
   private final FileUploadService fileUploadService;
+  private final List<String> defaultProfile = Arrays.asList("default/LightPurple.png", "default/LightGray.png",
+      "default/Gray.png", "default/DeepBlue.png");
+  private final Random random = new Random();
 
   /**
    * 유저 프로필 수정
@@ -110,8 +117,8 @@ public class MemberProfileService {
           ).toList();
     }
 
-    boolean isDefault = profileImageService.isDefaultProfileImage(
-        member.getProfileImageFile().getOriginUrl());
+    boolean isDefault = defaultProfile.stream()
+        .anyMatch(member.getProfileImageFile().getOriginUrl()::contains);
 
     return MemberResponse.ProfileDto.builder()
         .isMyProfile(isMyProfile)
@@ -158,8 +165,17 @@ public class MemberProfileService {
     validateNickname(nickname, member);
   }
 
-  public String getRandomProfileImageUrl() {
-    S3ImageDto s3ImageDto = profileImageService.getRandomImageFile();
-    return s3ImageDto.getOriginUrl();
+  public ImageFile saveRandomProfileImageFile() {
+    S3ImageDto s3ImageDto = getRandomImageFile();
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl(s3ImageDto.getOriginUrl())
+        .thumbnailUrl(s3ImageDto.getThumbnailUrl())
+        .build();
+    return imageFileRepository.save(imageFile);
+  }
+
+  public S3ImageDto getRandomImageFile() {
+    String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
+    return fileUploadService.getS3ImageUrls(selectedProfile);
   }
 }

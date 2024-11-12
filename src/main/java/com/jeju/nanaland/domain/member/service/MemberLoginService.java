@@ -50,7 +50,7 @@ public class MemberLoginService {
   private final ImageFileService imageFileService;
   private final FcmTokenService fcmTokenService;
   private final FileService fileService;
-  private final ProfileImageService profileImageService;
+  private final MemberProfileService memberProfileService;
 
   /**
    * 회원 가입
@@ -73,7 +73,7 @@ public class MemberLoginService {
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = profileImageService.saveRandomProfileImageFile();
+    ImageFile profileImageFile = memberProfileService.saveRandomProfileImageFile();
     Member member = createMember(joinDto, profileImageFile, nickname);
 
     // GUEST가 아닌 경우, 이용약관 저장

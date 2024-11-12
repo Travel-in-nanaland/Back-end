@@ -305,7 +305,7 @@ public class MemberController {
   })
   @GetMapping("/randomProfile")
   public BaseResponse<String> getRandomProfileImageUrl() {
-    String randomProfileImageUrl = memberProfileService.getRandomProfileImageUrl();
+    String randomProfileImageUrl = memberProfileService.getRandomImageFile().getOriginUrl();
     return BaseResponse.success(RANDOM_URL_SUCCESS, randomProfileImageUrl);
   }
 }
