@@ -25,6 +25,10 @@ public class FileRequest {
     @Schema(description = "파일 크기")
     private Long fileSize;
 
+    @NotNull
+    @Schema(description = "파일 파트 개수")
+    private int partCount;
+
     @EnumValid(
         enumClass = FileCategory.class,
         message = "해당 파일 카테고리가 존재하지 않습니다."

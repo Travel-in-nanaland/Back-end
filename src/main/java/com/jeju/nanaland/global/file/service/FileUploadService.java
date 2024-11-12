@@ -25,6 +25,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,14 +47,15 @@ public class FileUploadService {
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
   @Value("${cloud.aws.s3.memberProfileDirectory}")
-  private String MEMBER_PROFILE_DIRECTORY;
+  private String memberProfileDirectory;
   @Value("${cloud.aws.s3.reviewDirectory}")
-  private String REVIEW_DIRECTORY;
+  private String reviewDirectory;
   @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
-  private String INFO_FIX_REPORT_DIRECTORY;
+  private String infoFixReportDirectory;
   @Value("${cloud.aws.s3.claimReportFileDirectory}")
-  private String CLAIM_REPORT_DIRECTORY;
-  private static final int PART_SIZE = 5 * 1024 * 1024;
+  private String claimReportDirectory;
+  private static final int PRESIGNEDURL_EXPIRATION = 30;
+  private static final long MAX_FILE_SIZE = 30 * 1024 * 1024L;
 
   public FileResponse.InitResultDto uploadInit(FileRequest.InitCommandDto initCommandDto) {
     // 파일 크기 유효성 검사
@@ -79,11 +82,9 @@ public class FileUploadService {
       InitiateMultipartUploadResult initResponse = amazonS3.initiateMultipartUpload(initRequest);
       String uploadId = initResponse.getUploadId();
 
-    int partCount = calculatePartCount(initCommandDto.getFileSize());
     List<PresignedUrlInfo> presignedUrlInfos = new ArrayList<>();
-
     // 파트별 Pre-Signed URL 발급
-    for (int partNumber = 1; partNumber <= partCount; partNumber++) {
+    for (int partNumber = 1; partNumber <= initCommandDto.getPartCount(); partNumber++) {
       GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileKey)
           .withMethod(HttpMethod.PUT)
           .withExpiration(getPresignedUrlExpiration())
@@ -110,8 +111,7 @@ public class FileUploadService {
   }
 
   private void validateFileSize(@NotNull Long fileSize) {
-    long maxSize = 30 * 1024 * 1024L;
-    if (fileSize > maxSize) {
+    if (fileSize > MAX_FILE_SIZE) {
       throw new BadRequestException(INVALID_FILE_SIZE.getMessage());
     }
   }
@@ -157,23 +157,18 @@ public class FileUploadService {
 
   public String getDirectory(FileCategory fileCategory) {
     return switch (fileCategory) {
-      case MEMBER_PROFILE -> MEMBER_PROFILE_DIRECTORY;
-      case REVIEW -> REVIEW_DIRECTORY;
-      case INFO_FIX_REPORT -> INFO_FIX_REPORT_DIRECTORY;
-      case CLAIM_REPORT -> CLAIM_REPORT_DIRECTORY;
+      case MEMBER_PROFILE -> memberProfileDirectory;
+      case REVIEW -> reviewDirectory;
+      case INFO_FIX_REPORT -> infoFixReportDirectory;
+      case CLAIM_REPORT -> claimReportDirectory;
     };
   }
 
-  private int calculatePartCount(long fileSize) {
-    return (int) Math.ceil((double) fileSize / PART_SIZE);
-  }
-
   private Date getPresignedUrlExpiration() {
-    Date expiration = new Date();
-    long expTimeMillis = expiration.getTime();
-    expTimeMillis += 1000 * 60 * 30;
-    expiration.setTime(expTimeMillis);
-    return expiration;
+    return Date.from(LocalDateTime.now()
+        .plusMinutes(PRESIGNEDURL_EXPIRATION)
+        .atZone(ZoneId.systemDefault())
+        .toInstant());
   }
 
   public void uploadComplete(@Valid FileRequest.CompleteCommandDto completeCommandDto) {
