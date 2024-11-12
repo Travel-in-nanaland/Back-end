@@ -23,7 +23,9 @@ import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +39,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +53,8 @@ class MemberProfileServiceTest {
   private ProfileImageService profileImageService;
   @InjectMocks
   private MemberProfileService memberProfileService;
+  @Mock
+  private FileUploadService fileUploadService;
 
   private MemberRequest.ProfileUpdateDto profileUpdateDto;
   private ImageFile imageFile;
@@ -121,7 +124,7 @@ class MemberProfileServiceTest {
 
       // when: 유저 프로필 수정
       ConflictException conflictException = assertThrows(ConflictException.class,
-          () -> memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, null, false));
+          () -> memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, null));
 
       // then: ErrorCode 검증
       assertThat(conflictException.getMessage()).isEqualTo(ErrorCode.NICKNAME_DUPLICATE.getMessage());
@@ -138,7 +141,7 @@ class MemberProfileServiceTest {
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
 
       // when: 유저 프로필 수정
-      memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, null, false);
+      memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, null);
 
       // then: 프로필 수정 확인, 이미지 변경 없음 확인
       assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
@@ -153,17 +156,20 @@ class MemberProfileServiceTest {
       Language language = Language.KOREAN;
       Member member = createMember(language, "nickname");
       MemberInfoDto memberInfoDto = createMemberInfoDto(language, member);
-      MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-          new byte[0]);
+      S3ImageDto s3ImageDto = S3ImageDto.builder()
+          .originUrl("orignUrl")
+          .thumbnailUrl("thumbnailUrl")
+          .build();
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
+      doReturn(s3ImageDto).when(fileUploadService).getS3ImageUrls(any());
 
       // when: 유저 프로필 수정
-      memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, multipartFile, false);
+      memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, "test/abc_test.jpg");
 
       // then: 프로필 수정 확인, 이미지 변경 확인
       assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
       assertThat(member.getDescription()).isEqualTo(profileUpdateDto.getDescription());
-      verify(profileImageService).updateProfileImage(any(), any());
+      verify(fileUploadService).getS3ImageUrls(any());
     }
   }
 

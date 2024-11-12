@@ -201,16 +201,12 @@ public class MemberController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "이미지 업로드에 실패한 경우", content = @Content)
   })
-  @PatchMapping(
-      value = "/profile",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PatchMapping(value = "/profile")
   public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart @Valid MemberRequest.ProfileUpdateDto reqDto,
-      @RequestPart(required = false) MultipartFile multipartFile,
-      @RequestParam(defaultValue = "false") boolean isImageDelete) {
-
-    memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile, isImageDelete);
+      @RequestBody @Valid MemberRequest.ProfileUpdateDto reqDto,
+      @RequestParam(required = false) String fileKey) {
+    memberProfileService.updateProfile(memberInfoDto, reqDto, fileKey);
     return BaseResponse.success(UPDATE_MEMBER_PROFILE_SUCCESS);
   }
 

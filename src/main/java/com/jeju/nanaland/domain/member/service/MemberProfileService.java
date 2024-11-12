@@ -15,6 +15,7 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -32,26 +32,23 @@ public class MemberProfileService {
 
   private final ProfileImageService profileImageService;
   private final MemberRepository memberRepository;
+  private final FileUploadService fileUploadService;
 
   /**
    * 유저 프로필 수정
    *
    * @param memberInfoDto    회원 정보
    * @param profileUpdateDto 프로필 수정 정보
-   * @param multipartFile    프로필 사진
-   * @param isImageDelete    프로필 사진 삭제 여부
    * @throws ServerErrorException 사진 업로드가 실패했을 경우
    */
   @Transactional
-  public void updateProfile(MemberInfoDto memberInfoDto,
-      MemberRequest.ProfileUpdateDto profileUpdateDto, MultipartFile multipartFile, boolean isImageDelete) {
+  public void updateProfile(MemberInfoDto memberInfoDto, MemberRequest.ProfileUpdateDto profileUpdateDto, String fileKey) {
 
     Member member = memberInfoDto.getMember();
     validateNickname(profileUpdateDto.getNickname(), member);
-    if (multipartFile != null) {
-      profileImageService.updateProfileImage(multipartFile, member);
-    } else if (isImageDelete) {
-      profileImageService.setRandomProfileImage(member);
+    if (fileKey != null) {
+      S3ImageDto s3ImageDto = fileUploadService.getS3ImageUrls(fileKey);
+      member.getProfileImageFile().updateImageFile(s3ImageDto.getOriginUrl(), s3ImageDto.getThumbnailUrl());
     }
     member.updateProfile(profileUpdateDto);
   }
@@ -88,8 +85,6 @@ public class MemberProfileService {
     Language language = member.getLanguage();
 
     boolean isMyProfile = memberId == null || member.getId().equals(memberId);
-    boolean isDefault = profileImageService.isDefaultProfileImage(
-        member.getProfileImageFile().getOriginUrl());
     if (!isMyProfile) {
       member = memberRepository.findById(memberId)
           .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
@@ -114,6 +109,9 @@ public class MemberProfileService {
                   .build()
           ).toList();
     }
+
+    boolean isDefault = profileImageService.isDefaultProfileImage(
+        member.getProfileImageFile().getOriginUrl());
 
     return MemberResponse.ProfileDto.builder()
         .isMyProfile(isMyProfile)
