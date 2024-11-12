@@ -19,6 +19,7 @@ public enum SuccessCode {
   UPDATE_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 수정 성공"),
   GET_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 조회 성공"),
   UPDATE_LANGUAGE_SUCCESS(OK, "언어 변경 성공"),
+  RANDOM_URL_SUCCESS(OK, "랜덤 기본 프로필 URL 조회 성공"),
 
   // search
   SEARCH_SUCCESS(OK, "검색에 성공했습니다."),

@@ -15,6 +15,7 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -157,5 +158,10 @@ public class MemberProfileService {
     Member member = memberRepository.findById(memberId)
         .orElseThrow(() -> new NotFoundException(MEMBER_NOT_FOUND.getMessage()));
     validateNickname(nickname, member);
+  }
+
+  public String getRandomProfileImageUrl() {
+    S3ImageDto s3ImageDto = profileImageService.getRandomImageFile();
+    return s3ImageDto.getOriginUrl();
   }
 }
