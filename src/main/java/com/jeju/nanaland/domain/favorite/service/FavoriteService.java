@@ -4,7 +4,6 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.service.PostService;
-import com.jeju.nanaland.domain.common.service.PostServiceImpl;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
@@ -13,6 +12,7 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,6 @@ public class FavoriteService {
 
   private final FavoriteRepository favoriteRepository;
   private final PostService postService;
-  private final PostServiceImpl postServiceImpl;
 
   /**
    * 모든 카테고리의 찜리스트 조회
@@ -88,14 +87,23 @@ public class FavoriteService {
     Page<Favorite> favoritePage =
         favoriteRepository.findAllFavoritesOrderByModifiedAtDesc(member, category, pageable);
 
-    // 조회된 Favorite 객체 리스트를 통해 FavoritePostCardDto 정보 가져오기
-    List<FavoriteResponse.PreviewDto> favoritePreviewDtos = favoritePage.get()
-        .map(favorite -> {
+    // 각 게시물 조회 쿼리 비동기 요청
+    List<CompletableFuture<FavoriteResponse.PreviewDto>> favoritePreviewFutures = favoritePage.get()
+        .map(favorite -> CompletableFuture.supplyAsync(() -> {
           Long postId = favorite.getPost().getId();
           PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
           return new FavoriteResponse.PreviewDto(postPreviewDto);
-        })
+        }))
         .toList();
+
+    // 모든 비동기 작업이 완료될 때까지 기다린 후 각 결과를 수집
+    List<FavoriteResponse.PreviewDto> favoritePreviewDtos = CompletableFuture.allOf(
+        favoritePreviewFutures.toArray(new CompletableFuture[0])
+    ).thenApply(v ->
+        favoritePreviewFutures.stream()
+            .map(CompletableFuture::join) // 순서대로 결과 가져오기
+            .collect(Collectors.toList())
+    ).join(); // 최종 결과 리스트
 
     return FavoriteResponse.PreviewPageDto.builder()
         .totalElements(favoritePage.getTotalElements())

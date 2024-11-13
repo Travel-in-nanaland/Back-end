@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -71,13 +72,39 @@ public class SearchService {
     // offset: 0, pageSize: 2
     int page = 0;
     int size = 2;
+
+    // 각 카테고리로 검색쿼리 비동기 요청
+    CompletableFuture<SearchResponse.ResultDto> natureFuture = CompletableFuture.supplyAsync(
+        () -> searchNature(memberInfoDto, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> festivalFuture = CompletableFuture.supplyAsync(
+        () -> searchFestival(memberInfoDto, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> marketFuture = CompletableFuture.supplyAsync(
+        () -> searchMarket(memberInfoDto, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> experienceFuture = CompletableFuture.supplyAsync(
+        () -> searchExperience(memberInfoDto, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> restaurantFuture = CompletableFuture.supplyAsync(
+        () -> searchRestaurant(memberInfoDto, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> nanaFuture = CompletableFuture.supplyAsync(
+        () -> searchNana(memberInfoDto, keyword, page, size));
+
+    // 모든 비동기 작업이 완료될 때까지 기다린 후 각 결과를 수집
+    CompletableFuture.allOf(
+        natureFuture,
+        festivalFuture,
+        marketFuture,
+        experienceFuture,
+        restaurantFuture,
+        nanaFuture
+    ).join();
+
+    // 모든 결과를 수집하여 AllCategoryDto를 생성하여 반환
     return SearchResponse.AllCategoryDto.builder()
-        .nature(searchNature(memberInfoDto, keyword, page, size))
-        .festival(searchFestival(memberInfoDto, keyword, page, size))
-        .market(searchMarket(memberInfoDto, keyword, page, size))
-        .experience(searchExperience(memberInfoDto, keyword, page, size))
-        .restaurant(searchRestaurant(memberInfoDto, keyword, page, size))
-        .nana(searchNana(memberInfoDto, keyword, page, size))
+        .nature(natureFuture.join())
+        .festival(festivalFuture.join())
+        .market(marketFuture.join())
+        .experience(experienceFuture.join())
+        .restaurant(restaurantFuture.join())
+        .nana(nanaFuture.join())
         .build();
   }
 
