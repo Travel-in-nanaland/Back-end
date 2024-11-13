@@ -4,7 +4,6 @@ import static com.jeju.nanaland.global.exception.SuccessCode.GET_MEMBER_PROFILE_
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
-import static com.jeju.nanaland.global.exception.SuccessCode.RANDOM_URL_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.REISSUE_TOKEN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_LANGUAGE_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_CONSENT_SUCCESS;
@@ -295,17 +294,5 @@ public class MemberController {
       memberProfileService.validateNickname(nickname, memberId);
     }
     return BaseResponse.success(VALID_NICKNAME_SUCCESS);
-  }
-
-  @Operation(
-      summary = "랜덤 프로필 url 조회", description = "랜덤 프로필 url이 응답됩니다.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
-  })
-  @GetMapping("/randomProfile")
-  public BaseResponse<String> getRandomProfileImageUrl() {
-    String randomProfileImageUrl = memberProfileService.getRandomImageFile().getOriginUrl();
-    return BaseResponse.success(RANDOM_URL_SUCCESS, randomProfileImageUrl);
   }
 }

@@ -117,12 +117,8 @@ public class MemberProfileService {
           ).toList();
     }
 
-    boolean isDefault = defaultProfile.stream()
-        .anyMatch(member.getProfileImageFile().getOriginUrl()::contains);
-
     return MemberResponse.ProfileDto.builder()
         .isMyProfile(isMyProfile)
-        .isDefault(isDefault)
         .consentItems(consentItems)
         .memberId(member.getId())
         .email(member.getEmail())
