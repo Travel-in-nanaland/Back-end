@@ -54,7 +54,7 @@ public class MemberProfileService {
     Member member = memberInfoDto.getMember();
     validateNickname(profileUpdateDto.getNickname(), member);
     if (fileKey != null) {
-      S3ImageDto s3ImageDto = fileUploadService.getS3ImageUrls(fileKey);
+      S3ImageDto s3ImageDto = fileUploadService.getCloudImageUrls(fileKey);
       member.getProfileImageFile().updateImageFile(s3ImageDto.getOriginUrl(), s3ImageDto.getThumbnailUrl());
     }
     member.updateProfile(profileUpdateDto);
@@ -176,6 +176,6 @@ public class MemberProfileService {
 
   public S3ImageDto getRandomImageFile() {
     String selectedProfile = defaultProfile.get(random.nextInt(defaultProfile.size()));
-    return fileUploadService.getS3ImageUrls(selectedProfile);
+    return fileUploadService.getCloudImageUrls(selectedProfile);
   }
 }

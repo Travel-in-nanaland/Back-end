@@ -161,7 +161,7 @@ class MemberProfileServiceTest {
           .thumbnailUrl("thumbnailUrl")
           .build();
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(s3ImageDto).when(fileUploadService).getS3ImageUrls(any());
+      doReturn(s3ImageDto).when(fileUploadService).getCloudImageUrls(any());
 
       // when: 유저 프로필 수정
       memberProfileService.updateProfile(memberInfoDto, profileUpdateDto, "test/abc_test.jpg");
@@ -169,7 +169,7 @@ class MemberProfileServiceTest {
       // then: 프로필 수정 확인, 이미지 변경 확인
       assertThat(member.getNickname()).isEqualTo(profileUpdateDto.getNickname());
       assertThat(member.getDescription()).isEqualTo(profileUpdateDto.getDescription());
-      verify(fileUploadService).getS3ImageUrls(any());
+      verify(fileUploadService).getCloudImageUrls(any());
     }
   }
 

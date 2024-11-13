@@ -48,6 +48,8 @@ public class FileUploadService {
 
   private final AmazonS3 amazonS3;
   private final AmazonS3Client amazonS3Client;
+  @Value("${cloud.aws.cloudfront.domain}")
+  private String cloudFrontDomain;
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
   @Value("${cloud.aws.s3.memberProfileDirectory}")
@@ -194,11 +196,11 @@ public class FileUploadService {
     }
   }
 
-  public S3ImageDto getS3ImageUrls(String fileKey) {
+  public S3ImageDto getCloudImageUrls(String fileKey) {
     if (!amazonS3Client.doesObjectExist(bucket, fileKey)) {
       throw new NotFoundException(FILE_S3_NOT_FOUNE.getMessage());
     }
-    String originUrl = amazonS3.getUrl(bucket, fileKey).toString();
+    String originUrl = cloudFrontDomain + "/" + fileKey;
 
     if (!amazonS3Client.doesObjectExist(bucket + THUMBNAIL_DIRECTORY, THUMBNAIL_PREFIX + fileKey)) {
       return S3ImageDto.builder()
@@ -206,7 +208,8 @@ public class FileUploadService {
           .thumbnailUrl(originUrl)
           .build();
     }
-    String thumbnailUrl = amazonS3.getUrl(bucket + THUMBNAIL_DIRECTORY, THUMBNAIL_PREFIX + fileKey).toString();
+
+    String thumbnailUrl = cloudFrontDomain + "/" + THUMBNAIL_DIRECTORY + "/" + THUMBNAIL_PREFIX + fileKey;
     return S3ImageDto.builder()
         .originUrl(originUrl)
         .thumbnailUrl(thumbnailUrl)
