@@ -241,7 +241,7 @@ public class MemberLoginService {
     String refreshToken = jwtUtil.resolveToken(bearerRefreshToken);
 
     if (!jwtUtil.verifyRefreshToken(refreshToken)) {
-      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage() + ": 리프레쉬토큰 유효하지 않음");
     }
 
     String memberId = jwtUtil.getMemberIdFromRefresh(refreshToken);
@@ -251,7 +251,7 @@ public class MemberLoginService {
     if (!refreshToken.equals(savedRefreshToken)) {
       // RefreshToken 삭제 및 다시 로그인하도록 UNAUTHORIZED
       jwtUtil.deleteRefreshToken(memberId);
-      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage() + ": 재사용된 토큰인 경우");
     }
 
     Member member = memberRepository.findById(Long.valueOf(memberId))
@@ -337,7 +337,7 @@ public class MemberLoginService {
     String accessToken = jwtUtil.resolveToken(bearerAccessToken);
 
     if (!jwtUtil.verifyAccessToken(accessToken)) {
-      throw new UnauthorizedException(INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(INVALID_TOKEN.getMessage() + ": 액세스토큰 유효하지 않음");
     }
 
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);

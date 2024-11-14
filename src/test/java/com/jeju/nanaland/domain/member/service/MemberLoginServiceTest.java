@@ -482,7 +482,7 @@ class MemberLoginServiceTest {
           () -> memberLoginService.reissue("bearer RefreshToken", ""));
 
       // then: ErrorCode 검증
-      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
+      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage() + ": 리프레쉬토큰 유효하지 않음");
     }
 
     @Test
@@ -499,7 +499,7 @@ class MemberLoginServiceTest {
           () -> memberLoginService.reissue("bearer RefreshToken", ""));
 
       // then: ErrorCode 검증, RefreshToken 삭제 확인
-      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
+      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage() + ": 재사용된 토큰인 경우");
       verify(jwtUtil).deleteRefreshToken(any(String.class));
     }
 
