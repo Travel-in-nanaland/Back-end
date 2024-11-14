@@ -32,12 +32,16 @@ public enum ErrorCode {
   SELF_REPORT_NOT_ALLOWED(BAD_REQUEST, "본인을 신고하는 요청은 유효하지 않습니다."),
   ALREADY_REPORTED(BAD_REQUEST, "이미 신고되었습니다."),
   NO_NOTIFICATION_CONSENT(BAD_REQUEST, "알림 동의를 하지 않은 유저입니다."),
+  INVALID_FILE_SIZE(BAD_REQUEST, "파일 크기가 유효하지 않습니다."),
+  INVALID_FILE_EXTENSION_TYPE(BAD_REQUEST, "해당 카테고리에서 지원하지 않는 파일 형식입니다."),
+  NO_FILE_EXTENSION(BAD_REQUEST, "파일 확장자가 없습니다."),
 
   //INTERNAL_SERVER_ERROR
   SERVER_ERROR(INTERNAL_SERVER_ERROR, "서버측 에러입니다."),
   EXTRACT_NAME_ERROR(INTERNAL_SERVER_ERROR, "이미지 파일 이름 추출 에러"),
   MAIL_FAIL_ERROR(INTERNAL_SERVER_ERROR, "메일 전송 실패"),
   FILE_FAIL_ERROR(INTERNAL_SERVER_ERROR, "파일 변환 중 오류가 발생했습니다."),
+  FILE_UPLOAD_FAIL(INTERNAL_SERVER_ERROR, "파일 업로드 실패"),
 
   //UNAUTHORIZED
   UNAUTHORIZED_USER(UNAUTHORIZED, "access token이 존재하지 않습니다."),
@@ -62,6 +66,7 @@ public enum ErrorCode {
   KEYWORD_NOT_FOUND(NOT_FOUND, "존재하지 않는 키워드 입니다."),
   INFO_TYPE_NOT_FOUND(NOT_FOUND, "존재하지 않는 InfoType 입니다."),
   LANGUAGE_NOT_FOUND(NOT_FOUND, "지원하지 않는 언어입니다."),
+  FILE_S3_NOT_FOUNE(NOT_FOUND, "파일을 S3에서 찾을 수 없습니다."),
 
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
