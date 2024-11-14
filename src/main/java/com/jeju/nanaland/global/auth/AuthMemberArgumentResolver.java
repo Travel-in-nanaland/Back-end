@@ -39,7 +39,7 @@ public class AuthMemberArgumentResolver implements HandlerMethodArgumentResolver
 
     // null이 아닌 경우, 로그아웃을 통해 이미 블랙리스트에 담긴 것을 의미
     if (redisUtil.getValue(accessToken) != null) {
-      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage());
+      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN.getMessage() + ": 로그아웃된 액세스토큰");
     }
 
     String memberId = jwtUtil.getMemberIdFromAccess(accessToken);
