@@ -141,7 +141,7 @@ public class Member extends BaseEntity {
   public void updatePersonalInfo() {
     this.email = "INACTIVE@nanaland.com";
     this.nickname = UUID.randomUUID().toString().substring(0, 16);
-    this.providerId = "INACTIVE";
+    this.providerId = "INACTIVE" + nickname;
     this.gender = "";
     this.birthDate = null;
   }
