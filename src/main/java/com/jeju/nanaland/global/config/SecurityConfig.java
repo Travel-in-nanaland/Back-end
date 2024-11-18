@@ -45,7 +45,7 @@ public class SecurityConfig {
 
     http
         .authorizeHttpRequests(authHttpRequests -> authHttpRequests
-            .requestMatchers("/v3/api-docs/**", "/favicon.ico",
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/favicon.ico",
                 "/member/join", "/member/login", "/member/reissue", "/share/**",
                 "member/forceWithdrawal", "nana/upload", "/admin/login", "/member/validateNickname",
                 "/version/**", "/actuator/health")
@@ -56,7 +56,7 @@ public class SecurityConfig {
             .hasAnyRole("MEMBER", "ADMIN")
             .requestMatchers(HttpMethod.POST, "/nana/upload")
             .permitAll()
-            .requestMatchers("/swagger-ui/**", "/notification/send/*")
+            .requestMatchers("/notification/send/*")
             .hasRole("ADMIN")
             // admin 페이지
             .requestMatchers(HttpMethod.GET, "/admin/**")
