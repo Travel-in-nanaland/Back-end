@@ -68,7 +68,6 @@ public enum ErrorCode {
   LANGUAGE_NOT_FOUND(NOT_FOUND, "지원하지 않는 언어입니다."),
   FILE_S3_NOT_FOUNE(NOT_FOUND, "파일을 S3에서 찾을 수 없습니다."),
 
-
   // CONFLICT
   CONFLICT_DATA(CONFLICT, "이미 존재하는 데이터입니다."),
   MEMBER_DUPLICATE(CONFLICT, "이미 가입된 계정이 존재합니다."),

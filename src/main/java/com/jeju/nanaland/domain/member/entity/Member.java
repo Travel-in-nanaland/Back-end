@@ -20,6 +20,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -37,6 +39,15 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+    name = "member",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "memberProviderProviderIdUnique",
+            columnNames = {"provider", "provider_id"}
+        )
+    }
+)
 public class Member extends BaseEntity {
 
   @Enumerated(value = EnumType.STRING)
@@ -130,7 +141,7 @@ public class Member extends BaseEntity {
   public void updatePersonalInfo() {
     this.email = "INACTIVE@nanaland.com";
     this.nickname = UUID.randomUUID().toString().substring(0, 16);
-    this.providerId = "INACTIVE";
+    this.providerId = "INACTIVE" + nickname;
     this.gender = "";
     this.birthDate = null;
   }

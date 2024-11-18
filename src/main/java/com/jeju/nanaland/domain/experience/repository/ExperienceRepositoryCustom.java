@@ -17,6 +17,8 @@ public interface ExperienceRepositoryCustom {
 
   ExperienceCompositeDto findCompositeDtoById(Long id, Language language);
 
+  ExperienceCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language language);
+
   Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
       Pageable pageable);
 
@@ -25,6 +27,8 @@ public interface ExperienceRepositoryCustom {
       List<AddressTag> addressTags, Pageable pageable);
 
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSet(Long postId);
+
+  Set<ExperienceTypeKeyword> getExperienceTypeKeywordSetWithWithPessimisticLock(Long postId);
 
   List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
 

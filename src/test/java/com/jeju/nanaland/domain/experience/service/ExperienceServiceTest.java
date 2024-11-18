@@ -13,6 +13,7 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceDetailDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
@@ -59,6 +60,8 @@ class ExperienceServiceTest {
   ImageFileRepository imageFileRepository;
   @Mock
   ReviewRepository reviewRepository;
+  @Mock
+  private PostViewCountService postViewCountService;
 
   @Test
   @DisplayName("이색체험 preview 정보 조회")
@@ -119,7 +122,7 @@ class ExperienceServiceTest {
         .build();
 
     doReturn(experienceCompositeDto).when(experienceRepository)
-        .findCompositeDtoById(postId, language);
+        .findCompositeDtoByIdWithPessimisticLock(postId, language);
     doReturn(false).when(memberFavoriteService)
         .isPostInFavorite(memberInfoDto.getMember(), Category.EXPERIENCE, postId);
     doReturn(List.of()).when(imageFileRepository)  // 빈 이미지 리스트

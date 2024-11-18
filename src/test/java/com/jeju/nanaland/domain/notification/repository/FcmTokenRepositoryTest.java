@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Import;
 @DataJpaTest
 @Import(TestConfig.class)
 //@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class FcmTokenRepositoryTest {
+class FcmTokenRepositoryTest {
 
   @Autowired
   TestEntityManager em;
@@ -66,7 +66,7 @@ public class FcmTokenRepositoryTest {
       Member member = Member.builder()
           .language(language)
           .provider(Provider.GUEST)
-          .providerId("testProviderId")
+          .providerId("testProviderId:" + language + i)
           .email("test@naver.com")
           .nickname(UUID.randomUUID().toString())
           .travelType(TravelType.NONE)

@@ -83,7 +83,7 @@ class ReviewRepositoryImplTest {
         .gender("male")
         .birthDate(LocalDate.now())
         .provider(Provider.GOOGLE)
-        .providerId("123")
+        .providerId("testProviderId:" + nickname)
         .travelType(TravelType.NONE)
         .build();
     entityManager.persist(member);

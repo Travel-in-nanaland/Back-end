@@ -32,6 +32,7 @@ public class FileUploadController {
   @Operation(summary = "Pre-Signed URL 업로드 시작 API")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "올바르지 않은 요청인 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
   @PostMapping("/upload-init")
