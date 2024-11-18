@@ -72,7 +72,8 @@ public class PostViewCountService {
   // 다 합친게 3개가 넘지 않으면 -> 부족한 수 만큼 카테고리 랜덤으로 추출, 추출한 카테고리에서 각 한개씩 게시물 선택
   // 최종 나온 게시물 조회수 기준 내림차순 정렬 (한국어 기준으로 만들어짐)
   // 한국어 기준으로 만들어진 인기 게시물 언어별로 조회 후 redis에 저장
-  @Scheduled(cron = "*/5 * * * * *")
+  // 월요일마다 실행
+  @Scheduled(cron = "0 0 0 * * MON")
   public void setPopularPosts() throws JsonProcessingException {
 
     // 지난 인기 한국 게시물 json 형태로 json에서 get
@@ -82,7 +83,6 @@ public class PostViewCountService {
 
     // json 역직렬화
     List<PopularPostPreviewDto> postPreviewDtos = deserializePostPreviewDtos(serializedPosts);
-    System.out.println("postPreviewDtos.size() = " + postPreviewDtos.size());
 
     // 지난 주 인기 게시물 id -> 제외시킬 게시물
     List<Long> excludeIds = postPreviewDtos.stream()
@@ -137,6 +137,7 @@ public class PostViewCountService {
       }
     }
 
+
   }
 
   private List<String> getJsonPopularPosts(Language language) {
@@ -183,7 +184,7 @@ public class PostViewCountService {
   // 카테고리 별로 언어에 맞게 랜덤으로 게시물 1개씩 뽑기
   private List<PopularPostPreviewDto> getRandomPopularPostPreviewDtosByCategoriesAndLanguage(
       List<Category> categories, Language language, List<Long> excludeIds) {
-    System.out.println("excludeIds = " + excludeIds);
+
     List<PopularPostPreviewDto> result = new ArrayList<>();
     // 스트림 기반으로 Category를 순회하며 PopularPostPreviewDto 수집
     for (Category category : categories) {
@@ -200,7 +201,6 @@ public class PostViewCountService {
             restaurantRepository.findRandomPopularPostPreviewDtoByLanguage(language, excludeIds));
         default -> throw new IllegalStateException("Unexpected value: " + category);
       }
-      System.out.println("result = " + result);
     }
     return result;
   }
