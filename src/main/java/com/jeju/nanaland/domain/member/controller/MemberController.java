@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_MEMBER_PROFILE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.GET_POPULAR_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
@@ -12,6 +13,9 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 import static com.jeju.nanaland.global.exception.SuccessCode.VALID_NICKNAME_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -61,6 +65,7 @@ public class MemberController {
   private final MemberTypeService memberTypeService;
   private final MemberProfileService memberProfileService;
   private final MemberConsentService memberConsentService;
+  private final PostViewCountService postViewCountService;
 
   @Operation(summary = "회원 가입", description = "회원 가입을 하면 JWT가 발급됩니다. ")
   @ApiResponses(value = {
@@ -158,6 +163,24 @@ public class MemberController {
     List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
         memberInfoDto);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
+  }
+
+  @Operation(
+      summary = "인기 게시물 조회",
+      description =
+          "지난주 조회수 높은 게시물 3개 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/hot")
+  public BaseResponse<List<PopularPostPreviewDto>> getPopularPosts(
+      @AuthMember MemberInfoDto memberInfoDto) throws JsonProcessingException {
+
+    List<PopularPostPreviewDto> result = postViewCountService.getLastWeekPopularPosts(
+        memberInfoDto);
+    return BaseResponse.success(GET_POPULAR_POSTS_SUCCESS, result);
   }
 
   @Operation(

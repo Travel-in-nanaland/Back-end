@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.festival.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
+import static com.jeju.nanaland.domain.common.entity.QPost.post;
 import static com.jeju.nanaland.domain.festival.entity.QFestival.festival;
 import static com.jeju.nanaland.domain.festival.entity.QFestivalTrans.festivalTrans;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
@@ -9,11 +10,14 @@ import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
@@ -347,6 +351,75 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(
             festival.id.eq(postId),
             festivalTrans.language.eq(language))
+        .fetchOne();
+  }
+
+  @Override
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(festival.id, festivalTrans.title,
+                festivalTrans.addressTag,
+                Expressions.constant(Category.FESTIVAL.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(festival, post)
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .innerJoin(festival.firstImageFile, imageFile)
+        .where(
+            festival.id.eq(post.id),
+            festivalTrans.language.eq(language),
+            post.viewCount.gt(0))
+        .orderBy(post.viewCount.desc())
+        .limit(3)
+        .fetch();
+  }
+
+  @Override
+  public PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(festival.id, festivalTrans.title,
+                festivalTrans.addressTag,
+                Expressions.constant(Category.FESTIVAL.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(festival, post)
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .innerJoin(festival.firstImageFile, imageFile)
+        .where(
+            festival.id.eq(post.id),
+            festival.id.notIn(excludeIds),
+            festivalTrans.language.eq(language)
+        )
+        .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+        .fetchFirst();
+  }
+
+  @Override
+  public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(festival.id, festivalTrans.title,
+                festivalTrans.addressTag,
+                Expressions.constant(Category.FESTIVAL.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(festival, post)
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .innerJoin(festival.firstImageFile, imageFile)
+        .where(
+            festival.id.eq(post.id),
+            festival.id.eq(postId),
+            festivalTrans.language.eq(language)
+        )
         .fetchOne();
   }
 

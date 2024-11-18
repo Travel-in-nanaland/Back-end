@@ -1,6 +1,7 @@
 package com.jeju.nanaland.global.util;
 
 import java.time.Duration;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -37,5 +38,13 @@ public class RedisUtil {
     ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
     Duration expireDuration = Duration.ofSeconds(duration);
     valueOperations.set(key, value, expireDuration);
+  }
+
+  public void setListValue(String key, List<String> items) {
+    redisTemplate.opsForList().rightPushAll(key, items);
+  }
+
+  public List<String> getAllListValue(String key) {
+    return redisTemplate.opsForList().range(key, 0, -1);
   }
 }

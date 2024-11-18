@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.market.repository;
 
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
@@ -22,4 +23,11 @@ public interface MarketRepositoryCustom {
       Pageable pageable);
 
   PostPreviewDto findPostPreviewDto(Long postId, Language language);
+
+  List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language);
+
+  PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds);
+
+  PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 }

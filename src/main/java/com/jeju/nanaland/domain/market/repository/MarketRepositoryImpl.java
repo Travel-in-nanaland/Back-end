@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.market.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
+import static com.jeju.nanaland.domain.common.entity.QPost.post;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.market.entity.QMarket.market;
 import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
@@ -8,13 +9,16 @@ import static com.jeju.nanaland.domain.market.entity.QMarketTrans.marketTrans;
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.QMarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.QMarketResponse_MarketThumbnail;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
@@ -179,6 +183,75 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(market.id, marketTrans.title,
+                marketTrans.addressTag,
+                Expressions.constant(Category.MARKET.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(market, post)
+        .innerJoin(market.marketTrans, marketTrans)
+        .innerJoin(market.firstImageFile, imageFile)
+        .where(
+            market.id.eq(post.id),
+            marketTrans.language.eq(language),
+            post.viewCount.gt(0))
+        .orderBy(post.viewCount.desc())
+        .limit(3)
+        .fetch();
+  }
+
+  @Override
+  public PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(market.id, marketTrans.title,
+                marketTrans.addressTag,
+                Expressions.constant(Category.MARKET.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(market, post)
+        .innerJoin(market.marketTrans, marketTrans)
+        .innerJoin(market.firstImageFile, imageFile)
+        .where(
+            market.id.eq(post.id),
+            market.id.notIn(excludeIds),
+            marketTrans.language.eq(language)
+        )
+        .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+        .fetchFirst();
+  }
+
+  @Override
+  public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(market.id, marketTrans.title,
+                marketTrans.addressTag,
+                Expressions.constant(Category.MARKET.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(market, post)
+        .innerJoin(market.marketTrans, marketTrans)
+        .innerJoin(market.firstImageFile, imageFile)
+        .where(
+            market.id.eq(post.id),
+            market.id.eq(postId),
+            marketTrans.language.eq(language)
+        )
+        .fetchOne();
+  }
+
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(market.id)
@@ -212,4 +285,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
       return marketTrans.addressTag.in(addressTagFilters);
     }
   }
+
+
 }

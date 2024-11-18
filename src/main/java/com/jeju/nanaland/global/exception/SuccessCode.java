@@ -20,6 +20,8 @@ public enum SuccessCode {
   GET_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 조회 성공"),
   UPDATE_LANGUAGE_SUCCESS(OK, "언어 변경 성공"),
 
+  // popular post
+  GET_POPULAR_POSTS_SUCCESS(OK, "인기 게시물 조회에 성공했습니다."),
   // search
   SEARCH_SUCCESS(OK, "검색에 성공했습니다."),
   SEARCH_VOLUME_SUCCESS(OK, "검색량 UP 게시물 조회 성공"),

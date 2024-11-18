@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.nature.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
+import static com.jeju.nanaland.domain.common.entity.QPost.post;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.nature.entity.QNature.nature;
 import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
@@ -8,13 +9,16 @@ import static com.jeju.nanaland.domain.nature.entity.QNatureTrans.natureTrans;
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse;
 import com.jeju.nanaland.domain.nature.dto.QNatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.QNatureResponse_PreviewDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
@@ -218,6 +222,75 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .innerJoin(nature.firstImageFile, imageFile)
         .where(nature.id.eq(natureId),
             natureTrans.language.eq(language))
+        .fetchOne();
+  }
+
+  @Override
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(nature.id, natureTrans.title,
+                natureTrans.addressTag,
+                Expressions.constant(Category.NATURE.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(nature, post)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(
+            nature.id.eq(post.id),
+            natureTrans.language.eq(language),
+            post.viewCount.gt(0))
+        .orderBy(post.viewCount.desc())
+        .limit(3)
+        .fetch();
+  }
+
+  @Override
+  public PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(nature.id, natureTrans.title,
+                natureTrans.addressTag,
+                Expressions.constant(Category.NATURE.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(nature, post)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(
+            nature.id.eq(post.id),
+            nature.id.notIn(excludeIds),
+            natureTrans.language.eq(language)
+        )
+        .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+        .fetchFirst();
+  }
+
+  @Override
+  public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(nature.id, natureTrans.title,
+                natureTrans.addressTag,
+                Expressions.constant(Category.NATURE.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(nature, post)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .innerJoin(nature.firstImageFile, imageFile)
+        .where(
+            nature.id.eq(post.id),
+            nature.id.eq(postId),
+            natureTrans.language.eq(language)
+        )
         .fetchOne();
   }
 

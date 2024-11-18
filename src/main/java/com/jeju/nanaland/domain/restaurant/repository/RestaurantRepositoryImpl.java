@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.restaurant.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
+import static com.jeju.nanaland.domain.common.entity.QPost.post;
 import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurant.restaurant;
 import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantKeyword.restaurantKeyword;
@@ -10,7 +11,9 @@ import static com.jeju.nanaland.domain.restaurant.entity.QRestaurantTrans.restau
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.QRestaurantResponse_RestaurantMenuDto;
@@ -257,6 +260,75 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .where(
             restaurant.id.eq(postId),
             restaurantTrans.language.eq(language))
+        .fetchOne();
+  }
+
+  @Override
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(restaurant.id, restaurantTrans.title,
+                restaurantTrans.addressTag,
+                Expressions.constant(Category.RESTAURANT.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(restaurant, post)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .innerJoin(restaurant.firstImageFile, imageFile)
+        .where(
+            restaurant.id.eq(post.id),
+            restaurantTrans.language.eq(language),
+            post.viewCount.gt(0))
+        .orderBy(post.viewCount.desc())
+        .limit(3)
+        .fetch();
+  }
+
+  @Override
+  public PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(restaurant.id, restaurantTrans.title,
+                restaurantTrans.addressTag,
+                Expressions.constant(Category.RESTAURANT.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(restaurant, post)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .innerJoin(restaurant.firstImageFile, imageFile)
+        .where(
+            restaurant.id.eq(post.id),
+            restaurant.id.notIn(excludeIds),
+            restaurantTrans.language.eq(language)
+        )
+        .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+        .fetchFirst();
+  }
+
+  @Override
+  public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(restaurant.id, restaurantTrans.title,
+                restaurantTrans.addressTag,
+                Expressions.constant(Category.RESTAURANT.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(restaurant, post)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .innerJoin(restaurant.firstImageFile, imageFile)
+        .where(
+            restaurant.id.eq(post.id),
+            restaurant.id.eq(postId),
+            restaurantTrans.language.eq(language)
+        )
         .fetchOne();
   }
 

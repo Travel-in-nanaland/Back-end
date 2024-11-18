@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.experience.repository;
 
 import static com.jeju.nanaland.domain.common.entity.QImageFile.imageFile;
+import static com.jeju.nanaland.domain.common.entity.QPost.post;
 import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceKeyword.experienceKeyword;
 import static com.jeju.nanaland.domain.experience.entity.QExperienceTrans.experienceTrans;
@@ -9,7 +10,9 @@ import static com.jeju.nanaland.domain.hashtag.entity.QHashtag.hashtag;
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
+import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
@@ -250,6 +253,76 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .where(
             experience.id.eq(postId),
             experienceTrans.language.eq(language))
+        .fetchOne();
+  }
+
+
+  @Override
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(experience.id, experienceTrans.title,
+                experienceTrans.addressTag,
+                Expressions.constant(Category.EXPERIENCE.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(experience, post)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .innerJoin(experience.firstImageFile, imageFile)
+        .where(
+            experience.id.eq(post.id),
+            experienceTrans.language.eq(language),
+            post.viewCount.gt(0))
+        .orderBy(post.viewCount.desc())
+        .limit(3)
+        .fetch();
+  }
+
+  @Override
+  public PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(experience.id, experienceTrans.title,
+                experienceTrans.addressTag,
+                Expressions.constant(Category.EXPERIENCE.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(experience, post)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .innerJoin(experience.firstImageFile, imageFile)
+        .where(
+            experience.id.eq(post.id),
+            experience.id.notIn(excludeIds),
+            experienceTrans.language.eq(language)
+        )
+        .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+        .fetchFirst();
+  }
+
+  @Override
+  public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
+    return queryFactory
+        .select(
+            new QPopularPostPreviewDto(experience.id, experienceTrans.title,
+                experienceTrans.addressTag,
+                Expressions.constant(Category.EXPERIENCE.name()),
+                imageFile.originUrl,
+                imageFile.thumbnailUrl,
+                post.viewCount
+            ))
+        .from(experience, post)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .innerJoin(experience.firstImageFile, imageFile)
+        .where(
+            experience.id.eq(post.id),
+            experience.id.eq(postId),
+            experienceTrans.language.eq(language)
+        )
         .fetchOne();
   }
 
