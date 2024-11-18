@@ -60,6 +60,10 @@ public class PostViewCountService {
   //인기 게시물 3개 반환
   public List<PopularPostPreviewDto> getLastWeekPopularPosts(MemberInfoDto memberInfoDto)
       throws JsonProcessingException {
+    // redis에 저장된 게시물이 없을 경우 초기화
+    if (getJsonPopularPosts(Language.KOREAN).isEmpty()) {
+      setPopularPosts();
+    }
     // redis에서 갖고온 후
     List<String> serializedPosts = getJsonPopularPosts(memberInfoDto.getLanguage());
     //직렬화
