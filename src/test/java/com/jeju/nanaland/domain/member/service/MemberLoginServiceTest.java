@@ -630,7 +630,7 @@ class MemberLoginServiceTest {
 
     // then: 회원 개인정보 삭제 확인
     assertThat(member.getEmail()).isEqualTo("INACTIVE@nanaland.com");
-    assertThat(member.getProviderId()).isEqualTo("INACTIVE");
+    assertThat(member.getProviderId()).isEqualTo("INACTIVE"+member.getNickname());
     assertThat(member.getGender()).isEmpty();
     assertThat(member.getBirthDate()).isNull();
     verify(member).updatePersonalInfo();
