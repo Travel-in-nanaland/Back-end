@@ -10,7 +10,7 @@ env:
   AWS_REGION: ap-northeast-2
   S3_BUCKET_NAME: nanaland-github-actions-s3-bucket
   CODE_DEPLOY_APPLICATION_NAME: nanaland-codedeploy-app
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: nanaland-codedeploy-deployment-group
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: nanaland-codedeploy-deployment-group-dev
 
 
 permissions: write-all

@@ -13,6 +13,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -75,6 +76,7 @@ public class LogAspect {
   @Around("repositoryPointcut()||servicePointcut()")
   public Object logServiceAndRepositoryExecutionTime(ProceedingJoinPoint joinPoint)
       throws Throwable {
+
     // 요청이 있는 경우에만 실행 시간 측정
     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
@@ -82,6 +84,8 @@ public class LogAspect {
     if (attributes != null) {
       HttpServletRequest request = attributes.getRequest();
       logBuilder = (StringBuilder) request.getAttribute("logBuilder");
+    } else { // 요청 없는 경우 바로진행 -> 스케줄러 예외 처
+      return joinPoint.proceed();
     }
 
     long start = System.currentTimeMillis();
@@ -125,20 +129,26 @@ public class LogAspect {
   // 에러 발생 (로그 한번) -> controllerAdvice에 의해 에러 값 return(로그 한번 더 찍힘)
   @AfterThrowing(pointcut = "all() && !controllerPointcut()", throwing = "exception")
   public void logException(JoinPoint joinPoint, Throwable exception) {
-    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-    StringBuilder logBuilder = (StringBuilder) request.getAttribute("logBuilder");
-    // 예외가 발생한 메서드명
-    String signature = String.valueOf(joinPoint.getSignature());
+    RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+    if (requestAttributes != null) {
+      HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
+      StringBuilder logBuilder = (StringBuilder) request.getAttribute("logBuilder");
+      // 예외가 발생한 메서드명
+      String signature = String.valueOf(joinPoint.getSignature());
 
-    // 로깅
-    if (logBuilder != null) {
-      logBuilder.append("\nException Occurred From : ").append(signature)
-          .append(", Exception Message : ").append(exception.toString());
-      log.error(logBuilder.toString());
-    } else {
-      log.error("\nException Occurred From : {}, Exception Message : {}",
-          signature, exception.toString());
+      // 로깅
+      if (logBuilder != null) {
+        logBuilder.append("\nException Occurred From : ").append(signature)
+            .append(", Exception Message : ").append(exception.toString());
+        log.error(logBuilder.toString());
+      } else {
+        log.error("\nException Occurred From : {}, Exception Message : {}",
+            signature, exception.toString());
+      }
     }
+
+//    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+
   }
 
   private boolean isExceptionHandlerMethod(JoinPoint joinPoint) {
