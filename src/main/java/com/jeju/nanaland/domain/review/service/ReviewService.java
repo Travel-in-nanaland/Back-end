@@ -141,12 +141,13 @@ public class ReviewService {
       throw new BadRequestException(REVIEW_KEYWORD_DUPLICATION.getMessage());
     }
 
-    reviewKeywordStringSet.forEach(keyword ->
-        reviewKeywordRepository.save(ReviewKeyword.builder()
+    reviewKeywordStringSet.stream()
+        .map(ReviewTypeKeyword::valueOf)
+        .filter(keyword -> keyword != ReviewTypeKeyword.NONE)
+        .forEach(keyword -> reviewKeywordRepository.save(ReviewKeyword.builder()
             .review(review)
-            .reviewTypeKeyword(ReviewTypeKeyword.valueOf(keyword))
-            .build())
-    );
+            .reviewTypeKeyword(keyword)
+            .build()));
 
     // reviewImageFile
     if (multipartFiles != null) {
