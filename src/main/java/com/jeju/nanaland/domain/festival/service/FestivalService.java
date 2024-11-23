@@ -169,6 +169,7 @@ public class FestivalService implements PostService {
 
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())
+        .onGoing(compositeDtoById.isOnGoing())
         .addressTag(compositeDtoById.getAddressTag())
         .title(compositeDtoById.getTitle())
         .content(compositeDtoById.getContent())

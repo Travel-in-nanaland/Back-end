@@ -58,6 +58,9 @@ public class FestivalResponse {
     @Schema(description = "7대 자연 게시물 id")
     private Long id;
 
+    @Schema(description = "축제 진행 여부")
+    private boolean onGoing;
+
     @Schema(description = "이미지 리스트")
     private List<ImageFileDto> images;
 
