@@ -31,6 +31,9 @@ public class PopularPostPreviewDto {
   @Schema(description = "썸네일 이미지")
   private ImageFileDto firstImage;
 
+  @Schema(description = "좋아요 여부")
+  private boolean isFavorite;
+
   @Schema(description = "조회수")
   private int viewCount;
 
