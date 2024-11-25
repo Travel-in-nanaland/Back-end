@@ -19,6 +19,7 @@ import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
 import com.jeju.nanaland.domain.festival.entity.Festival;
+import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.entity.Market;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -61,6 +62,8 @@ class FavoriteServiceTest {
   FavoriteRepository favoriteRepository;
   @Mock
   PostService postService;
+  @Mock
+  FestivalRepository festivalRepository;
 
   Random random = new Random();
 
@@ -124,6 +127,7 @@ class FavoriteServiceTest {
     when(postService.getPostPreviewDto(nullable(Long.class), any(Category.class),
         eq(Language.KOREAN)))
         .thenReturn(PostPreviewDto.builder().build());
+    when(festivalRepository.getFestivalOnGoingStatusById(nullable(Long.class))).thenReturn(true);
 
     // when
     FavoriteResponse.PreviewPageDto result = favoriteService.getAllFavorites(memberInfoDto, 0,

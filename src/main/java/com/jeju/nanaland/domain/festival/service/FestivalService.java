@@ -169,6 +169,7 @@ public class FestivalService implements PostService {
 
     return FestivalDetailDto.builder()
         .id(compositeDtoById.getId())
+        .onGoing(compositeDtoById.isOnGoing())
         .addressTag(compositeDtoById.getAddressTag())
         .title(compositeDtoById.getTitle())
         .content(compositeDtoById.getContent())
@@ -262,7 +263,7 @@ public class FestivalService implements PostService {
       LocalDate startDate, LocalDate endDate) {
 
     // - 을 . 으로 대체
-    String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
+    String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ".");
 
     // yyyy 포맷을 yy로 변경
     String finalDateFormat = nationalDateFormat.replace("yyyy", "yy");

@@ -6,8 +6,10 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.service.PostService;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
+import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.PreviewDto;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.favorite.repository.FavoriteRepository;
+import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import java.util.List;
@@ -29,6 +31,7 @@ public class FavoriteService {
 
   private final FavoriteRepository favoriteRepository;
   private final PostService postService;
+  private final FestivalRepository festivalRepository;
 
   /**
    * 모든 카테고리의 찜리스트 조회
@@ -56,7 +59,10 @@ public class FavoriteService {
           Category category = favorite.getCategory();
           Long postId = favorite.getPost().getId();
           PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
-          return new FavoriteResponse.PreviewDto(postPreviewDto);
+          if (category == Category.FESTIVAL) {
+            setFestivalOnGoingStatus(postPreviewDto);
+          }
+          return new PreviewDto(postPreviewDto);
         })
         .collect(Collectors.toList());
 
@@ -92,6 +98,9 @@ public class FavoriteService {
         .map(favorite -> CompletableFuture.supplyAsync(() -> {
           Long postId = favorite.getPost().getId();
           PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
+          if (category == Category.FESTIVAL) {
+            setFestivalOnGoingStatus(postPreviewDto);
+          }
           return new FavoriteResponse.PreviewDto(postPreviewDto);
         }))
         .toList();
@@ -166,5 +175,10 @@ public class FavoriteService {
           .isFavorite(true)
           .build();
     }
+  }
+
+  private void setFestivalOnGoingStatus(PostPreviewDto postPreviewDto) {
+    Long id = postPreviewDto.getId();
+    postPreviewDto.setOnGoing(festivalRepository.getFestivalOnGoingStatusById(id));
   }
 }
