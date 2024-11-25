@@ -263,7 +263,7 @@ public class FestivalService implements PostService {
       LocalDate startDate, LocalDate endDate) {
 
     // - 을 . 으로 대체
-    String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ". ");
+    String nationalDateFormat = memberInfoDto.getLanguage().getDateFormat().replace("-", ".");
 
     // yyyy 포맷을 yy로 변경
     String finalDateFormat = nationalDateFormat.replace("yyyy", "yy");
