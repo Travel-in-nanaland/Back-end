@@ -8,9 +8,11 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.repository.PostRepository;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
+import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.util.RedisUtil;
@@ -35,6 +37,7 @@ public class PostViewCountService {
   private final MarketRepository marketRepository;
   private final NatureRepository natureRepository;
   private final RestaurantRepository restaurantRepository;
+  private final MemberFavoriteService memberFavoriteService;
   private final RedisUtil redisUtil;
   private final ObjectMapper objectMapper;
 //  private final PostServiceImpl postService;
@@ -66,10 +69,18 @@ public class PostViewCountService {
     }
     // redis에서 갖고온 후
     List<String> serializedPosts = getJsonPopularPosts(memberInfoDto.getLanguage());
-    //직렬화
-    return deserializePostPreviewDtos(serializedPosts);
+
+    //역직렬화
+    List<PopularPostPreviewDto> popularPostPreviewDtos = deserializePostPreviewDtos(
+        serializedPosts);
+
+    // 좋아요 여부 추가
+    setPopularPostPreviewDtosFavoriteStatus(memberInfoDto, popularPostPreviewDtos);
+    
+    return popularPostPreviewDtos;
 
   }
+
 
   // 지난 한국 인기 게시물 조회해서 id 추출 -> excludeIds
   // excludeIds 제외한 카테고리 별 조회수 top 3(조회수 0이 아닌) 조회,
@@ -241,6 +252,22 @@ public class PostViewCountService {
 
         })
         .collect(Collectors.toList());
+  }
+
+  // List<popularPostPreviewDto>에 찜 여부 추가
+  private void setPopularPostPreviewDtosFavoriteStatus(MemberInfoDto memberInfoDto,
+      List<PopularPostPreviewDto> popularPostPreviewDtos) {
+    Member member = memberInfoDto.getMember();
+
+    // 각 PopularPostPreviewDto의 favorite 상태를 설정
+    popularPostPreviewDtos.forEach(postDto -> {
+      boolean isFavorite = memberFavoriteService.isPostInFavorite(
+          member,
+          Category.valueOf(postDto.getCategory()),
+          postDto.getId()
+      );
+      postDto.setFavorite(isFavorite);
+    });
   }
 }
 
