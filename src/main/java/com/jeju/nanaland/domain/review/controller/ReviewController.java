@@ -28,15 +28,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -77,9 +76,9 @@ public class ReviewController {
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
-      @RequestPart @Valid ReviewRequest.CreateReviewDto createReviewDto
+      @RequestBody @Valid ReviewRequest.CreateReviewDto reqDto
   ) {
-    reviewService.saveReview(memberInfoDto, id, category, createReviewDto);
+    reviewService.saveReview(memberInfoDto, id, category, reqDto);
     return BaseResponse.success(REVIEW_CREATED_SUCCESS);
   }
 
@@ -151,13 +150,12 @@ public class ReviewController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
-  @PutMapping(value = "/my/{id}",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/my/{id}")
   public BaseResponse<String> updateMyReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
-      @RequestPart @Valid ReviewRequest.EditReviewDto editReviewDto) {
-    reviewService.updateMyReview(memberInfoDto, id, editReviewDto);
+      @RequestBody @Valid ReviewRequest.EditReviewDto reqDto) {
+    reviewService.updateMyReview(memberInfoDto, id, reqDto);
     return BaseResponse.success(REVIEW_UPDATE_SUCCESS);
   }
 

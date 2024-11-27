@@ -76,12 +76,12 @@ public class ReviewRequest {
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")
     private List<String> reviewKeywords;
 
-    @Schema(description = "리뷰 이미지 수정 정보 리스트 => List<MultiPart>와 newImage = true인 것과 수 같아야 함 /"
+    @Schema(description = "리뷰 이미지 수정 정보 리스트 => fileKeys와 newImage = true인 것과 수 같아야 함 /"
         + " 수정되어 제출되는 리뷰에 이미지가 없다면 null이 아닌 빈 리스트 [] 를 보내야 합니다.")
     @NotNull
     private List<EditImageInfoDto> editImageInfoList;
 
-    @Schema(description = "파일 키 리스트", example = "[\"fileKey1.jpg\", \"fileKey2.jpeg\", \"fileKey3.png\"]")
+    @Schema(description = "파일 키 리스트", example = "[\"test/fileKey1.jpg\", \"test/fileKey2.jpeg\", \"test/fileKey3.png\"]")
     private List<String> fileKeys;
 
     @Getter
@@ -94,7 +94,6 @@ public class ReviewRequest {
 
       @Schema(description = "이미지 수정 여부 / 존재하던 사진이면 false, 새로 추가된 사진이면 true")
       private boolean newImage;
-
     }
 
   }

@@ -453,7 +453,7 @@ public class ReviewService {
         .count();
 
     // 수정된 리뷰에 이미지가 있을 경우
-    // MultipartFile 이미지 리스트의 크기와 editImageInfo의 newImage가 true인 것의 수가 같은지 비교
+    // fileKeys의 크기와 editImageInfo의 newImage가 true인 것의 수가 같은지 비교
     if ((fileKeys != null) && (totalNewImage != fileKeys.size())) {
       throw new BadRequestException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
     }
