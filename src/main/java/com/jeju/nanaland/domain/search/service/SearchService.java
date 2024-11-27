@@ -10,7 +10,7 @@ import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
-import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
@@ -33,6 +33,7 @@ import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -174,16 +175,29 @@ public class SearchService {
   public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<ExperienceCompositeDto> resultPage = experienceRepository.searchCompositeDtoByKeyword(
-        keyword, locale, pageable);
+    List<String> normalizedKeywords = Arrays.stream(keyword.split("//s+"))  // 공백기준 분할
+        .map(String::toLowerCase)  // 소문자로
+        .toList();
+
+    Page<ExperienceSearchDto> resultPage;
+    // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
+    if (normalizedKeywords.size() <= 4) {
+      resultPage = experienceRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+          language, pageable);
+    }
+    // 4개보다 많다면 Intersect 검색
+    else {
+      resultPage = experienceRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
+          language, pageable);
+    }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (ExperienceCompositeDto dto : resultPage) {
+    for (ExperienceSearchDto dto : resultPage) {
 
       thumbnails.add(
           ThumbnailDto.builder()

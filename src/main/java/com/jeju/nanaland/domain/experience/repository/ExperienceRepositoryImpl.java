@@ -159,6 +159,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
   }
 
+  @Override
   public Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
       Language language, Pageable pageable) {
 
@@ -183,6 +184,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     List<ExperienceSearchDto> resultDto = queryFactory
         .select(new QExperienceSearchDto(
             experience.id,
+            experienceTrans.title,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
@@ -192,8 +194,6 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize())
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -212,6 +212,63 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .comparing(ExperienceSearchDto::getMatchedCount,
             Comparator.nullsLast(Comparator.reverseOrder()))
         .thenComparing(ExperienceSearchDto::getCreatedAt,
+            Comparator.nullsLast(Comparator.reverseOrder())));
+    final Long total = Long.valueOf(resultDto.size());
+
+    return PageableExecutionUtils.getPage(resultList, pageable, () -> total);
+  }
+
+  @Override
+  public Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      Language language, Pageable pageable) {
+
+    // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
+    List<Tuple> keywordMatchQuery = queryFactory
+        .select(experience.id, experience.id.count())
+        .from(experience)
+        .leftJoin(hashtag)
+        .on(hashtag.post.id.eq(experience.id)
+            .and(hashtag.language.eq(language)))
+        .innerJoin(hashtag.keyword, QKeyword.keyword)
+        .where(QKeyword.keyword.content.toLowerCase().trim().in(keywords))
+        .groupBy(experience.id)
+        .fetch();
+
+    Map<Long, Long> keywordMatchMap = keywordMatchQuery.stream()
+        .collect(Collectors.toMap(
+            tuple -> tuple.get(experience.id),  // key: experience_id
+            tuple -> tuple.get(experience.id.count())  // value: 매칭된 키워드 개수
+        ));
+
+    List<ExperienceSearchDto> resultDto = queryFactory
+        .select(new QExperienceSearchDto(
+            experience.id,
+            experienceTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
+            experience.createdAt
+        ))
+        .from(experience)
+        .leftJoin(experience.firstImageFile, imageFile)
+        .leftJoin(experience.experienceTrans, experienceTrans)
+        .on(experienceTrans.language.eq(language))
+        .fetch();
+
+    // 해시태그 값을 matchedCount에 더해줌
+    for (ExperienceSearchDto experienceSearchDto : resultDto) {
+      Long id = experienceSearchDto.getId();
+      experienceSearchDto.addMatchedCount(keywordMatchMap.getOrDefault(id, 0L));
+    }
+    // matchedCount가 키워드 개수와 다르다면 검색결과에서 제거
+    resultDto = resultDto.stream()
+        .filter(experienceSearchDto -> experienceSearchDto.getMatchedCount() >= keywords.size())
+        .toList();
+
+    // 생성날짜 내림차순 정렬
+    List<ExperienceSearchDto> resultList = new ArrayList<>(resultDto);
+    resultList.sort(Comparator
+        .comparing(ExperienceSearchDto::getCreatedAt,
             Comparator.nullsLast(Comparator.reverseOrder())));
     final Long total = Long.valueOf(resultDto.size());
 
@@ -470,5 +527,14 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .then(1)
         .otherwise(0)
         .add(countMatchingConditionWithKeyword(condition, keywords, idx + 1));
+  }
+
+  private BooleanExpression containsAllKeywords(StringExpression condition, List<String> keywords) {
+    BooleanExpression expression = null;
+    for (String keyword : keywords) {
+      BooleanExpression containsKeyword = condition.contains(keyword);
+      expression = (expression == null) ? containsKeyword : expression.and(containsKeyword);
+    }
+    return expression;
   }
 }

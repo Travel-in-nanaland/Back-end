@@ -47,4 +47,7 @@ public interface ExperienceRepositoryCustom {
 
   Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
       Pageable pageable);
+
+  Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      Language language, Pageable pageable);
 }

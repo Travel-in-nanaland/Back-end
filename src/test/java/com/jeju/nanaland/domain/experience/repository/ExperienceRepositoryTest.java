@@ -23,6 +23,7 @@ import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
+import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -156,6 +157,27 @@ class ExperienceRepositoryTest {
     assertThat(resultDto.getContent().get(3).getMatchedCount()).isEqualTo(1);
   }
 
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  void findSearchDtoByKeywordsIntersectTest(Language language) {
+    // given
+    Pageable pageable = PageRequest.of(0, 10);
+    List<String> keywords = List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5");
+    List<Experience> experiences1 =
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+    initHashtags(experiences1, keywords, language);
+    List<Experience> experiences2 =
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+    initHashtags(experiences2, List.of("keyword1", "kEyWoRd2"), language);
+
+    // when
+    Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
+        keywords, language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(2);
+  }
+
   private List<Experience> getActivityList(Language language,
       List<ExperienceTypeKeyword> keywordList, String addressTag, int size) {
     List<Experience> experienceList = new ArrayList<>();
@@ -234,11 +256,20 @@ class ExperienceRepositoryTest {
       Language language) {
     List<Keyword> keywordList = new ArrayList<>();
     for (String k : keywords) {
-      Keyword newKeyword = Keyword.builder()
-          .content(k)
-          .build();
-      em.persist(newKeyword);
-      keywordList.add(newKeyword);
+      TypedQuery<Keyword> query = em.getEntityManager().createQuery(
+          "SELECT k FROM Keyword k WHERE k.content = :keyword", Keyword.class);
+      query.setParameter("keyword", k);
+      List<Keyword> resultList = query.getResultList();
+
+      if (resultList.isEmpty()) {
+        Keyword newKeyword = Keyword.builder()
+            .content(k)
+            .build();
+        em.persist(newKeyword);
+        keywordList.add(newKeyword);
+      } else {
+        keywordList.add(resultList.get(0));
+      }
     }
 
     for (Experience experience : experiences) {

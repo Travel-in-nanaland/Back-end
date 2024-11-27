@@ -16,14 +16,16 @@ import lombok.NoArgsConstructor;
 public class ExperienceSearchDto {
 
   private Long id;
+  private String title;
   private ImageFileDto firstImage;
   private Long matchedCount;
   private LocalDateTime createdAt;
 
   @QueryProjection
-  public ExperienceSearchDto(Long id, String originUrl, String thumbnailUrl, Long matchedCount,
-      LocalDateTime createdAt) {
+  public ExperienceSearchDto(Long id, String title, String originUrl, String thumbnailUrl,
+      Long matchedCount, LocalDateTime createdAt) {
     this.id = id;
+    this.title = title;
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
     this.matchedCount = matchedCount;
   }
