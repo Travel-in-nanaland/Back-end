@@ -16,23 +16,32 @@ import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.QExperienceResponse_ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.QExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
+import com.jeju.nanaland.domain.hashtag.entity.QKeyword;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_SearchPostForReviewDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.group.GroupBy;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -148,6 +157,65 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             .or(experience.id.in(idListContainAllHashtags)));
 
     return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  public Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      Language language, Pageable pageable) {
+
+    // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
+    List<Tuple> keywordMatchQuery = queryFactory
+        .select(experience.id, experience.id.count())
+        .from(experience)
+        .leftJoin(hashtag)
+        .on(hashtag.post.id.eq(experience.id)
+            .and(hashtag.language.eq(language)))
+        .innerJoin(hashtag.keyword, QKeyword.keyword)
+        .where(QKeyword.keyword.content.toLowerCase().trim().in(keywords))
+        .groupBy(experience.id)
+        .fetch();
+
+    Map<Long, Long> keywordMatchMap = keywordMatchQuery.stream()
+        .collect(Collectors.toMap(
+            tuple -> tuple.get(experience.id),  // key: experience_id
+            tuple -> tuple.get(experience.id.count())  // value: 매칭된 키워드 개수
+        ));
+
+    List<ExperienceSearchDto> resultDto = queryFactory
+        .select(new QExperienceSearchDto(
+            experience.id,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
+            experience.createdAt
+        ))
+        .from(experience)
+        .leftJoin(experience.firstImageFile, imageFile)
+        .leftJoin(experience.experienceTrans, experienceTrans)
+        .on(experienceTrans.language.eq(language))
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    // 해시태그 값을 matchedCount에 더해줌
+    for (ExperienceSearchDto experienceSearchDto : resultDto) {
+      Long id = experienceSearchDto.getId();
+      experienceSearchDto.addMatchedCount(keywordMatchMap.getOrDefault(id, 0L));
+    }
+    // matchedCount가 0이라면 검색결과에서 제거
+    resultDto = resultDto.stream()
+        .filter(experienceSearchDto -> experienceSearchDto.getMatchedCount() > 0)
+        .toList();
+
+    // 매칭된 키워드 수 내림차순, 생성날짜 내림차순 정렬
+    List<ExperienceSearchDto> resultList = new ArrayList<>(resultDto);
+    resultList.sort(Comparator
+        .comparing(ExperienceSearchDto::getMatchedCount,
+            Comparator.nullsLast(Comparator.reverseOrder()))
+        .thenComparing(ExperienceSearchDto::getCreatedAt,
+            Comparator.nullsLast(Comparator.reverseOrder())));
+    final Long total = Long.valueOf(resultDto.size());
+
+    return PageableExecutionUtils.getPage(resultList, pageable, () -> total);
   }
 
   @Override
@@ -326,7 +394,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetchOne();
   }
 
-  private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
+  private List<Long> getIdListContainAllHashtags(String keywords, Language language) {
     return queryFactory
         .select(experience.id)
         .from(experience)
@@ -334,9 +402,23 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .on(hashtag.post.id.eq(experience.id)
             .and(hashtag.category.eq(Category.EXPERIENCE))
             .and(hashtag.language.eq(language)))
-        .where(hashtag.keyword.content.in(splitKeyword(keyword)))
+        .where(hashtag.keyword.content.toLowerCase().trim().in(keywords))
         .groupBy(experience.id)
-        .having(experience.id.count().eq(splitKeyword(keyword).stream().count()))
+        .having(experience.id.count().eq(splitKeyword(keywords).stream().count()))
+        .fetch();
+  }
+
+  private List<Long> getIdListContainAllHashtags(List<String> keywords, Language language) {
+    return queryFactory
+        .select(experience.id)
+        .from(experience)
+        .leftJoin(hashtag)
+        .on(hashtag.post.id.eq(experience.id)
+            .and(hashtag.category.eq(Category.EXPERIENCE))
+            .and(hashtag.language.eq(language)))
+        .where(hashtag.keyword.content.toLowerCase().trim().in(keywords))
+        .groupBy(experience.id)
+        .having(experience.id.count().eq(keywords.stream().count()))
         .fetch();
   }
 
@@ -366,5 +448,27 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     } else {
       return experienceKeyword.experienceTypeKeyword.in(keywordFilterList);
     }
+  }
+
+  private Expression<Long> countMatchingWithKeyword(List<String> keywords) {
+    return Expressions.asNumber(0L)
+        .add(countMatchingConditionWithKeyword(experienceTrans.title.toLowerCase().trim(), keywords,
+            0))
+        .add(countMatchingConditionWithKeyword(experienceTrans.addressTag.toLowerCase().trim(),
+            keywords, 0))
+        .add(countMatchingConditionWithKeyword(experienceTrans.content, keywords, 0));
+  }
+
+  private Expression<Integer> countMatchingConditionWithKeyword(StringExpression condition,
+      List<String> keywords, int idx) {
+    if (idx == keywords.size()) {
+      return Expressions.asNumber(0);
+    }
+
+    return new CaseBuilder()
+        .when(condition.contains(keywords.get(idx)))
+        .then(1)
+        .otherwise(0)
+        .add(countMatchingConditionWithKeyword(condition, keywords, idx + 1));
   }
 }
