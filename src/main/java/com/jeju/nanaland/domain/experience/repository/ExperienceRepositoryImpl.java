@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -50,6 +52,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 @RequiredArgsConstructor
 public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
+  private static final Logger log = LoggerFactory.getLogger(ExperienceRepositoryImpl.class);
   private final JPAQueryFactory queryFactory;
 
   @Override
@@ -213,9 +216,14 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             Comparator.nullsLast(Comparator.reverseOrder()))
         .thenComparing(ExperienceSearchDto::getCreatedAt,
             Comparator.nullsLast(Comparator.reverseOrder())));
+
+    // 페이징 처리
+    int startIdx = pageable.getPageSize() * pageable.getPageNumber();
+    int endIdx = Math.min(startIdx + pageable.getPageSize(), resultList.size());
+    List<ExperienceSearchDto> finalList = resultList.subList(startIdx, endIdx);
     final Long total = Long.valueOf(resultDto.size());
 
-    return PageableExecutionUtils.getPage(resultList, pageable, () -> total);
+    return PageableExecutionUtils.getPage(finalList, pageable, () -> total);
   }
 
   @Override
@@ -270,9 +278,14 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     resultList.sort(Comparator
         .comparing(ExperienceSearchDto::getCreatedAt,
             Comparator.nullsLast(Comparator.reverseOrder())));
+
+    // 페이징 처리
+    int startIdx = pageable.getPageSize() * pageable.getPageNumber();
+    int endIdx = Math.min(startIdx + pageable.getPageSize(), resultList.size());
+    List<ExperienceSearchDto> finalList = resultList.subList(startIdx, endIdx);
     final Long total = Long.valueOf(resultDto.size());
 
-    return PageableExecutionUtils.getPage(resultList, pageable, () -> total);
+    return PageableExecutionUtils.getPage(finalList, pageable, () -> total);
   }
 
   @Override

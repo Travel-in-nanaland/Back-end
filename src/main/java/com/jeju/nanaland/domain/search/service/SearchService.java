@@ -178,7 +178,7 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("//s+"))  // 공백기준 분할
+    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
         .map(String::toLowerCase)  // 소문자로
         .toList();
 
