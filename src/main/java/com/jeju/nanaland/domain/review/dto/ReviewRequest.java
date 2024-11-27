@@ -43,7 +43,7 @@ public class ReviewRequest {
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")
     private List<String> reviewKeywords;
 
-    @Schema(description = "파일 키 리스트", example = "[\"fileKey1.jpg\", \"fileKey2.jpeg\", \"fileKey3.png\"]")
+    @Schema(description = "파일 키 리스트", example = "[\"test/fileKey1.jpg\", \"test/fileKey2.jpeg\", \"test/fileKey3.png\"]")
     private List<String> fileKeys;
   }
 

@@ -47,7 +47,6 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import com.jeju.nanaland.global.file.data.FileCategory;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,8 +148,7 @@ public class ReviewService {
     if (fileKeys != null && !fileKeys.isEmpty()) {
       List<ReviewImageFile> reviewImageFiles = fileKeys.stream()
           .map((fileKey -> {
-            ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKey,
-                FileCategory.REVIEW);
+            ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKey);
             return ReviewImageFile.builder()
                 .review(review)
                 .imageFile(imageFile)
@@ -473,8 +471,7 @@ public class ReviewService {
       // 수정 제출된 이미지가
       if (editImageInfo.isNewImage()) { // 새로 제출된 이미지라면 저장
         assert fileKeys != null;
-        ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKeys.get(newImageIdx++),
-            FileCategory.REVIEW);
+        ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKeys.get(newImageIdx++));
         ReviewImageFile reviewImageFile = ReviewImageFile.builder()
             .imageFile(imageFile)
             .review(review)

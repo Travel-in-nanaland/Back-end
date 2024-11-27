@@ -91,8 +91,8 @@ public class ImageFileService {
     }
   }
 
-  public ImageFile getAndSaveImageFile(String fileKey, FileCategory fileCategory) {
-    S3ImageDto s3ImageDto = fileUploadService.getS3ImageUrls(fileKey, fileCategory);
+  public ImageFile getAndSaveImageFile(String fileKey) {
+    S3ImageDto s3ImageDto = fileUploadService.getCloudImageUrls(fileKey);
     return saveS3ImageFile(s3ImageDto);
   }
 }
