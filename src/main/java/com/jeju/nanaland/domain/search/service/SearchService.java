@@ -24,7 +24,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
-import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantSearchDto;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
@@ -329,17 +329,30 @@ public class SearchService {
    */
   public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
-
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<RestaurantCompositeDto> resultPage = restaurantRepository.searchCompositeDtoByKeyword(
-        keyword, locale, pageable);
+    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(String::toLowerCase)  // 소문자로
+        .toList();
+
+    Page<RestaurantSearchDto> resultPage;
+    // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
+    if (normalizedKeywords.size() <= 4) {
+      resultPage = restaurantRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+          language, pageable);
+    }
+    // 4개보다 많다면 Intersect 검색
+    else {
+      resultPage = restaurantRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
+          language, pageable);
+    }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (RestaurantCompositeDto dto : resultPage) {
+    for (RestaurantSearchDto dto : resultPage) {
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
