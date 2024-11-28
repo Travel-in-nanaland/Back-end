@@ -22,7 +22,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
-import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
+import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
@@ -113,16 +113,29 @@ public class SearchService {
   public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<NatureCompositeDto> resultPage = natureRepository.searchCompositeDtoByKeyword(
-        keyword, locale, pageable);
+    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(String::toLowerCase)  // 소문자로
+        .toList();
+
+    Page<NatureSearchDto> resultPage;
+    // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
+    if (normalizedKeywords.size() <= 4) {
+      resultPage = natureRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+          language, pageable);
+    }
+    // 4개보다 많다면 Intersect 검색
+    else {
+      resultPage = natureRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
+          language, pageable);
+    }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (NatureCompositeDto dto : resultPage) {
+    for (NatureSearchDto dto : resultPage) {
 
       thumbnails.add(
           ThumbnailDto.builder()
