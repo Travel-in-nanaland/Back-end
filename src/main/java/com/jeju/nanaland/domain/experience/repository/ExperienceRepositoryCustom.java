@@ -21,9 +21,6 @@ public interface ExperienceRepositoryCustom {
 
   ExperienceCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language language);
 
-  Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
-      Pageable pageable);
-
   Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
       List<AddressTag> addressTags, Pageable pageable);

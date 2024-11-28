@@ -112,57 +112,6 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   @Override
-  public Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
-      Pageable pageable) {
-
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
-
-    List<ExperienceCompositeDto> resultDto = queryFactory
-        .select(new QExperienceCompositeDto(
-            experience.id,
-            imageFile.originUrl,
-            imageFile.thumbnailUrl,
-            experience.contact,
-            experience.homepage,
-            experienceTrans.language,
-            experienceTrans.title,
-            experienceTrans.content,
-            experienceTrans.address,
-            experienceTrans.addressTag,
-            experienceTrans.intro,
-            experienceTrans.details,
-            experienceTrans.time,
-            experienceTrans.amenity,
-            experienceTrans.fee
-        ))
-        .from(experience)
-        .leftJoin(experience.firstImageFile, imageFile)
-        .leftJoin(experience.experienceTrans, experienceTrans)
-        .on(experienceTrans.language.eq(language))
-        .where(experienceTrans.title.contains(keyword)
-            .or(experienceTrans.addressTag.contains(keyword))
-            .or(experienceTrans.content.contains(keyword))
-            .or(experience.id.in(idListContainAllHashtags)))
-        .orderBy(experienceTrans.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize())
-        .fetch();
-
-    JPAQuery<Long> countQuery = queryFactory
-        .select(experience.count())
-        .from(experience)
-        .leftJoin(experience.firstImageFile, imageFile)
-        .leftJoin(experience.experienceTrans, experienceTrans)
-        .on(experienceTrans.language.eq(language))
-        .where(experienceTrans.title.contains(keyword)
-            .or(experienceTrans.addressTag.contains(keyword))
-            .or(experienceTrans.content.contains(keyword))
-            .or(experience.id.in(idListContainAllHashtags)));
-
-    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
-  }
-
-  @Override
   public Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
       Language language, Pageable pageable) {
 
