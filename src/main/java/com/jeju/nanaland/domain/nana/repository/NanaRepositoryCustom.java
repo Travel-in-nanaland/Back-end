@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
+import com.jeju.nanaland.domain.nana.dto.NanaSearchDto;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +26,10 @@ public interface NanaRepositoryCustom {
   NanaThumbnailPost findNanaThumbnailPostDto(Long id, Language locale);
 
   PostPreviewDto findPostPreviewDto(Long postId, Language language);
+
+  Page<NanaSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
+      Pageable pageable);
+
+  Page<NanaSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      Language language, Pageable pageable);
 }
