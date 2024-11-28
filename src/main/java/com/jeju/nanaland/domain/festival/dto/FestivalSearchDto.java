@@ -1,36 +1,22 @@
 package com.jeju.nanaland.domain.festival.dto;
 
-import com.jeju.nanaland.domain.common.dto.ImageFileDto;
+import com.jeju.nanaland.domain.common.dto.SearchDto;
 import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-public class FestivalSearchDto {
-
-  private Long id;
-  private String title;
-  private ImageFileDto firstImage;
-  private Long matchedCount;
-  private LocalDateTime createdAt;
+public class FestivalSearchDto extends SearchDto {
 
   @QueryProjection
   public FestivalSearchDto(Long id, String title, String originUrl, String thumbnailUrl,
-      Long matchedCount, LocalDateTime createdAt) {
-    this.id = id;
-    this.title = title;
-    this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
-    this.matchedCount = matchedCount;
-  }
-
-  public void addMatchedCount(Long count) {
-    this.matchedCount += count;
+      Long matchedCount,
+      LocalDateTime createdAt) {
+    super(id, title, originUrl, thumbnailUrl, matchedCount, createdAt);
   }
 }
