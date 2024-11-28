@@ -15,15 +15,25 @@ import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.QPostPreviewDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
 import com.jeju.nanaland.domain.festival.dto.QFestivalCompositeDto;
+import com.jeju.nanaland.domain.festival.dto.QFestivalSearchDto;
+import com.jeju.nanaland.domain.hashtag.entity.QKeyword;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -97,59 +107,144 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 게시물의 제목, 주소태그, 키워드, 해시태그 중 하나라도 겹치는 게시물이 있다면 조회 일치한 수, 생성일자 내림차순
+   *
+   * @param keywords 유저 키워드 리스트
+   * @param language 유저 언어
+   * @param pageable 페이징
+   * @return 검색결과
+   */
   @Override
-  public Page<FestivalCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
-      Pageable pageable) {
+  public Page<FestivalSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      Language language, Pageable pageable) {
+    // festival_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
+    List<Tuple> keywordMatchQuery = queryFactory
+        .select(festival.id, festival.id.count())
+        .from(festival)
+        .leftJoin(hashtag)
+        .on(hashtag.post.id.eq(festival.id)
+            .and(hashtag.language.eq(language)))
+        .innerJoin(hashtag.keyword, QKeyword.keyword)
+        .where(QKeyword.keyword.content.toLowerCase().trim().in(keywords))
+        .groupBy(festival.id)
+        .fetch();
 
-    List<Long> idListContainAllHashtags = getIdListContainAllHashtags(keyword, language);
+    Map<Long, Long> keywordMatchMap = keywordMatchQuery.stream()
+        .collect(Collectors.toMap(
+            tuple -> tuple.get(festival.id),  // key: festival_id
+            tuple -> tuple.get(festival.id.count())  // value: 매칭된 키워드 개수
+        ));
 
-    List<FestivalCompositeDto> resultDto = queryFactory
-        .select(new QFestivalCompositeDto(
+    List<FestivalSearchDto> resultDto = queryFactory
+        .select(new QFestivalSearchDto(
             festival.id,
+            festivalTrans.title,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            festival.contact,
-            festival.onGoing,
-            festival.homepage,
-            festivalTrans.language,
-            festivalTrans.title,
-            festivalTrans.content,
-            festivalTrans.address,
-            festivalTrans.addressTag,
-            festivalTrans.time,
-            festivalTrans.intro,
-            festivalTrans.fee,
-            festival.startDate,
-            festival.endDate,
-            festival.season
+            countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
+            festival.createdAt
         ))
         .from(festival)
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.eq(language))
-        .where(festivalTrans.title.contains(keyword)
-            .or(festivalTrans.addressTag.contains(keyword))
-            .or(festivalTrans.content.contains(keyword))
-            .or(festival.id.in(idListContainAllHashtags))
-            .and(festival.status.eq(Status.ACTIVE)))
-        .orderBy(festivalTrans.createdAt.desc())
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize())
         .fetch();
 
-    JPAQuery<Long> countQuery = queryFactory
-        .select(festival.count())
+    // 해시태그 값을 matchedCount에 더해줌
+    for (FestivalSearchDto festivalSearchDto : resultDto) {
+      Long id = festivalSearchDto.getId();
+      festivalSearchDto.addMatchedCount(keywordMatchMap.getOrDefault(id, 0L));
+    }
+    // matchedCount가 0이라면 검색결과에서 제거
+    resultDto = resultDto.stream()
+        .filter(festivalSearchDto -> festivalSearchDto.getMatchedCount() > 0)
+        .toList();
+
+    // 매칭된 키워드 수 내림차순, 생성날짜 내림차순 정렬
+    List<FestivalSearchDto> resultList = new ArrayList<>(resultDto);
+    resultList.sort(Comparator
+        .comparing(FestivalSearchDto::getMatchedCount,
+            Comparator.nullsLast(Comparator.reverseOrder()))
+        .thenComparing(FestivalSearchDto::getCreatedAt,
+            Comparator.nullsLast(Comparator.reverseOrder())));
+
+    // 페이징 처리
+    int startIdx = pageable.getPageSize() * pageable.getPageNumber();
+    int endIdx = Math.min(startIdx + pageable.getPageSize(), resultList.size());
+    List<FestivalSearchDto> finalList = resultList.subList(startIdx, endIdx);
+    final Long total = Long.valueOf(resultDto.size());
+
+    return PageableExecutionUtils.getPage(finalList, pageable, () -> total);
+  }
+
+  /**
+   * 게시물의 제목, 주소태그, 키워드, 해시태그와 모두 겹치는 게시물이 있다면 조회 생성일자 내림차순
+   *
+   * @param keywords 유저 키워드 리스트
+   * @param language 유저 언어
+   * @param pageable 페이징
+   * @return 검색결과
+   */
+  @Override
+  public Page<FestivalSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      Language language, Pageable pageable) {
+    // festival_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
+    List<Tuple> keywordMatchQuery = queryFactory
+        .select(festival.id, festival.id.count())
+        .from(festival)
+        .leftJoin(hashtag)
+        .on(hashtag.post.id.eq(festival.id)
+            .and(hashtag.language.eq(language)))
+        .innerJoin(hashtag.keyword, QKeyword.keyword)
+        .where(QKeyword.keyword.content.toLowerCase().trim().in(keywords))
+        .groupBy(festival.id)
+        .fetch();
+
+    Map<Long, Long> keywordMatchMap = keywordMatchQuery.stream()
+        .collect(Collectors.toMap(
+            tuple -> tuple.get(festival.id),  // key: festival_id
+            tuple -> tuple.get(festival.id.count())  // value: 매칭된 키워드 개수
+        ));
+
+    List<FestivalSearchDto> resultDto = queryFactory
+        .select(new QFestivalSearchDto(
+            festival.id,
+            festivalTrans.title,
+            imageFile.originUrl,
+            imageFile.thumbnailUrl,
+            countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
+            festival.createdAt
+        ))
         .from(festival)
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.eq(language))
-        .where(festivalTrans.title.contains(keyword)
-            .or(festivalTrans.addressTag.contains(keyword))
-            .or(festivalTrans.content.contains(keyword))
-            .or(festival.id.in(idListContainAllHashtags))
-            .and(festival.status.eq(Status.ACTIVE)));
+        .fetch();
 
-    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+    // 해시태그 값을 matchedCount에 더해줌
+    for (FestivalSearchDto festivalSearchDto : resultDto) {
+      Long id = festivalSearchDto.getId();
+      festivalSearchDto.addMatchedCount(keywordMatchMap.getOrDefault(id, 0L));
+    }
+    // matchedCount가 키워드 개수와 다르다면 검색결과에서 제거
+    resultDto = resultDto.stream()
+        .filter(festivalSearchDto -> festivalSearchDto.getMatchedCount() >= keywords.size())
+        .toList();
+
+    // 생성날짜 내림차순 정렬
+    List<FestivalSearchDto> resultList = new ArrayList<>(resultDto);
+    resultList.sort(Comparator
+        .comparing(FestivalSearchDto::getCreatedAt,
+            Comparator.nullsLast(Comparator.reverseOrder())));
+
+    // 페이징 처리
+    int startIdx = pageable.getPageSize() * pageable.getPageNumber();
+    int endIdx = Math.min(startIdx + pageable.getPageSize(), resultList.size());
+    List<FestivalSearchDto> finalList = resultList.subList(startIdx, endIdx);
+    final Long total = Long.valueOf(resultDto.size());
+
+    return PageableExecutionUtils.getPage(finalList, pageable, () -> total);
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
@@ -437,5 +532,41 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
           .map(address -> address.getValueByLocale(language)).toList();
       return festivalTrans.addressTag.in(addressTagFilters);
     }
+  }
+
+  /**
+   * 제목, 주소태그, 내용과 일치하는 키워드 개수 카운팅
+   *
+   * @param keywords 키워드
+   * @return 키워드를 포함하는 조건 개수
+   */
+  private Expression<Long> countMatchingWithKeyword(List<String> keywords) {
+    return Expressions.asNumber(0L)
+        .add(countMatchingConditionWithKeyword(festivalTrans.title.toLowerCase().trim(), keywords,
+            0))
+        .add(countMatchingConditionWithKeyword(festivalTrans.addressTag.toLowerCase().trim(),
+            keywords, 0))
+        .add(countMatchingConditionWithKeyword(festivalTrans.content, keywords, 0));
+  }
+
+  /**
+   * 조건이 키워드를 포함하는지 검사
+   *
+   * @param condition 테이블 컬럼
+   * @param keywords  유저 키워드 리스트
+   * @param idx       키워드 인덱스
+   * @return
+   */
+  private Expression<Integer> countMatchingConditionWithKeyword(StringExpression condition,
+      List<String> keywords, int idx) {
+    if (idx == keywords.size()) {
+      return Expressions.asNumber(0);
+    }
+
+    return new CaseBuilder()
+        .when(condition.contains(keywords.get(idx)))
+        .then(1)
+        .otherwise(0)
+        .add(countMatchingConditionWithKeyword(condition, keywords, idx + 1));
   }
 }

@@ -1,20 +1,28 @@
 package com.jeju.nanaland.domain.festival.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.jeju.nanaland.config.TestConfig;
 import com.jeju.nanaland.domain.common.data.AddressTag;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
 import com.jeju.nanaland.domain.festival.entity.Festival;
 import com.jeju.nanaland.domain.festival.entity.FestivalTrans;
+import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
+import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
@@ -36,11 +44,51 @@ class FestivalRepositoryTest {
   @PersistenceContext
   private EntityManager em;
 
-  @Test
-  @DisplayName("축제 검색")
-  void searchFestivalTest() {
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("키워드 4개 이하 검색")
+  void findSearchDtoByKeywordsUnionTestTest(Language language) {
+    // given
     Pageable pageable = PageRequest.of(0, 12);
-    festivalRepository.searchCompositeDtoByKeyword("쇼핑", Language.KOREAN, pageable);
+    int size = 3;
+    for (int i = 0; i < size; i++) {
+      Festival festival = createFestival((long) i);
+      FestivalTrans festivalTrans = createFestivalTrans(festival, i, "test", "제주시");
+      initHashtags(List.of(festival), List.of("keyword" + i, "keyword" + (i + 1)), language);
+    }
+
+    // when
+    Page<FestivalSearchDto> resultDto = festivalRepository.findSearchDtoByKeywordsUnion(
+        List.of("keyword1", "keyword2"), language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(3);
+    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("키워드 5개 이상 검색")
+  void findSearchDtoByKeywordsIntersectTest(Language language) {
+    // given
+    Pageable pageable = PageRequest.of(0, 12);
+    int size = 3;
+    for (int i = 0; i < size; i++) {
+      Festival festival = createFestival((long) i);
+      FestivalTrans festivalTrans = createFestivalTrans(festival, i, "test", "제주시");
+      initHashtags(List.of(festival),
+          List.of("keyword" + i, "keyword" + (i + 1), "keyword" + (i + 2), "keyword" + (i + 3),
+              "keyword" + (i + 4)),
+          language);
+    }
+
+    // when
+    Page<FestivalSearchDto> resultDto = festivalRepository.findSearchDtoByKeywordsIntersect(
+        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(1);
+    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(5);
   }
 
   @Test
@@ -56,23 +104,25 @@ class FestivalRepositoryTest {
     List<FestivalCompositeDto> onGoingFestivalWithoutAddressFilter = festivalCompositeDtoPage.getContent();
 
     List<FestivalCompositeDto> onGoingFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of(AddressTag.JEJU))).getContent();
+            Language.KOREAN, PageRequest.of(0, 5), true, new ArrayList<>(List.of(AddressTag.JEJU)))
+        .getContent();
 
     List<FestivalCompositeDto> finishFestivalWithoutAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
         Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>()).getContent();
 
     List<FestivalCompositeDto> finishFestivalWithAddressFilter = festivalRepository.searchCompositeDtoByOnGoing(
-        Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of(AddressTag.HALLIM))).getContent();
+            Language.KOREAN, PageRequest.of(0, 5), false, new ArrayList<>(List.of(AddressTag.HALLIM)))
+        .getContent();
 
     // Then
-    Assertions.assertThat(festivalCompositeDtoPage.getTotalElements()).isEqualTo(3);
-    Assertions.assertThat(festivalCompositeDtoPage.getTotalPages()).isEqualTo(1);
+    assertThat(festivalCompositeDtoPage.getTotalElements()).isEqualTo(3);
+    assertThat(festivalCompositeDtoPage.getTotalPages()).isEqualTo(1);
 
-    Assertions.assertThat(onGoingFestivalWithoutAddressFilter.size()).isEqualTo(3);
-    Assertions.assertThat(onGoingFestivalWithAddressFilter.size()).isEqualTo(2);
+    assertThat(onGoingFestivalWithoutAddressFilter.size()).isEqualTo(3);
+    assertThat(onGoingFestivalWithAddressFilter.size()).isEqualTo(2);
 
-    Assertions.assertThat(finishFestivalWithoutAddressFilter.size()).isEqualTo(2);
-    Assertions.assertThat(finishFestivalWithAddressFilter.size()).isEqualTo(1);
+    assertThat(finishFestivalWithoutAddressFilter.size()).isEqualTo(2);
+    assertThat(finishFestivalWithAddressFilter.size()).isEqualTo(1);
   }
 
   @Test
@@ -93,13 +143,13 @@ class FestivalRepositoryTest {
         Language.KOREAN, PageRequest.of(0, 5), "겨울").getContent();
 
     // Then
-    Assertions.assertThat(springFestivalPage.getTotalElements()).isEqualTo(3);
-    Assertions.assertThat(springFestivalPage.getTotalPages()).isEqualTo(1);
+    assertThat(springFestivalPage.getTotalElements()).isEqualTo(3);
+    assertThat(springFestivalPage.getTotalPages()).isEqualTo(1);
 
-    Assertions.assertThat(springFestival.size()).isEqualTo(3);
-    Assertions.assertThat(summerFestival.size()).isEqualTo(2);
-    Assertions.assertThat(autumnFestival.size()).isEqualTo(2);
-    Assertions.assertThat(springFestival.size()).isEqualTo(3);
+    assertThat(springFestival.size()).isEqualTo(3);
+    assertThat(summerFestival.size()).isEqualTo(2);
+    assertThat(autumnFestival.size()).isEqualTo(2);
+    assertThat(springFestival.size()).isEqualTo(3);
   }
 
   @Test
@@ -118,11 +168,11 @@ class FestivalRepositoryTest {
         LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 13), new ArrayList<>()).getContent();
 
     // Then
-    Assertions.assertThat(allFestivalPage.getTotalElements()).isEqualTo(5);
-    Assertions.assertThat(allFestivalPage.getTotalPages()).isEqualTo(1);
+    assertThat(allFestivalPage.getTotalElements()).isEqualTo(5);
+    assertThat(allFestivalPage.getTotalPages()).isEqualTo(1);
 
-    Assertions.assertThat(allFestival.size()).isEqualTo(5);
-    Assertions.assertThat(festivalByDate.size()).isEqualTo(3);
+    assertThat(allFestival.size()).isEqualTo(5);
+    assertThat(festivalByDate.size()).isEqualTo(3);
 
   }
 
@@ -254,5 +304,69 @@ class FestivalRepositoryTest {
         .build();
     em.persist(festivalTrans5);
 
+  }
+
+  private ImageFile createImageFile(Long number) {
+    ImageFile imageFile = ImageFile.builder()
+        .originUrl("origin" + number)
+        .thumbnailUrl("thumbnail" + number)
+        .build();
+    em.persist(imageFile);
+    return imageFile;
+  }
+
+  private Festival createFestival(Long priority) {
+    Festival festival = Festival.builder()
+        .firstImageFile(createImageFile(priority))
+        .priority(priority)
+        .build();
+    em.persist(festival);
+    return festival;
+  }
+
+  private FestivalTrans createFestivalTrans(Festival festival, int number, String keyword,
+      String addressTag) {
+    FestivalTrans festivalTrans = FestivalTrans.builder()
+        .festival(festival)
+        .language(Language.KOREAN)
+        .title(keyword + "title" + number)
+        .content("content" + number)
+        .addressTag(addressTag)
+        .build();
+    em.persist(festivalTrans);
+    return festivalTrans;
+  }
+
+  private void initHashtags(List<Festival> festivals, List<String> keywords,
+      Language language) {
+    List<Keyword> keywordList = new ArrayList<>();
+    for (String k : keywords) {
+      TypedQuery<Keyword> query = em.createQuery(
+          "SELECT k FROM Keyword k WHERE k.content = :keyword", Keyword.class);
+      query.setParameter("keyword", k);
+      List<Keyword> resultList = query.getResultList();
+
+      if (resultList.isEmpty()) {
+        Keyword newKeyword = Keyword.builder()
+            .content(k)
+            .build();
+        em.persist(newKeyword);
+        keywordList.add(newKeyword);
+      } else {
+        keywordList.add(resultList.get(0));
+      }
+    }
+
+    for (Festival festival : festivals) {
+      for (Keyword k : keywordList) {
+        Hashtag newHashtag = Hashtag.builder()
+            .post(festival)
+            .category(Category.FESTIVAL)
+            .language(language)
+            .keyword(k)
+            .build();
+        em.persist(newHashtag);
+      }
+    }
   }
 }

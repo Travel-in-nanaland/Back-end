@@ -13,7 +13,7 @@ import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
-import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
+import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
 import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
@@ -109,7 +109,15 @@ public class SearchService {
         .build();
   }
 
-  // 자연 검색
+  /**
+   * 자연 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param keyword       유저 검색어
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 자연 검색 결과
+   */
   public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -153,20 +161,41 @@ public class SearchService {
         .build();
   }
 
-  // 축제 검색
+  /**
+   * 축제 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param keyword       유저 검색어
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 축제 검색 결과
+   */
   public SearchResponse.ResultDto searchFestival(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<FestivalCompositeDto> resultPage = festivalRepository.searchCompositeDtoByKeyword(
-        keyword, locale, pageable);
+    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(String::toLowerCase)  // 소문자로
+        .toList();
+
+    Page<FestivalSearchDto> resultPage;
+    // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
+    if (normalizedKeywords.size() <= 4) {
+      resultPage = festivalRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+          language, pageable);
+    }
+    // 4개보다 많다면 Intersect 검색
+    else {
+      resultPage = festivalRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
+          language, pageable);
+    }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (FestivalCompositeDto dto : resultPage) {
+    for (FestivalSearchDto dto : resultPage) {
 
       thumbnails.add(
           ThumbnailDto.builder()
@@ -184,7 +213,16 @@ public class SearchService {
         .build();
   }
 
-  // 이색체험 검색
+  /**
+   * 이색체험 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야
+   * 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param keyword       유저 검색어
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 이색체험 검색 결과
+   */
   public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -228,7 +266,16 @@ public class SearchService {
         .build();
   }
 
-  // 전통시장 검색
+  /**
+   * 전통시장 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야
+   * 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param keyword       유저 검색어
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 전통시장 검색 결과
+   */
   public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -258,7 +305,15 @@ public class SearchService {
         .build();
   }
 
-  // 제주 맛집 검색
+  /**
+   * 맛집 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param keyword       유저 검색어
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 맛집 검색 결과
+   */
   public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
@@ -288,7 +343,16 @@ public class SearchService {
         .build();
   }
 
-  // 나나스픽 검색
+  /**
+   * 나나스픽 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야
+   * 조회
+   *
+   * @param memberInfoDto 유저 정보
+   * @param keyword       유저 검색어
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return 나나스픽 검색 결과
+   */
   public SearchResponse.ResultDto searchNana(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
 
