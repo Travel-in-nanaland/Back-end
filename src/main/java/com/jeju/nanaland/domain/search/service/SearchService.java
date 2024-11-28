@@ -15,7 +15,7 @@ import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
-import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
+import com.jeju.nanaland.domain.market.dto.MarketSearchDto;
 import com.jeju.nanaland.domain.market.repository.MarketRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -278,17 +278,30 @@ public class SearchService {
    */
   public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
       int page, int size) {
-
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    Page<MarketCompositeDto> resultPage = marketRepository.searchCompositeDtoByKeyword(
-        keyword, locale, pageable);
+    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(String::toLowerCase)  // 소문자로
+        .toList();
+
+    Page<MarketSearchDto> resultPage;
+    // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
+    if (normalizedKeywords.size() <= 4) {
+      resultPage = marketRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+          language, pageable);
+    }
+    // 4개보다 많다면 Intersect 검색
+    else {
+      resultPage = marketRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
+          language, pageable);
+    }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
 
     List<SearchResponse.ThumbnailDto> thumbnails = new ArrayList<>();
-    for (MarketCompositeDto dto : resultPage) {
+    for (MarketSearchDto dto : resultPage) {
+
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
