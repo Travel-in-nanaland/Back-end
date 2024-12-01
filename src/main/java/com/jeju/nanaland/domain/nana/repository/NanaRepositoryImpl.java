@@ -192,7 +192,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             nanaTitle.heading,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
+            getMaxMatchingCountWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
             nana.createdAt
         ))
         .from(nana)
@@ -200,36 +200,30 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
         .on(nanaTitle.language.eq(language))
+        .groupBy(nana.id, nanaTitle.heading, imageFile.originUrl, imageFile.thumbnailUrl,
+            nana.createdAt)
         .fetch();
 
     // key: nana_id, value: nanaContent 중 키워드와 가장 많이 일치한 수
     Map<Long, Long> nanaMap = new HashMap<>();
     for (NanaSearchDto nanaSearchDto : resultDto) {
       Long nanaId = nanaSearchDto.getId();
-      Long matchedCount = keywordMatchMap.get(nanaId);
+      Long matchedCount = nanaSearchDto.getMatchedCount();
       nanaMap.put(nanaId, Math.max(nanaMap.getOrDefault(nanaId, 0L), matchedCount));
-    }
-    // nana_id 값과 최대 matchedCount 값을 가진 객체만 관리
-    List<NanaSearchDto> groupedResultDto = new ArrayList<>();
-    for (NanaSearchDto nanaSearchDto : resultDto) {
-      Long nanaId = nanaSearchDto.getId();
-      if (nanaSearchDto.getMatchedCount() == nanaMap.get(nanaId)) {
-        groupedResultDto.add(nanaSearchDto);
-      }
     }
 
     // 해시태그 값을 matchedCount에 더해줌
-    for (NanaSearchDto nanaSearchDto : groupedResultDto) {
+    for (NanaSearchDto nanaSearchDto : resultDto) {
       Long id = nanaSearchDto.getId();
       nanaSearchDto.addMatchedCount(keywordMatchMap.getOrDefault(id, 0L));
     }
     // matchedCount가 0이라면 검색결과에서 제거
-    groupedResultDto = groupedResultDto.stream()
+    resultDto = resultDto.stream()
         .filter(nanaSearchDto -> nanaSearchDto.getMatchedCount() > 0)
         .toList();
 
     // 매칭된 키워드 수 내림차순, 생성날짜 내림차순 정렬
-    List<NanaSearchDto> resultList = new ArrayList<>(groupedResultDto);
+    List<NanaSearchDto> resultList = new ArrayList<>(resultDto);
     resultList.sort(Comparator
         .comparing(NanaSearchDto::getMatchedCount,
             Comparator.nullsLast(Comparator.reverseOrder()))
@@ -284,7 +278,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
             nanaTitle.heading,
             imageFile.originUrl,
             imageFile.thumbnailUrl,
-            countMatchingWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
+            getMaxMatchingCountWithKeyword(keywords),  // 제목, 내용, 지역정보와 매칭되는 키워드 개수
             nana.createdAt
         ))
         .from(nana)
@@ -292,36 +286,30 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .leftJoin(nanaTitle).on(nanaTitle.nana.eq(nana).and(nanaTitle.language.eq(language)))
         .leftJoin(nanaContent).on(nanaContent.nanaTitle.eq(nanaTitle))
         .on(nanaTitle.language.eq(language))
+        .groupBy(nana.id, nanaTitle.heading, imageFile.originUrl, imageFile.thumbnailUrl,
+            nana.createdAt)
         .fetch();
 
     // key: nana_id, value: nanaContent 중 키워드와 가장 많이 일치한 수
     Map<Long, Long> nanaMap = new HashMap<>();
     for (NanaSearchDto nanaSearchDto : resultDto) {
       Long nanaId = nanaSearchDto.getId();
-      Long matchedCount = keywordMatchMap.get(nanaId);
+      Long matchedCount = nanaSearchDto.getMatchedCount();
       nanaMap.put(nanaId, Math.max(nanaMap.getOrDefault(nanaId, 0L), matchedCount));
-    }
-    // nana_id 값과 최대 matchedCount 값을 가진 객체만 관리
-    List<NanaSearchDto> groupedResultDto = new ArrayList<>();
-    for (NanaSearchDto nanaSearchDto : resultDto) {
-      Long nanaId = nanaSearchDto.getId();
-      if (nanaSearchDto.getMatchedCount() == nanaMap.get(nanaId)) {
-        groupedResultDto.add(nanaSearchDto);
-      }
     }
 
     // 해시태그 값을 matchedCount에 더해줌
-    for (NanaSearchDto nanaSearchDto : groupedResultDto) {
+    for (NanaSearchDto nanaSearchDto : resultDto) {
       Long id = nanaSearchDto.getId();
       nanaSearchDto.addMatchedCount(keywordMatchMap.getOrDefault(id, 0L));
     }
     // matchedCount가 키워드 개수와 다르다면 검색결과에서 제거
-    groupedResultDto = groupedResultDto.stream()
+    resultDto = resultDto.stream()
         .filter(nanaSearchDto -> nanaSearchDto.getMatchedCount() >= keywords.size())
         .toList();
 
     // 생성날짜 내림차순 정렬
-    List<NanaSearchDto> resultList = new ArrayList<>(groupedResultDto);
+    List<NanaSearchDto> resultList = new ArrayList<>(resultDto);
     resultList.sort(Comparator
         .comparing(NanaSearchDto::getCreatedAt,
             Comparator.nullsLast(Comparator.reverseOrder())));
@@ -403,11 +391,12 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
    * @param keywords 키워드
    * @return 키워드를 포함하는 조건 개수
    */
-  private Expression<Long> countMatchingWithKeyword(List<String> keywords) {
+  private Expression<Long> getMaxMatchingCountWithKeyword(List<String> keywords) {
     return Expressions.asNumber(0L)
         .add(countMatchingConditionWithKeyword(nanaTitle.heading.toLowerCase().trim(), keywords,
             0))
-        .add(countMatchingConditionWithKeyword(nanaContent.content, keywords, 0));
+        .add(countMatchingConditionWithKeyword(nanaContent.content, keywords, 0))
+        .max();
   }
 
   /**
