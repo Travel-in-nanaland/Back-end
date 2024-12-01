@@ -14,10 +14,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class SearchDto {
 
+  protected Long matchedCount;
   private Long id;
   private String title;
   private ImageFileDto firstImage;
-  private Long matchedCount;
   private LocalDateTime createdAt;
 
   @QueryProjection
