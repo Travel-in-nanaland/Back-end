@@ -1,27 +1,24 @@
-package com.jeju.nanaland.domain.market.repository;
+package com.jeju.nanaland.domain.restaurant.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
-import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
 import com.jeju.nanaland.domain.hashtag.entity.Keyword;
-import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
-import com.jeju.nanaland.domain.market.dto.MarketSearchDto;
-import com.jeju.nanaland.domain.market.entity.Market;
-import com.jeju.nanaland.domain.market.entity.MarketTrans;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantSearchDto;
+import com.jeju.nanaland.domain.restaurant.entity.Restaurant;
+import com.jeju.nanaland.domain.restaurant.entity.RestaurantTrans;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
@@ -31,11 +28,11 @@ import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(TestConfig.class)
-//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class MarketRepositoryTest {
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+public class RestaurantRepositoryTest {
 
   @Autowired
-  MarketRepository marketRepository;
+  RestaurantRepository restaurantRepository;
 
   @Autowired
   TestEntityManager em;
@@ -48,13 +45,13 @@ class MarketRepositoryTest {
     Pageable pageable = PageRequest.of(0, 12);
     int size = 3;
     for (int i = 0; i < size; i++) {
-      Market market = createMarket((long) i);
-      MarketTrans marketTrans = createMarketTrans(market, i, "test", "제주시");
-      initHashtags(List.of(market), List.of("keyword" + i, "keyword" + (i + 1)), language);
+      Restaurant restaurant = createRestaurant((long) i);
+      RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant, i, "test", "제주시");
+      initHashtags(List.of(restaurant), List.of("keyword" + i, "keyword" + (i + 1)), language);
     }
 
     // when
-    Page<MarketSearchDto> resultDto = marketRepository.findSearchDtoByKeywordsUnion(
+    Page<RestaurantSearchDto> resultDto = restaurantRepository.findSearchDtoByKeywordsUnion(
         List.of("keyword1", "keyword2"), language, pageable);
 
     // then
@@ -70,80 +67,21 @@ class MarketRepositoryTest {
     Pageable pageable = PageRequest.of(0, 12);
     int size = 3;
     for (int i = 0; i < size; i++) {
-      Market market = createMarket((long) i);
-      MarketTrans marketTrans = createMarketTrans(market, i, "test", "제주시");
-      initHashtags(List.of(market),
+      Restaurant restaurant = createRestaurant((long) i);
+      RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant, i, "test", "제주시");
+      initHashtags(List.of(restaurant),
           List.of("keyword" + i, "keyword" + (i + 1), "keyword" + (i + 2), "keyword" + (i + 3),
               "keyword" + (i + 4)),
           language);
     }
 
     // when
-    Page<MarketSearchDto> resultDto = marketRepository.findSearchDtoByKeywordsIntersect(
+    Page<RestaurantSearchDto> resultDto = restaurantRepository.findSearchDtoByKeywordsIntersect(
         List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(1);
     assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(5);
-  }
-
-  @Test
-  @DisplayName("전통시장 썸네일 조회")
-  void findMarketThumbnailsTest() {
-    // given
-    Language korean = initKoreanLanguage();
-    List<Market> marketList = getMarketList(korean);
-    for (Market market : marketList) {
-      System.out.println(market.getCreatedAt());
-    }
-
-    Language locale = Language.KOREAN;
-    List<AddressTag> addressFilter = Arrays.asList(AddressTag.JEJU);
-    Pageable pageable = PageRequest.of(0, 2);
-
-    // when
-    Page<MarketThumbnail> marketThumbnails = marketRepository.findMarketThumbnails(locale,
-        addressFilter, pageable);
-    List<MarketThumbnail> thumbnails = marketThumbnails.getContent();
-
-    // then
-    assertThat(thumbnails).hasSize(2);
-    assertThat(thumbnails.get(0)).extracting("title").isEqualTo("market title 10");
-    assertThat(thumbnails.get(1)).extracting("title").isEqualTo("market title 9");
-  }
-
-  // KOREAN 언어 정보 초기 설정
-  Language initKoreanLanguage() {
-    Language korean = Language.KOREAN;
-    return korean;
-  }
-
-  // 언어: KOREAN, 전통시장 데이터 10개 생성
-  List<Market> getMarketList(Language language) {
-    List<Market> marketList = new ArrayList<>();
-    for (int i = 1; i < 11; i++) {
-      ImageFile imageFile = ImageFile.builder()
-          .originUrl("originUrl" + i)
-          .thumbnailUrl("thumbnailUrl" + i)
-          .build();
-      em.persist(imageFile);
-      Market market = Market.builder()
-          .firstImageFile(imageFile)
-          .priority((long) i)
-          .build();
-      em.persistAndFlush(market);
-      MarketTrans marketTrans1 = MarketTrans.builder()
-          .market(market)
-          .title("market title " + i)
-          .language(language)
-          .addressTag("제주시")
-          .build();
-      em.persist(marketTrans1);
-
-      marketList.add(market);
-    }
-
-    return marketList;
   }
 
   private ImageFile createImageFile(Long number) {
@@ -155,29 +93,29 @@ class MarketRepositoryTest {
     return imageFile;
   }
 
-  private Market createMarket(Long priority) {
-    Market market = Market.builder()
+  private Restaurant createRestaurant(Long priority) {
+    Restaurant restaurant = Restaurant.builder()
         .firstImageFile(createImageFile(priority))
         .priority(priority)
         .build();
-    em.persist(market);
-    return market;
+    em.persist(restaurant);
+    return restaurant;
   }
 
-  private MarketTrans createMarketTrans(Market market, int number, String keyword,
+  private RestaurantTrans createRestaurantTrans(Restaurant restaurant, int number, String keyword,
       String addressTag) {
-    MarketTrans marketTrans = MarketTrans.builder()
-        .market(market)
+    RestaurantTrans restaurantTrans = RestaurantTrans.builder()
+        .restaurant(restaurant)
         .language(Language.KOREAN)
         .title(keyword + "title" + number)
         .content("content" + number)
         .addressTag(addressTag)
         .build();
-    em.persist(marketTrans);
-    return marketTrans;
+    em.persist(restaurantTrans);
+    return restaurantTrans;
   }
 
-  private void initHashtags(List<Market> markets, List<String> keywords,
+  private void initHashtags(List<Restaurant> restaurants, List<String> keywords,
       Language language) {
     List<Keyword> keywordList = new ArrayList<>();
     for (String k : keywords) {
@@ -197,11 +135,11 @@ class MarketRepositoryTest {
       }
     }
 
-    for (Market market : markets) {
+    for (Restaurant restaurant : restaurants) {
       for (Keyword k : keywordList) {
         Hashtag newHashtag = Hashtag.builder()
-            .post(market)
-            .category(Category.MARKET)
+            .post(restaurant)
+            .category(Category.RESTAURANT)
             .language(language)
             .keyword(k)
             .build();
