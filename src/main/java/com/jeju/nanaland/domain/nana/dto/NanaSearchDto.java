@@ -21,4 +21,8 @@ public class NanaSearchDto extends SearchDto {
       LocalDateTime createdAt) {
     super(id, title, originUrl, thumbnailUrl, matchedCount, createdAt);
   }
+
+  public void setMatchedCount(Long matchedCount) {
+    this.matchedCount = matchedCount;
+  }
 }
