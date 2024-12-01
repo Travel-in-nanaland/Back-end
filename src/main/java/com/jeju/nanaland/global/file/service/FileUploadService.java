@@ -19,6 +19,7 @@ import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.data.ImageSize;
 import com.jeju.nanaland.global.file.dto.FileRequest;
 import com.jeju.nanaland.global.file.dto.FileResponse;
 import com.jeju.nanaland.global.file.dto.FileResponse.InitResultDto;
@@ -60,8 +61,6 @@ public class FileUploadService {
   private String infoFixReportDirectory;
   @Value("${cloud.aws.s3.claimReportFileDirectory}")
   private String claimReportDirectory;
-  private static final String THUMBNAIL_DIRECTORY = "/thumbnail_images";
-  private static final String THUMBNAIL_PREFIX = "thumbnail_";
   private static final int PRESIGNEDURL_EXPIRATION = 30;
   private static final long MAX_FILE_SIZE = 30 * 1024 * 1024L;
 
@@ -201,15 +200,13 @@ public class FileUploadService {
       throw new NotFoundException(FILE_S3_NOT_FOUNE.getMessage());
     }
     String originUrl = cloudFrontDomain + "/" + fileKey;
+    String thumbnailUrl = cloudFrontDomain + "/" + fileKey;
+    String dimension = ImageSize.getDimension(fileKey);
 
-    if (!amazonS3Client.doesObjectExist(bucket + THUMBNAIL_DIRECTORY, THUMBNAIL_PREFIX + fileKey)) {
-      return S3ImageDto.builder()
-          .originUrl(originUrl)
-          .thumbnailUrl(originUrl)
-          .build();
+    if (dimension != null) {
+      thumbnailUrl += dimension;
     }
 
-    String thumbnailUrl = cloudFrontDomain + "/" + THUMBNAIL_DIRECTORY + "/" + THUMBNAIL_PREFIX + fileKey;
     return S3ImageDto.builder()
         .originUrl(originUrl)
         .thumbnailUrl(thumbnailUrl)

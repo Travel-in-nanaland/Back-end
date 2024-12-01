@@ -8,6 +8,8 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.repository.ImageFileRepository;
 import com.jeju.nanaland.domain.member.service.ProfileImageService;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import com.jeju.nanaland.global.image_upload.S3ImageService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.io.File;
@@ -34,6 +36,7 @@ public class ImageFileService {
   private String MEMBER_PROFILE_DIRECTORY;
   private final S3ImageService s3ImageService;
   private final ImageFileRepository imageFileRepository;
+  private final FileUploadService fileUploadService;
 
 
   public ImageFile saveS3ImageFile(S3ImageDto s3ImageDto) {
@@ -86,5 +89,10 @@ public class ImageFileService {
       log.error("파일 변환 오류: {}", e.getMessage());
       CompletableFuture.failedFuture(new ServerErrorException(SERVER_ERROR.getMessage()));
     }
+  }
+
+  public ImageFile getAndSaveImageFile(String fileKey) {
+    S3ImageDto s3ImageDto = fileUploadService.getCloudImageUrls(fileKey);
+    return saveS3ImageFile(s3ImageDto);
   }
 }
