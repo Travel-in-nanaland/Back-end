@@ -25,6 +25,7 @@ import com.jeju.nanaland.global.file.dto.FileResponse;
 import com.jeju.nanaland.global.file.dto.FileResponse.InitResultDto;
 import com.jeju.nanaland.global.file.dto.FileResponse.PresignedUrlInfo;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
+import com.jeju.nanaland.global.image_upload.dto.S3VideoDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -70,7 +71,7 @@ public class FileUploadService {
 
     // 파일 형식 유효성 검사
     String contentType = validateFileExtension(initCommandDto.getOriginalFileName(),
-        initCommandDto.getFileCategory());
+        FileCategory.valueOf(initCommandDto.getFileCategory()));
 
     // S3 key 생성
     String fileKey = generateUniqueFileKey(initCommandDto.getOriginalFileName(),
@@ -123,7 +124,7 @@ public class FileUploadService {
     }
   }
 
-  private String validateFileExtension(@NotBlank String originalFileName, String fileCategory) {
+  public String validateFileExtension(@NotBlank String originalFileName, FileCategory fileCategory) {
     if (originalFileName == null || !originalFileName.contains(".")) {
       throw new BadRequestException(NO_FILE_EXTENSION.getMessage());
     }
@@ -132,7 +133,7 @@ public class FileUploadService {
         .substring(originalFileName.lastIndexOf('.') + 1)
         .toLowerCase();
 
-    if (!FileCategory.valueOf(fileCategory).getAllowedExtensions().contains(extension)) {
+    if (!fileCategory.getAllowedExtensions().contains(extension)) {
       throw new BadRequestException(INVALID_FILE_EXTENSION_TYPE.getMessage());
     }
 
@@ -210,6 +211,17 @@ public class FileUploadService {
     return S3ImageDto.builder()
         .originUrl(originUrl)
         .thumbnailUrl(thumbnailUrl)
+        .build();
+  }
+
+  public S3VideoDto getCloudVideoUrls(String fileKey) {
+    if (!amazonS3Client.doesObjectExist(bucket, fileKey)) {
+      throw new NotFoundException(FILE_S3_NOT_FOUNE.getMessage());
+    }
+    String originUrl = cloudFrontDomain + "/" + fileKey;
+
+    return S3VideoDto.builder()
+        .originUrl(originUrl)
         .build();
   }
 }
