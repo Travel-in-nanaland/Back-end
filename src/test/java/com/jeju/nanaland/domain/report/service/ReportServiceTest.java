@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.report.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.ALREADY_REPORTED;
-import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_LIMIT_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -185,7 +185,7 @@ class ReportServiceTest {
       // then: ErrorCode 검증
       assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto))
           .isInstanceOf(BadRequestException.class)
-          .hasMessage(IMAGE_BAD_REQUEST.getMessage());
+          .hasMessage(FILE_LIMIT_BAD_REQUEST.getMessage());
     }
 
     @Test
@@ -295,7 +295,7 @@ class ReportServiceTest {
       assertThatThrownBy(
           () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(BadRequestException.class)
-          .hasMessage(IMAGE_BAD_REQUEST.getMessage());
+          .hasMessage(FILE_LIMIT_BAD_REQUEST.getMessage());
     }
 
     @Test

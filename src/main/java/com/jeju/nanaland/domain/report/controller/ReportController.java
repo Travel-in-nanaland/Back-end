@@ -33,7 +33,7 @@ public class ReportController {
   @Operation(summary = "정보 수정 제안", description = "게시물 id와 카테고리를 통해 게시물 정보 수정 제안 요청")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "400", description = "잘못된 요청 (이메일 형식 오류, category로 NANA 요청)", content = @Content),
+      @ApiResponse(responseCode = "400", description = "잘못된 요청 (이메일 형식 오류, category로 NANA 요청, 파일키 형식 오류)", content = @Content),
       @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "사진파일 업로드 실패 또는 관리자에게로 메일 전송 실패", content = @Content)
   })
@@ -49,7 +49,7 @@ public class ReportController {
   @Operation(summary = "신고 기능")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
-      @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우", content = @Content),
+      @ApiResponse(responseCode = "400", description = "파일키 형식이 맞지 않는 등 입력값이 올바르지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "해당 게시물이 없는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "사진파일 업로드 실패 또는 관리자에게로 메일 전송 실패", content = @Content)
   })

@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.report.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.ALREADY_REPORTED;
-import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -43,6 +42,7 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +57,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ReportService {
 
-  private static final int MAX_IMAGE_COUNT = 5;
   private final MemberRepository memberRepository;
   private final ClaimReportVideoFileRepository claimReportVideoFileRepository;
   private final ClaimReportRepository claimReportRepository;
@@ -72,6 +71,7 @@ public class ReportService {
   private final VideoFileService videoFileService;
   private final MailService mailService;
   private final ReportStrategyFactory reportStrategyFactory;
+  private final FileUploadService fileUploadService;
 
   /**
    * 정보 수정 제안
@@ -125,19 +125,7 @@ public class ReportService {
     if (List.of(Category.NANA, Category.NANA_CONTENT).contains(category)) {
       throw new BadRequestException(NANA_INFO_FIX_FORBIDDEN.getMessage());
     }
-    checkFileCountLimit(reqDto.getFileKeys());
-  }
-
-  /**
-   * 파일 개수 유효성 확인
-   *
-   * @param fileKeys 파일키 리스트
-   * @throws BadRequestException 파일 개수가 초과된 경우
-   */
-  private void checkFileCountLimit(List<String> fileKeys) {
-    if (fileKeys != null && fileKeys.size() > MAX_IMAGE_COUNT) {
-      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
-    }
+    fileUploadService.validateFileKeys(reqDto.getFileKeys(), FileCategory.INFO_FIX_REPORT);
   }
 
   /**
@@ -216,7 +204,7 @@ public class ReportService {
       throw new BadRequestException(ALREADY_REPORTED.getMessage());
     }
 
-    checkFileCountLimit(reqDto.getFileKeys());
+    fileUploadService.validateFileKeys(reqDto.getFileKeys(), FileCategory.CLAIM_REPORT);
   }
 
   /**
