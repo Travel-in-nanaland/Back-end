@@ -10,11 +10,15 @@ import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOW
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.VideoFile;
 import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.MailService;
@@ -26,6 +30,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.report.dto.ReportRequest;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportStrategy;
 import com.jeju.nanaland.domain.report.entity.infoFix.FixType;
 import com.jeju.nanaland.domain.report.entity.infoFix.InfoFixReport;
@@ -41,6 +46,8 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -91,13 +98,15 @@ class ReportServiceTest {
   ClaimReportStrategy claimReportStrategy;
   @Mock
   FileService fileService;
+  @Mock
+  FileUploadService fileUploadService;
 
   MemberInfoDto memberInfoDto, memberInfoDto2;
 
   private static List<String> createImageFileKeys(int itemCount) {
     List<String> fileKeys = new ArrayList<>();
     for (int i = 0; i < itemCount; i++) {
-      fileKeys.add("test/" + itemCount + ".jpg");
+      fileKeys.add("test/" + i + ".jpg");
     }
     return fileKeys;
   }
@@ -180,6 +189,9 @@ class ReportServiceTest {
       ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(Category.MARKET);
       List<String> fileKeys = createImageFileKeys(6);
       infoFixDto.setFileKeys(fileKeys);
+      doThrow(new BadRequestException(FILE_LIMIT_BAD_REQUEST.getMessage()))
+          .when(fileUploadService)
+          .validateFileKeys(any(), any(FileCategory.class));
 
       // when: 정보 수정 제안
       // then: ErrorCode 검증
@@ -214,6 +226,9 @@ class ReportServiceTest {
 
       doReturn(MarketCompositeDto.builder().build()).when(marketRepository)
           .findCompositeDtoById(any(), any(Language.class));
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .getAndSaveImageFile(any());
+      doReturn(infoFixReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
       doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
 
       // when: 정보 수정 제안
@@ -286,6 +301,9 @@ class ReportServiceTest {
       List<String> fileKeys = createImageFileKeys(6);
       claimReportDto.setFileKeys(fileKeys);
 
+      doThrow(new BadRequestException(FILE_LIMIT_BAD_REQUEST.getMessage()))
+          .when(fileUploadService)
+          .validateFileKeys(any(), any(FileCategory.class));
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
@@ -313,7 +331,12 @@ class ReportServiceTest {
       fileKeys.addAll(videoFileKeys);
       claimReportDto.setFileKeys(fileKeys);
 
+      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .getAndSaveImageFile(any());
+      doReturn(mock(VideoFile.class)).when(videoFileService)
+          .getAndSaveVideoFile(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
 
@@ -371,6 +394,11 @@ class ReportServiceTest {
 
       doReturn(2L).when(memberInfoDto.getMember()).getId();
       doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
+      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .getAndSaveImageFile(any());
+      doReturn(mock(VideoFile.class)).when(videoFileService)
+          .getAndSaveVideoFile(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
 
