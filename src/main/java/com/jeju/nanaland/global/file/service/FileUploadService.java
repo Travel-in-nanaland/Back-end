@@ -1,5 +1,6 @@
 package com.jeju.nanaland.global.file.service;
 
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_LIMIT_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.FILE_S3_NOT_FOUNE;
 import static com.jeju.nanaland.global.exception.ErrorCode.FILE_UPLOAD_FAIL;
 import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_EXTENSION_TYPE;
@@ -13,8 +14,8 @@ import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PartETag;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
@@ -25,6 +26,7 @@ import com.jeju.nanaland.global.file.dto.FileResponse;
 import com.jeju.nanaland.global.file.dto.FileResponse.InitResultDto;
 import com.jeju.nanaland.global.file.dto.FileResponse.PresignedUrlInfo;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
+import com.jeju.nanaland.global.image_upload.dto.S3VideoDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,6 +49,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FileUploadService {
 
+  private static final int MAX_IMAGE_COUNT = 5;
+  private static final int PRESIGNEDURL_EXPIRATION = 30;
+  private static final long MAX_FILE_SIZE = 30 * 1024 * 1024L;
   private final AmazonS3 amazonS3;
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.cloudfront.domain}")
@@ -61,8 +66,6 @@ public class FileUploadService {
   private String infoFixReportDirectory;
   @Value("${cloud.aws.s3.claimReportFileDirectory}")
   private String claimReportDirectory;
-  private static final int PRESIGNEDURL_EXPIRATION = 30;
-  private static final long MAX_FILE_SIZE = 30 * 1024 * 1024L;
 
   public FileResponse.InitResultDto uploadInit(FileRequest.InitCommandDto initCommandDto) {
     // 파일 크기 유효성 검사
@@ -70,7 +73,7 @@ public class FileUploadService {
 
     // 파일 형식 유효성 검사
     String contentType = validateFileExtension(initCommandDto.getOriginalFileName(),
-        initCommandDto.getFileCategory());
+        FileCategory.valueOf(initCommandDto.getFileCategory()));
 
     // S3 key 생성
     String fileKey = generateUniqueFileKey(initCommandDto.getOriginalFileName(),
@@ -89,28 +92,29 @@ public class FileUploadService {
       InitiateMultipartUploadResult initResponse = amazonS3.initiateMultipartUpload(initRequest);
       String uploadId = initResponse.getUploadId();
 
-    List<PresignedUrlInfo> presignedUrlInfos = new ArrayList<>();
-    // 파트별 Pre-Signed URL 발급
-    for (int partNumber = 1; partNumber <= initCommandDto.getPartCount(); partNumber++) {
-      GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileKey)
-          .withMethod(HttpMethod.PUT)
-          .withExpiration(getPresignedUrlExpiration())
-          .withKey(fileKey);
+      List<PresignedUrlInfo> presignedUrlInfos = new ArrayList<>();
+      // 파트별 Pre-Signed URL 발급
+      for (int partNumber = 1; partNumber <= initCommandDto.getPartCount(); partNumber++) {
+        GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket,
+            fileKey)
+            .withMethod(HttpMethod.PUT)
+            .withExpiration(getPresignedUrlExpiration())
+            .withKey(fileKey);
 
-      presignedUrlRequest.addRequestParameter("partNumber", String.valueOf(partNumber));
-      presignedUrlRequest.addRequestParameter("uploadId", uploadId);
-      URL presignedUrl = amazonS3.generatePresignedUrl(presignedUrlRequest);
+        presignedUrlRequest.addRequestParameter("partNumber", String.valueOf(partNumber));
+        presignedUrlRequest.addRequestParameter("uploadId", uploadId);
+        URL presignedUrl = amazonS3.generatePresignedUrl(presignedUrlRequest);
 
-      presignedUrlInfos.add(PresignedUrlInfo.builder()
-          .partNumber(partNumber)
-          .preSignedUrl(presignedUrl.toString())
-          .build());
-    }
-    return InitResultDto.builder()
-        .uploadId(uploadId)
-        .fileKey(fileKey)
-        .presignedUrlInfos(presignedUrlInfos)
-        .build();
+        presignedUrlInfos.add(PresignedUrlInfo.builder()
+            .partNumber(partNumber)
+            .preSignedUrl(presignedUrl.toString())
+            .build());
+      }
+      return InitResultDto.builder()
+          .uploadId(uploadId)
+          .fileKey(fileKey)
+          .presignedUrlInfos(presignedUrlInfos)
+          .build();
     } catch (Exception e) {
       log.error("Pre-Signed URL Init 실패 : {}", e.getMessage());
       throw new ServerErrorException(FILE_UPLOAD_FAIL.getMessage());
@@ -123,7 +127,15 @@ public class FileUploadService {
     }
   }
 
-  private String validateFileExtension(@NotBlank String originalFileName, String fileCategory) {
+  /**
+   * 파일 확장자 유효성 확인
+   *
+   * @param originalFileName 파일명
+   * @param fileCategory     파일 카테고리
+   * @return 파일 content Type
+   */
+  public String validateFileExtension(@NotBlank String originalFileName,
+      FileCategory fileCategory) {
     if (originalFileName == null || !originalFileName.contains(".")) {
       throw new BadRequestException(NO_FILE_EXTENSION.getMessage());
     }
@@ -132,7 +144,7 @@ public class FileUploadService {
         .substring(originalFileName.lastIndexOf('.') + 1)
         .toLowerCase();
 
-    if (!FileCategory.valueOf(fileCategory).getAllowedExtensions().contains(extension)) {
+    if (!fileCategory.getAllowedExtensions().contains(extension)) {
       throw new BadRequestException(INVALID_FILE_EXTENSION_TYPE.getMessage());
     }
 
@@ -211,5 +223,34 @@ public class FileUploadService {
         .originUrl(originUrl)
         .thumbnailUrl(thumbnailUrl)
         .build();
+  }
+
+  public S3VideoDto getCloudVideoUrls(String fileKey) {
+    if (!amazonS3Client.doesObjectExist(bucket, fileKey)) {
+      throw new NotFoundException(FILE_S3_NOT_FOUNE.getMessage());
+    }
+    String originUrl = cloudFrontDomain + "/" + fileKey;
+
+    return S3VideoDto.builder()
+        .originUrl(originUrl)
+        .build();
+  }
+
+  /**
+   * 파일 개수 유효성 확인
+   *
+   * @param fileKeys 파일키 리스트
+   * @throws BadRequestException 파일 개수가 초과된 경우
+   */
+  public void validateFileKeys(List<String> fileKeys, FileCategory fileCategory) {
+    if (fileKeys == null) {
+      return;
+    }
+
+    if (fileKeys.size() > MAX_IMAGE_COUNT) {
+      throw new BadRequestException(FILE_LIMIT_BAD_REQUEST.getMessage());
+    }
+
+    fileKeys.forEach(fileKey -> validateFileExtension(fileKey, fileCategory));
   }
 }

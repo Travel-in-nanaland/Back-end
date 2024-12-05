@@ -17,6 +17,7 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.ServerErrorException;
+import com.jeju.nanaland.global.file.data.FileCategory;
 import com.jeju.nanaland.global.file.service.FileUploadService;
 import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public class MemberProfileService {
     Member member = memberInfoDto.getMember();
     validateNickname(profileUpdateDto.getNickname(), member);
     if (fileKey != null) {
+      fileUploadService.validateFileExtension(fileKey, FileCategory.MEMBER_PROFILE);
       S3ImageDto s3ImageDto = fileUploadService.getCloudImageUrls(fileKey);
       member.getProfileImageFile().updateImageFile(s3ImageDto.getOriginUrl(), s3ImageDto.getThumbnailUrl());
     }

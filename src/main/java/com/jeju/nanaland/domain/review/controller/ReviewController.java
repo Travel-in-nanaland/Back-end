@@ -67,6 +67,7 @@ public class ReviewController {
   @Operation(summary = "리뷰 생성", description = "게시물에 대한 리뷰 작성")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "파일키 형식이 맞지 않는 등 입력값이 올바르지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "입력한 값이 존재하지 않는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)

@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.report.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.ALREADY_REPORTED;
-import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -13,7 +12,6 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.VideoFile;
-import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.MailService;
 import com.jeju.nanaland.domain.common.service.VideoFileService;
@@ -43,26 +41,22 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.io.File;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ReportService {
 
-  private static final int MAX_IMAGE_COUNT = 5;
   private final MemberRepository memberRepository;
   private final ClaimReportVideoFileRepository claimReportVideoFileRepository;
   private final ClaimReportRepository claimReportRepository;
@@ -77,25 +71,19 @@ public class ReportService {
   private final VideoFileService videoFileService;
   private final MailService mailService;
   private final ReportStrategyFactory reportStrategyFactory;
-  private final FileService fileService;
-  @Value("${cloud.aws.s3.infoFixReportImageDirectory}")
-  private String INFO_FIX_REPORT_IMAGE_DIRECTORY;
-  @Value("${cloud.aws.s3.claimReportFileDirectory}")
-  private String CLAIM_REPORT_FILE_DIRECTORY;
+  private final FileUploadService fileUploadService;
 
   /**
    * 정보 수정 제안
    *
    * @param memberInfoDto 회원 정보
    * @param reqDto        수정 요청 DTO
-   * @param files         수정 요청 이미지 파일 리스트
    * @throws NotFoundException 존재하는 게시물이 없는 경우
    */
   @Transactional
-  public void requestPostInfoFix(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto,
-      List<MultipartFile> files) {
+  public void requestPostInfoFix(MemberInfoDto memberInfoDto, ReportRequest.InfoFixDto reqDto) {
     // 수정 요청 유효성 검사
-    validateInfoFixReportRequest(reqDto, files);
+    validateInfoFixReportRequest(reqDto);
 
     // 해당 게시물 정보 가져오기
     CompositeDto compositeDto = findCompositeDto(Category.valueOf(reqDto.getCategory()),
@@ -118,40 +106,26 @@ public class ReportService {
     infoFixReportRepository.save(infoFixReport);
 
     // 이미지 저장
-    CompletableFuture<List<String>> futureImageUrls = saveImagesAndGetUrls(files, infoFixReport,
-        INFO_FIX_REPORT_IMAGE_DIRECTORY);
+    List<String> imageUrls = saveImagesAndGetUrls(reqDto.getFileKeys(), infoFixReport);
 
     // 이메일 전송
-    futureImageUrls.thenAccept(imageUrls -> mailService.sendEmailReport(infoFixReport, imageUrls));
+    mailService.sendEmailReport(infoFixReport, imageUrls);
   }
 
   /**
    * 정보 수정 제안 요청 유효성 확인
    *
    * @param reqDto 수정 요청 DTO
-   * @param files  수정 요청 이미지 파일 리스트
    * @throws BadRequestException 카테고리가 올바르지 않은 경우
    */
-  private void validateInfoFixReportRequest(InfoFixDto reqDto, List<MultipartFile> files) {
+  private void validateInfoFixReportRequest(InfoFixDto reqDto) {
     Category category = Category.valueOf(reqDto.getCategory());
 
     // 나나스픽 전처리
     if (List.of(Category.NANA, Category.NANA_CONTENT).contains(category)) {
       throw new BadRequestException(NANA_INFO_FIX_FORBIDDEN.getMessage());
     }
-    checkFileCountLimit(files);
-  }
-
-  /**
-   * 파일 개수 유효성 확인
-   *
-   * @param files 파일 리스트
-   * @throws BadRequestException 파일 개수가 초과된 경우
-   */
-  private void checkFileCountLimit(List<MultipartFile> files) {
-    if (files != null && files.size() > MAX_IMAGE_COUNT) {
-      throw new BadRequestException(IMAGE_BAD_REQUEST.getMessage());
-    }
+    fileUploadService.validateFileKeys(reqDto.getFileKeys(), FileCategory.INFO_FIX_REPORT);
   }
 
   /**
@@ -178,13 +152,11 @@ public class ReportService {
    *
    * @param memberInfoDto 회원 정보
    * @param reqDto        신고 요청 DTO
-   * @param files         파일 리스트
    */
   @Transactional
-  public void requestClaimReport(MemberInfoDto memberInfoDto, ReportRequest.ClaimReportDto reqDto,
-      List<MultipartFile> files) {
+  public void requestClaimReport(MemberInfoDto memberInfoDto, ReportRequest.ClaimReportDto reqDto) {
     // 요청 유효성 확인
-    validateClaimReportRequest(memberInfoDto, reqDto, files);
+    validateClaimReportRequest(memberInfoDto, reqDto);
 
     // claimReport 저장
     ClaimReport claimReport = ClaimReport.builder()
@@ -198,22 +170,15 @@ public class ReportService {
     claimReportRepository.save(claimReport);
 
     // 이미지, 동영상 저장
-    List<MultipartFile> imageFiles = filterFilesByType(files, "image/");
-    List<MultipartFile> videoFiles = filterFilesByType(files, "video/");
+    List<String> imageFileKeys = filterFilesByType(reqDto.getFileKeys(), true);
+    List<String> videoFileKeys = filterFilesByType(reqDto.getFileKeys(), false);
 
-    CompletableFuture<List<String>> futureImageUrls = saveImagesAndGetUrls(imageFiles, claimReport,
-        CLAIM_REPORT_FILE_DIRECTORY);
-    CompletableFuture<List<String>> futureVideoUrls = saveVideosAndGetUrls(videoFiles, claimReport);
+    List<String> imageUrls = saveImagesAndGetUrls(imageFileKeys, claimReport);
+    List<String> videoUrls = saveVideosAndGetUrls(videoFileKeys, claimReport);
 
-    CompletableFuture.allOf(futureImageUrls, futureVideoUrls)
-        .thenApply(v -> {
-          List<String> imageUrls = futureImageUrls.join();
-          List<String> videoUrls = futureVideoUrls.join();
-          List<String> combinedUrls = new ArrayList<>(imageUrls);
-          combinedUrls.addAll(videoUrls);
-          return combinedUrls;
-        })
-        .thenAccept(combinedUrls -> mailService.sendEmailReport(claimReport, combinedUrls));
+    List<String> combinedUrls = new ArrayList<>(imageUrls);
+    combinedUrls.addAll(videoUrls);
+    mailService.sendEmailReport(claimReport, combinedUrls);
   }
 
   /**
@@ -221,11 +186,9 @@ public class ReportService {
    *
    * @param memberInfoDto 회원 정보
    * @param reqDto        신고 요청 DTO
-   * @param files         파일 리스트
    * @throws BadRequestException 이미 신고한 적이 있는 경우
    */
-  private void validateClaimReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto,
-      List<MultipartFile> files) {
+  private void validateClaimReportRequest(MemberInfoDto memberInfoDto, ClaimReportDto reqDto) {
     // 타입별 유효성 확인
     ClaimReportType claimReportType = ClaimReportType.valueOf(reqDto.getReportType());
     if (claimReportType == ClaimReportType.REVIEW) {
@@ -241,7 +204,7 @@ public class ReportService {
       throw new BadRequestException(ALREADY_REPORTED.getMessage());
     }
 
-    checkFileCountLimit(files);
+    fileUploadService.validateFileKeys(reqDto.getFileKeys(), FileCategory.CLAIM_REPORT);
   }
 
   /**
@@ -283,96 +246,67 @@ public class ReportService {
   /**
    * 타입별 파일 필터링
    *
-   * @param files 파일 리스트
-   * @param type  파일 타입
+   * @param fileKeys 파일 키 리스트
+   * @param isImage  파일 타입 (이미지이면 true, 영상이면 false)
    * @return 필터링된 파일 리스트
    */
-  private List<MultipartFile> filterFilesByType(List<MultipartFile> files, String type) {
-    if (files == null) {
+  private List<String> filterFilesByType(List<String> fileKeys, boolean isImage) {
+    if (fileKeys == null) {
       return new ArrayList<>();
     }
-    return files.stream()
-        .filter(file -> file.getContentType() != null && file.getContentType().startsWith(type))
+    return fileKeys.stream()
+        .filter(fileKey ->
+            (isImage && FileCategory.CLAIM_REPORT.isImage(fileKey))
+                || (!isImage && FileCategory.CLAIM_REPORT.isVideo(fileKey)))
         .collect(Collectors.toList());
   }
 
   /**
    * 이미지 파일 저장, 이미지 URL 리스트 얻기
    *
-   * @param multipartFiles     이미지 파일 리스트
+   * @param fileKeys   파일 키 리스트
    * @param report    요청 (InfoFixReport, ClaimReport)
-   * @param directory 파일 저장 위치
    * @return 이미지 URL 리스트
    */
-  private CompletableFuture<List<String>> saveImagesAndGetUrls(List<MultipartFile> multipartFiles, Report report,
-      String directory) {
-    if (multipartFiles == null || multipartFiles.isEmpty()) {
-      return CompletableFuture.completedFuture(Collections.emptyList());
+  private List<String> saveImagesAndGetUrls(List<String> fileKeys, Report report) {
+    if (fileKeys == null || fileKeys.isEmpty()) {
+      return new ArrayList<>();
     }
     // 이미지 저장
-    List<CompletableFuture<ImageFile>> futureImageFiles = multipartFiles.stream()
-        .map(multipartFile -> {
-          File file = fileService.convertMultipartFileToFile(multipartFile);
-          return CompletableFuture.supplyAsync(() ->
-              imageFileService.uploadAndSaveImageFile(file, false, directory));
-        })
+    List<ImageFile> imageFiles = fileKeys.stream()
+        .map(imageFileService::getAndSaveImageFile)
         .toList();
 
-    return CompletableFuture.allOf(futureImageFiles.toArray(new CompletableFuture[0]))
-        .thenApply(v -> {
-          // ImageFile 리스트로 변환
-          List<ImageFile> imageFiles = futureImageFiles.stream()
-              .map(CompletableFuture::join)
-              .collect(Collectors.toList());
-
-          // 이미지와 Report 매핑 저장
-          ReportStrategy reportStrategy = reportStrategyFactory.findStrategy(report.getReportType());
-          reportStrategy.saveReportImages(report, imageFiles);
-
-          // 이미지 URL 리스트 반환
-          return imageFiles.stream()
-              .map(ImageFile::getOriginUrl)
-              .collect(Collectors.toList());
-        });
+    ReportStrategy reportStrategy = reportStrategyFactory.findStrategy(report.getReportType());
+    reportStrategy.saveReportImages(report, imageFiles);
+    return imageFiles.stream()
+        .map(ImageFile::getOriginUrl)
+        .collect(Collectors.toList());
   }
 
   /**
    * 동영상 파일 저장, 동영상 URL 리스트 얻기
    *
-   * @param multipartFiles  동영상 파일 리스트
+   * @param fileKeys  동영상 파일 키 리스트
    * @param report 요청 (InfoFixReport, ClaimReport)
    * @return 동영상 URL 리스트
    */
-  private CompletableFuture<List<String>> saveVideosAndGetUrls(List<MultipartFile> multipartFiles, ClaimReport report) {
-    if (multipartFiles == null || multipartFiles.isEmpty()) {
-      return CompletableFuture.completedFuture(Collections.emptyList());
+  private List<String> saveVideosAndGetUrls(List<String> fileKeys, ClaimReport report) {
+    if (fileKeys == null || fileKeys.isEmpty()) {
+      return new ArrayList<>();
     }
 
     // 동영상 파일 저장
-    List<CompletableFuture<VideoFile>> futureVideoFiles = multipartFiles.stream()
-        .map(multipartFile -> {
-          File file = fileService.convertMultipartFileToFile(multipartFile);
-          return CompletableFuture.supplyAsync(() ->
-              videoFileService.uploadAndSaveVideoFile(file, CLAIM_REPORT_FILE_DIRECTORY));
-        })
+    List<VideoFile> videoFiles = fileKeys.stream()
+        .map(videoFileService::getAndSaveVideoFile)
         .toList();
+    List<ClaimReportVideoFile> reportVideoFiles = createReportVideoFiles(videoFiles, report);
+    claimReportVideoFileRepository.saveAll(reportVideoFiles);
 
-    return CompletableFuture.allOf(futureVideoFiles.toArray(new CompletableFuture[0]))
-        .thenApply(v -> {
-          // VideoFile 리스트로 변환
-          List<VideoFile> videoFiles = futureVideoFiles.stream()
-              .map(CompletableFuture::join)
-              .toList();
-
-          // 동영상과 Report 매핑 생성 및 저장
-          List<ClaimReportVideoFile> reportVideoFiles = createReportVideoFiles(videoFiles, report);
-          claimReportVideoFileRepository.saveAll(reportVideoFiles);
-
-          // 이미지 URL 리스트 반환
-          return videoFiles.stream()
-              .map(VideoFile::getOriginUrl)
-              .collect(Collectors.toList());
-        });
+    // 동영상 URL 리스트 반환
+    return videoFiles.stream()
+        .map(VideoFile::getOriginUrl)
+        .collect(Collectors.toList());
   }
 
   /**

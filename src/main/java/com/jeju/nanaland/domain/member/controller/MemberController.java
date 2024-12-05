@@ -220,6 +220,7 @@ public class MemberController {
       description = "유저 닉네임, 설명, 프로필 사진 수정")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "파일키 형식이 맞지 않는 등 입력값이 올바르지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "이미지 업로드에 실패한 경우", content = @Content)
   })

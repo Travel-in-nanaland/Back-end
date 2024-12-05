@@ -5,7 +5,6 @@ import static com.jeju.nanaland.global.exception.ErrorCode.EDIT_REVIEW_IMAGE_INF
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_MY_REVIEW;
-import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_KEYWORD_DUPLICATION;
@@ -47,6 +46,8 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +84,7 @@ public class ReviewService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
+  private final FileUploadService fileUploadService;
   @Value("${cloud.aws.s3.reviewDirectory}")
   private String reviewImageDirectoryPath;
 
@@ -111,15 +113,9 @@ public class ReviewService {
   @Transactional
   public void saveReview(MemberInfoDto memberInfoDto, Long id, Category category,
       CreateReviewDto createReviewDto) {
-    if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
-      throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
-    }
 
+    validateReviewRequest(category, createReviewDto);
     Post post = getPostById(id, category);
-    List<String> fileKeys = createReviewDto.getFileKeys();
-    if (fileKeys != null && fileKeys.size() > 5) {
-      throw new BadRequestException(REVIEW_IMAGE_BAD_REQUEST.getMessage());
-    }
 
     // 리뷰 저장
     Review review = reviewRepository.save(Review.builder()
@@ -146,6 +142,7 @@ public class ReviewService {
             .build()));
 
     // reviewImageFile
+    List<String> fileKeys = createReviewDto.getFileKeys();
     if (fileKeys != null && !fileKeys.isEmpty()) {
       List<ReviewImageFile> reviewImageFiles = fileKeys.stream()
           .map((fileKey -> {
@@ -158,6 +155,14 @@ public class ReviewService {
 
       reviewImageFileRepository.saveAll(reviewImageFiles);
     }
+  }
+
+  private void validateReviewRequest(Category category, CreateReviewDto createReviewDto) {
+
+    if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
+      throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
+    }
+    fileUploadService.validateFileKeys(createReviewDto.getFileKeys(), FileCategory.REVIEW);
   }
 
 

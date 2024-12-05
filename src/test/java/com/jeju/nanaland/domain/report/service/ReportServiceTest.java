@@ -1,7 +1,7 @@
 package com.jeju.nanaland.domain.report.service;
 
 import static com.jeju.nanaland.global.exception.ErrorCode.ALREADY_REPORTED;
-import static com.jeju.nanaland.global.exception.ErrorCode.IMAGE_BAD_REQUEST;
+import static com.jeju.nanaland.global.exception.ErrorCode.FILE_LIMIT_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NANA_INFO_FIX_FORBIDDEN;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -10,11 +10,15 @@ import static com.jeju.nanaland.global.exception.ErrorCode.SELF_REPORT_NOT_ALLOW
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.common.entity.VideoFile;
 import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.common.service.MailService;
@@ -26,6 +30,7 @@ import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
 import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.report.dto.ReportRequest;
+import com.jeju.nanaland.domain.report.entity.ReportType;
 import com.jeju.nanaland.domain.report.entity.claim.ClaimReportStrategy;
 import com.jeju.nanaland.domain.report.entity.infoFix.FixType;
 import com.jeju.nanaland.domain.report.entity.infoFix.InfoFixReport;
@@ -41,7 +46,8 @@ import com.jeju.nanaland.domain.review.entity.Review;
 import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.NotFoundException;
-import java.nio.charset.StandardCharsets;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +64,6 @@ import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 @Execution(ExecutionMode.CONCURRENT)
@@ -94,25 +98,25 @@ class ReportServiceTest {
   ClaimReportStrategy claimReportStrategy;
   @Mock
   FileService fileService;
+  @Mock
+  FileUploadService fileUploadService;
 
   MemberInfoDto memberInfoDto, memberInfoDto2;
 
-  private static List<MultipartFile> createImageMultipartFiles(int itemCount) {
-    List<MultipartFile> files = new ArrayList<>();
+  private static List<String> createImageFileKeys(int itemCount) {
+    List<String> fileKeys = new ArrayList<>();
     for (int i = 0; i < itemCount; i++) {
-      files.add(new MockMultipartFile("image", "test.png", "image/png",
-          "test file".getBytes(StandardCharsets.UTF_8)));
+      fileKeys.add("test/" + i + ".jpg");
     }
-    return files;
+    return fileKeys;
   }
 
-  private static List<MultipartFile> createVideoMultipartFiles(int itemCount) {
-    List<MultipartFile> files = new ArrayList<>();
+  private static List<String> createVideoFileKeys(int itemCount) {
+    List<String> fileKeys = new ArrayList<>();
     for (int i = 0; i < itemCount; i++) {
-      files.add(new MockMultipartFile("video", "test.mp4", "video/mp4",
-          "test file".getBytes(StandardCharsets.UTF_8)));
+      fileKeys.add("test/" + itemCount + ".mp4");
     }
-    return files;
+    return fileKeys;
   }
 
   @BeforeEach
@@ -173,7 +177,7 @@ class ReportServiceTest {
 
       // when: 정보 수정 제안
       // then: ErrorCode 검증
-      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, null))
+      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto))
           .isInstanceOf(BadRequestException.class)
           .hasMessage(NANA_INFO_FIX_FORBIDDEN.getMessage());
     }
@@ -183,13 +187,17 @@ class ReportServiceTest {
     void requestPostInfoFixFail_fileCountOverLimit() {
       // given: 파일 개수가 초과되도록 설정
       ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(Category.MARKET);
-      List<MultipartFile> files = createImageMultipartFiles(6);
+      List<String> fileKeys = createImageFileKeys(6);
+      infoFixDto.setFileKeys(fileKeys);
+      doThrow(new BadRequestException(FILE_LIMIT_BAD_REQUEST.getMessage()))
+          .when(fileUploadService)
+          .validateFileKeys(any(), any(FileCategory.class));
 
       // when: 정보 수정 제안
       // then: ErrorCode 검증
-      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files))
+      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto))
           .isInstanceOf(BadRequestException.class)
-          .hasMessage(IMAGE_BAD_REQUEST.getMessage());
+          .hasMessage(FILE_LIMIT_BAD_REQUEST.getMessage());
     }
 
     @Test
@@ -202,7 +210,7 @@ class ReportServiceTest {
 
       // when: 정보 수정 제안
       // then: ErrorCode 검증
-      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto, null))
+      assertThatThrownBy(() -> reportService.requestPostInfoFix(memberInfoDto, infoFixDto))
           .isInstanceOf(NotFoundException.class)
           .hasMessage(NOT_FOUND_EXCEPTION.getMessage());
     }
@@ -213,14 +221,18 @@ class ReportServiceTest {
       // given: 정보 수정 제안 요청 설정
       ReportRequest.InfoFixDto infoFixDto = createInfoFixDto(Category.MARKET);
       int itemCount = 3;
-      List<MultipartFile> files = createImageMultipartFiles(itemCount);
+      List<String> fileKeys = createImageFileKeys(itemCount);
+      infoFixDto.setFileKeys(fileKeys);
 
       doReturn(MarketCompositeDto.builder().build()).when(marketRepository)
           .findCompositeDtoById(any(), any(Language.class));
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .getAndSaveImageFile(any());
+      doReturn(infoFixReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
       doReturn(null).when(infoFixReportRepository).save(any(InfoFixReport.class));
 
       // when: 정보 수정 제안
-      reportService.requestPostInfoFix(memberInfoDto, infoFixDto, files);
+      reportService.requestPostInfoFix(memberInfoDto, infoFixDto);
 
       // then: 정보 수정 제안 요청 검증
       verify(infoFixReportRepository).save(any(InfoFixReport.class));
@@ -241,7 +253,7 @@ class ReportServiceTest {
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
       assertThatThrownBy(
-          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(NotFoundException.class)
           .hasMessage(REVIEW_NOT_FOUND.getMessage());
     }
@@ -257,7 +269,7 @@ class ReportServiceTest {
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
       assertThatThrownBy(
-          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(BadRequestException.class)
           .hasMessage(SELF_REPORT_NOT_ALLOWED.getMessage());
     }
@@ -275,7 +287,7 @@ class ReportServiceTest {
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
       assertThatThrownBy(
-          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(BadRequestException.class)
           .hasMessage(ALREADY_REPORTED.getMessage());
     }
@@ -286,7 +298,12 @@ class ReportServiceTest {
       // given: 파일 개수가 초과되도록 설정
       ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.REVIEW);
       Review review = createReview(memberInfoDto2.getMember());
-      List<MultipartFile> files = createImageMultipartFiles(6);
+      List<String> fileKeys = createImageFileKeys(6);
+      claimReportDto.setFileKeys(fileKeys);
+
+      doThrow(new BadRequestException(FILE_LIMIT_BAD_REQUEST.getMessage()))
+          .when(fileUploadService)
+          .validateFileKeys(any(), any(FileCategory.class));
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
@@ -294,9 +311,9 @@ class ReportServiceTest {
       // when: 리뷰 신고 요청
       // then: ErrorCode 검증
       assertThatThrownBy(
-          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, files))
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(BadRequestException.class)
-          .hasMessage(IMAGE_BAD_REQUEST.getMessage());
+          .hasMessage(FILE_LIMIT_BAD_REQUEST.getMessage());
     }
 
     @Test
@@ -307,17 +324,24 @@ class ReportServiceTest {
       Review review = createReview(memberInfoDto2.getMember());
       int imageCount = 3;
       int videoCount = 2;
-      List<MultipartFile> imageMultipartFiles = createImageMultipartFiles(imageCount);
-      List<MultipartFile> videoMultipartFiles = createVideoMultipartFiles(videoCount);
-      List<MultipartFile> files = new ArrayList<>(imageMultipartFiles);
-      files.addAll(videoMultipartFiles);
+      List<String> imageFileKeys = createImageFileKeys(imageCount);
+      List<String> videoFileKeys = createVideoFileKeys(videoCount);
 
+      List<String> fileKeys = new ArrayList<>(imageFileKeys);
+      fileKeys.addAll(videoFileKeys);
+      claimReportDto.setFileKeys(fileKeys);
+
+      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
       doReturn(Optional.of(review)).when(reviewRepository).findById(any());
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .getAndSaveImageFile(any());
+      doReturn(mock(VideoFile.class)).when(videoFileService)
+          .getAndSaveVideoFile(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
 
       // when: 리뷰 신고 요청
-      reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
+      reportService.requestClaimReport(memberInfoDto, claimReportDto);
 
       // then: 리뷰 신고 요청 검증
       verify(claimReportRepository).save(any(ClaimReport.class));
@@ -333,7 +357,7 @@ class ReportServiceTest {
       // when: 유저 신고 요청
       // then: ErrorCode 검증
       assertThatThrownBy(
-          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(BadRequestException.class)
           .hasMessage(SELF_REPORT_NOT_ALLOWED.getMessage());
     }
@@ -349,7 +373,7 @@ class ReportServiceTest {
       // when: 유저 신고 요청
       // then: ErrorCode 검증
       assertThatThrownBy(
-          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto, null))
+          () -> reportService.requestClaimReport(memberInfoDto, claimReportDto))
           .isInstanceOf(NotFoundException.class)
           .hasMessage(MEMBER_NOT_FOUND.getMessage());
     }
@@ -361,18 +385,25 @@ class ReportServiceTest {
       ReportRequest.ClaimReportDto claimReportDto = createClaimReportDto(ClaimReportType.MEMBER);
       int imageCount = 3;
       int videoCount = 2;
-      List<MultipartFile> imageMultipartFiles = createImageMultipartFiles(imageCount);
-      List<MultipartFile> videoMultipartFiles = createVideoMultipartFiles(videoCount);
-      List<MultipartFile> files = new ArrayList<>(imageMultipartFiles);
-      files.addAll(videoMultipartFiles);
+      List<String> imageFileKeys = createImageFileKeys(imageCount);
+      List<String> videoFileKeys = createVideoFileKeys(videoCount);
+
+      List<String> fileKeys = new ArrayList<>(imageFileKeys);
+      fileKeys.addAll(videoFileKeys);
+      claimReportDto.setFileKeys(fileKeys);
 
       doReturn(2L).when(memberInfoDto.getMember()).getId();
       doReturn(Optional.of(memberInfoDto2.getMember())).when(memberRepository).findById(any());
+      doReturn(claimReportStrategy).when(reportStrategyFactory).findStrategy(any(ReportType.class));
+      doReturn(mock(ImageFile.class)).when(imageFileService)
+          .getAndSaveImageFile(any());
+      doReturn(mock(VideoFile.class)).when(videoFileService)
+          .getAndSaveVideoFile(any());
       doReturn(Optional.empty()).when(claimReportRepository)
           .findByMemberAndReferenceIdAndClaimReportType(any(Member.class), any(), any(ClaimReportType.class));
 
       // when: 유저 신고 요청
-      reportService.requestClaimReport(memberInfoDto, claimReportDto, files);
+      reportService.requestClaimReport(memberInfoDto, claimReportDto);
 
       // then: 유저 신고 요청 검증
       verify(claimReportRepository).save(any(ClaimReport.class));
