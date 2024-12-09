@@ -9,7 +9,6 @@ import static com.jeju.nanaland.global.exception.ErrorCode.NICKNAME_DUPLICATE;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.data.Status;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
-import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -26,8 +25,10 @@ import com.jeju.nanaland.global.auth.jwt.dto.JwtResponseDto.JwtDto;
 import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
+import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import com.jeju.nanaland.global.util.JwtUtil;
-import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -49,19 +49,19 @@ public class MemberLoginService {
   private final MemberConsentService memberConsentService;
   private final ImageFileService imageFileService;
   private final FcmTokenService fcmTokenService;
-  private final FileService fileService;
   private final MemberProfileService memberProfileService;
+  private final FileUploadService fileUploadService;
 
   /**
    * 회원 가입
    *
-   * @param joinDto       회원 가입 정보
-   * @param multipartFile 프로필 사진
+   * @param joinDto 회원 가입 정보
+   * @param fileKey 파일 키
    * @return JWT
    * @throws ConflictException provider, providerId로 이미 가입된 회원이 존재하는 경우
    */
   @Transactional
-  public JwtDto join(MemberRequest.JoinDto joinDto, MultipartFile multipartFile) {
+  public JwtDto join(MemberRequest.JoinDto joinDto, String fileKey) {
     Optional<Member> savedMember = memberRepository.findByProviderAndProviderId(
         Provider.valueOf(joinDto.getProvider()),
         joinDto.getProviderId());
@@ -73,7 +73,7 @@ public class MemberLoginService {
 
     String nickname = determineNickname(joinDto);
     validateNickname(nickname);
-    ImageFile profileImageFile = memberProfileService.saveRandomProfileImageFile();
+    ImageFile profileImageFile = createProfileImageFile(fileKey);
     Member member = createMember(joinDto, profileImageFile, nickname);
 
     // GUEST가 아닌 경우, 이용약관 저장
@@ -86,14 +86,25 @@ public class MemberLoginService {
       fcmTokenService.createFcmToken(member, joinDto.getFcmToken());
     }
 
-    // 비동기 처리
-    if (multipartFile != null && !multipartFile.isEmpty()) {
-      File convertedFile = fileService.convertMultipartFileToFile(multipartFile);
-      imageFileService.uploadMemberProfileImage(member.getId(), convertedFile);
-    }
-
     return getJwtDto(member);
   }
+
+  /**
+   * 프로필 사진 업로드 및 저장.
+   * 프로필 사진이 없는 경우엔, 랜덤 프로필 사진 저장
+   *
+   * @param fileKey 파일 키
+   * @return 저장된 이미지 파일 또는 랜덤 프로필 사진 파일
+   */
+  private ImageFile createProfileImageFile(String fileKey) {
+    if (fileKey == null) {
+      return memberProfileService.saveRandomProfileImageFile();
+    }
+    fileUploadService.validateFileExtension(fileKey, FileCategory.MEMBER_PROFILE);
+    S3ImageDto s3ImageDto = fileUploadService.getCloudImageUrls(fileKey);
+    return imageFileService.saveS3ImageFile(s3ImageDto);
+  }
+
 
   /**
    * 닉네임 설정. GUEST 유형의 경우 UUID를 사용하여 랜덤 닉네임 생성. GUEST가 아닌 경우, 제공된 닉네임을 반환.
@@ -202,7 +213,6 @@ public class MemberLoginService {
    * @param member 회원
    * @throws NotFoundException 존재하는 회원 탈퇴 정보가 없는 경우
    */
-  @Transactional
   public void updateMemberActive(Member member) {
     if (member.getStatus().equals(Status.INACTIVE)) {
       member.updateStatus(Status.ACTIVE);
@@ -219,7 +229,6 @@ public class MemberLoginService {
    * @param loginDto 로그인 정보
    * @param member   회원
    */
-  @Transactional
   public void updateLanguageDifferent(MemberRequest.LoginDto loginDto, Member member) {
     Language language = Language.valueOf(loginDto.getLocale());
     if (!member.getLanguage().equals(language)) {
@@ -316,7 +325,6 @@ public class MemberLoginService {
   /**
    * 매일 0시 0분 0초에 실행되는 회원 탈퇴 스케줄러. 비활성화 후 3개월이 지난 회원 탈퇴 처리
    */
-  @Transactional
   @Scheduled(cron = "0 0 0 * * *")
   public void deleteWithdrawalMemberInfo() {
     List<Member> members = memberRepository.findAllInactiveMember();
