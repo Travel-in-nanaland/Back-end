@@ -4,7 +4,6 @@ import static com.jeju.nanaland.global.exception.ErrorCode.FILE_LIMIT_BAD_REQUES
 import static com.jeju.nanaland.global.exception.ErrorCode.FILE_S3_NOT_FOUNE;
 import static com.jeju.nanaland.global.exception.ErrorCode.FILE_UPLOAD_FAIL;
 import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_EXTENSION_TYPE;
-import static com.jeju.nanaland.global.exception.ErrorCode.INVALID_FILE_SIZE;
 import static com.jeju.nanaland.global.exception.ErrorCode.NO_FILE_EXTENSION;
 
 import com.amazonaws.HttpMethod;
@@ -29,7 +28,6 @@ import com.jeju.nanaland.global.image_upload.dto.S3ImageDto;
 import com.jeju.nanaland.global.image_upload.dto.S3VideoDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,7 +49,6 @@ public class FileUploadService {
 
   private static final int MAX_IMAGE_COUNT = 5;
   private static final int PRESIGNEDURL_EXPIRATION = 30;
-  private static final long MAX_FILE_SIZE = 30 * 1024 * 1024L;
   private final AmazonS3 amazonS3;
   private final AmazonS3Client amazonS3Client;
   @Value("${cloud.aws.cloudfront.domain}")
@@ -68,9 +65,6 @@ public class FileUploadService {
   private String claimReportDirectory;
 
   public FileResponse.InitResultDto uploadInit(FileRequest.InitCommandDto initCommandDto) {
-    // 파일 크기 유효성 검사
-    validateFileSize(initCommandDto.getFileSize());
-
     // 파일 형식 유효성 검사
     String contentType = validateFileExtension(initCommandDto.getOriginalFileName(),
         FileCategory.valueOf(initCommandDto.getFileCategory()));
@@ -118,12 +112,6 @@ public class FileUploadService {
     } catch (Exception e) {
       log.error("Pre-Signed URL Init 실패 : {}", e.getMessage());
       throw new ServerErrorException(FILE_UPLOAD_FAIL.getMessage());
-    }
-  }
-
-  private void validateFileSize(@NotNull Long fileSize) {
-    if (fileSize > MAX_FILE_SIZE) {
-      throw new BadRequestException(INVALID_FILE_SIZE.getMessage());
     }
   }
 
