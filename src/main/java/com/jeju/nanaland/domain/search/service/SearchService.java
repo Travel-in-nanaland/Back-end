@@ -11,6 +11,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
@@ -81,8 +82,11 @@ public class SearchService {
         () -> searchFestival(memberInfoDto, keyword, page, size));
     CompletableFuture<SearchResponse.ResultDto> marketFuture = CompletableFuture.supplyAsync(
         () -> searchMarket(memberInfoDto, keyword, page, size));
-    CompletableFuture<SearchResponse.ResultDto> experienceFuture = CompletableFuture.supplyAsync(
-        () -> searchExperience(memberInfoDto, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> activityFuture = CompletableFuture.supplyAsync(
+        () -> searchExperience(memberInfoDto, ExperienceType.ACTIVITY, keyword, page, size));
+    CompletableFuture<SearchResponse.ResultDto> cultureAndArtsFuture = CompletableFuture.supplyAsync(
+        () -> searchExperience(memberInfoDto, ExperienceType.CULTURE_AND_ARTS, keyword, page,
+            size));
     CompletableFuture<SearchResponse.ResultDto> restaurantFuture = CompletableFuture.supplyAsync(
         () -> searchRestaurant(memberInfoDto, keyword, page, size));
     CompletableFuture<SearchResponse.ResultDto> nanaFuture = CompletableFuture.supplyAsync(
@@ -93,7 +97,8 @@ public class SearchService {
         natureFuture,
         festivalFuture,
         marketFuture,
-        experienceFuture,
+        activityFuture,
+        cultureAndArtsFuture,
         restaurantFuture,
         nanaFuture
     ).join();
@@ -103,7 +108,8 @@ public class SearchService {
         .nature(natureFuture.join())
         .festival(festivalFuture.join())
         .market(marketFuture.join())
-        .experience(experienceFuture.join())
+        .activity(activityFuture.join())
+        .cultureAndArts(cultureAndArtsFuture.join())
         .restaurant(restaurantFuture.join())
         .nana(nanaFuture.join())
         .build();
@@ -223,8 +229,8 @@ public class SearchService {
    * @param size          페이지 크기
    * @return 이색체험 검색 결과
    */
-  public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto, String keyword,
-      int page, int size) {
+  public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto,
+      ExperienceType experienceType, String keyword, int page, int size) {
 
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -236,13 +242,13 @@ public class SearchService {
     Page<ExperienceSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
-      resultPage = experienceRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
-          language, pageable);
+      resultPage = experienceRepository.findSearchDtoByKeywordsUnion(experienceType,
+          normalizedKeywords, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
-      resultPage = experienceRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
-          language, pageable);
+      resultPage = experienceRepository.findSearchDtoByKeywordsIntersect(experienceType,
+          normalizedKeywords, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
