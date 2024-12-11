@@ -3,6 +3,8 @@ package com.jeju.nanaland.global.file.dto;
 import com.jeju.nanaland.domain.common.annotation.EnumValid;
 import com.jeju.nanaland.global.file.data.FileCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,10 +25,12 @@ public class FileRequest {
 
     @NotNull
     @Schema(description = "파일 크기")
+    @Max(30 * 1024 * 1024)
     private Long fileSize;
 
     @NotNull
     @Schema(description = "파일 파트 개수")
+    @Min(1)
     private int partCount;
 
     @EnumValid(
