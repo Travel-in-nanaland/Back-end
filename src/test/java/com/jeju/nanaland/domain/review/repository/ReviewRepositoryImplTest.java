@@ -9,6 +9,7 @@ import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
 import com.jeju.nanaland.domain.experience.entity.Experience;
 import com.jeju.nanaland.domain.experience.entity.ExperienceTrans;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -101,6 +102,7 @@ class ReviewRepositoryImplTest {
     Experience experience = Experience.builder()
         .firstImageFile(imageFile)
         .priority((long) 1)
+        .experienceType(ExperienceType.ACTIVITY)
         .build();
     entityManager.persistAndFlush(experience);
     ExperienceTrans experienceTrans = ExperienceTrans.builder()
@@ -228,7 +230,7 @@ class ReviewRepositoryImplTest {
     MemberReviewDetailDto dto = memberReviewDetails.getContent().get(0);
     assertThat(dto.getId()).isNotNull();
     assertThat(dto.getPostId()).isEqualTo(experience.getId());
-    assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
+    assertThat(dto.getCategory()).isEqualTo(ExperienceType.ACTIVITY.name());
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
 
@@ -247,7 +249,7 @@ class ReviewRepositoryImplTest {
     MemberReviewDetailDto dto = memberReviewDetails.getContent().get(0);
     assertThat(dto.getId()).isNotNull();
     assertThat(dto.getPostId()).isEqualTo(experience2.getId());
-    assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
+    assertThat(dto.getCategory()).isEqualTo(ExperienceType.ACTIVITY.name());
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
 
@@ -267,7 +269,7 @@ class ReviewRepositoryImplTest {
     MemberReviewDetailDto dto = memberReviewDetails.getContent().get(0);
     assertThat(dto.getId()).isNotNull();
     assertThat(dto.getPostId()).isEqualTo(experience2.getId());
-    assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
+    assertThat(dto.getCategory()).isEqualTo(ExperienceType.ACTIVITY.name());
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
 
@@ -298,7 +300,7 @@ class ReviewRepositoryImplTest {
     MemberReviewPreviewDetailDto dto = memberReviewPreviewDetails.get(0);
     assertThat(dto.getId()).isNotNull();
     assertThat(dto.getPostId()).isEqualTo(experience.getId());
-    assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
+    assertThat(dto.getCategory()).isEqualTo(ExperienceType.ACTIVITY.name());
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
 
@@ -314,7 +316,7 @@ class ReviewRepositoryImplTest {
     MemberReviewPreviewDetailDto dto = memberReviewPreviewDetails.get(0);
     assertThat(dto.getId()).isNotNull();
     assertThat(dto.getPostId()).isEqualTo(experience2.getId());
-    assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
+    assertThat(dto.getCategory()).isEqualTo(ExperienceType.ACTIVITY.name());
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
 
@@ -333,7 +335,7 @@ class ReviewRepositoryImplTest {
     MemberReviewPreviewDetailDto dto = memberReviewPreviewDetails.get(0);
     assertThat(dto.getId()).isNotNull();
     assertThat(dto.getPostId()).isEqualTo(experience2.getId());
-    assertThat(dto.getCategory()).isEqualTo(Category.EXPERIENCE);
+    assertThat(dto.getCategory()).isEqualTo(ExperienceType.ACTIVITY.name());
     assertThat(dto.getPlaceName()).isEqualTo("experience title");
   }
 
@@ -359,13 +361,5 @@ class ReviewRepositoryImplTest {
 
     // then
     assertThat(totalCountByMember).isEqualTo(3);
-  }
-
-  @Test
-  void findExperienceMyReviewDetail() {
-  }
-
-  @Test
-  void findRestaurantMyReviewDetail() {
   }
 }

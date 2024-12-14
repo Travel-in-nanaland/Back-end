@@ -12,6 +12,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.enums.Provider;
@@ -151,7 +152,7 @@ class ReviewServiceTest {
           MemberReviewDetailDto.builder()
               .id((long) i)
               .postId(1L)
-              .category(Category.EXPERIENCE)
+              .category(ExperienceType.ACTIVITY.name())
               .placeName("title")
               .createdAt(LocalDate.now())
               .heartCount(5)
@@ -168,7 +169,7 @@ class ReviewServiceTest {
           MemberReviewPreviewDetailDto.builder()
               .id((long) i)
               .postId(1L)
-              .category(Category.EXPERIENCE)
+              .category(ExperienceType.ACTIVITY.name())
               .placeName("title")
               .createdAt(LocalDate.now())
               .heartCount(5)
