@@ -1,7 +1,6 @@
 package com.jeju.nanaland.domain.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
@@ -14,7 +13,6 @@ import com.jeju.nanaland.global.config.RedisConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,12 +51,6 @@ class SearchServiceTest {
   private RedisTemplate<String, String> redisTemplate; // Mock 객체 생성
   @Mock
   private ZSetOperations<String, String> zSetOperations; // ZSetOperations mock
-
-  @BeforeEach
-  public void setup() {
-    // opsForZSet() 호출 시 ZSetOperations mock을 반환하도록 설정
-    when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-  }
 
   @Test
   @DisplayName("검색어 정규화 테스트")
