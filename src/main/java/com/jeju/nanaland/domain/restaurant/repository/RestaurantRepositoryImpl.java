@@ -495,6 +495,18 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   }
 
   /**
+   * 공백 제거, 소문자화, '-'와 '_' 제거
+   *
+   * @param stringExpression 조건절 컬럼
+   * @return 정규화된 컬럼
+   */
+  private StringExpression normalizeStringExpression(StringExpression stringExpression) {
+    return Expressions.stringTemplate(
+        "replace(replace({0}, '-', ''), '_', '')",
+        stringExpression.toLowerCase().trim());
+  }
+
+  /**
    * 제목, 주소태그, 내용과 일치하는 키워드 개수 카운팅
    *
    * @param keywords 키워드
@@ -502,10 +514,11 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
    */
   private Expression<Long> countMatchingWithKeyword(List<String> keywords) {
     return Expressions.asNumber(0L)
-        .add(countMatchingConditionWithKeyword(restaurantTrans.title.toLowerCase().trim(), keywords,
-            0))
-        .add(countMatchingConditionWithKeyword(restaurantTrans.addressTag.toLowerCase().trim(),
+        .add(countMatchingConditionWithKeyword(normalizeStringExpression(restaurantTrans.title),
             keywords, 0))
+        .add(
+            countMatchingConditionWithKeyword(normalizeStringExpression(restaurantTrans.addressTag),
+                keywords, 0))
         .add(countMatchingConditionWithKeyword(restaurantTrans.content, keywords, 0));
   }
 
@@ -515,7 +528,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
    * @param condition 테이블 컬럼
    * @param keywords  유저 키워드 리스트
    * @param idx       키워드 인덱스
-   * @return
+   * @return 매칭된 수
    */
   private Expression<Integer> countMatchingConditionWithKeyword(StringExpression condition,
       List<String> keywords, int idx) {

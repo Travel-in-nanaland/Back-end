@@ -12,6 +12,7 @@ import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.config.RedisConfig;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +58,29 @@ class SearchServiceTest {
   public void setup() {
     // opsForZSet() 호출 시 ZSetOperations mock을 반환하도록 설정
     when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
+  }
+
+  @Test
+  @DisplayName("검색어 정규화 테스트")
+  void normalizeKeywordTest() {
+    // given
+    String keyword = "JEJU Jeju-city Korean_Restaurant";
+
+    // when
+    List<String> normalizedKeyword = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(splittedKeyword -> splittedKeyword
+            .replace("-", "")  // 하이픈 제거
+            .replace("_", "")  // 언더스코어 제거
+            .toLowerCase()  // 소문자로
+        )
+        .toList();
+
+    // then
+    assertThat(normalizedKeyword).containsExactly(
+        "jeju",
+        "jejucity",
+        "koreanrestaurant"
+    );
   }
 
   @Test

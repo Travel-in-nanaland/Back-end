@@ -130,14 +130,16 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
-        .map(String::toLowerCase)  // 소문자로
-        .toList();
+
+    // 사용자 검색어 정규화
+    List<String> normalizedKeywords = normalizeKeyword(keyword);
 
     Page<NatureSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
-      resultPage = natureRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+      // 검색어 조합
+      List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
+      resultPage = natureRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
           language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
@@ -182,14 +184,16 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
-        .map(String::toLowerCase)  // 소문자로
-        .toList();
+
+    // 사용자 검색어 정규화
+    List<String> normalizedKeywords = normalizeKeyword(keyword);
 
     Page<FestivalSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
-      resultPage = festivalRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+      // 검색어 조합
+      List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
+      resultPage = festivalRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
           language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
@@ -235,15 +239,17 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
-        .map(String::toLowerCase)  // 소문자로
-        .toList();
+
+    // 사용자 검색어 정규화
+    List<String> normalizedKeywords = normalizeKeyword(keyword);
 
     Page<ExperienceSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
+      // 검색어 조합
+      List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
       resultPage = experienceRepository.findSearchDtoByKeywordsUnion(experienceType,
-          normalizedKeywords, language, pageable);
+          combinedKeywords, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
@@ -287,14 +293,16 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
-        .map(String::toLowerCase)  // 소문자로
-        .toList();
+
+    // 사용자 검색어 정규화
+    List<String> normalizedKeywords = normalizeKeyword(keyword);
 
     Page<MarketSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
-      resultPage = marketRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+      // 검색어 조합
+      List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
+      resultPage = marketRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
           language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
@@ -338,14 +346,16 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
-        .map(String::toLowerCase)  // 소문자로
-        .toList();
+
+    // 사용자 검색어 정규화
+    List<String> normalizedKeywords = normalizeKeyword(keyword);
 
     Page<RestaurantSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
-      resultPage = restaurantRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+      // 검색어 조합
+      List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
+      resultPage = restaurantRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
           language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
@@ -391,14 +401,16 @@ public class SearchService {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
-    List<String> normalizedKeywords = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
-        .map(String::toLowerCase)  // 소문자로
-        .toList();
+
+    // 사용자 검색어 정규화
+    List<String> normalizedKeywords = normalizeKeyword(keyword);
 
     Page<NanaSearchDto> resultPage;
     // 공백으로 구분한 키워드가 4개 이하라면 Union 검색
     if (normalizedKeywords.size() <= 4) {
-      resultPage = nanaRepository.findSearchDtoByKeywordsUnion(normalizedKeywords,
+      // 검색어 조합
+      List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
+      resultPage = nanaRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
           language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
@@ -586,13 +598,30 @@ public class SearchService {
   }
 
   /**
+   * 사용자 검색어 정규화 검색어를 공백으로 구분하고 '-', '_' 제거, 모든 문자를 소문자로 변환
+   *
+   * @param keyword 사용자 검색어
+   * @return 공백으로 구분되고 정규화한 검색어 리스트
+   */
+  List<String> normalizeKeyword(String keyword) {
+    return Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(splittedKeyword -> splittedKeyword
+            .replace("-", "")  // 하이픈 제거
+            .replace("_", "")  // 언더스코어 제거
+            .toLowerCase()  // 소문자로
+        )
+        .toList();
+  }
+
+
+  /**
    * 검색으로 들어온 키워드 조합 예를 들어 [jeju city restaurant]가 인자로 들어오면 [jeju, city, restaurant, jejucity,
    * jejucityrestaurant, cityrestaurant]를 반환
    *
-   * @param keywords 공백으로 구분된 사용자의 검색어
+   * @param keywords 사용자의 검색어 리스트
    * @return 조합된 사용자의 검색어
    */
-  private List<String> combinationUserKeywords(List<String> keywords) {
+  private List<String> combineUserKeywords(List<String> keywords) {
     if (keywords.size() == 1) {
       return keywords;
     }

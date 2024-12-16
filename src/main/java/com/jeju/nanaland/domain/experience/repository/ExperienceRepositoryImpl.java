@@ -420,34 +420,6 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetchOne();
   }
 
-  private List<Long> getIdListContainAllHashtags(String keywords, Language language) {
-    return queryFactory
-        .select(experience.id)
-        .from(experience)
-        .leftJoin(hashtag)
-        .on(hashtag.post.id.eq(experience.id)
-            .and(hashtag.category.eq(Category.EXPERIENCE))
-            .and(hashtag.language.eq(language)))
-        .where(hashtag.keyword.content.toLowerCase().trim().in(keywords))
-        .groupBy(experience.id)
-        .having(experience.id.count().eq(splitKeyword(keywords).stream().count()))
-        .fetch();
-  }
-
-  private List<Long> getIdListContainAllHashtags(List<String> keywords, Language language) {
-    return queryFactory
-        .select(experience.id)
-        .from(experience)
-        .leftJoin(hashtag)
-        .on(hashtag.post.id.eq(experience.id)
-            .and(hashtag.category.eq(Category.EXPERIENCE))
-            .and(hashtag.language.eq(language)))
-        .where(hashtag.keyword.content.toLowerCase().trim().in(keywords))
-        .groupBy(experience.id)
-        .having(experience.id.count().eq(keywords.stream().count()))
-        .fetch();
-  }
-
   private List<String> splitKeyword(String keyword) {
     String[] tokens = keyword.split("\\s+");
     List<String> tokenList = new ArrayList<>();
@@ -476,15 +448,42 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     }
   }
 
+  /**
+   * 공백 제거, 소문자화, '-'와 '_' 제거
+   *
+   * @param stringExpression 조건절 컬럼
+   * @return 정규화된 컬럼
+   */
+  private StringExpression normalizeStringExpression(StringExpression stringExpression) {
+    return Expressions.stringTemplate(
+        "replace(replace({0}, '-', ''), '_', '')",
+        stringExpression.toLowerCase().trim());
+  }
+
+  /**
+   * 제목, 주소태그, 내용과 일치하는 키워드 개수 카운팅
+   *
+   * @param keywords 키워드
+   * @return 키워드를 포함하는 조건 개수
+   */
   private Expression<Long> countMatchingWithKeyword(List<String> keywords) {
     return Expressions.asNumber(0L)
-        .add(countMatchingConditionWithKeyword(experienceTrans.title.toLowerCase().trim(), keywords,
-            0))
-        .add(countMatchingConditionWithKeyword(experienceTrans.addressTag.toLowerCase().trim(),
+        .add(countMatchingConditionWithKeyword(normalizeStringExpression(experienceTrans.title),
             keywords, 0))
+        .add(
+            countMatchingConditionWithKeyword(normalizeStringExpression(experienceTrans.addressTag),
+                keywords, 0))
         .add(countMatchingConditionWithKeyword(experienceTrans.content, keywords, 0));
   }
 
+  /**
+   * 조건이 키워드를 포함하는지 검사
+   *
+   * @param condition 테이블 컬럼
+   * @param keywords  유저 키워드 리스트
+   * @param idx       키워드 인덱스
+   * @return
+   */
   private Expression<Integer> countMatchingConditionWithKeyword(StringExpression condition,
       List<String> keywords, int idx) {
     if (idx == keywords.size()) {
@@ -496,14 +495,5 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .then(1)
         .otherwise(0)
         .add(countMatchingConditionWithKeyword(condition, keywords, idx + 1));
-  }
-
-  private BooleanExpression containsAllKeywords(StringExpression condition, List<String> keywords) {
-    BooleanExpression expression = null;
-    for (String keyword : keywords) {
-      BooleanExpression containsKeyword = condition.contains(keyword);
-      expression = (expression == null) ? containsKeyword : expression.and(containsKeyword);
-    }
-    return expression;
   }
 }
