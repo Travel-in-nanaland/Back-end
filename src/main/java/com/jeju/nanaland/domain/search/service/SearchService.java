@@ -584,4 +584,29 @@ public class SearchService {
     Set<String> topSearchVolumes = zSetOperations.reverseRange(SEARCH_VOLUME_KEY, 0, 3);
     return topSearchVolumes != null ? new ArrayList<>(topSearchVolumes) : new ArrayList<>();
   }
+
+  /**
+   * 검색으로 들어온 키워드 조합 예를 들어 [jeju city restaurant]가 인자로 들어오면 [jeju, city, restaurant, jejucity,
+   * jejucityrestaurant, cityrestaurant]를 반환
+   *
+   * @param keywords 공백으로 구분된 사용자의 검색어
+   * @return 조합된 사용자의 검색어
+   */
+  private List<String> combinationUserKeywords(List<String> keywords) {
+    if (keywords.size() == 1) {
+      return keywords;
+    }
+
+    List<String> combinedKeywords = new ArrayList<>(keywords);
+    for (int i = 0; i < keywords.size() - 1; i++) {
+      StringBuilder combinedKeyword = new StringBuilder();
+      combinedKeyword.append(keywords.get(i));
+      for (int j = i + 1; j < keywords.size(); j++) {
+        combinedKeyword.append(keywords.get(j));
+        combinedKeywords.add(combinedKeyword.toString());
+      }
+    }
+
+    return combinedKeywords;
+  }
 }
