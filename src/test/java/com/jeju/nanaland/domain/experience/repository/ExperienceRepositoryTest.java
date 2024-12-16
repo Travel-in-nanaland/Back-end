@@ -137,7 +137,8 @@ class ExperienceRepositoryTest {
 
   @ParameterizedTest
   @EnumSource(value = Language.class)
-  void findSearchDtoByKeywordsUnionTest(Language language) {
+  @DisplayName("액티비티 Union 검색")
+  void findSearchDtoByKeywordsUnionActivityTest(Language language) {
     // given
     Pageable pageable = PageRequest.of(0, 10);
     List<Experience> experiences1 =
@@ -149,17 +150,39 @@ class ExperienceRepositoryTest {
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsUnion(
-        List.of("keyword2", "keyword3"), language, pageable);
+        ExperienceType.ACTIVITY, List.of("keyword2", "keyword3"), language, pageable);
 
     // then
-    assertThat(resultDto.getTotalElements()).isEqualTo(5);
-    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(2);
-    assertThat(resultDto.getContent().get(3).getMatchedCount()).isEqualTo(1);
+    assertThat(resultDto.getTotalElements()).isEqualTo(2);
+    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(1);
   }
 
   @ParameterizedTest
   @EnumSource(value = Language.class)
-  void findSearchDtoByKeywordsIntersectTest(Language language) {
+  @DisplayName("문화예술 Union 검색")
+  void findSearchDtoByKeywordsUnionCultureAndArtsTest(Language language) {
+    // given
+    Pageable pageable = PageRequest.of(0, 10);
+    List<Experience> experiences1 =
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+    initHashtags(experiences1, List.of("keyword1", "kEyWoRd2"), language);
+    List<Experience> experiences2 =
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+    initHashtags(experiences2, List.of("keyword2", "kEyWoRd3"), language);
+
+    // when
+    Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsUnion(
+        ExperienceType.CULTURE_AND_ARTS, List.of("keyword2", "keyword3"), language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(3);
+    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("액티비티 Union 검색")
+  void findSearchDtoByKeywordsIntersectActivityTest(Language language) {
     // given
     Pageable pageable = PageRequest.of(0, 10);
     List<String> keywords = List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5");
@@ -168,14 +191,36 @@ class ExperienceRepositoryTest {
     initHashtags(experiences1, keywords, language);
     List<Experience> experiences2 =
         getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
-    initHashtags(experiences2, List.of("keyword1", "kEyWoRd2"), language);
+    initHashtags(experiences2, keywords, language);
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
-        keywords, language, pageable);
+        ExperienceType.ACTIVITY, keywords, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("문화예술 Union 검색")
+  void findSearchDtoByKeywordsIntersectCultureAndArtsTest(Language language) {
+    // given
+    Pageable pageable = PageRequest.of(0, 10);
+    List<String> keywords = List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5");
+    List<Experience> experiences1 =
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+    initHashtags(experiences1, keywords, language);
+    List<Experience> experiences2 =
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+    initHashtags(experiences2, keywords, language);
+
+    // when
+    Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
+        ExperienceType.CULTURE_AND_ARTS, keywords, language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(3);
   }
 
   private List<Experience> getActivityList(Language language,

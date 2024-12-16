@@ -42,9 +42,9 @@ public interface ExperienceRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
-      Pageable pageable);
+  Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(ExperienceType experienceType,
+      List<String> keywords, Language language, Pageable pageable);
 
-  Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable);
+  Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(ExperienceType experienceType,
+      List<String> keywords, Language language, Pageable pageable);
 }
