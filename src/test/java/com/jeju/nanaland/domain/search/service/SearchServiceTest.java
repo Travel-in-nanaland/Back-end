@@ -1,6 +1,6 @@
 package com.jeju.nanaland.domain.search.service;
 
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
@@ -10,7 +10,11 @@ import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.global.config.RedisConfig;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -48,10 +52,55 @@ class SearchServiceTest {
   @Mock
   private ZSetOperations<String, String> zSetOperations; // ZSetOperations mock
 
-  @BeforeEach
-  public void setup() {
-    // opsForZSet() 호출 시 ZSetOperations mock을 반환하도록 설정
-    when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
+  @Test
+  @DisplayName("검색어 정규화 테스트")
+  void normalizeKeywordTest() {
+    // given
+    String keyword = "JEJU Jeju-city Korean_Restaurant";
+
+    // when
+    List<String> normalizedKeyword = Arrays.stream(keyword.split("\\s+"))  // 공백기준 분할
+        .map(splittedKeyword -> splittedKeyword
+            .replace("-", "")  // 하이픈 제거
+            .replace("_", "")  // 언더스코어 제거
+            .toLowerCase()  // 소문자로
+        )
+        .toList();
+
+    // then
+    assertThat(normalizedKeyword).containsExactly(
+        "jeju",
+        "jejucity",
+        "koreanrestaurant"
+    );
+  }
+
+  @Test
+  @DisplayName("검색어 조합 테스트")
+  void combinationUserKeywordsTest() {
+    // given
+    List<String> keywords = List.of("jeju", "city", "restaurant");
+
+    // when
+    List<String> combinedKeywords = new ArrayList<>(keywords);
+    for (int i = 0; i < keywords.size() - 1; i++) {
+      StringBuilder combinedKeyword = new StringBuilder();
+      combinedKeyword.append(keywords.get(i));
+      for (int j = i + 1; j < keywords.size(); j++) {
+        combinedKeyword.append(keywords.get(j));
+        combinedKeywords.add(combinedKeyword.toString());
+      }
+    }
+
+    // then
+    assertThat(combinedKeywords).containsExactly(
+        "jeju",
+        "city",
+        "restaurant",
+        "jejucity",
+        "jejucityrestaurant",
+        "cityrestaurant"
+    );
   }
 
 }
