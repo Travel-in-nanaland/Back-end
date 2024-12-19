@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.review.dto;
 
-import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
@@ -172,8 +171,8 @@ public class ReviewResponse {
     private Long id;
     @Schema(description = "장소 게시물 id")
     private Long postId;
-    @Schema(description = "장소 카테고리(이색체험, 맛집)")
-    private Category category;
+    @Schema(description = "장소 카테고리(문화예술, 이색체험, 맛집)")
+    private String category;
     @Schema(description = "장소명")
     private String placeName;
     @Schema(description = "리뷰 점수")
@@ -192,7 +191,7 @@ public class ReviewResponse {
     private Set<String> reviewTypeKeywords;
 
     @QueryProjection
-    public MemberReviewDetailDto(Long id, Long postId, Category category,
+    public MemberReviewDetailDto(Long id, Long postId, String category,
         Integer rating, String content, LocalDateTime createdAt, Long heartCount,
         boolean isReviewHeart) {
       this.id = id;
@@ -204,6 +203,13 @@ public class ReviewResponse {
       this.heartCount = Math.toIntExact(heartCount);
       this.isReviewHeart = isReviewHeart;
     }
+  }
+
+  @Getter
+  @AllArgsConstructor
+  public static  class ExperienceInfo {
+    private String title;
+    private String experienceType;
   }
 
   @Getter
@@ -227,8 +233,8 @@ public class ReviewResponse {
     private Long id;
     @Schema(description = "장소 게시물 id")
     private Long postId;
-    @Schema(description = "장소 카테고리(이색체험, 맛집)")
-    private Category category;
+    @Schema(description = "장소 카테고리(액티비티, 문화예술, 맛집)")
+    private String category;
     @Schema(description = "장소명")
     private String placeName;
     @Schema(description = "리뷰 작성일")
@@ -239,7 +245,7 @@ public class ReviewResponse {
     private ImageFileDto imageFileDto;
 
     @QueryProjection
-    public MemberReviewPreviewDetailDto(Long id, Long postId, Category category,
+    public MemberReviewPreviewDetailDto(Long id, Long postId, String category,
         LocalDateTime createdAt, Long heartCount) {
       this.id = id;
       this.postId = postId;

@@ -23,6 +23,7 @@ import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewDetailDto
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_MyReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.QReviewResponse_ReviewDetailDto;
+import com.jeju.nanaland.domain.review.dto.ReviewResponse.ExperienceInfo;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MemberReviewPreviewDetailDto;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.MyReviewDetailDto;
@@ -30,6 +31,7 @@ import com.jeju.nanaland.domain.review.dto.ReviewResponse.ReviewDetailDto;
 import com.jeju.nanaland.domain.review.entity.ReviewTypeKeyword;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -203,7 +205,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .select(new QReviewResponse_MemberReviewDetailDto(
                 review.id,
                 review.post.id,
-                review.category,
+                review.category.stringValue(),
                 review.rating,
                 review.content,
                 review.createdAt,
@@ -230,14 +232,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
     // 2. EXPERIENCE 카테고리의 리뷰에 대한 제목 조회
     List<Long> experienceIds = resultDto.stream()
-        .filter(dto -> dto.getCategory() == Category.EXPERIENCE)
+        .filter(dto -> dto.getCategory().equals(Category.EXPERIENCE.name()))
         .map(MemberReviewDetailDto::getPostId)
         .toList();
-    Map<Long, String> experienceTitleMap = fetchExperienceTitles(experienceIds, language);
+    Map<Long, ExperienceInfo> experienceTitleAndTypeMap = fetchExperienceTitlesAndTypes(experienceIds, language);
 
     // 3. RESTAURANT 카테고리의 리뷰에 대한 제목 조회
     List<Long> restaurantIds = resultDto.stream()
-        .filter(dto -> dto.getCategory() == Category.RESTAURANT)
+        .filter(dto -> dto.getCategory().equals(Category.RESTAURANT.name()))
         .map(MemberReviewDetailDto::getPostId)
         .toList();
     Map<Long, String> restaurantTitleMap = fetchRestaurantTitles(restaurantIds, language);
@@ -255,14 +257,15 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     // 추가 정보를 리뷰 DTO에 설정
     resultDto.forEach(
         reviewDetailDto -> {
+          String category = reviewDetailDto.getCategory();
           // 제목 설정
-          if (reviewDetailDto.getCategory() == Category.EXPERIENCE) {
-            reviewDetailDto.setPlaceName(
-                experienceTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
-            );
+          if (category.equals(Category.EXPERIENCE.name())) {
+            ExperienceInfo experienceInfo = experienceTitleAndTypeMap.get(reviewDetailDto.getPostId());
+            reviewDetailDto.setPlaceName(experienceInfo.getTitle());
+            reviewDetailDto.setCategory(experienceInfo.getExperienceType());
           }
 
-          if (reviewDetailDto.getCategory() == Category.RESTAURANT) {
+          else if (category.equals(Category.RESTAURANT.name())) {
             reviewDetailDto.setPlaceName(
                 restaurantTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
             );
@@ -303,7 +306,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .select(new QReviewResponse_MemberReviewPreviewDetailDto(
                 review.id,
                 review.post.id,
-                review.category,
+                review.category.stringValue(),
                 review.createdAt,
                 // 해당 리뷰의 좋아요 개수
                 ExpressionUtils.as(getHeartCountQuery(), "heartCount")
@@ -325,14 +328,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
     // 2. EXPERIENCE 카테고리의 리뷰에 대한 제목 조회
     List<Long> experienceIds = resultDto.stream()
-        .filter(dto -> dto.getCategory() == Category.EXPERIENCE)
+        .filter(dto -> dto.getCategory().equals(Category.EXPERIENCE.name()))
         .map(MemberReviewPreviewDetailDto::getPostId)
         .toList();
-    Map<Long, String> experienceTitleMap = fetchExperienceTitles(experienceIds, language);
+    Map<Long, ExperienceInfo> experienceTitleAndTypeMap = fetchExperienceTitlesAndTypes(experienceIds, language);
 
     // 3. RESTAURANT 카테고리의 리뷰에 대한 제목 조회
     List<Long> restaurantIds = resultDto.stream()
-        .filter(dto -> dto.getCategory() == Category.RESTAURANT)
+        .filter(dto -> dto.getCategory().equals(Category.RESTAURANT.name()))
         .map(MemberReviewPreviewDetailDto::getPostId)
         .toList();
     Map<Long, String> restaurantTitleMap = fetchRestaurantTitles(restaurantIds, language);
@@ -349,13 +352,13 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
               reviewImageMap.getOrDefault(reviewDetailDto.getId(), null));
 
           // 제목 설정
-          if (reviewDetailDto.getCategory() == Category.EXPERIENCE) {
-            reviewDetailDto.setPlaceName(
-                experienceTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
-            );
+          if (reviewDetailDto.getCategory().equals(Category.EXPERIENCE.name())) {
+            ExperienceInfo experienceInfo = experienceTitleAndTypeMap.get(reviewDetailDto.getPostId());
+            reviewDetailDto.setPlaceName(experienceInfo.getTitle());
+            reviewDetailDto.setCategory(experienceInfo.getExperienceType());
           }
 
-          if (reviewDetailDto.getCategory() == Category.RESTAURANT) {
+          if (reviewDetailDto.getCategory().equals(Category.RESTAURANT.name())) {
             reviewDetailDto.setPlaceName(
                 restaurantTitleMap.getOrDefault(reviewDetailDto.getPostId(), "")
             );
@@ -441,17 +444,21 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   }
 
   // EXPERIENCE 카테고리의 리뷰 제목 조회
-  private Map<Long, String> fetchExperienceTitles(List<Long> experienceIds,
+  private Map<Long, ExperienceInfo> fetchExperienceTitlesAndTypes(List<Long> experienceIds,
       Language language) {
 
     return queryFactory
-        .select(experienceTrans.title)
+        .select(Projections.constructor(ExperienceInfo.class,
+            experienceTrans.title,
+            experience.experienceType.stringValue()))
         .from(experience)
         .innerJoin(experience.experienceTrans, experienceTrans)
         .where(experience.id.in(experienceIds)
             .and(experienceTrans.language.eq(language)))
         .transform(GroupBy.groupBy(experience.id)
-            .as(experienceTrans.title));
+            .as(Projections.constructor(ExperienceInfo.class,
+                experienceTrans.title,
+                experience.experienceType.stringValue())));
   }
 
   // RESTAURANT 카테고리의 리뷰 제목 조회
