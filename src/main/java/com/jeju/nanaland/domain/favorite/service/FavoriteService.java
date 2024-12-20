@@ -4,6 +4,7 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.service.PostService;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.PreviewDto;
@@ -101,6 +102,52 @@ public class FavoriteService {
           if (category == Category.FESTIVAL) {
             setFestivalOnGoingStatus(postPreviewDto);
           }
+          return new FavoriteResponse.PreviewDto(postPreviewDto);
+        }))
+        .toList();
+
+    // 모든 비동기 작업이 완료될 때까지 기다린 후 각 결과를 수집
+    List<FavoriteResponse.PreviewDto> favoritePreviewDtos = CompletableFuture.allOf(
+        favoritePreviewFutures.toArray(new CompletableFuture[0])
+    ).thenApply(v ->
+        favoritePreviewFutures.stream()
+            .map(CompletableFuture::join) // 순서대로 결과 가져오기
+            .collect(Collectors.toList())
+    ).join(); // 최종 결과 리스트
+
+    return FavoriteResponse.PreviewPageDto.builder()
+        .totalElements(favoritePage.getTotalElements())
+        .data(favoritePreviewDtos)
+        .build();
+  }
+
+  /**
+   * 이색체험 찜리스트 조회
+   *
+   * @param memberInfoDto 회원 정보
+   * @param page          페이지
+   * @param size          페이지 크기
+   * @return FavoriteResponse.PreviewPageDto
+   */
+  @Transactional(readOnly = true)
+  public FavoriteResponse.PreviewPageDto getExperienceFavorites(MemberInfoDto memberInfoDto,
+      ExperienceType experienceType, int page, int size) {
+
+    Member member = memberInfoDto.getMember();
+    Category category = Category.EXPERIENCE;
+    Language language = memberInfoDto.getLanguage();
+    Pageable pageable = PageRequest.of(page, size);
+
+    // favorite 테이블에서 해당 유저의 이색체험(액티비티, 문화예술) 찜리스트 페이지 조회
+    Page<Favorite> favoritePage =
+        favoriteRepository.findAllExperienceFavoritesOrderByModifiedAtDesc(member, experienceType
+            , pageable);
+
+    // 각 게시물 조회 쿼리 비동기 요청
+    List<CompletableFuture<FavoriteResponse.PreviewDto>> favoritePreviewFutures = favoritePage.get()
+        .map(favorite -> CompletableFuture.supplyAsync(() -> {
+          Long postId = favorite.getPost().getId();
+          PostPreviewDto postPreviewDto = postService.getPostPreviewDto(postId, category, language);
           return new FavoriteResponse.PreviewDto(postPreviewDto);
         }))
         .toList();

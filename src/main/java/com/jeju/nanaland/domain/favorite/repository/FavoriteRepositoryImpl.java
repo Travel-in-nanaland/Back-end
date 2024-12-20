@@ -1,8 +1,10 @@
 package com.jeju.nanaland.domain.favorite.repository;
 
+import static com.jeju.nanaland.domain.experience.entity.QExperience.experience;
 import static com.jeju.nanaland.domain.favorite.entity.QFavorite.favorite;
 
 import com.jeju.nanaland.domain.common.data.Category;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.favorite.entity.Favorite;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -64,6 +66,42 @@ public class FavoriteRepositoryImpl implements FavoriteRepositoryCustom {
     JPAQuery<Long> countQuery = queryFactory
         .select(favorite.count())
         .from(favorite)
+        .where(
+            favorite.member.eq(member),
+            favorite.category.eq(category),
+            favorite.status.eq("ACTIVE")
+        );
+
+    return PageableExecutionUtils.getPage(resultDto, pageable, countQuery::fetchOne);
+  }
+
+  @Override
+  public Page<Favorite> findAllExperienceFavoritesOrderByModifiedAtDesc(Member member,
+      ExperienceType experienceType, Pageable pageable) {
+    Category category = Category.EXPERIENCE;
+
+    List<Favorite> resultDto = queryFactory
+        .select(favorite)
+        .from(favorite)
+        .innerJoin(experience)
+        .on(favorite.post.id.eq(experience.id)
+            .and(experience.experienceType.eq(experienceType)))
+        .where(
+            favorite.member.eq(member),
+            favorite.category.eq(category),
+            favorite.status.eq("ACTIVE")
+        )
+        .orderBy(favorite.modifiedAt.desc())
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+
+    JPAQuery<Long> countQuery = queryFactory
+        .select(favorite.count())
+        .from(favorite)
+        .innerJoin(experience)
+        .on(favorite.post.id.eq(experience.id)
+            .and(experience.experienceType.eq(experienceType)))
         .where(
             favorite.member.eq(member),
             favorite.category.eq(category),
