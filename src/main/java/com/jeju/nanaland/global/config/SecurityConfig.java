@@ -48,7 +48,7 @@ public class SecurityConfig {
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/favicon.ico",
                 "/member/join", "/member/login", "/member/reissue", "/share/**",
                 "member/forceWithdrawal", "nana/upload", "/admin/login", "/member/validateNickname",
-                "/version/**", "/actuator/health")
+                "/version/**", "/actuator/health", "/file/upload-init", "/file/upload-complete")
             .permitAll()
             .requestMatchers("/favorite/**")
             .hasAnyRole("MEMBER", "ADMIN")
