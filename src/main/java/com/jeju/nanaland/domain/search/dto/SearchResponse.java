@@ -19,8 +19,11 @@ public class SearchResponse {
     @Schema(description = "7대자연 조회 결과")
     private ResultDto nature;
 
-    @Schema(description = "이색체험 조회 결과")
-    private ResultDto experience;
+    @Schema(description = "액티비티 조회 결과")
+    private ResultDto activity;
+
+    @Schema(description = "문화예술 조회 결과")
+    private ResultDto cultureAndArts;
 
     @Schema(description = "전통시장 조회 결과")
     private ResultDto market;

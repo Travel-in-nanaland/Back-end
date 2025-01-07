@@ -386,6 +386,18 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
   }
 
   /**
+   * 공백 제거, 소문자화, '-'와 '_' 제거
+   *
+   * @param stringExpression 조건절 컬럼
+   * @return 정규화된 컬럼
+   */
+  private StringExpression normalizeStringExpression(StringExpression stringExpression) {
+    return Expressions.stringTemplate(
+        "replace(replace({0}, '-', ''), '_', '')",
+        stringExpression.toLowerCase().trim());
+  }
+
+  /**
    * 제목, 주소태그, 내용과 일치하는 키워드 개수 카운팅
    *
    * @param keywords 키워드
@@ -393,8 +405,8 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
    */
   private Expression<Long> getMaxMatchingCountWithKeyword(List<String> keywords) {
     return Expressions.asNumber(0L)
-        .add(countMatchingConditionWithKeyword(nanaTitle.heading.toLowerCase().trim(), keywords,
-            0))
+        .add(countMatchingConditionWithKeyword(normalizeStringExpression(nanaTitle.heading),
+            keywords, 0))
         .add(countMatchingConditionWithKeyword(nanaContent.content, keywords, 0))
         .max();
   }

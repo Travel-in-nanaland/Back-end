@@ -2,6 +2,7 @@ package com.jeju.nanaland.domain.search.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.AllCategoryDto;
@@ -95,12 +96,13 @@ public class SearchController {
   @GetMapping("/experience")
   public BaseResponse<SearchResponse.ResultDto> searchExperience(
       @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam ExperienceType experienceType,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchExperience(memberInfoDto, keyword, page,
-        size);
+    ResultDto result = searchService.searchExperience(memberInfoDto, experienceType, keyword,
+        page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
