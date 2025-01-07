@@ -305,7 +305,8 @@ public class ReviewService {
 
   // 내가 쓴 리뷰 수정
   @Transactional
-  public void updateMyReview(MemberInfoDto memberInfoDto, Long reviewId, EditReviewDto editReviewDto) {
+  public void updateMyReview(MemberInfoDto memberInfoDto, Long reviewId,
+      EditReviewDto editReviewDto) {
     // 유저가 쓴 리뷰 조회
     Review review = reviewRepository.findReviewByIdAndMember(reviewId, memberInfoDto.getMember())
         .orElseThrow(() -> new NotFoundException(MEMBER_REVIEW_NOT_FOUND.getMessage()));
@@ -484,7 +485,8 @@ public class ReviewService {
             .build();
         reviewImageFiles.add(reviewImageFile);
       } else { // 원래 있던 이미지라면
-        if (!existImageIds.remove(editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것 / 나중에 여기 남아있는 건 삭제해야한다고 판단.
+        if (!existImageIds.remove(
+            editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것 / 나중에 여기 남아있는 건 삭제해야한다고 판단.
           throw new BadRequestException(EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST.getMessage());
         }
       }
@@ -513,19 +515,32 @@ public class ReviewService {
     if ("test".equals(System.getProperty("spring.profiles.active"))) {
       return;
     }
+
+    // 서버 재시동 시 기존 hash 삭제
+    for (Language language : Language.values()) {
+      Boolean delete = redisTemplate.delete(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name());
+    }
+
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
 
     for (Language language : Language.values()) {
-      experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
+      // ACTIVITY 저장
+      experienceRepository.findAllSearchActivityPostForReviewDtoByLanguage(language)
           .forEach(dto -> {
-            dto.setCategoryValue(Category.EXPERIENCE.getValueByLocale(language));
             hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
                 dto.getTitle(), dto);
           });
 
+      // CultureAndArts 저장
+      experienceRepository.findAllSearchCultureAndArtsPostForReviewDtoByLanguage(language)
+          .forEach(dto -> {
+            hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+                dto.getTitle(), dto);
+          });
+
+      // restaurant 저장
       restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
           .forEach(dto -> {
-            dto.setCategoryValue(Category.RESTAURANT.getValueByLocale(language));
             hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
                 dto.getTitle(), dto);
           });

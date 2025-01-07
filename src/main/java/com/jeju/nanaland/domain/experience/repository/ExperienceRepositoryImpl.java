@@ -311,16 +311,35 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
     return map.getOrDefault(postId, Collections.emptySet());
   }
 
+
+  //  List<SearchPostForReviewDto> findAllSearchCultureAndArtsPostForReviewDtoByLanguage(Language language);
   @Override
-  public List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language) {
+  public List<SearchPostForReviewDto> findAllSearchActivityPostForReviewDtoByLanguage(
+      Language language) {
     return queryFactory
         .select(
             new QReviewResponse_SearchPostForReviewDto(experience.id,
-                Expressions.constant(Category.EXPERIENCE.name()),
+                Expressions.constant(ExperienceType.ACTIVITY.name()),
                 experienceTrans.title, experience.firstImageFile, experienceTrans.address))
         .from(experience)
         .innerJoin(experience.experienceTrans, experienceTrans)
         .where(experienceTrans.language.eq(language))
+        .where(experience.experienceType.eq(ExperienceType.ACTIVITY))
+        .fetch();
+  }
+
+  @Override
+  public List<SearchPostForReviewDto> findAllSearchCultureAndArtsPostForReviewDtoByLanguage(
+      Language language) {
+    return queryFactory
+        .select(
+            new QReviewResponse_SearchPostForReviewDto(experience.id,
+                Expressions.constant(ExperienceType.CULTURE_AND_ARTS.name()),
+                experienceTrans.title, experience.firstImageFile, experienceTrans.address))
+        .from(experience)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experienceTrans.language.eq(language))
+        .where(experience.experienceType.eq(ExperienceType.CULTURE_AND_ARTS))
         .fetch();
   }
 
