@@ -207,7 +207,8 @@ public class ReviewResponse {
 
   @Getter
   @AllArgsConstructor
-  public static  class ExperienceInfo {
+  public static class ExperienceInfo {
+
     private String title;
     private String experienceType;
   }
@@ -269,8 +270,6 @@ public class ReviewResponse {
     @Schema(description = "게시물 카테고리 ex) RESTAURANT, EXPERIENCE")
     private String category;
 
-    @Schema(description = "게시물 카테고리 이름, 화면에 사용할 값(언어별 번역 제공) ex) 제주 맛집,,,")
-    private String categoryValue;
 
     @Schema(description = "게시물 제목")
     private String title;

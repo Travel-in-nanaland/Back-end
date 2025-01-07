@@ -29,7 +29,10 @@ public interface ExperienceRepositoryCustom {
 
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSetWithWithPessimisticLock(Long postId);
 
-  List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
+  List<SearchPostForReviewDto> findAllSearchActivityPostForReviewDtoByLanguage(Language language);
+
+  List<SearchPostForReviewDto> findAllSearchCultureAndArtsPostForReviewDtoByLanguage(
+      Language language);
 
   List<Long> findAllIds();
 
