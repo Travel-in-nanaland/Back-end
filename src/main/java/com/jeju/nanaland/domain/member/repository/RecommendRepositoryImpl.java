@@ -19,6 +19,8 @@ import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.QMemberResponse_RecommendPostDto;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +37,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category,
+            recommend.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             recommendTrans.title.coalesce(natureTrans.title),
@@ -65,7 +67,11 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category,
+            Expressions.asString("")
+                .append(new CaseBuilder()
+                    .when(experience.experienceType.stringValue().eq("ACTIVITY"))
+                    .then("ACTIVITY")
+                    .otherwise("CULTURE_AND_ARTS")),
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             recommendTrans.title.coalesce(experienceTrans.title),
@@ -94,7 +100,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category,
+            recommend.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             recommendTrans.title.coalesce(marketTrans.title),
@@ -124,7 +130,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category,
+            recommend.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             recommendTrans.title.coalesce(festivalTrans.title),
@@ -152,7 +158,7 @@ public class RecommendRepositoryImpl implements RecommendRepositoryCustom {
     return queryFactory
         .select(new QMemberResponse_RecommendPostDto(
             recommend.post.id,
-            recommend.category,
+            recommend.category.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl,
             recommendTrans.title.coalesce(nanaTitle.heading),

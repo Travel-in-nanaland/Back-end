@@ -170,7 +170,7 @@ public class MemberTypeService {
         language);
     MemberResponse.RecommendPostDto recommendPostDto = MemberResponse.RecommendPostDto.builder()
         .id(compositeDto.getId())
-        .category(Category.EXPERIENCE.name())
+        .category(compositeDto.getExperienceType().name())
         .title(compositeDto.getTitle())
         .firstImage(compositeDto.getFirstImage())
         .build();

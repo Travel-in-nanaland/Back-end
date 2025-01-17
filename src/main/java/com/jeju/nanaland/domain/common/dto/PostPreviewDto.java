@@ -33,6 +33,15 @@ public class PostPreviewDto {
     this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
   }
 
+  @QueryProjection
+  public PostPreviewDto(Long id, String title, String category, String originUrl,
+      String thumbnailUrl) {
+    this.id = id;
+    this.title = title;
+    this.category = category;
+    this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
+  }
+
   public PostPreviewDto(PostPreviewDto postPreviewDto) {
     this.id = postPreviewDto.getId();
     this.title = postPreviewDto.getTitle();

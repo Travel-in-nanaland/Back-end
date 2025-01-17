@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.member.dto;
 
-import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.member.entity.Member;
@@ -41,7 +40,7 @@ public class MemberResponse {
         description = "게시물 카테고리",
         example = "NATURE",
         allowableValues = {
-            "NATURE", "EXPERIENCE", "FESTIVAL", "MARKET", "RESTAURANT"
+            "NATURE", "ACTIVITY", "CULTURE_AND_ARTS", "FESTIVAL", "MARKET", "RESTAURANT"
         })
     private String category;
 
@@ -58,10 +57,10 @@ public class MemberResponse {
     private boolean isFavorite;
 
     @QueryProjection
-    public RecommendPostDto(Long id, Category categoryContent, String originUrl,
+    public RecommendPostDto(Long id, String category, String originUrl,
         String thumbnailUrl, String title, String introduction) {
       this.id = id;
-      this.category = categoryContent.name();
+      this.category = category;
       this.firstImage = new ImageFileDto(originUrl, thumbnailUrl);
       this.title = title;
       this.introduction = introduction;
