@@ -73,7 +73,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.details,
             experienceTrans.time,
             experienceTrans.amenity,
-            experienceTrans.fee
+            experienceTrans.fee,
+            experience.experienceType
         ))
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
@@ -101,7 +102,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.details,
             experienceTrans.time,
             experienceTrans.amenity,
-            experienceTrans.fee
+            experienceTrans.fee,
+            experience.experienceType
         ))
         .from(experience)
         .leftJoin(experience.firstImageFile, imageFile)
