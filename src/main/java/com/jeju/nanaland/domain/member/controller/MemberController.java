@@ -180,8 +180,8 @@ public class MemberController {
   }
 
   @Operation(
-      summary = "랜덤 추천 게시물 2개 반환",
-      description = "홈에서 보여질 랜덤 추천 게시물 2개 반환")
+      summary = "랜덤 추천 게시물 3개 반환",
+      description = "홈에서 보여질 랜덤 추천 게시물 3개 반환")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),

@@ -5,7 +5,6 @@ import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
-import com.jeju.nanaland.domain.common.data.PostCategory;
 import com.jeju.nanaland.domain.common.dto.ImageFileDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.common.entity.Post;
@@ -79,7 +78,6 @@ public class ExperienceService implements PostService {
     Optional.ofNullable(postPreviewDto)
         .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
 
-    postPreviewDto.setCategory(PostCategory.EXPERIENCE.toString());
     return postPreviewDto;
   }
 

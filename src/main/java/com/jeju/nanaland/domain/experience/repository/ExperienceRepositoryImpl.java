@@ -359,6 +359,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .select(new QPostPreviewDto(
             experience.id,
             experienceTrans.title,
+            experience.experienceType.stringValue(),
             imageFile.originUrl,
             imageFile.thumbnailUrl
         ))
