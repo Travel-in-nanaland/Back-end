@@ -154,10 +154,11 @@ public class MemberController {
   })
   @GetMapping("/recommended")
   public BaseResponse<List<MemberResponse.RecommendPostDto>> getRecommendPostsByType(
-      @AuthMember MemberInfoDto memberInfoDto) {
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(required = false) Long memberId) {
 
     List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
-        memberInfoDto);
+        memberInfoDto, memberId);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
