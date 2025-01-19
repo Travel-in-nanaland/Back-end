@@ -13,9 +13,11 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.member.entity.Recommend;
 import com.jeju.nanaland.domain.member.entity.enums.TravelType;
+import com.jeju.nanaland.domain.member.repository.MemberRepository;
 import com.jeju.nanaland.domain.member.repository.RecommendRepository;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,6 +39,7 @@ public class MemberTypeService {
   private final MemberFavoriteService memberFavoriteService;
   private final RestaurantRepository restaurantRepository;
   private final ExperienceRepository experienceRepository;
+  private final MemberRepository memberRepository;
 
   // 유저 타입 갱신
   @Transactional
@@ -51,10 +54,17 @@ public class MemberTypeService {
 
   // 추천 게시물 2개 반환
   public List<MemberResponse.RecommendPostDto> getRecommendPostsByType(
-      MemberInfoDto memberInfoDto) {
+      MemberInfoDto memberInfoDto, Long memberId) {
 
     Member member = memberInfoDto.getMember();
-    Language locale = memberInfoDto.getLanguage();
+    Language language = memberInfoDto.getLanguage();
+
+    boolean isMyProfile = memberId == null || member.getId().equals(memberId);
+    if (!isMyProfile) {
+      member = memberRepository.findById(memberId)
+          .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
+    }
+
     TravelType travelType = member.getTravelType();
 
     // 타입이 NONE이면 랜덤으로 NONE이 아닌 하나의 타입 선택
@@ -76,7 +86,7 @@ public class MemberTypeService {
       Long postId = recommend.getPost().getId();
       Category category = recommend.getCategory();
 
-      result.add(getRecommendPostDto(member, postId, locale, travelType, category));
+      result.add(getRecommendPostDto(member, postId, language, travelType, category));
     }
 
     return result;
