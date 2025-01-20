@@ -38,7 +38,8 @@ public interface RestaurantRepositoryCustom {
 
   PostPreviewDto findPostPreviewDto(Long postId, Language language);
 
-  List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language);
+  List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds);
 
   PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
       List<Long> excludeIds);

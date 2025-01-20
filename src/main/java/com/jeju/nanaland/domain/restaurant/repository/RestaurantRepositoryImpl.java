@@ -363,7 +363,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   }
 
   @Override
-  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
     return queryFactory
         .select(
             new QPopularPostPreviewDto(restaurant.id, restaurantTrans.title,
@@ -379,6 +380,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .where(
             restaurant.id.eq(post.id),
             restaurantTrans.language.eq(language),
+            restaurant.id.notIn(excludeIds),
             post.viewCount.gt(0))
         .orderBy(post.viewCount.desc())
         .limit(3)

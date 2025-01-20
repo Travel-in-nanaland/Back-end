@@ -40,6 +40,7 @@ public enum ErrorCode {
   MAIL_FAIL_ERROR(INTERNAL_SERVER_ERROR, "메일 전송 실패"),
   FILE_FAIL_ERROR(INTERNAL_SERVER_ERROR, "파일 변환 중 오류가 발생했습니다."),
   FILE_UPLOAD_FAIL(INTERNAL_SERVER_ERROR, "파일 업로드 실패"),
+  POPULAR_POSTS_SIZE_DIFFERENT(INTERNAL_SERVER_ERROR, "언어 별 인기 게시물 크기가 다릅니다."),
 
   //UNAUTHORIZED
   UNAUTHORIZED_USER(UNAUTHORIZED, "access token이 존재하지 않습니다."),

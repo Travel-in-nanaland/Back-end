@@ -374,7 +374,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
 
   @Override
-  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
     return queryFactory
         .select(
             new QPopularPostPreviewDto(experience.id, experienceTrans.title,
@@ -390,6 +391,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .where(
             experience.id.eq(post.id),
             experienceTrans.language.eq(language),
+            experience.id.notIn(excludeIds),
             post.viewCount.gt(0))
         .orderBy(post.viewCount.desc())
         .limit(3)

@@ -285,7 +285,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   @Override
-  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
     return queryFactory
         .select(
             new QPopularPostPreviewDto(market.id, marketTrans.title,
@@ -301,6 +302,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .where(
             market.id.eq(post.id),
             marketTrans.language.eq(language),
+            market.id.notIn(excludeIds),
             post.viewCount.gt(0))
         .orderBy(post.viewCount.desc())
         .limit(3)

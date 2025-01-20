@@ -24,7 +24,7 @@ public class PopularPostPreviewDto {
       description = "게시물 카테고리",
       example = "NATURE",
       allowableValues = {
-          "NATURE", "EXPERIENCE", "FESTIVAL", "MARKET", "RESTAURANT"
+          "NATURE", "ACTIVITY", "CULTURE_AND_ARTS", "FESTIVAL", "MARKET", "RESTAURANT"
       })
   private String category;
 

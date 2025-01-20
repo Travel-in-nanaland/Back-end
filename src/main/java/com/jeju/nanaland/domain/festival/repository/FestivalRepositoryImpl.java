@@ -456,7 +456,8 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
-  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
     return queryFactory
         .select(
             new QPopularPostPreviewDto(festival.id, festivalTrans.title,
@@ -472,6 +473,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .where(
             festival.id.eq(post.id),
             festivalTrans.language.eq(language),
+            festival.id.notIn(excludeIds),
             post.viewCount.gt(0))
         .orderBy(post.viewCount.desc())
         .limit(3)
