@@ -7,6 +7,8 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.repository.PostRepository;
+import com.jeju.nanaland.domain.experience.entity.Experience;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.repository.FestivalRepository;
@@ -15,10 +17,12 @@ import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.member.entity.Member;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
+import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.util.RedisUtil;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -76,7 +80,7 @@ public class PostViewCountService {
 
     // 좋아요 여부 추가
     setPopularPostPreviewDtosFavoriteStatus(memberInfoDto, popularPostPreviewDtos);
-    
+
     return popularPostPreviewDtos;
 
   }
@@ -107,15 +111,17 @@ public class PostViewCountService {
     // 카테고리별 top 3 게시물 조회
     List<PopularPostPreviewDto> popularKoreanPostPreviewDtos = new ArrayList<>();
     popularKoreanPostPreviewDtos.addAll(
-        experienceRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN));
+        experienceRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN,
+            excludeIds));
     popularKoreanPostPreviewDtos.addAll(
-        festivalRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN));
+        festivalRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN, excludeIds));
     popularKoreanPostPreviewDtos.addAll(
-        marketRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN));
+        marketRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN, excludeIds));
     popularKoreanPostPreviewDtos.addAll(
-        natureRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN));
+        natureRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN, excludeIds));
     popularKoreanPostPreviewDtos.addAll(
-        restaurantRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN));
+        restaurantRepository.findAllTop3PopularPostPreviewDtoByLanguage(Language.KOREAN,
+            excludeIds));
 
     // 조회수가 0이 아니고, excludeIds 제외환 게시물이 3개 미달이면
     int postsSize = popularKoreanPostPreviewDtos.size();
@@ -134,24 +140,32 @@ public class PostViewCountService {
         Comparator.comparing(PopularPostPreviewDto::getViewCount).reversed());
     popularKoreanPostPreviewDtos = popularKoreanPostPreviewDtos.subList(0, 3);
 
-    // address 형태 변환
-    popularKoreanPostPreviewDtos = modifyAddressTagToLongForm(popularKoreanPostPreviewDtos,
-        Language.KOREAN);
-    // 한국 게시물 redis에 저장
-    setJsonPopularPosts(Language.KOREAN, serializePostPreviewDtos(popularKoreanPostPreviewDtos));
-
     // 한국어 게시물을 바탕으로 언어별로 조회
     for (Language language : Language.values()) {
       if (!language.equals(Language.KOREAN)) {
-        List<PopularPostPreviewDto> popularPostPreviewDto = getPopularPostPreviewDtosByKoreanPostsAndLanguage(
+        List<PopularPostPreviewDto> popularPostPreviewDtos = getPopularPostPreviewDtosByKoreanPostsAndLanguage(
             popularKoreanPostPreviewDtos, language);
+
+        // Experience인 경우 category 수정
+        modifyPopularPostExperienceCategory(popularPostPreviewDtos);
+
         // address 형태 변환
-        popularPostPreviewDto = modifyAddressTagToLongForm(popularPostPreviewDto, language);
+        popularPostPreviewDtos = modifyAddressTagToLongForm(popularPostPreviewDtos, language);
+
         // 레디스에 저장
-        setJsonPopularPosts(language, serializePostPreviewDtos(popularPostPreviewDto));
+        setJsonPopularPosts(language, serializePostPreviewDtos(popularPostPreviewDtos));
       }
     }
 
+    // Experience인 경우 category 수정
+    modifyPopularPostExperienceCategory(popularKoreanPostPreviewDtos);
+
+    // address 형태 변환
+    popularKoreanPostPreviewDtos = modifyAddressTagToLongForm(popularKoreanPostPreviewDtos,
+        Language.KOREAN);
+
+    // 한국 게시물 redis에 저장
+    setJsonPopularPosts(Language.KOREAN, serializePostPreviewDtos(popularKoreanPostPreviewDtos));
 
   }
 
@@ -261,13 +275,31 @@ public class PostViewCountService {
 
     // 각 PopularPostPreviewDto의 favorite 상태를 설정
     popularPostPreviewDtos.forEach(postDto -> {
+      String category = postDto.getCategory();
+      if (Objects.equals(category, ExperienceType.ACTIVITY.name()) || Objects.equals(category,
+          ExperienceType.CULTURE_AND_ARTS.name())) {
+        category = Category.EXPERIENCE.name();
+      }
       boolean isFavorite = memberFavoriteService.isPostInFavorite(
           member,
-          Category.valueOf(postDto.getCategory()),
+          Category.valueOf(category),
           postDto.getId()
       );
       postDto.setFavorite(isFavorite);
     });
+  }
+
+  // Experience일 경우 category EXPERIENCE -> ACTIVITY, CULTURE_AND_ARTS 수정
+  private void modifyPopularPostExperienceCategory(
+      List<PopularPostPreviewDto> popularPostPreviewDtos) {
+    for (PopularPostPreviewDto PopularPostPreviewDto : popularPostPreviewDtos) {
+      if (Objects.equals(PopularPostPreviewDto.getCategory(), Category.EXPERIENCE.name())) {
+        Experience experience = experienceRepository.findById(PopularPostPreviewDto.getId())
+            .orElseThrow(() -> new RuntimeException(
+                ErrorCode.NOT_FOUND_EXCEPTION.getMessage()));
+        PopularPostPreviewDto.setCategory(experience.getExperienceType().name());
+      }
+    }
   }
 }
 

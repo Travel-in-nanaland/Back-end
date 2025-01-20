@@ -318,7 +318,8 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   }
 
   @Override
-  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language) {
+  public List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds) {
     return queryFactory
         .select(
             new QPopularPostPreviewDto(nature.id, natureTrans.title,
@@ -334,6 +335,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .where(
             nature.id.eq(post.id),
             natureTrans.language.eq(language),
+            nature.id.notIn(excludeIds),
             post.viewCount.gt(0))
         .orderBy(post.viewCount.desc())
         .limit(3)
