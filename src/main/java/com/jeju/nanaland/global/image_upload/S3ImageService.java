@@ -3,6 +3,7 @@ package com.jeju.nanaland.global.image_upload;
 import static com.jeju.nanaland.global.exception.ErrorCode.*;
 import static com.jeju.nanaland.global.exception.ErrorCode.EXTRACT_NAME_ERROR;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.jeju.nanaland.domain.common.entity.ImageFile;

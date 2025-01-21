@@ -4,17 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jeju.nanaland.config.TestConfig;
 import com.jeju.nanaland.domain.common.data.AddressTag;
+import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
+import com.jeju.nanaland.domain.hashtag.entity.Hashtag;
+import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse;
+import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import com.jeju.nanaland.domain.nature.entity.Nature;
 import com.jeju.nanaland.domain.nature.entity.NatureTrans;
+import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -52,7 +59,8 @@ class NatureRepositoryTest {
     return nature;
   }
 
-  private NatureTrans createNatureTrans(Nature nature, int number, String keyword, String addressTag) {
+  private NatureTrans createNatureTrans(Nature nature, int number, String keyword,
+      String addressTag) {
     NatureTrans natureTrans = NatureTrans.builder()
         .nature(nature)
         .language(Language.KOREAN)
@@ -71,11 +79,84 @@ class NatureRepositoryTest {
     }
   }
 
-  @Test
-  @DisplayName("7대 자연 검색 TEST")
-  void searchNatureTest() {
+  private void initHashtags(List<Nature> natures, List<String> keywords,
+      Language language) {
+    List<Keyword> keywordList = new ArrayList<>();
+    for (String k : keywords) {
+      TypedQuery<Keyword> query = entityManager.getEntityManager().createQuery(
+          "SELECT k FROM Keyword k WHERE k.content = :keyword", Keyword.class);
+      query.setParameter("keyword", k);
+      List<Keyword> resultList = query.getResultList();
+
+      if (resultList.isEmpty()) {
+        Keyword newKeyword = Keyword.builder()
+            .content(k)
+            .build();
+        entityManager.persist(newKeyword);
+        keywordList.add(newKeyword);
+      } else {
+        keywordList.add(resultList.get(0));
+      }
+    }
+
+    for (Nature nature : natures) {
+      for (Keyword k : keywordList) {
+        Hashtag newHashtag = Hashtag.builder()
+            .post(nature)
+            .category(Category.NATURE)
+            .language(language)
+            .keyword(k)
+            .build();
+        entityManager.persist(newHashtag);
+      }
+    }
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("키워드 4개 이하 검색")
+  void findSearchDtoByKeywordsUnionTest(Language language) {
+    // given
     Pageable pageable = PageRequest.of(0, 12);
-    natureRepository.searchCompositeDtoByKeyword("자연경관", Language.KOREAN, pageable);
+    int size = 3;
+    for (int i = 0; i < size; i++) {
+      Nature nature = createNature((long) i);
+      NatureTrans natureTrans = createNatureTrans(nature, i, "test", "제주시");
+      initHashtags(List.of(nature), List.of("keyword" + i, "keyword" + (i + 1)), language);
+    }
+
+    // when
+    Page<NatureSearchDto> resultDto = natureRepository.findSearchDtoByKeywordsUnion(
+        List.of("keyword1", "keyword2"), language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(3);
+    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  @DisplayName("키워드 5개 이상 검색")
+  void findSearchDtoByKeywordsIntersectTest(Language language) {
+    // given
+    Pageable pageable = PageRequest.of(0, 12);
+    int size = 3;
+    for (int i = 0; i < size; i++) {
+      Nature nature = createNature((long) i);
+      NatureTrans natureTrans = createNatureTrans(nature, i, "test", "제주시");
+      initHashtags(List.of(nature),
+          List.of("keyword" + i, "keyword" + (i + 1), "keyword" + (i + 2), "keyword" + (i + 3),
+              "keyword" + (i + 4)),
+          language);
+    }
+
+    // when
+    Page<NatureSearchDto> resultDto = natureRepository.findSearchDtoByKeywordsIntersect(
+        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), language, pageable);
+
+    // then
+    assertThat(resultDto.getTotalElements()).isEqualTo(1);
+    assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(5);
   }
 
   @Test
@@ -99,6 +180,7 @@ class NatureRepositoryTest {
   @Nested
   @DisplayName("7대 자연 프리뷰 페이징 조회 TEST")
   class findAllNaturePreviewDtoOrderByCreatedAt {
+
     @Test
     @DisplayName("기본 케이스")
     void findAllNaturePreviewDtoOrderByPriority_basic() {

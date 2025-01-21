@@ -1,6 +1,7 @@
 package com.jeju.nanaland.domain.member.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_MEMBER_PROFILE_SUCCESS;
+import static com.jeju.nanaland.global.exception.SuccessCode.GET_POPULAR_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.GET_RECOMMENDED_POSTS_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.JOIN_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.LOGIN_SUCCESS;
@@ -12,6 +13,9 @@ import static com.jeju.nanaland.global.exception.SuccessCode.UPDATE_MEMBER_TYPE_
 import static com.jeju.nanaland.global.exception.SuccessCode.VALID_NICKNAME_SUCCESS;
 import static com.jeju.nanaland.global.exception.SuccessCode.WITHDRAWAL_SUCCESS;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
+import com.jeju.nanaland.domain.common.service.PostViewCountService;
 import com.jeju.nanaland.domain.member.dto.MemberRequest;
 import com.jeju.nanaland.domain.member.dto.MemberResponse;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -38,7 +42,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,9 +49,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -61,6 +62,7 @@ public class MemberController {
   private final MemberTypeService memberTypeService;
   private final MemberProfileService memberProfileService;
   private final MemberConsentService memberConsentService;
+  private final PostViewCountService postViewCountService;
 
   @Operation(summary = "회원 가입", description = "회원 가입을 하면 JWT가 발급됩니다. ")
   @ApiResponses(value = {
@@ -70,12 +72,11 @@ public class MemberController {
       @ApiResponse(responseCode = "409", description = "이미 가입된 계정이 있는 경우, 닉네임이 중복되는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping(value = "/join",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/join")
   public BaseResponse<JwtDto> join(
-      @RequestPart(value = "reqDto") @Valid MemberRequest.JoinDto joinDto,
-      @RequestPart(required = false) MultipartFile multipartFile) {
-    JwtDto jwtDto = memberLoginService.join(joinDto, multipartFile);
+      @RequestBody @Valid MemberRequest.JoinDto joinDto,
+      @RequestParam(required = false) String fileKey) {
+    JwtDto jwtDto = memberLoginService.join(joinDto, fileKey);
     return BaseResponse.success(JOIN_SUCCESS, jwtDto);
   }
 
@@ -153,16 +154,35 @@ public class MemberController {
   })
   @GetMapping("/recommended")
   public BaseResponse<List<MemberResponse.RecommendPostDto>> getRecommendPostsByType(
-      @AuthMember MemberInfoDto memberInfoDto) {
+      @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam(required = false) Long memberId) {
 
     List<MemberResponse.RecommendPostDto> result = memberTypeService.getRecommendPostsByType(
-        memberInfoDto);
+        memberInfoDto, memberId);
     return BaseResponse.success(GET_RECOMMENDED_POSTS_SUCCESS, result);
   }
 
   @Operation(
-      summary = "랜덤 추천 게시물 2개 반환",
-      description = "홈에서 보여질 랜덤 추천 게시물 2개 반환")
+      summary = "인기 게시물 조회",
+      description =
+          "지난주 조회수 높은 게시물 3개 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),
+      @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content)
+  })
+  @GetMapping("/hot")
+  public BaseResponse<List<PopularPostPreviewDto>> getPopularPosts(
+      @AuthMember MemberInfoDto memberInfoDto) throws JsonProcessingException {
+
+    List<PopularPostPreviewDto> result = postViewCountService.getLastWeekPopularPosts(
+        memberInfoDto);
+    return BaseResponse.success(GET_POPULAR_POSTS_SUCCESS, result);
+  }
+
+  @Operation(
+      summary = "랜덤 추천 게시물 3개 반환",
+      description = "홈에서 보여질 랜덤 추천 게시물 3개 반환")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
       @ApiResponse(responseCode = "400", description = "결과 타입에 없는 값으로 요청", content = @Content),
@@ -197,18 +217,16 @@ public class MemberController {
       description = "유저 닉네임, 설명, 프로필 사진 수정")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "파일키 형식이 맞지 않는 등 입력값이 올바르지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "이미지 업로드에 실패한 경우", content = @Content)
   })
-  @PatchMapping(
-      value = "/profile",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PatchMapping(value = "/profile")
   public BaseResponse<String> updateProfile(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestPart @Valid MemberRequest.ProfileUpdateDto reqDto,
-      @RequestPart(required = false) MultipartFile multipartFile) {
-
-    memberProfileService.updateProfile(memberInfoDto, reqDto, multipartFile);
+      @RequestBody @Valid MemberRequest.ProfileUpdateDto reqDto,
+      @RequestParam(required = false) String fileKey) {
+    memberProfileService.updateProfile(memberInfoDto, reqDto, fileKey);
     return BaseResponse.success(UPDATE_MEMBER_PROFILE_SUCCESS);
   }
 

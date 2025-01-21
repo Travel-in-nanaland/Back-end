@@ -172,7 +172,7 @@ class FestivalServiceTest {
 
   FestivalCompositeDto createFestivalCompositeDto(Language locale, LocalDate startDate,
       LocalDate endDate) {
-    return new FestivalCompositeDto(1L, "url", "url", "contact", "home",
+    return new FestivalCompositeDto(1L, "url", "url", "contact", true, "home",
         locale, "title", "content", "address", "addressTag", "time", "intro", "fee", startDate,
         endDate,
         "봄");

@@ -27,19 +27,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -70,19 +67,19 @@ public class ReviewController {
   @Operation(summary = "리뷰 생성", description = "게시물에 대한 리뷰 작성")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
+      @ApiResponse(responseCode = "400", description = "파일키 형식이 맞지 않는 등 입력값이 올바르지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
+      @ApiResponse(responseCode = "404", description = "입력한 값이 존재하지 않는 경우", content = @Content),
       @ApiResponse(responseCode = "500", description = "서버측 에러", content = @Content)
   })
-  @PostMapping(value = "/{id}",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{id}")
   public BaseResponse<String> saveReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
       @RequestParam Category category,
-      @RequestPart(value = "multipartFileList", required = false) List<MultipartFile> imageList,
-      @RequestPart @Valid ReviewRequest.CreateReviewDto createReviewDto
+      @RequestBody @Valid ReviewRequest.CreateReviewDto reqDto
   ) {
-    reviewService.saveReview(memberInfoDto, id, category, createReviewDto, imageList);
+    reviewService.saveReview(memberInfoDto, id, category, reqDto);
     return BaseResponse.success(REVIEW_CREATED_SUCCESS);
   }
 
@@ -154,14 +151,12 @@ public class ReviewController {
       @ApiResponse(responseCode = "401", description = "accessToken이 유효하지 않은 경우", content = @Content),
       @ApiResponse(responseCode = "404", description = "존재하지 않는 데이터인 경우", content = @Content)
   })
-  @PutMapping(value = "/my/{id}",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/my/{id}")
   public BaseResponse<String> updateMyReview(
       @AuthMember MemberInfoDto memberInfoDto,
       @PathVariable Long id,
-      @RequestPart(required = false) List<MultipartFile> imageList,
-      @RequestPart @Valid ReviewRequest.EditReviewDto editReviewDto) {
-    reviewService.updateMyReview(memberInfoDto, id, imageList, editReviewDto);
+      @RequestBody @Valid ReviewRequest.EditReviewDto reqDto) {
+    reviewService.updateMyReview(memberInfoDto, id, reqDto);
     return BaseResponse.success(REVIEW_UPDATE_SUCCESS);
   }
 
@@ -188,7 +183,7 @@ public class ReviewController {
   @GetMapping("/search/auto-complete")
   public BaseResponse<List<SearchPostForReviewDto>> getAutoCompleteSearchResultForReview(
       @AuthMember MemberInfoDto memberInfoDto,
-      @RequestParam String keyword) throws ExecutionException, InterruptedException {
+      @RequestParam String keyword) {
     return BaseResponse.success(REVIEW_SEARCH_AUTO_COMPLETE_SUCCESS,
         reviewService.getAutoCompleteSearchResultForReview(
             memberInfoDto, keyword));

@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -61,6 +62,9 @@ public class ReportRequest {
         example = "test@naver.com"
     )
     private String email;
+
+    @Schema(description = "파일 키 리스트", example = "[\"test/fileKey1.jpg\", \"test/fileKey2.jpeg\", \"test/fileKey3.png\"]")
+    private List<String> fileKeys;
   }
 
   @Data
@@ -110,5 +114,8 @@ public class ReportRequest {
         example = "test@naver.com"
     )
     private String email;
+
+    @Schema(description = "파일 키 리스트", example = "[\"test/fileKey1.jpg\", \"test/fileKey2.jpeg\", \"test/fileKey3.png\"]")
+    private List<String> fileKeys;
   }
 }

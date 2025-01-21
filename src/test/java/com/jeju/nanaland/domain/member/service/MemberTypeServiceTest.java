@@ -88,7 +88,7 @@ class MemberTypeServiceTest {
         .thenReturn(true);
 
     // when
-    List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto, null);
 
     // then
     assertThat(resultDto.size()).isEqualTo(2);
@@ -128,7 +128,7 @@ class MemberTypeServiceTest {
         .thenReturn(true);
 
     // when
-    List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto);
+    List<RecommendPostDto> resultDto = memberTypeService.getRecommendPostsByType(memberInfoDto, null);
 
     // then
     assertThat(resultDto.size()).isEqualTo(2);
@@ -157,7 +157,7 @@ class MemberTypeServiceTest {
 
     // when
     RuntimeException runtimeException = assertThrows(RuntimeException.class,
-        () -> memberTypeService.getRecommendPostsByType(memberInfoDto));
+        () -> memberTypeService.getRecommendPostsByType(memberInfoDto, null));
 
     // then
     assertThat(runtimeException.getMessage())

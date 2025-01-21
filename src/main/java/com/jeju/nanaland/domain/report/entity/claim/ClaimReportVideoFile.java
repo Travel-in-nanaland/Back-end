@@ -28,7 +28,7 @@ public class ClaimReportVideoFile {
   private Long id;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @JoinColumn(name = "image_file_id", nullable = false)
+  @JoinColumn(name = "video_file_id", nullable = false)
   private VideoFile videoFile;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)

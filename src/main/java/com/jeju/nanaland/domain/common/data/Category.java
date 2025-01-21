@@ -1,5 +1,9 @@
 package com.jeju.nanaland.domain.common.data;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
@@ -34,5 +38,13 @@ public enum Category {
       case MALAYSIA -> this.getMs();
       case VIETNAMESE -> this.getVi();
     };
+  }
+
+  public static List<Category> getRandomCategories(int count) {
+    List<Category> categories = new ArrayList<>(
+        List.of(Category.NATURE, Category.RESTAURANT, Category.EXPERIENCE, Category.FESTIVAL,
+            Category.MARKET));
+    Collections.shuffle(categories);
+    return categories.stream().limit(count).collect(Collectors.toList());
   }
 }

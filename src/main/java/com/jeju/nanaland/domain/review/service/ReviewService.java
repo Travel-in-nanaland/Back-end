@@ -5,7 +5,6 @@ import static com.jeju.nanaland.global.exception.ErrorCode.EDIT_REVIEW_IMAGE_INF
 import static com.jeju.nanaland.global.exception.ErrorCode.MEMBER_REVIEW_NOT_FOUND;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_FOUND_EXCEPTION;
 import static com.jeju.nanaland.global.exception.ErrorCode.NOT_MY_REVIEW;
-import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_BAD_REQUEST;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_INVALID_CATEGORY;
 import static com.jeju.nanaland.global.exception.ErrorCode.REVIEW_KEYWORD_DUPLICATION;
@@ -16,7 +15,6 @@ import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.Post;
-import com.jeju.nanaland.domain.common.service.FileService;
 import com.jeju.nanaland.domain.common.service.ImageFileService;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
@@ -48,8 +46,9 @@ import com.jeju.nanaland.domain.review.repository.ReviewRepository;
 import com.jeju.nanaland.global.exception.BadRequestException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.file.data.FileCategory;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import jakarta.annotation.PostConstruct;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -58,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +68,6 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -78,7 +75,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReviewService {
 
   private static final String SEARCH_AUTO_COMPLETE_HASH_KEY = "REVIEW AUTO COMPLETE:";
-  private final FileService fileService;
   private final ReviewRepository reviewRepository;
   private final ExperienceRepository experienceRepository;
   private final ReviewKeywordRepository reviewKeywordRepository;
@@ -88,6 +84,7 @@ public class ReviewService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final MemberRepository memberRepository;
   private final RestaurantRepository restaurantRepository;
+  private final FileUploadService fileUploadService;
   @Value("${cloud.aws.s3.reviewDirectory}")
   private String reviewImageDirectoryPath;
 
@@ -115,15 +112,10 @@ public class ReviewService {
   // 리뷰 생성
   @Transactional
   public void saveReview(MemberInfoDto memberInfoDto, Long id, Category category,
-      CreateReviewDto createReviewDto, List<MultipartFile> multipartFiles) {
-    if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
-      throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
-    }
+      CreateReviewDto createReviewDto) {
 
+    validateReviewRequest(category, createReviewDto);
     Post post = getPostById(id, category);
-    if (multipartFiles != null && multipartFiles.size() > 5) {
-      throw new BadRequestException(REVIEW_IMAGE_BAD_REQUEST.getMessage());
-    }
 
     // 리뷰 저장
     Review review = reviewRepository.save(Review.builder()
@@ -141,37 +133,36 @@ public class ReviewService {
       throw new BadRequestException(REVIEW_KEYWORD_DUPLICATION.getMessage());
     }
 
-    reviewKeywordStringSet.forEach(keyword ->
-        reviewKeywordRepository.save(ReviewKeyword.builder()
+    reviewKeywordStringSet.stream()
+        .map(ReviewTypeKeyword::valueOf)
+        .filter(keyword -> keyword != ReviewTypeKeyword.NONE)
+        .forEach(keyword -> reviewKeywordRepository.save(ReviewKeyword.builder()
             .review(review)
-            .reviewTypeKeyword(ReviewTypeKeyword.valueOf(keyword))
-            .build())
-    );
+            .reviewTypeKeyword(keyword)
+            .build()));
 
     // reviewImageFile
-    if (multipartFiles != null) {
-      List<CompletableFuture<ImageFile>> futureImageFiles = multipartFiles.stream()
-          .map(multipartFile -> CompletableFuture.supplyAsync(() -> {
-            File file = fileService.convertMultipartFileToFile(multipartFile);
-            return imageFileService.uploadAndSaveImageFile(file, true, reviewImageDirectoryPath);
-          }))
-          .toList();
+    List<String> fileKeys = createReviewDto.getFileKeys();
+    if (fileKeys != null && !fileKeys.isEmpty()) {
+      List<ReviewImageFile> reviewImageFiles = fileKeys.stream()
+          .map((fileKey -> {
+            ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKey);
+            return ReviewImageFile.builder()
+                .review(review)
+                .imageFile(imageFile)
+                .build();
+          })).toList();
 
-      CompletableFuture.allOf(futureImageFiles.toArray(new CompletableFuture[0]))
-          .thenAccept(v -> {
-            // ImageFile 리스트로 변환
-            List<ImageFile> imageFiles = futureImageFiles.stream()
-                .map(CompletableFuture::join)
-                .toList();
-            List<ReviewImageFile> reviewImageFiles = imageFiles.stream()
-                .map(imageFile -> ReviewImageFile.builder()
-                    .imageFile(imageFile)
-                    .review(review)
-                    .build())
-                .toList();
-            reviewImageFileRepository.saveAll(reviewImageFiles);
-          });
+      reviewImageFileRepository.saveAll(reviewImageFiles);
     }
+  }
+
+  private void validateReviewRequest(Category category, CreateReviewDto createReviewDto) {
+
+    if (category != Category.EXPERIENCE && category != Category.RESTAURANT) {
+      throw new BadRequestException(REVIEW_INVALID_CATEGORY.getMessage());
+    }
+    fileUploadService.validateFileKeys(createReviewDto.getFileKeys(), FileCategory.REVIEW);
   }
 
 
@@ -315,7 +306,7 @@ public class ReviewService {
   // 내가 쓴 리뷰 수정
   @Transactional
   public void updateMyReview(MemberInfoDto memberInfoDto, Long reviewId,
-      List<MultipartFile> imageList, EditReviewDto editReviewDto) {
+      EditReviewDto editReviewDto) {
     // 유저가 쓴 리뷰 조회
     Review review = reviewRepository.findReviewByIdAndMember(reviewId, memberInfoDto.getMember())
         .orElseThrow(() -> new NotFoundException(MEMBER_REVIEW_NOT_FOUND.getMessage()));
@@ -333,7 +324,7 @@ public class ReviewService {
     // reviewKeyword 수정
     updateReviewKeyword(review, editReviewDto);
     // 이미지가 있는 리뷰라면 수정
-    updateReviewImages(review, editReviewDto, imageList);
+    updateReviewImages(review, editReviewDto, editReviewDto.getFileKeys());
   }
 
   // 회원 별 리뷰 리스트 조회
@@ -458,7 +449,7 @@ public class ReviewService {
   }
 
   private void updateReviewImages(Review review, EditReviewDto editReviewDto,
-      List<MultipartFile> editImages) {
+      List<String> fileKeys) {
 
     List<EditImageInfoDto> editImageInfoList = editReviewDto.getEditImageInfoList();
     List<ReviewImageFile> originReviewImageList = reviewImageFileRepository.findAllByReview(review);
@@ -469,8 +460,8 @@ public class ReviewService {
         .count();
 
     // 수정된 리뷰에 이미지가 있을 경우
-    // MultipartFile 이미지 리스트의 크기와 editImageInfo의 newImage가 true인 것의 수가 같은지 비교
-    if ((editImages != null) && (totalNewImage != editImages.size())) {
+    // fileKeys의 크기와 editImageInfo의 newImage가 true인 것의 수가 같은지 비교
+    if ((fileKeys != null) && (totalNewImage != fileKeys.size())) {
       throw new BadRequestException(REVIEW_IMAGE_IMAGE_INFO_NOT_MATCH.getMessage());
     }
 
@@ -481,36 +472,26 @@ public class ReviewService {
         .map(ReviewImageFile::getId)
         .collect(Collectors.toSet());
 
-    List<CompletableFuture<ReviewImageFile>> futureReviewImageFiles = new ArrayList<>();
+    List<ReviewImageFile> reviewImageFiles = new ArrayList<>();
     int newImageIdx = 0;
     for (EditImageInfoDto editImageInfo : editImageInfoList) {
       // 수정 제출된 이미지가
       if (editImageInfo.isNewImage()) { // 새로 제출된 이미지라면 저장
-        final int currentIndex = newImageIdx++;
-        CompletableFuture<ReviewImageFile> future = CompletableFuture.supplyAsync(() -> {
-          MultipartFile multipartFile = editImages.get(currentIndex);
-          File file = fileService.convertMultipartFileToFile(multipartFile);
-          ImageFile imageFile = imageFileService.uploadAndSaveImageFile(file, true,
-              reviewImageDirectoryPath);
-          return ReviewImageFile.builder()
-              .imageFile(imageFile)
-              .review(review)
-              .build();
-        });
-        futureReviewImageFiles.add(future);
+        assert fileKeys != null;
+        ImageFile imageFile = imageFileService.getAndSaveImageFile(fileKeys.get(newImageIdx++));
+        ReviewImageFile reviewImageFile = ReviewImageFile.builder()
+            .imageFile(imageFile)
+            .review(review)
+            .build();
+        reviewImageFiles.add(reviewImageFile);
       } else { // 원래 있던 이미지라면
-        if (!existImageIds.remove(editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것 / 나중에 여기 남아있는 건 삭제해야한다고 판단.
+        if (!existImageIds.remove(
+            editImageInfo.getId())) { // set에서 제거하기 , 제거가 안되었다면 imageInfo 잘못 준것 / 나중에 여기 남아있는 건 삭제해야한다고 판단.
           throw new BadRequestException(EDIT_REVIEW_IMAGE_INFO_BAD_REQUEST.getMessage());
         }
       }
     }
-
-    CompletableFuture.allOf(futureReviewImageFiles.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futureReviewImageFiles.stream()
-            .map(CompletableFuture::join)
-            .collect(Collectors.toList()))
-        .thenAccept(reviewImageFileRepository::saveAll)
-        .join();
+    reviewImageFileRepository.saveAll(reviewImageFiles);
 
     // 삭제되어야할 reviewImageFile
     List<ReviewImageFile> allById = reviewImageFileRepository.findAllById(existImageIds);
@@ -534,19 +515,32 @@ public class ReviewService {
     if ("test".equals(System.getProperty("spring.profiles.active"))) {
       return;
     }
+
+    // 서버 재시동 시 기존 hash 삭제
+    for (Language language : Language.values()) {
+      Boolean delete = redisTemplate.delete(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name());
+    }
+
     HashOperations<String, String, SearchPostForReviewDto> hashOperations = redisTemplate.opsForHash();
 
     for (Language language : Language.values()) {
-      experienceRepository.findAllSearchPostForReviewDtoByLanguage(language)
+      // ACTIVITY 저장
+      experienceRepository.findAllSearchActivityPostForReviewDtoByLanguage(language)
           .forEach(dto -> {
-            dto.setCategoryValue(Category.EXPERIENCE.getValueByLocale(language));
             hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
                 dto.getTitle(), dto);
           });
 
+      // CultureAndArts 저장
+      experienceRepository.findAllSearchCultureAndArtsPostForReviewDtoByLanguage(language)
+          .forEach(dto -> {
+            hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
+                dto.getTitle(), dto);
+          });
+
+      // restaurant 저장
       restaurantRepository.findAllSearchPostForReviewDtoByLanguage(language)
           .forEach(dto -> {
-            dto.setCategoryValue(Category.RESTAURANT.getValueByLocale(language));
             hashOperations.put(SEARCH_AUTO_COMPLETE_HASH_KEY + language.name(),
                 dto.getTitle(), dto);
           });

@@ -15,7 +15,7 @@ public enum InfoType {
       "这个地方的独特魅力"),
   SNS("SNS", "SNS", "SNS", "SNS", "SNS"),
   AMENITY("편의시설", "Amenities", "Tiện nghi", "Kemudahan", "设施"),
-  WEBSITE("홈페이지", "Website", "Trang chủ", "Website", "主页"),
+  WEBSITE("홈페이지", "Website", "Trang chủ", "Lamanweb", "主页"),
   RESERVATION_LINK("예약링크", "Booking Link", "Liên kết đặt chỗ", "Pautan Tempahan", "预订链接"),
   AGE("이용연령", "Age Restrictions", "Độ tuổi sử dụng", "Sekatan Umur", "使用年龄"),
   TIME("이용시간", "Operating Hours", "Giờ hoạt động", "Waktu Operasi", "利用时间"),

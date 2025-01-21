@@ -2,9 +2,11 @@ package com.jeju.nanaland.domain.experience.repository;
 
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Language;
+import com.jeju.nanaland.domain.common.dto.PopularPostPreviewDto;
 import com.jeju.nanaland.domain.common.dto.PostPreviewDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceResponse.ExperienceThumbnail;
+import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
@@ -19,9 +21,6 @@ public interface ExperienceRepositoryCustom {
 
   ExperienceCompositeDto findCompositeDtoByIdWithPessimisticLock(Long id, Language language);
 
-  Page<ExperienceCompositeDto> searchCompositeDtoByKeyword(String keyword, Language language,
-      Pageable pageable);
-
   Page<ExperienceThumbnail> findExperienceThumbnails(Language language,
       ExperienceType experienceType, List<ExperienceTypeKeyword> keywordFilterList,
       List<AddressTag> addressTags, Pageable pageable);
@@ -30,9 +29,26 @@ public interface ExperienceRepositoryCustom {
 
   Set<ExperienceTypeKeyword> getExperienceTypeKeywordSetWithWithPessimisticLock(Long postId);
 
-  List<SearchPostForReviewDto> findAllSearchPostForReviewDtoByLanguage(Language language);
+  List<SearchPostForReviewDto> findAllSearchActivityPostForReviewDtoByLanguage(Language language);
+
+  List<SearchPostForReviewDto> findAllSearchCultureAndArtsPostForReviewDtoByLanguage(
+      Language language);
 
   List<Long> findAllIds();
 
   PostPreviewDto findPostPreviewDto(Long postId, Language language);
+
+  List<PopularPostPreviewDto> findAllTop3PopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds);
+
+  PopularPostPreviewDto findRandomPopularPostPreviewDtoByLanguage(Language language,
+      List<Long> excludeIds);
+
+  PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
+
+  Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(ExperienceType experienceType,
+      List<String> keywords, Language language, Pageable pageable);
+
+  Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(ExperienceType experienceType,
+      List<String> keywords, Language language, Pageable pageable);
 }

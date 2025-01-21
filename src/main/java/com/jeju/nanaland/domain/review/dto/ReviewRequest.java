@@ -37,12 +37,14 @@ public class ReviewRequest {
         description = "게시물 카테고리",
         example = "[\"ANNIVERSARY\", \"CUTE\", \"PET\" ]",
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
-            "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
+            "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM", "NONE"}
     )
-    @Size(min = 3, message = "최소 3개 선택 가능합니다.")
+    @Size(min = 1, message = "최소 1개 선택 가능합니다.")
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")
     private List<String> reviewKeywords;
 
+    @Schema(description = "파일 키 리스트", example = "[\"test/fileKey1.jpg\", \"test/fileKey2.jpeg\", \"test/fileKey3.png\"]")
+    private List<String> fileKeys;
   }
 
   @Getter
@@ -70,15 +72,17 @@ public class ReviewRequest {
         allowableValues = {"ANNIVERSARY", "CUTE", "LUXURY", "SCENERY", "KIND", "CHILDREN", "FRIEND",
             "PARENTS", "ALONE", "HALF", "RELATIVE", "PET", "OUTLET", "LARGE", "BATHROOM"}
     )
-    @Size(min = 3, message = "최소 3개 선택 가능합니다.")
+    @Size(min = 1, message = "최소 1개 선택 가능합니다.")
     @Size(max = 6, message = "최대 6개까지 선택 가능합니다")
     private List<String> reviewKeywords;
 
-    @Schema(description = "리뷰 이미지 수정 정보 리스트 => List<MultiPart>와 newImage = true인 것과 수 같아야 함 /"
+    @Schema(description = "리뷰 이미지 수정 정보 리스트 => fileKeys와 newImage = true인 것과 수 같아야 함 /"
         + " 수정되어 제출되는 리뷰에 이미지가 없다면 null이 아닌 빈 리스트 [] 를 보내야 합니다.")
     @NotNull
     private List<EditImageInfoDto> editImageInfoList;
 
+    @Schema(description = "파일 키 리스트", example = "[\"test/fileKey1.jpg\", \"test/fileKey2.jpeg\", \"test/fileKey3.png\"]")
+    private List<String> fileKeys;
 
     @Getter
     @Builder
@@ -90,7 +94,6 @@ public class ReviewRequest {
 
       @Schema(description = "이미지 수정 여부 / 존재하던 사진이면 false, 새로 추가된 사진이면 true")
       private boolean newImage;
-
     }
 
   }

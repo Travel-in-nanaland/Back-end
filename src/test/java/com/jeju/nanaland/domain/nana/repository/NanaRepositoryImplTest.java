@@ -1,24 +1,29 @@
 package com.jeju.nanaland.domain.nana.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.jeju.nanaland.config.TestConfig;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.entity.ImageFile;
 import com.jeju.nanaland.domain.common.entity.PostImageFile;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
+import com.jeju.nanaland.domain.nana.dto.NanaSearchDto;
 import com.jeju.nanaland.domain.nana.entity.Nana;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
 import com.jeju.nanaland.domain.nana.entity.NanaTitle;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(TestConfig.class)
@@ -201,7 +206,7 @@ class NanaRepositoryImplTest {
         Language.KOREAN);
 
     // Then
-    Assertions.assertThat(recentPreviewDtoDto.get(0).getId())
+    assertThat(recentPreviewDtoDto.get(0).getId())
         .isEqualTo(nana5.getId());
   }
 
@@ -218,8 +223,8 @@ class NanaRepositoryImplTest {
     List<PreviewDto> result = allNanaThumbnailDto.getContent();
 
     // Then
-    Assertions.assertThat(result.get(0).getId()).isEqualTo(nana5.getId());
-    Assertions.assertThat(result.get(result.size() - 1).getId()).isEqualTo(nana1.getId());
+    assertThat(result.get(0).getId()).isEqualTo(nana5.getId());
+    assertThat(result.get(result.size() - 1).getId()).isEqualTo(nana1.getId());
   }
 
   @Test
@@ -242,21 +247,26 @@ class NanaRepositoryImplTest {
         isSearched = true;
       }
     }
-    Assertions.assertThat(isSearched).isTrue();
+    assertThat(isSearched).isTrue();
   }
 
-//  @Test
-//  void findNanaThumbnailPostDto() {
-//    // Given
-//    setNana();
-//
-//    // When
-//    NanaThumbnailPost nanaThumbnailPostDto = nanaRepositoryImpl.findNanaThumbnailPostDto(
-//        nanaTitle3.getId(), Language.KOREAN);
-//    System.out.println("nanaTitle3 = " + nanaTitle3.getId());
-//    System.out.println("nanaThumbnailPostDto.toString() = " + nanaThumbnailPostDto.toString());
-//
-//    // Then
-//    Assertions.assertThat(nanaThumbnailPostDto.getId()).isEqualTo(nanaTitle3.getId());
-//  }
+  @ParameterizedTest
+  @EnumSource(value = Language.class)
+  void findSearchDtoByKeywordsUnionTest(Language language) {
+    // given
+    setNana();
+    Pageable pageable = PageRequest.of(0, 12);
+
+    // when
+    Page<NanaSearchDto> resultDto = nanaRepositoryImpl.findSearchDtoByKeywordsUnion(
+        List.of("content"), language, pageable);
+
+    // then
+    List<NanaSearchDto> content = resultDto.getContent();
+    for (NanaSearchDto nanaSearchDto : content) {
+      System.out.println("=============");
+      System.out.println(nanaSearchDto.getId());
+    }
+//    assertThat(resultDto.getTotalElements()).isEqualTo(5L);
+  }
 }

@@ -1,6 +1,5 @@
 package com.jeju.nanaland.domain.favorite.controller;
 
-import static com.jeju.nanaland.domain.common.data.Category.EXPERIENCE;
 import static com.jeju.nanaland.domain.common.data.Category.FESTIVAL;
 import static com.jeju.nanaland.domain.common.data.Category.MARKET;
 import static com.jeju.nanaland.domain.common.data.Category.NANA;
@@ -8,6 +7,7 @@ import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 import static com.jeju.nanaland.global.exception.SuccessCode.POST_LIKE_TOGGLE_SUCCESS;
 
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteRequest.LikeToggleDto;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse;
 import com.jeju.nanaland.domain.favorite.dto.FavoriteResponse.StatusDto;
@@ -66,11 +66,12 @@ public class FavoriteController {
   @GetMapping("/experience/list")
   public BaseResponse<FavoriteResponse.PreviewPageDto> getExperienceFavorites(
       @AuthMember MemberInfoDto memberInfoDto,
+      @RequestParam ExperienceType experienceType,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
     FavoriteResponse.PreviewPageDto favoritePreviewPageDto =
-        favoriteService.getAllCategoryFavorites(memberInfoDto, EXPERIENCE, page, size);
+        favoriteService.getExperienceFavorites(memberInfoDto, experienceType, page, size);
     return BaseResponse.success(SuccessCode.GET_FAVORITE_LIST_SUCCESS, favoritePreviewPageDto);
   }
 

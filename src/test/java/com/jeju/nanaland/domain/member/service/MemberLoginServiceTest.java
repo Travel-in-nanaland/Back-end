@@ -33,6 +33,7 @@ import com.jeju.nanaland.global.exception.ConflictException;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
 import com.jeju.nanaland.global.exception.UnauthorizedException;
+import com.jeju.nanaland.global.file.service.FileUploadService;
 import com.jeju.nanaland.global.util.JwtUtil;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -48,8 +49,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -65,11 +64,17 @@ class MemberLoginServiceTest {
   @Mock
   private JwtUtil jwtUtil;
   @Mock
-  private ImageFileService imageFileService;
+  private ProfileImageService profileImageService;
   @Mock
   private MemberConsentService memberConsentService;
   @Mock
   private FcmTokenService fcmTokenService;
+  @Mock
+  private MemberProfileService memberProfileService;
+  @Mock
+  private FileUploadService fileUploadService;
+  @Mock
+  private ImageFileService imageFileService;
   @InjectMocks
   private MemberLoginService memberLoginService;
 
@@ -192,7 +197,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
+      doReturn(imageFile).when(memberProfileService).saveRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -219,7 +224,7 @@ class MemberLoginServiceTest {
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
+      doReturn(imageFile).when(memberProfileService).saveRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
@@ -242,26 +247,22 @@ class MemberLoginServiceTest {
       // given: 프로필 사진이 있는 경우
       Language language = Language.KOREAN;
       Member member = createMember(language, joinDto);
-      MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-          new byte[0]);
+      String fileKey = "test/1.png";
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
 
       // when: 회원 가입
-      JwtDto result = memberLoginService.join(joinDto, multipartFile);
+      JwtDto result = memberLoginService.join(joinDto, fileKey);
 
       // then: JWT 생성 확인, 이용약관 생성 확인, 프로필 사진 확인
       assertThat(result).isNotNull();
       assertThat(result.getAccessToken()).isEqualTo("accessToken");
       assertThat(result.getRefreshToken()).isEqualTo("refreshToken");
       verify(memberConsentService).createMemberConsents(any(Member.class), anyList());
-      verify(memberRepository).save(argThat(savedMember ->
-          savedMember.getProfileImageFile().equals(imageFile)));
     }
 
     @Test
@@ -272,27 +273,22 @@ class MemberLoginServiceTest {
       JoinDto joinDto2 = createJoinDto("GOOGLE");
       joinDto2.setFcmToken("fcmToken");
       Member member = createMember(language, joinDto2);
-      MultipartFile multipartFile = new MockMultipartFile("file", "test.jpg", "image/jpeg",
-          new byte[0]);
       doReturn(Optional.empty())
           .when(memberRepository).findByProviderAndProviderId(any(Provider.class), any(String.class));
       doReturn(Optional.empty()).when(memberRepository).findByNickname(any(String.class));
-      doReturn(imageFile).when(imageFileService).getRandomProfileImageFile();
       doReturn(member).when(memberRepository).save(any(Member.class));
       doReturn("accessToken").when(jwtUtil).createAccessToken(any(String.class), anySet());
       doReturn("refreshToken").when(jwtUtil).createRefreshToken(any(String.class), anySet());
 
       // when: 회원 가입
-      JwtDto result = memberLoginService.join(joinDto2, multipartFile);
+      JwtDto result = memberLoginService.join(joinDto2, null);
 
-      // then: JWT 생성 확인, 이용약관 생성 확인, fcmToken 생성 확인, 프로필 사진 확인
+      // then: JWT 생성 확인, 이용약관 생성 확인, fcmToken 생성 확인
       assertThat(result).isNotNull();
       assertThat(result.getAccessToken()).isEqualTo("accessToken");
       assertThat(result.getRefreshToken()).isEqualTo("refreshToken");
       verify(memberConsentService).createMemberConsents(any(Member.class), anyList());
       verify(fcmTokenService).createFcmToken(any(Member.class), any(String.class));
-      verify(memberRepository).save(argThat(savedMember ->
-          savedMember.getProfileImageFile().equals(imageFile)));
     }
   }
 
@@ -481,7 +477,7 @@ class MemberLoginServiceTest {
           () -> memberLoginService.reissue("bearer RefreshToken", ""));
 
       // then: ErrorCode 검증
-      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
+      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage() + ": 리프레쉬토큰 유효하지 않음");
     }
 
     @Test
@@ -498,7 +494,7 @@ class MemberLoginServiceTest {
           () -> memberLoginService.reissue("bearer RefreshToken", ""));
 
       // then: ErrorCode 검증, RefreshToken 삭제 확인
-      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage());
+      assertThat(unauthorizedException.getMessage()).isEqualTo(ErrorCode.INVALID_TOKEN.getMessage() + ": 재사용된 토큰인 경우");
       verify(jwtUtil).deleteRefreshToken(any(String.class));
     }
 
