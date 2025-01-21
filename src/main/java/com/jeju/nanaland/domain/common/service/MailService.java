@@ -24,8 +24,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 @Slf4j
 public class MailService {
 
-  // TODO: 관리자 계정으로 바꾸기
-  private static final String ADMIN_EMAIL = "jyajoo1020@gmail.com";
+  private static final String ADMIN_EMAIL = "travel.in.nanaland@gmail.com";
   private final Environment env;
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
