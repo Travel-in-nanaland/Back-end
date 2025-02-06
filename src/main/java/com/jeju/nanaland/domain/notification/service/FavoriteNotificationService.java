@@ -81,11 +81,10 @@ public class FavoriteNotificationService {
       Language language) {
     return switch (language) {
       case KOREAN -> getRandomTitleKR(postTitle, nickname);
-      // TODO: 현재 번역본이 없어서 모두 한글 제목으로 설정
-      case ENGLISH -> getRandomTitleKR(postTitle, nickname);
-      case CHINESE -> getRandomTitleKR(postTitle, nickname);
-      case MALAYSIA -> getRandomTitleKR(postTitle, nickname);
-      case VIETNAMESE -> getRandomTitleKR(postTitle, nickname);
+      case ENGLISH -> getRandomTitleEN(postTitle, nickname);
+      case CHINESE -> getRandomTitleZH(postTitle, nickname);
+      case MALAYSIA -> getRandomTitleMS(postTitle, nickname);
+      case VIETNAMESE -> getRandomTitleVI(postTitle, nickname);
     };
   }
 
@@ -95,6 +94,61 @@ public class FavoriteNotificationService {
         nickname + " 님은, 취향을 다시 보러 가보자구\uD83D\uDE0E",
         "여행이 고민이신, " + nickname + " 님! 여기 기억나세요...?\uD83D\uDCF8",
         "한 켠에 있던 나의 버킷리스트 꺼내보기\uD83D\uDCEC"
+    );
+
+    Random random = new Random();
+    int randomInt = random.nextInt(titles.size());
+    return titles.get(randomInt);
+  }
+
+  private String getRandomTitleEN(String postTitle, String nickname) {
+    List<String> titles = List.of(
+        nickname + "! How about " + postTitle + "? ✈\uFE0F",
+        nickname + ", let's rediscover your preferences \uD83D\uDE0E",
+        "Are you worried about your travel plans, Mr. " + nickname
+            + "? Do you remember this place?\uD83D\uDCF8",
+        "Take out my bucket list from one side of the notebook\uD83D\uDCEC"
+    );
+
+    Random random = new Random();
+    int randomInt = random.nextInt(titles.size());
+    return titles.get(randomInt);
+  }
+
+  private String getRandomTitleZH(String postTitle, String nickname) {
+    List<String> titles = List.of(
+        nickname + "！去 " + postTitle + "怎么样？✈\uFE0F",
+        nickname + "，去重新发现你的喜好吧\uD83D\uDE0E",
+        "正在担心旅行计划吗，" + nickname + "先生？你还记得这里吗？\uD83D\uDCF8",
+        "从笔记本的一侧拿出我的愿望清单\uD83D\uDCEC"
+    );
+
+    Random random = new Random();
+    int randomInt = random.nextInt(titles.size());
+    return titles.get(randomInt);
+  }
+
+  private String getRandomTitleMS(String postTitle, String nickname) {
+    List<String> titles = List.of(
+        nickname + "! Bagaimana pula dengan " + postTitle + "? ✈\uFE0F",
+        nickname + ", mari kita mencari semula citarasa anda \uD83D\uDE0E",
+        "Adakah anda bimbang tentang rancangan perjalanan anda, Encik " + nickname
+            + "? Adakah anda ingat tempat ini?\uD83D\uDCF8",
+        "Keluarkan senarai keinginan saya dari satu sisi buku nota\uD83D\uDCEC"
+    );
+
+    Random random = new Random();
+    int randomInt = random.nextInt(titles.size());
+    return titles.get(randomInt);
+  }
+
+  private String getRandomTitleVI(String postTitle, String nickname) {
+    List<String> titles = List.of(
+        nickname + "! Thế còn " + postTitle + "? ✈\uFE0F",
+        nickname + ", hãy khám phá lại sở thích của bạn nào \uD83D\uDE0E",
+        "Bạn đang lo lắng về kế hoạch du lịch của mình, ông " + nickname
+            + "? Bạn có nhớ nơi này không?\uD83D\uDCF8",
+        "Lấy danh sách việc cần làm của tôi từ một bên của sổ tay \uD83D\uDCEC"
     );
 
     Random random = new Random();
