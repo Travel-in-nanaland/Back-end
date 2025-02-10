@@ -36,4 +36,6 @@ public interface NatureRepositoryCustom {
 
   Page<NatureSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
+
+  String findKoreanAddress(Long postId);
 }

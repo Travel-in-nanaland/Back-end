@@ -32,4 +32,6 @@ public interface NanaRepositoryCustom {
 
   Page<NanaSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
+
+  String findKoreanAddress(Long postId, Long number);
 }

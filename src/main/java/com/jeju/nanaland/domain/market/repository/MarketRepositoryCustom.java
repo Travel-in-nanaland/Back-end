@@ -35,4 +35,6 @@ public interface MarketRepositoryCustom {
 
   Page<MarketSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
+
+  String findKoreanAddress(Long postId);
 }

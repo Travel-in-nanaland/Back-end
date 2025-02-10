@@ -51,4 +51,6 @@ public interface RestaurantRepositoryCustom {
 
   Page<RestaurantSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
+
+  String findKoreanAddress(Long postId);
 }

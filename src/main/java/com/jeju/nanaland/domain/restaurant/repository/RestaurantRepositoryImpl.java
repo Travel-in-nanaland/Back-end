@@ -433,6 +433,17 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public String findKoreanAddress(Long postId) {
+    return queryFactory
+        .select(restaurantTrans.address)
+        .from(restaurant)
+        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+        .where(restaurant.id.eq(postId),
+            restaurantTrans.language.eq(Language.KOREAN))
+        .fetchOne();
+  }
+
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
     if (addressTags.isEmpty()) {
       return null;

@@ -17,6 +17,10 @@ import com.jeju.nanaland.domain.nana.dto.NanaSearchDto;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.QNanaResponse_PreviewDto;
 import com.jeju.nanaland.domain.nana.dto.QNanaSearchDto;
+import com.jeju.nanaland.domain.nana.entity.InfoType;
+import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
+import com.jeju.nanaland.domain.nana.entity.NanaContent;
+import com.jeju.nanaland.global.exception.NotFoundException;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -355,6 +359,31 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .where(nanaTitle.nana.id.eq(id)
             .and(nanaTitle.language.eq(language)))
         .fetchOne();
+  }
+
+  @Override
+  public String findKoreanAddress(Long postId, Long number) {
+    NanaContent result = queryFactory
+        .select(nanaContent)
+        .from(nana)
+        .innerJoin(nanaTitle)
+        .on(nanaTitle.nana.eq(nana)
+            .and(nanaTitle.language.eq(Language.KOREAN)))
+        .innerJoin(nanaContent)
+        .on(nanaContent.nanaTitle.eq(nanaTitle)
+            .and(nanaContent.priority.eq(number)))
+        .where(nana.id.eq(postId))
+        .fetchOne();
+
+    if (result == null || result.getInfoList() == null) {
+      throw new NotFoundException();
+    }
+    for (NanaAdditionalInfo nanaAdditionalInfo : result.getInfoList()) {
+      if (nanaAdditionalInfo.getInfoType().equals(InfoType.ADDRESS)) {
+        return nanaAdditionalInfo.getDescription();
+      }
+    }
+    throw new NotFoundException();
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {

@@ -444,6 +444,17 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public String findKoreanAddress(Long postId) {
+    return queryFactory
+        .select(experienceTrans.address)
+        .from(experience)
+        .innerJoin(experience.experienceTrans, experienceTrans)
+        .where(experience.id.eq(postId),
+            experienceTrans.language.eq(Language.KOREAN))
+        .fetchOne();
+  }
+
   private List<String> splitKeyword(String keyword) {
     String[] tokens = keyword.split("\\s+");
     List<String> tokenList = new ArrayList<>();

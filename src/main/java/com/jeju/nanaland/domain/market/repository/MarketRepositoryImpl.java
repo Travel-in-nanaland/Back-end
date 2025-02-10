@@ -355,6 +355,17 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public String findKoreanAddress(Long postId) {
+    return queryFactory
+        .select(marketTrans.address)
+        .from(market)
+        .innerJoin(market.marketTrans, marketTrans)
+        .where(market.id.eq(postId),
+            marketTrans.language.eq(Language.KOREAN))
+        .fetchOne();
+  }
+
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(market.id)

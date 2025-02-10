@@ -505,6 +505,17 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   @Override
+  public String findKoreanAddress(Long postId) {
+    return queryFactory
+        .select(festivalTrans.address)
+        .from(festival)
+        .innerJoin(festival.festivalTrans, festivalTrans)
+        .where(festival.id.eq(postId),
+            festivalTrans.language.eq(Language.KOREAN))
+        .fetchOne();
+  }
+
+  @Override
   public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
     return queryFactory
         .select(

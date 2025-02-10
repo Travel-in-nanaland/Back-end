@@ -51,4 +51,6 @@ public interface ExperienceRepositoryCustom {
 
   Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(ExperienceType experienceType,
       List<String> keywords, Language language, Pageable pageable);
+
+  String findKoreanAddress(Long postId);
 }

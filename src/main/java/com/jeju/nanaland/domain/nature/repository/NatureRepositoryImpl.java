@@ -388,6 +388,17 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public String findKoreanAddress(Long postId) {
+    return queryFactory
+        .select(natureTrans.address)
+        .from(nature)
+        .innerJoin(nature.natureTrans, natureTrans)
+        .where(nature.id.eq(postId),
+            natureTrans.language.eq(Language.KOREAN))
+        .fetchOne();
+  }
+
   /**
    * 지역명 필터 여부에 따른 조건문 설정
    *
