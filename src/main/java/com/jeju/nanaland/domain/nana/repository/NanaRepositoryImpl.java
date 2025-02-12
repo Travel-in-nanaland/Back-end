@@ -20,7 +20,7 @@ import com.jeju.nanaland.domain.nana.dto.QNanaSearchDto;
 import com.jeju.nanaland.domain.nana.entity.InfoType;
 import com.jeju.nanaland.domain.nana.entity.NanaAdditionalInfo;
 import com.jeju.nanaland.domain.nana.entity.NanaContent;
-import com.jeju.nanaland.global.exception.NotFoundException;
+import com.jeju.nanaland.global.exception.ServerErrorException;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -361,9 +362,15 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 나나스픽 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
   @Override
-  public String findKoreanAddress(Long postId, Long number) {
-    NanaContent result = queryFactory
+  public Optional<String> findKoreanAddress(Long postId, Long number) {
+    List<NanaContent> nanaContents = queryFactory
         .select(nanaContent)
         .from(nana)
         .innerJoin(nanaTitle)
@@ -373,17 +380,23 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
         .on(nanaContent.nanaTitle.eq(nanaTitle)
             .and(nanaContent.priority.eq(number)))
         .where(nana.id.eq(postId))
-        .fetchOne();
+        .fetch();
 
-    if (result == null || result.getInfoList() == null) {
-      throw new NotFoundException();
+    // NANA_CONTENT의 priority 값의 중복이 발생
+    if (nanaContents.size() > 1) {
+      throw new ServerErrorException("나나스픽 구성 내용 우선순위 간의 중복이 발생했습니다.");
     }
-    for (NanaAdditionalInfo nanaAdditionalInfo : result.getInfoList()) {
-      if (nanaAdditionalInfo.getInfoType().equals(InfoType.ADDRESS)) {
-        return nanaAdditionalInfo.getDescription();
+
+    if (!nanaContents.isEmpty()) {
+      NanaContent nanaContent = nanaContents.get(0);
+      if (nanaContent.getInfoList() != null) {
+        return nanaContent.getInfoList().stream()
+            .filter(info -> info.getInfoType().equals(InfoType.ADDRESS))
+            .map(NanaAdditionalInfo::getDescription)
+            .findFirst();
       }
     }
-    throw new NotFoundException();
+    return Optional.empty();
   }
 
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {

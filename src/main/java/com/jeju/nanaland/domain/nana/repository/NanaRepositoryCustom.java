@@ -6,6 +6,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaResponse.NanaThumbnailPost;
 import com.jeju.nanaland.domain.nana.dto.NanaResponse.PreviewDto;
 import com.jeju.nanaland.domain.nana.dto.NanaSearchDto;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -33,5 +34,5 @@ public interface NanaRepositoryCustom {
   Page<NanaSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
 
-  String findKoreanAddress(Long postId, Long number);
+  Optional<String> findKoreanAddress(Long postId, Long number);
 }

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -388,15 +389,23 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 자연 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
   @Override
-  public String findKoreanAddress(Long postId) {
-    return queryFactory
-        .select(natureTrans.address)
-        .from(nature)
-        .innerJoin(nature.natureTrans, natureTrans)
-        .where(nature.id.eq(postId),
-            natureTrans.language.eq(Language.KOREAN))
-        .fetchOne();
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(natureTrans.address)
+            .from(nature)
+            .innerJoin(nature.natureTrans, natureTrans)
+            .where(nature.id.eq(postId),
+                natureTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
   }
 
   /**

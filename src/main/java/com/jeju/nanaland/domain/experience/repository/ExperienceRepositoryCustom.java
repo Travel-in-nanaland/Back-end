@@ -11,6 +11,7 @@ import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,5 +53,5 @@ public interface ExperienceRepositoryCustom {
   Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(ExperienceType experienceType,
       List<String> keywords, Language language, Pageable pageable);
 
-  String findKoreanAddress(Long postId);
+  Optional<String> findKoreanAddress(Long postId);
 }

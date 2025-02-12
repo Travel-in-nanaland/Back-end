@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -433,15 +434,23 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 맛집 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
   @Override
-  public String findKoreanAddress(Long postId) {
-    return queryFactory
-        .select(restaurantTrans.address)
-        .from(restaurant)
-        .innerJoin(restaurant.restaurantTrans, restaurantTrans)
-        .where(restaurant.id.eq(postId),
-            restaurantTrans.language.eq(Language.KOREAN))
-        .fetchOne();
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(restaurantTrans.address)
+            .from(restaurant)
+            .innerJoin(restaurant.restaurantTrans, restaurantTrans)
+            .where(restaurant.id.eq(postId),
+                restaurantTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
   }
 
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {

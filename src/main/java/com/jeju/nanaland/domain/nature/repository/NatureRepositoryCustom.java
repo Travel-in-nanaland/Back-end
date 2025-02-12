@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.nature.dto.NatureCompositeDto;
 import com.jeju.nanaland.domain.nature.dto.NatureResponse.PreviewDto;
 import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -37,5 +38,5 @@ public interface NatureRepositoryCustom {
   Page<NatureSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
 
-  String findKoreanAddress(Long postId);
+  Optional<String> findKoreanAddress(Long postId);
 }
