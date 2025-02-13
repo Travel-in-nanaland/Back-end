@@ -25,6 +25,7 @@ import com.jeju.nanaland.domain.nana.dto.NanaSearchDto;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
+import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantSearchDto;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
@@ -567,6 +568,14 @@ public class SearchService {
 
           searchVolumeDtoList.add(
               getSearchVolumeDto(memberInfoDto, categoryContent, experienceCompositeDto));
+        }
+        case RESTAURANT -> {
+          CompositeDto restaurantCompositeDto = restaurantRepository.findCompositeDtoById(
+              postId, memberInfoDto.getLanguage());
+
+          searchVolumeDtoList.add(
+              getSearchVolumeDto(memberInfoDto, categoryContent, restaurantCompositeDto)
+          );
         }
         default -> throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
       }
