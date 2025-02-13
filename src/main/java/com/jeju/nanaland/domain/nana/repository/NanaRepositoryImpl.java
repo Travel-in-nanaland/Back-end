@@ -367,6 +367,7 @@ public class NanaRepositoryImpl implements NanaRepositoryCustom {
    *
    * @param postId 게시물 ID
    * @return 한국어 주소 Optional String 객체
+   * @throws ServerErrorException NANA_CONTENT의 우선순위가 중복됨
    */
   @Override
   public Optional<String> findKoreanAddress(Long postId, Long number) {

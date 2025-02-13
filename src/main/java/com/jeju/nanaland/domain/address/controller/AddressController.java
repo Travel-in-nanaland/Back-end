@@ -5,6 +5,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.GET_KOREAN_ADDRESS_
 import com.jeju.nanaland.domain.address.service.AddressService;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.global.BaseResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,9 @@ public class AddressController {
    * @param number   NANA_CONTENT 식별을 위한 파라미터. category가 NANA일 때만 사용
    * @return 한국어 주소
    */
+  @Operation(
+      summary = "게시물 한국어 주소 반환",
+      description = "게시물 ID을 통해 한국어 주소를 반환. 나나스픽의 경우에는 number와 함께 요청")
   @GetMapping("/kr")
   public BaseResponse<String> getKoreanAddress(
       @RequestParam Long postId,
