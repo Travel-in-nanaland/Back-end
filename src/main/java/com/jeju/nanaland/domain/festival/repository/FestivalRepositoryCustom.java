@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.festival.dto.FestivalCompositeDto;
 import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -41,4 +42,6 @@ public interface FestivalRepositoryCustom {
 
   Page<FestivalSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
       Language language, Pageable pageable);
+
+  Optional<String> findKoreanAddress(Long postId);
 }

@@ -17,6 +17,7 @@ import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,7 +50,7 @@ class MarketRepositoryTest {
     int size = 3;
     for (int i = 0; i < size; i++) {
       Market market = createMarket((long) i);
-      MarketTrans marketTrans = createMarketTrans(market, i, "test", "제주시");
+      MarketTrans marketTrans = createMarketTrans(market, i, "test", "제주시", "주소");
       initHashtags(List.of(market), List.of("keyword" + i, "keyword" + (i + 1)), language);
     }
 
@@ -71,7 +72,7 @@ class MarketRepositoryTest {
     int size = 3;
     for (int i = 0; i < size; i++) {
       Market market = createMarket((long) i);
-      MarketTrans marketTrans = createMarketTrans(market, i, "test", "제주시");
+      MarketTrans marketTrans = createMarketTrans(market, i, "test", "제주시", "주소");
       initHashtags(List.of(market),
           List.of("keyword" + i, "keyword" + (i + 1), "keyword" + (i + 2), "keyword" + (i + 3),
               "keyword" + (i + 4)),
@@ -110,6 +111,34 @@ class MarketRepositoryTest {
     assertThat(thumbnails).hasSize(2);
     assertThat(thumbnails.get(0)).extracting("title").isEqualTo("market title 10");
     assertThat(thumbnails.get(1)).extracting("title").isEqualTo("market title 9");
+  }
+
+  @Test
+  @DisplayName("전통시장 한국어 주소 조회")
+  void findKoreanAddressTest() {
+    // given
+    Market market = createMarket(0L);
+    createMarketTrans(market, 1, "test", "제주시", "주소");
+
+    // when
+    Optional<String> koreanAddress = marketRepository.findKoreanAddress(market.getId());
+
+    // then
+    assertThat(koreanAddress.get()).isEqualTo("주소");
+  }
+
+  @Test
+  @DisplayName("주소가 null인 경우 한국어 주소 조회")
+  void findKoreanAddressFailedTest() {
+    // given - 주소가 null
+    Market market = createMarket(0L);
+    createMarketTrans(market, 1, "test", "제주시", null);
+
+    // when
+    Optional<String> koreanAddress = marketRepository.findKoreanAddress(market.getId());
+
+    // then
+    assertThat(koreanAddress.isPresent()).isFalse();
   }
 
   // KOREAN 언어 정보 초기 설정
@@ -165,13 +194,14 @@ class MarketRepositoryTest {
   }
 
   private MarketTrans createMarketTrans(Market market, int number, String keyword,
-      String addressTag) {
+      String addressTag, String address) {
     MarketTrans marketTrans = MarketTrans.builder()
         .market(market)
         .language(Language.KOREAN)
         .title(keyword + "title" + number)
         .content("content" + number)
         .addressTag(addressTag)
+        .address(address)
         .build();
     em.persist(marketTrans);
     return marketTrans;

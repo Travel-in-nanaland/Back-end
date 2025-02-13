@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -442,6 +443,25 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
             experienceTrans.language.eq(language)
         )
         .fetchOne();
+  }
+
+  /**
+   * 이색체험 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
+  @Override
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(experienceTrans.address)
+            .from(experience)
+            .innerJoin(experience.experienceTrans, experienceTrans)
+            .where(experience.id.eq(postId),
+                experienceTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
   }
 
   private List<String> splitKeyword(String keyword) {

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -502,6 +503,25 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         )
         .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
         .fetchFirst();
+  }
+
+  /**
+   * 축제 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
+  @Override
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(festivalTrans.address)
+            .from(festival)
+            .innerJoin(festival.festivalTrans, festivalTrans)
+            .where(festival.id.eq(postId),
+                festivalTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
   }
 
   @Override
