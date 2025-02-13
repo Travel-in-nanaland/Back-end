@@ -17,6 +17,7 @@ import com.jeju.nanaland.domain.nature.entity.NatureTrans;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,13 +61,14 @@ class NatureRepositoryTest {
   }
 
   private NatureTrans createNatureTrans(Nature nature, int number, String keyword,
-      String addressTag) {
+      String addressTag, String address) {
     NatureTrans natureTrans = NatureTrans.builder()
         .nature(nature)
         .language(Language.KOREAN)
         .title(keyword + "title" + number)
         .content("content" + number)
         .addressTag(addressTag)
+        .address(address)
         .build();
     entityManager.persist(natureTrans);
     return natureTrans;
@@ -75,7 +77,7 @@ class NatureRepositoryTest {
   private void createNatureItems(int itemCount, String keyword, String addressTag) {
     for (int i = 1; i <= itemCount; i++) {
       Nature nature = createNature((long) i);
-      createNatureTrans(nature, i, keyword, addressTag);
+      createNatureTrans(nature, i, keyword, addressTag, "주소");
     }
   }
 
@@ -121,7 +123,7 @@ class NatureRepositoryTest {
     int size = 3;
     for (int i = 0; i < size; i++) {
       Nature nature = createNature((long) i);
-      NatureTrans natureTrans = createNatureTrans(nature, i, "test", "제주시");
+      NatureTrans natureTrans = createNatureTrans(nature, i, "test", "제주시", "주소");
       initHashtags(List.of(nature), List.of("keyword" + i, "keyword" + (i + 1)), language);
     }
 
@@ -143,7 +145,7 @@ class NatureRepositoryTest {
     int size = 3;
     for (int i = 0; i < size; i++) {
       Nature nature = createNature((long) i);
-      NatureTrans natureTrans = createNatureTrans(nature, i, "test", "제주시");
+      NatureTrans natureTrans = createNatureTrans(nature, i, "test", "제주시", "주소");
       initHashtags(List.of(nature),
           List.of("keyword" + i, "keyword" + (i + 1), "keyword" + (i + 2), "keyword" + (i + 3),
               "keyword" + (i + 4)),
@@ -164,7 +166,7 @@ class NatureRepositoryTest {
   void findNatureCompositeDto() {
     // given: 7대 자연 정보 설정
     Nature nature = createNature(0L);
-    NatureTrans natureTrans = createNatureTrans(nature, 0, "", "제주시");
+    NatureTrans natureTrans = createNatureTrans(nature, 0, "", "제주시", "주소");
 
     // when: 7대 자연 정보 조회
     NatureCompositeDto result = natureRepository.findNatureCompositeDto(nature.getId(),
@@ -253,6 +255,34 @@ class NatureRepositoryTest {
       assertThat(firstItem.getFirstImage().getOriginUrl()).isEqualTo("origin" + itemCount);
       assertThat(firstItem.getFirstImage().getThumbnailUrl()).isEqualTo("thumbnail" + itemCount);
       assertThat(firstItem.getAddressTag()).isEqualTo(addressTag.getKr());
+    }
+
+    @Test
+    @DisplayName("자연 한국어 주소 조회")
+    void findKoreanAddressTest() {
+      // given
+      Nature nature = createNature(0L);
+      createNatureTrans(nature, 1, "test", "제주시", "주소");
+
+      // when
+      Optional<String> koreanAddress = natureRepository.findKoreanAddress(nature.getId());
+
+      // then
+      assertThat(koreanAddress.get()).isEqualTo("주소");
+    }
+
+    @Test
+    @DisplayName("주소가 null인 경우 한국어 주소 조회")
+    void findKoreanAddressFailedTest() {
+      // given - 주소가 null
+      Nature nature = createNature(0L);
+      createNatureTrans(nature, 1, "test", "제주시", null);
+
+      // when
+      Optional<String> koreanAddress = natureRepository.findKoreanAddress(nature.getId());
+
+      // then
+      assertThat(koreanAddress.isPresent()).isFalse();
     }
   }
 }
