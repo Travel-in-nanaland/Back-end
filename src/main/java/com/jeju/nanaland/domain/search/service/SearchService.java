@@ -10,6 +10,7 @@ import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
+import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
@@ -25,7 +26,6 @@ import com.jeju.nanaland.domain.nana.dto.NanaSearchDto;
 import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
-import com.jeju.nanaland.domain.restaurant.dto.RestaurantCompositeDto;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantSearchDto;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
@@ -546,35 +546,35 @@ public class SearchService {
               postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
-              getSearchVolumeDto(memberInfoDto, categoryContent, festivalCompositeDto));
+              getSearchVolumeDto(memberInfoDto, categoryContent.name(), festivalCompositeDto));
         }
         case NATURE -> {
           CompositeDto natureCompositeDto = natureRepository.findNatureCompositeDto(postId,
               memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
-              getSearchVolumeDto(memberInfoDto, categoryContent, natureCompositeDto));
+              getSearchVolumeDto(memberInfoDto, categoryContent.name(), natureCompositeDto));
         }
         case MARKET -> {
           CompositeDto marketCompositeDto = marketRepository.findCompositeDtoById(postId,
               memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
-              getSearchVolumeDto(memberInfoDto, categoryContent, marketCompositeDto));
+              getSearchVolumeDto(memberInfoDto, categoryContent.name(), marketCompositeDto));
         }
         case EXPERIENCE -> {
-          CompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
+          ExperienceCompositeDto experienceCompositeDto = experienceRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
-              getSearchVolumeDto(memberInfoDto, categoryContent, experienceCompositeDto));
+              getSearchVolumeDto(memberInfoDto, experienceCompositeDto.getExperienceType().name(), experienceCompositeDto));
         }
         case RESTAURANT -> {
           CompositeDto restaurantCompositeDto = restaurantRepository.findCompositeDtoById(
               postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
-              getSearchVolumeDto(memberInfoDto, categoryContent, restaurantCompositeDto)
+              getSearchVolumeDto(memberInfoDto, categoryContent.name(), restaurantCompositeDto)
           );
         }
         default -> throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
@@ -584,18 +584,26 @@ public class SearchService {
   }
 
   private SearchVolumeDto getSearchVolumeDto(MemberInfoDto memberInfoDto,
-      Category categoryContent, CompositeDto compositeDto) {
+      String categoryContent, CompositeDto compositeDto) {
     if (compositeDto == null) {
       throw new NotFoundException(ErrorCode.NOT_FOUND_EXCEPTION.getMessage());
+    }
+
+    Category category;
+    if (categoryContent.equals(ExperienceType.ACTIVITY.name()) || categoryContent.equals(
+        ExperienceType.CULTURE_AND_ARTS.name())) {
+      category = EXPERIENCE;
+    } else {
+      category = Category.valueOf(categoryContent);
     }
 
     return SearchVolumeDto.builder()
         .id(compositeDto.getId())
         .firstImage(compositeDto.getFirstImage())
         .title(compositeDto.getTitle())
-        .category(categoryContent.name())
+        .category(categoryContent)
         .isFavorite(
-            memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), categoryContent,
+            memberFavoriteService.isPostInFavorite(memberInfoDto.getMember(), category,
                 compositeDto.getId()))
         .build();
   }
