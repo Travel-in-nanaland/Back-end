@@ -129,7 +129,7 @@ public class RestaurantService implements PostService {
 
     // 검색을 통해 요청되었다면 count
     if (isSearch) {
-      searchService.updateSearchVolumeV1(EXPERIENCE, postId);
+      searchService.updateSearchVolumeV1(RESTAURANT, postId);
     }
 
     // 좋아요 여부 확인
