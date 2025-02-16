@@ -462,7 +462,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   }
 
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()
@@ -472,7 +472,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   }
 
   private BooleanExpression keywordCondition(List<RestaurantTypeKeyword> keywordFilterList) {
-    if (keywordFilterList.isEmpty()) {
+    if (keywordFilterList == null || keywordFilterList.isEmpty()) {
       return null;
     } else {
       return restaurantKeyword.restaurantTypeKeyword.in(keywordFilterList);

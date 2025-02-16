@@ -420,7 +420,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
    * @return BooleanExpression
    */
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()

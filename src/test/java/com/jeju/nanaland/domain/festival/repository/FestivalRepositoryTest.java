@@ -60,7 +60,7 @@ class FestivalRepositoryTest {
 
     // when
     Page<FestivalSearchDto> resultDto = festivalRepository.findSearchDtoByKeywordsUnion(
-        List.of("keyword1", "keyword2"), language, pageable);
+        List.of("keyword1", "keyword2"), null, null, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
@@ -85,7 +85,8 @@ class FestivalRepositoryTest {
 
     // when
     Page<FestivalSearchDto> resultDto = festivalRepository.findSearchDtoByKeywordsIntersect(
-        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), language, pageable);
+        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), null, null, null,
+        language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(1);

@@ -151,7 +151,7 @@ class ExperienceRepositoryTest {
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsUnion(
-        ExperienceType.ACTIVITY, List.of("keyword2", "keyword3"), language, pageable);
+        ExperienceType.ACTIVITY, List.of("keyword2", "keyword3"), null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(2);
@@ -173,7 +173,7 @@ class ExperienceRepositoryTest {
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsUnion(
-        ExperienceType.CULTURE_AND_ARTS, List.of("keyword2", "keyword3"), language, pageable);
+        ExperienceType.CULTURE_AND_ARTS, List.of("keyword2", "keyword3"), null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
@@ -196,7 +196,7 @@ class ExperienceRepositoryTest {
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
-        ExperienceType.ACTIVITY, keywords, language, pageable);
+        ExperienceType.ACTIVITY, keywords, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(2);
@@ -218,7 +218,7 @@ class ExperienceRepositoryTest {
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
-        ExperienceType.CULTURE_AND_ARTS, keywords, language, pageable);
+        ExperienceType.CULTURE_AND_ARTS, keywords, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
