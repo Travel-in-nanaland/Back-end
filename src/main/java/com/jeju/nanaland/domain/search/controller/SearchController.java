@@ -2,8 +2,10 @@ package com.jeju.nanaland.domain.search.controller;
 
 import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
+import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.AllCategoryDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ResultDto;
@@ -18,9 +20,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +40,7 @@ public class SearchController {
   private final SearchService searchService;
 
   @Operation(
-      summary = "카테고리 검색 (6대자연, 전통시장, 축제, 이색체험)",
+      summary = "카테고리 검색 (자연, 축제, 액티비티, 문화예술, 전통시장, 맛집, 나나스픽)",
       description = "각 카테고리별 title 파라미터가 포함된 제목의 게시물 검색, 각 카테고리 별로 총 개수와 썸네일 2개 반환")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "성공"),
@@ -63,8 +67,11 @@ public class SearchController {
       @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "12") int size) {
-    ResultDto result = searchService.searchNature(memberInfoDto, keyword, page, size);
+      @RequestParam(defaultValue = "12") int size,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList) {
+
+    ResultDto result = searchService.searchNature(memberInfoDto, keyword, page, size,
+        addressFilterList);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -80,9 +87,15 @@ public class SearchController {
       @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "12") int size) {
+      @RequestParam(defaultValue = "12") int size,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
+      @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
+      LocalDate startDate,
+      @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyyMMdd")
+      LocalDate endDate) {
 
-    ResultDto result = searchService.searchFestival(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchFestival(memberInfoDto, keyword, page, size,
+        addressFilterList, startDate, endDate);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -98,11 +111,12 @@ public class SearchController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
       @NotNull String keyword,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
     ResultDto result = searchService.searchExperience(memberInfoDto, experienceType, keyword,
-        page, size);
+        addressFilterList, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -117,10 +131,12 @@ public class SearchController {
   public BaseResponse<SearchResponse.ResultDto> searchMarket(
       @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchMarket(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchMarket(memberInfoDto, keyword, addressFilterList, page,
+        size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
@@ -153,10 +169,13 @@ public class SearchController {
   public BaseResponse<SearchResponse.ResultDto> searchRestaurant(
       @AuthMember MemberInfoDto memberInfoDto,
       @NotNull String keyword,
+      @RequestParam(defaultValue = "") List<RestaurantTypeKeyword> keywordFilter,
+      @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
-    ResultDto result = searchService.searchRestaurant(memberInfoDto, keyword, page, size);
+    ResultDto result = searchService.searchRestaurant(memberInfoDto, keyword, keywordFilter,
+        addressFilterList, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 

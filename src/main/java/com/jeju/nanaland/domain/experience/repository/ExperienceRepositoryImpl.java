@@ -116,7 +116,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
   @Override
   public Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(ExperienceType experienceType,
-      List<String> keywords, Language language, Pageable pageable) {
+      List<String> keywords, List<AddressTag> addressTags, Language language, Pageable pageable) {
 
     // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -151,7 +151,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experience.experienceType.eq(experienceType))
+        .where(experience.experienceType.eq(experienceType),
+            addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -183,8 +184,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
   @Override
   public Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(
-      ExperienceType experienceType, List<String> keywords, Language language,
-      Pageable pageable) {
+      ExperienceType experienceType, List<String> keywords, List<AddressTag> addressTags,
+      Language language, Pageable pageable) {
 
     // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -219,7 +220,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experience.experienceType.eq(experienceType))
+        .where(experience.experienceType.eq(experienceType),
+            addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌

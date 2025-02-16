@@ -31,11 +31,11 @@ public interface MarketRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<MarketSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
-      Pageable pageable);
+  Page<MarketSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Page<MarketSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable);
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Optional<String> findKoreanAddress(Long postId);
 }

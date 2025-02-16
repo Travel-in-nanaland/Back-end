@@ -47,10 +47,12 @@ public interface RestaurantRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<RestaurantSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
-      Pageable pageable);
+  Page<RestaurantSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
+      Language language, Pageable pageable);
 
   Page<RestaurantSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
       Language language, Pageable pageable);
 
   Optional<String> findKoreanAddress(Long postId);

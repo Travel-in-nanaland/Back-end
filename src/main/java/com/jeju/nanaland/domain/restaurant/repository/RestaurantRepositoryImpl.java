@@ -208,13 +208,16 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   /**
    * 게시물의 제목, 주소태그, 키워드, 해시태그 중 하나라도 겹치는 게시물이 있다면 조회 일치한 수, 생성일자 내림차순
    *
-   * @param keywords 유저 키워드 리스트
-   * @param language 유저 언어
-   * @param pageable 페이징
+   * @param keywords               유저 키워드 리스트
+   * @param restaurantTypeKeywords 맛집 분류 리스트
+   * @param addressTags            지역필터 리스트
+   * @param language               유저 언어
+   * @param pageable               페이징
    * @return 검색결과
    */
   @Override
   public Page<RestaurantSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
       Language language, Pageable pageable) {
     // restaurant_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -247,6 +250,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags),
+            keywordCondition(restaurantTypeKeywords))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -279,13 +284,16 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
   /**
    * 게시물의 제목, 주소태그, 키워드, 해시태그와 모두 겹치는 게시물이 있다면 조회 생성일자 내림차순
    *
-   * @param keywords 유저 키워드 리스트
-   * @param language 유저 언어
-   * @param pageable 페이징
+   * @param keywords               유저 키워드 리스트
+   * @param restaurantTypeKeywords 맛집 분류 리스트
+   * @param addressTags            지역필터 리스트
+   * @param language               유저 언어
+   * @param pageable               페이징
    * @return 검색결과
    */
   @Override
   public Page<RestaurantSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
       Language language, Pageable pageable) {
     // restaurant_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory

@@ -7,6 +7,7 @@ import static com.jeju.nanaland.domain.common.data.Category.NANA;
 import static com.jeju.nanaland.domain.common.data.Category.NATURE;
 import static com.jeju.nanaland.domain.common.data.Category.RESTAURANT;
 
+import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.common.data.Category;
 import com.jeju.nanaland.domain.common.data.Language;
 import com.jeju.nanaland.domain.common.dto.CompositeDto;
@@ -26,12 +27,14 @@ import com.jeju.nanaland.domain.nana.repository.NanaRepository;
 import com.jeju.nanaland.domain.nature.dto.NatureSearchDto;
 import com.jeju.nanaland.domain.nature.repository.NatureRepository;
 import com.jeju.nanaland.domain.restaurant.dto.RestaurantSearchDto;
+import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
 import com.jeju.nanaland.domain.restaurant.repository.RestaurantRepository;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.SearchVolumeDto;
 import com.jeju.nanaland.domain.search.dto.SearchResponse.ThumbnailDto;
 import com.jeju.nanaland.global.exception.ErrorCode;
 import com.jeju.nanaland.global.exception.NotFoundException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,18 +80,18 @@ public class SearchService {
 
     // 각 카테고리로 검색쿼리 비동기 요청
     CompletableFuture<SearchResponse.ResultDto> natureFuture = CompletableFuture.supplyAsync(
-        () -> searchNature(memberInfoDto, keyword, page, size));
+        () -> searchNature(memberInfoDto, keyword, page, size, null));
     CompletableFuture<SearchResponse.ResultDto> festivalFuture = CompletableFuture.supplyAsync(
-        () -> searchFestival(memberInfoDto, keyword, page, size));
+        () -> searchFestival(memberInfoDto, keyword, page, size, null, null, null));
     CompletableFuture<SearchResponse.ResultDto> marketFuture = CompletableFuture.supplyAsync(
-        () -> searchMarket(memberInfoDto, keyword, page, size));
+        () -> searchMarket(memberInfoDto, keyword, null, page, size));
     CompletableFuture<SearchResponse.ResultDto> activityFuture = CompletableFuture.supplyAsync(
-        () -> searchExperience(memberInfoDto, ExperienceType.ACTIVITY, keyword, page, size));
+        () -> searchExperience(memberInfoDto, ExperienceType.ACTIVITY, keyword, null, page, size));
     CompletableFuture<SearchResponse.ResultDto> cultureAndArtsFuture = CompletableFuture.supplyAsync(
-        () -> searchExperience(memberInfoDto, ExperienceType.CULTURE_AND_ARTS, keyword, page,
-            size));
+        () -> searchExperience(memberInfoDto, ExperienceType.CULTURE_AND_ARTS, keyword, null,
+            page, size));
     CompletableFuture<SearchResponse.ResultDto> restaurantFuture = CompletableFuture.supplyAsync(
-        () -> searchRestaurant(memberInfoDto, keyword, page, size));
+        () -> searchRestaurant(memberInfoDto, keyword, null, null, page, size));
     CompletableFuture<SearchResponse.ResultDto> nanaFuture = CompletableFuture.supplyAsync(
         () -> searchNana(memberInfoDto, keyword, page, size));
 
@@ -122,10 +125,11 @@ public class SearchService {
    * @param keyword       유저 검색어
    * @param page          페이지
    * @param size          페이지 크기
+   * @param addressTags   지역필터 리스트
    * @return 자연 검색 결과
    */
   public SearchResponse.ResultDto searchNature(MemberInfoDto memberInfoDto, String keyword,
-      int page, int size) {
+      int page, int size, List<AddressTag> addressTags) {
 
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -140,12 +144,12 @@ public class SearchService {
       // 검색어 조합
       List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
       resultPage = natureRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
-          language, pageable);
+          addressTags, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
       resultPage = natureRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
-          language, pageable);
+          addressTags, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
@@ -176,10 +180,13 @@ public class SearchService {
    * @param keyword       유저 검색어
    * @param page          페이지
    * @param size          페이지 크기
+   * @param addressTags   지역필터 리스트
+   * @param startDate     시작날짜
+   * @param endDate       종료날짜
    * @return 축제 검색 결과
    */
   public SearchResponse.ResultDto searchFestival(MemberInfoDto memberInfoDto, String keyword,
-      int page, int size) {
+      int page, int size, List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate) {
 
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -193,13 +200,13 @@ public class SearchService {
     if (normalizedKeywords.size() <= 4) {
       // 검색어 조합
       List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
-      resultPage = festivalRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
-          language, pageable);
+      resultPage = festivalRepository.findSearchDtoByKeywordsUnion(combinedKeywords, addressTags,
+          startDate, endDate, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
       resultPage = festivalRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
-          language, pageable);
+          addressTags, startDate, endDate, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
@@ -229,12 +236,14 @@ public class SearchService {
    *
    * @param memberInfoDto 유저 정보
    * @param keyword       유저 검색어
+   * @param addressTags   지열필터 리스트
    * @param page          페이지
    * @param size          페이지 크기
    * @return 이색체험 검색 결과
    */
   public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto,
-      ExperienceType experienceType, String keyword, int page, int size) {
+      ExperienceType experienceType, String keyword, List<AddressTag> addressTags, int page,
+      int size) {
 
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -249,12 +258,12 @@ public class SearchService {
       // 검색어 조합
       List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
       resultPage = experienceRepository.findSearchDtoByKeywordsUnion(experienceType,
-          combinedKeywords, language, pageable);
+          combinedKeywords, addressTags, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
       resultPage = experienceRepository.findSearchDtoByKeywordsIntersect(experienceType,
-          normalizedKeywords, language, pageable);
+          normalizedKeywords, addressTags, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
@@ -284,12 +293,13 @@ public class SearchService {
    *
    * @param memberInfoDto 유저 정보
    * @param keyword       유저 검색어
+   * @param addressTags   지역필터 리스트
    * @param page          페이지
    * @param size          페이지 크기
    * @return 전통시장 검색 결과
    */
   public SearchResponse.ResultDto searchMarket(MemberInfoDto memberInfoDto, String keyword,
-      int page, int size) {
+      List<AddressTag> addressTags, int page, int size) {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
     Pageable pageable = PageRequest.of(page, size);
@@ -303,12 +313,12 @@ public class SearchService {
       // 검색어 조합
       List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
       resultPage = marketRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
-          language, pageable);
+          addressTags, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
       resultPage = marketRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
-          language, pageable);
+          addressTags, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
@@ -335,13 +345,16 @@ public class SearchService {
   /**
    * 맛집 검색 공백으로 구분된 키워드가 4개 이하라면 제목, 내용, 해시태그, 지역필터에 키워드가 하나라도 포함되면 조회 4개보다 많다면 모든 키워드가 모두 포함되어야 조회
    *
-   * @param memberInfoDto 유저 정보
-   * @param keyword       유저 검색어
-   * @param page          페이지
-   * @param size          페이지 크기
+   * @param memberInfoDto          유저 정보
+   * @param keyword                유저 검색어
+   * @param restaurantTypeKeywords 맛집 분류 리스트
+   * @param addressTags            지역필터 리스트
+   * @param page                   페이지
+   * @param size                   페이지 크기
    * @return 맛집 검색 결과
    */
   public SearchResponse.ResultDto searchRestaurant(MemberInfoDto memberInfoDto, String keyword,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
       int page, int size) {
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -356,12 +369,12 @@ public class SearchService {
       // 검색어 조합
       List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
       resultPage = restaurantRepository.findSearchDtoByKeywordsUnion(combinedKeywords,
-          language, pageable);
+          restaurantTypeKeywords, addressTags, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
       resultPage = restaurantRepository.findSearchDtoByKeywordsIntersect(normalizedKeywords,
-          language, pageable);
+          restaurantTypeKeywords, addressTags, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
