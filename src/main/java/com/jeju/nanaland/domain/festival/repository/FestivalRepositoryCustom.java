@@ -37,11 +37,13 @@ public interface FestivalRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<FestivalSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
+  Page<FestivalSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate, Language language,
       Pageable pageable);
 
   Page<FestivalSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable);
+      List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate, Language language,
+      Pageable pageable);
 
   Optional<String> findKoreanAddress(Long postId);
 }

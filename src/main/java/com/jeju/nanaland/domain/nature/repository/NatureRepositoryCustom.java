@@ -32,11 +32,11 @@ public interface NatureRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<NatureSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
-      Pageable pageable);
+  Page<NatureSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Page<NatureSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable);
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Optional<String> findKoreanAddress(Long postId);
 }

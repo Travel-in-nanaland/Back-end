@@ -113,14 +113,16 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   /**
    * 게시물의 제목, 주소태그, 키워드, 해시태그 중 하나라도 겹치는 게시물이 있다면 조회 일치한 수, 생성일자 내림차순
    *
-   * @param keywords 유저 키워드 리스트
-   * @param language 유저 언어
-   * @param pageable 페이징
+   * @param keywords    유저 키워드 리스트
+   * @param addressTags 지역필터 리스트
+   * @param language    유저 언어
+   * @param pageable    페이징
    * @return 검색결과
    */
   @Override
   public Page<NatureSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
-      Language language, Pageable pageable) {
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
+
     // nature_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
         .select(nature.id, nature.id.count())
@@ -152,6 +154,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -184,14 +187,15 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
   /**
    * 게시물의 제목, 주소태그, 키워드, 해시태그와 모두 겹치는 게시물이 있다면 조회 생성일자 내림차순
    *
-   * @param keywords 유저 키워드 리스트
-   * @param language 유저 언어
-   * @param pageable 페이징
+   * @param keywords    유저 키워드 리스트
+   * @param addressTags 지역필터 리스트
+   * @param language    유저 언어
+   * @param pageable    페이징
    * @return 검색결과
    */
   @Override
   public Page<NatureSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable) {
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
     // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
         .select(nature.id, nature.id.count())
@@ -223,6 +227,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
         .leftJoin(nature.firstImageFile, imageFile)
         .leftJoin(nature.natureTrans, natureTrans)
         .on(natureTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -415,7 +420,7 @@ public class NatureRepositoryImpl implements NatureRepositoryCustom {
    * @return BooleanExpression
    */
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()

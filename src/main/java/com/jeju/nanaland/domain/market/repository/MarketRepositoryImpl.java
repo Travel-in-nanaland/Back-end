@@ -137,7 +137,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
    */
   @Override
   public Page<MarketSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
-      Language language, Pageable pageable) {
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
     // market_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
         .select(market.id, market.id.count())
@@ -169,6 +169,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -208,7 +209,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
    */
   @Override
   public Page<MarketSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable) {
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
     // market_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
         .select(market.id, market.id.count())
@@ -240,6 +241,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -400,7 +402,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()

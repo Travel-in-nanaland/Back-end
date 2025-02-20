@@ -54,7 +54,7 @@ public class RestaurantRepositoryTest {
 
     // when
     Page<RestaurantSearchDto> resultDto = restaurantRepository.findSearchDtoByKeywordsUnion(
-        List.of("keyword1", "keyword2"), language, pageable);
+        List.of("keyword1", "keyword2"), null, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
@@ -79,7 +79,8 @@ public class RestaurantRepositoryTest {
 
     // when
     Page<RestaurantSearchDto> resultDto = restaurantRepository.findSearchDtoByKeywordsIntersect(
-        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), language, pageable);
+        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), null, null, language,
+        pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(1);
