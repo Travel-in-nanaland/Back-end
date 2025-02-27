@@ -14,6 +14,7 @@ import com.jeju.nanaland.domain.common.dto.CompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceCompositeDto;
 import com.jeju.nanaland.domain.experience.dto.ExperienceSearchDto;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.experience.repository.ExperienceRepository;
 import com.jeju.nanaland.domain.favorite.service.MemberFavoriteService;
 import com.jeju.nanaland.domain.festival.dto.FestivalSearchDto;
@@ -87,10 +88,11 @@ public class SearchService {
     CompletableFuture<SearchResponse.ResultDto> marketFuture = CompletableFuture.supplyAsync(
         () -> searchMarket(memberInfoDto, keyword, null, page, size));
     CompletableFuture<SearchResponse.ResultDto> activityFuture = CompletableFuture.supplyAsync(
-        () -> searchExperience(memberInfoDto, ExperienceType.ACTIVITY, keyword, null, page, size));
+        () -> searchExperience(memberInfoDto, ExperienceType.ACTIVITY, keyword, null, null, page,
+            size));
     CompletableFuture<SearchResponse.ResultDto> cultureAndArtsFuture = CompletableFuture.supplyAsync(
         () -> searchExperience(memberInfoDto, ExperienceType.CULTURE_AND_ARTS, keyword, null,
-            page, size));
+            null, page, size));
     CompletableFuture<SearchResponse.ResultDto> restaurantFuture = CompletableFuture.supplyAsync(
         () -> searchRestaurant(memberInfoDto, keyword, null, null, page, size));
     CompletableFuture<SearchResponse.ResultDto> nanaFuture = CompletableFuture.supplyAsync(
@@ -243,8 +245,9 @@ public class SearchService {
    * @return 이색체험 검색 결과
    */
   public SearchResponse.ResultDto searchExperience(MemberInfoDto memberInfoDto,
-      ExperienceType experienceType, String keyword, List<AddressTag> addressTags, int page,
-      int size) {
+      ExperienceType experienceType, String keyword,
+      List<ExperienceTypeKeyword> experienceTypeKeywords,
+      List<AddressTag> addressTags, int page, int size) {
 
     Language language = memberInfoDto.getLanguage();
     Member member = memberInfoDto.getMember();
@@ -259,12 +262,12 @@ public class SearchService {
       // 검색어 조합
       List<String> combinedKeywords = combineUserKeywords(normalizedKeywords);
       resultPage = experienceRepository.findSearchDtoByKeywordsUnion(experienceType,
-          combinedKeywords, addressTags, language, pageable);
+          combinedKeywords, experienceTypeKeywords, addressTags, language, pageable);
     }
     // 4개보다 많다면 Intersect 검색
     else {
       resultPage = experienceRepository.findSearchDtoByKeywordsIntersect(experienceType,
-          normalizedKeywords, addressTags, language, pageable);
+          normalizedKeywords, experienceTypeKeywords, addressTags, language, pageable);
     }
 
     List<Long> favoriteIds = memberFavoriteService.getFavoritePostIdsWithMember(member);
