@@ -48,10 +48,12 @@ public interface ExperienceRepositoryCustom {
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
   Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(ExperienceType experienceType,
-      List<String> keywords, List<AddressTag> addressTags, Language language, Pageable pageable);
+      List<String> keywords, List<ExperienceTypeKeyword> experienceTypeKeywords,
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(ExperienceType experienceType,
-      List<String> keywords, List<AddressTag> addressTags, Language language, Pageable pageable);
+      List<String> keywords, List<ExperienceTypeKeyword> experienceTypeKeywords,
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Optional<String> findKoreanAddress(Long postId);
 }

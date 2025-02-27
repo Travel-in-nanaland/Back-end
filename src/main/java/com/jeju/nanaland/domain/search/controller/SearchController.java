@@ -4,6 +4,7 @@ import static com.jeju.nanaland.global.exception.SuccessCode.SEARCH_SUCCESS;
 
 import com.jeju.nanaland.domain.common.data.AddressTag;
 import com.jeju.nanaland.domain.experience.entity.enums.ExperienceType;
+import com.jeju.nanaland.domain.experience.entity.enums.ExperienceTypeKeyword;
 import com.jeju.nanaland.domain.member.dto.MemberResponse.MemberInfoDto;
 import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
 import com.jeju.nanaland.domain.search.dto.SearchResponse;
@@ -111,12 +112,13 @@ public class SearchController {
       @AuthMember MemberInfoDto memberInfoDto,
       @RequestParam ExperienceType experienceType,
       @NotNull String keyword,
+      @RequestParam(defaultValue = "") List<ExperienceTypeKeyword> keywordFilterList,
       @RequestParam(defaultValue = "") List<AddressTag> addressFilterList,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size) {
 
     ResultDto result = searchService.searchExperience(memberInfoDto, experienceType, keyword,
-        addressFilterList, page, size);
+        keywordFilterList, addressFilterList, page, size);
     return BaseResponse.success(SEARCH_SUCCESS, result);
   }
 
