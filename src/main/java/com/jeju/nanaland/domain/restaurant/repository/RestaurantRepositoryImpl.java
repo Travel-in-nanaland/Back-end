@@ -250,6 +250,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
+        .innerJoin(restaurantKeyword)
+        .on(restaurantKeyword.restaurant.eq(restaurant))
         .where(addressTagCondition(language, addressTags),
             keywordCondition(restaurantTypeKeywords))
         .fetch();
@@ -326,6 +328,10 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
+        .innerJoin(restaurantKeyword)
+        .on(restaurantKeyword.restaurant.eq(restaurant))
+        .where(addressTagCondition(language, addressTags),
+            keywordCondition(restaurantTypeKeywords))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
