@@ -151,7 +151,10 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experience.experienceType.eq(experienceType),
+        .where(
+            // 이색체험 타입 (ACTIVITY, CULTURE_AND_ARTS)
+            experience.experienceType.eq(experienceType),
+            // 지역필터
             addressTagCondition(language, addressTags))
         .fetch();
 
@@ -220,7 +223,10 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experience.experienceType.eq(experienceType),
+        .where(
+            // 이색체험 타입 (ACTIVITY, CULTURE_AND_ARTS)
+            experience.experienceType.eq(experienceType),
+            // 지역필터
             addressTagCondition(language, addressTags))
         .fetch();
 

@@ -238,7 +238,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         ));
 
     List<RestaurantSearchDto> resultDto = queryFactory
-        .select(new QRestaurantSearchDto(
+        .selectDistinct(new QRestaurantSearchDto(
             restaurant.id,
             restaurantTrans.title,
             imageFile.originUrl,
@@ -250,9 +250,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
-        .innerJoin(restaurantKeyword)
+        .leftJoin(restaurantKeyword)
         .on(restaurantKeyword.restaurant.eq(restaurant))
-        .where(addressTagCondition(language, addressTags),
+        .where(
+            // 지역필터
+            addressTagCondition(language, addressTags),
+            // 맛집필터 (한식, 중식 ...)
             keywordCondition(restaurantTypeKeywords))
         .fetch();
 
@@ -316,7 +319,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         ));
 
     List<RestaurantSearchDto> resultDto = queryFactory
-        .select(new QRestaurantSearchDto(
+        .selectDistinct(new QRestaurantSearchDto(
             restaurant.id,
             restaurantTrans.title,
             imageFile.originUrl,
@@ -328,9 +331,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
-        .innerJoin(restaurantKeyword)
+        .leftJoin(restaurantKeyword)
         .on(restaurantKeyword.restaurant.eq(restaurant))
-        .where(addressTagCondition(language, addressTags),
+        .where(
+            // 지역필터
+            addressTagCondition(language, addressTags),
+            // 맛집필터 (한식, 중식 ...)
             keywordCondition(restaurantTypeKeywords))
         .fetch();
 
