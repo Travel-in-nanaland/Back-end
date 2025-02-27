@@ -238,7 +238,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         ));
 
     List<RestaurantSearchDto> resultDto = queryFactory
-        .select(new QRestaurantSearchDto(
+        .selectDistinct(new QRestaurantSearchDto(
             restaurant.id,
             restaurantTrans.title,
             imageFile.originUrl,
@@ -250,7 +250,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
-        .where(addressTagCondition(language, addressTags),
+        .leftJoin(restaurantKeyword)
+        .on(restaurantKeyword.restaurant.eq(restaurant))
+        .where(
+            // 지역필터
+            addressTagCondition(language, addressTags),
+            // 맛집필터 (한식, 중식 ...)
             keywordCondition(restaurantTypeKeywords))
         .fetch();
 
@@ -314,7 +319,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         ));
 
     List<RestaurantSearchDto> resultDto = queryFactory
-        .select(new QRestaurantSearchDto(
+        .selectDistinct(new QRestaurantSearchDto(
             restaurant.id,
             restaurantTrans.title,
             imageFile.originUrl,
@@ -326,6 +331,13 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
         .leftJoin(restaurant.firstImageFile, imageFile)
         .leftJoin(restaurant.restaurantTrans, restaurantTrans)
         .on(restaurantTrans.language.eq(language))
+        .leftJoin(restaurantKeyword)
+        .on(restaurantKeyword.restaurant.eq(restaurant))
+        .where(
+            // 지역필터
+            addressTagCondition(language, addressTags),
+            // 맛집필터 (한식, 중식 ...)
+            keywordCondition(restaurantTypeKeywords))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
