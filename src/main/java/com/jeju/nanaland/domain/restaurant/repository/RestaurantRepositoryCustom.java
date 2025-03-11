@@ -11,6 +11,7 @@ import com.jeju.nanaland.domain.restaurant.dto.RestaurantSearchDto;
 import com.jeju.nanaland.domain.restaurant.entity.enums.RestaurantTypeKeyword;
 import com.jeju.nanaland.domain.review.dto.ReviewResponse.SearchPostForReviewDto;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,9 +47,13 @@ public interface RestaurantRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<RestaurantSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
-      Pageable pageable);
+  Page<RestaurantSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
+      Language language, Pageable pageable);
 
   Page<RestaurantSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      List<RestaurantTypeKeyword> restaurantTypeKeywords, List<AddressTag> addressTags,
       Language language, Pageable pageable);
+
+  Optional<String> findKoreanAddress(Long postId);
 }

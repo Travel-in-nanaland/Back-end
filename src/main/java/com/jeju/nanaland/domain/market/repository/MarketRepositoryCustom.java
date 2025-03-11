@@ -8,6 +8,7 @@ import com.jeju.nanaland.domain.market.dto.MarketCompositeDto;
 import com.jeju.nanaland.domain.market.dto.MarketResponse.MarketThumbnail;
 import com.jeju.nanaland.domain.market.dto.MarketSearchDto;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,9 +31,11 @@ public interface MarketRepositoryCustom {
 
   PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId);
 
-  Page<MarketSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords, Language language,
-      Pageable pageable);
+  Page<MarketSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<AddressTag> addressTags, Language language, Pageable pageable);
 
   Page<MarketSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable);
+      List<AddressTag> addressTags, Language language, Pageable pageable);
+
+  Optional<String> findKoreanAddress(Long postId);
 }

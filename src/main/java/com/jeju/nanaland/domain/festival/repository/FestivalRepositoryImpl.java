@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -117,6 +118,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
    */
   @Override
   public Page<FestivalSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
+      List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate,
       Language language, Pageable pageable) {
     // festival_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -149,6 +151,11 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.eq(language))
+        .where(
+            // 기간필터
+            periodCondition(startDate, endDate)
+            // 지역필터
+            , addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -188,6 +195,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
    */
   @Override
   public Page<FestivalSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
+      List<AddressTag> addressTags, LocalDate startDate, LocalDate endDate,
       Language language, Pageable pageable) {
     // festival_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -220,6 +228,11 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .leftJoin(festival.firstImageFile, imageFile)
         .leftJoin(festival.festivalTrans, festivalTrans)
         .on(festivalTrans.language.eq(language))
+        .where(
+            // 기간필터
+            periodCondition(startDate, endDate)
+            // 지역필터
+            , addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -504,6 +517,25 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .fetchFirst();
   }
 
+  /**
+   * 축제 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
+  @Override
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(festivalTrans.address)
+            .from(festival)
+            .innerJoin(festival.festivalTrans, festivalTrans)
+            .where(festival.id.eq(postId),
+                festivalTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
+  }
+
   @Override
   public PopularPostPreviewDto findPostPreviewDtoByLanguageAndId(Language language, Long postId) {
     return queryFactory
@@ -527,7 +559,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
   }
 
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()
@@ -582,5 +614,26 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         .then(1)
         .otherwise(0)
         .add(countMatchingConditionWithKeyword(condition, keywords, idx + 1));
+  }
+
+  private BooleanExpression periodCondition(LocalDate startDate, LocalDate endDate) {
+    // 조건으로 들어오지 않은 경우
+    if (startDate == null && endDate == null) {
+      return null;
+    }
+    // 둘 중 하나가 없을 때
+    else if (startDate == null || endDate == null) {
+      throw new IllegalArgumentException("시작일과 종료일을 모두 입력해야 합니다.");
+    }
+
+    return (
+        // 축제의 시작일이 필터 시작일 보다 작고 축제의 종료일은 필터의 시작 일보다 클 때
+        festival.startDate.loe(startDate).and(festival.endDate.goe(startDate)))
+        // 축제의 기간이 필터 사이에 있을 대
+        .or((festival.startDate.goe(startDate)
+            .and(festival.endDate.loe(endDate))))
+        // 축제의 시작일이 필터의 종료일 보다 작고 축제의 종료일은 필터의 종료일보다 클 때
+        .or((festival.startDate.loe(endDate))
+            .and(festival.endDate.goe(endDate)));
   }
 }

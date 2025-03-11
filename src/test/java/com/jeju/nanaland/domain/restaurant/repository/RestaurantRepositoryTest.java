@@ -14,7 +14,9 @@ import com.jeju.nanaland.domain.restaurant.entity.RestaurantTrans;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +48,13 @@ public class RestaurantRepositoryTest {
     int size = 3;
     for (int i = 0; i < size; i++) {
       Restaurant restaurant = createRestaurant((long) i);
-      RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant, i, "test", "제주시");
+      RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant, i, "test", "제주시", "주소");
       initHashtags(List.of(restaurant), List.of("keyword" + i, "keyword" + (i + 1)), language);
     }
 
     // when
     Page<RestaurantSearchDto> resultDto = restaurantRepository.findSearchDtoByKeywordsUnion(
-        List.of("keyword1", "keyword2"), language, pageable);
+        List.of("keyword1", "keyword2"), null, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
@@ -68,7 +70,7 @@ public class RestaurantRepositoryTest {
     int size = 3;
     for (int i = 0; i < size; i++) {
       Restaurant restaurant = createRestaurant((long) i);
-      RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant, i, "test", "제주시");
+      RestaurantTrans restaurantTrans = createRestaurantTrans(restaurant, i, "test", "제주시", "주소");
       initHashtags(List.of(restaurant),
           List.of("keyword" + i, "keyword" + (i + 1), "keyword" + (i + 2), "keyword" + (i + 3),
               "keyword" + (i + 4)),
@@ -77,11 +79,40 @@ public class RestaurantRepositoryTest {
 
     // when
     Page<RestaurantSearchDto> resultDto = restaurantRepository.findSearchDtoByKeywordsIntersect(
-        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), language, pageable);
+        List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5"), null, null, language,
+        pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(1);
     assertThat(resultDto.getContent().get(0).getMatchedCount()).isEqualTo(5);
+  }
+
+  @Test
+  @DisplayName("맛집 한국어 주소 조회")
+  void findKoreanAddressTest() {
+    // given
+    Restaurant restaurant = createRestaurant(0L);
+    createRestaurantTrans(restaurant, 1, "test", "제주시", "주소");
+
+    // when
+    Optional<String> koreanAddress = restaurantRepository.findKoreanAddress(restaurant.getId());
+
+    // then
+    assertThat(koreanAddress.get()).isEqualTo("주소");
+  }
+
+  @Test
+  @DisplayName("주소가 null인 경우 한국어 주소 조회")
+  void findKoreanAddressFailedTest() {
+    // given - 주소가 null
+    Restaurant restaurant = createRestaurant(0L);
+    createRestaurantTrans(restaurant, 1, "test", "제주시", null);
+
+    // when
+    Optional<String> koreanAddress = restaurantRepository.findKoreanAddress(restaurant.getId());
+
+    // then
+    assertThat(koreanAddress.isPresent()).isFalse();
   }
 
   private ImageFile createImageFile(Long number) {
@@ -103,13 +134,14 @@ public class RestaurantRepositoryTest {
   }
 
   private RestaurantTrans createRestaurantTrans(Restaurant restaurant, int number, String keyword,
-      String addressTag) {
+      String addressTag, String address) {
     RestaurantTrans restaurantTrans = RestaurantTrans.builder()
         .restaurant(restaurant)
         .language(Language.KOREAN)
         .title(keyword + "title" + number)
         .content("content" + number)
         .addressTag(addressTag)
+        .address(address)
         .build();
     em.persist(restaurantTrans);
     return restaurantTrans;

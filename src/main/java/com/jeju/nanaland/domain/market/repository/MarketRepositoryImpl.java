@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -136,7 +137,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
    */
   @Override
   public Page<MarketSearchDto> findSearchDtoByKeywordsUnion(List<String> keywords,
-      Language language, Pageable pageable) {
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
     // market_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
         .select(market.id, market.id.count())
@@ -168,6 +169,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -207,7 +209,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
    */
   @Override
   public Page<MarketSearchDto> findSearchDtoByKeywordsIntersect(List<String> keywords,
-      Language language, Pageable pageable) {
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
     // market_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
         .select(market.id, market.id.count())
@@ -239,6 +241,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .leftJoin(market.firstImageFile, imageFile)
         .leftJoin(market.marketTrans, marketTrans)
         .on(marketTrans.language.eq(language))
+        .where(addressTagCondition(language, addressTags))
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -355,6 +358,25 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 전통시장 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
+  @Override
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(marketTrans.address)
+            .from(market)
+            .innerJoin(market.marketTrans, marketTrans)
+            .where(market.id.eq(postId),
+                marketTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
+  }
+
   private List<Long> getIdListContainAllHashtags(String keyword, Language language) {
     return queryFactory
         .select(market.id)
@@ -380,7 +402,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
   }
 
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()

@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -115,7 +116,8 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
   @Override
   public Page<ExperienceSearchDto> findSearchDtoByKeywordsUnion(ExperienceType experienceType,
-      List<String> keywords, Language language, Pageable pageable) {
+      List<String> keywords, List<ExperienceTypeKeyword> experienceTypeKeywords,
+      List<AddressTag> addressTags, Language language, Pageable pageable) {
 
     // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -138,7 +140,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         ));
 
     List<ExperienceSearchDto> resultDto = queryFactory
-        .select(new QExperienceSearchDto(
+        .selectDistinct(new QExperienceSearchDto(
             experience.id,
             experienceTrans.title,
             imageFile.originUrl,
@@ -150,7 +152,16 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experience.experienceType.eq(experienceType))
+        .leftJoin(experienceKeyword)
+        .on(experienceKeyword.experience.eq(experience))
+        .where(
+            // 이색체험 타입 (ACTIVITY, CULTURE_AND_ARTS)
+            experience.experienceType.eq(experienceType),
+            // 이색체험 타입 (LAND_LEISURE, WATER_LEISURE, ...)
+            keywordCondition(experienceTypeKeywords),
+            // 지역필터
+            addressTagCondition(language, addressTags))
+        .groupBy(experience.id)
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -182,8 +193,9 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
 
   @Override
   public Page<ExperienceSearchDto> findSearchDtoByKeywordsIntersect(
-      ExperienceType experienceType, List<String> keywords, Language language,
-      Pageable pageable) {
+      ExperienceType experienceType, List<String> keywords,
+      List<ExperienceTypeKeyword> experienceTypeKeywords, List<AddressTag> addressTags,
+      Language language, Pageable pageable) {
 
     // experience_id를 가진 게시물의 해시태그가 검색어 키워드 중 몇개를 포함하는지 계산
     List<Tuple> keywordMatchQuery = queryFactory
@@ -206,7 +218,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         ));
 
     List<ExperienceSearchDto> resultDto = queryFactory
-        .select(new QExperienceSearchDto(
+        .selectDistinct(new QExperienceSearchDto(
             experience.id,
             experienceTrans.title,
             imageFile.originUrl,
@@ -218,7 +230,16 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .leftJoin(experience.firstImageFile, imageFile)
         .leftJoin(experience.experienceTrans, experienceTrans)
         .on(experienceTrans.language.eq(language))
-        .where(experience.experienceType.eq(experienceType))
+        .leftJoin(experienceKeyword)
+        .on(experienceKeyword.experience.eq(experience))
+        .where(
+            // 이색체험 타입 (ACTIVITY, CULTURE_AND_ARTS)
+            experience.experienceType.eq(experienceType),
+            // 이색체험 타입 (LAND_LEISURE, WATER_LEISURE, ...)
+            keywordCondition(experienceTypeKeywords),
+            // 지역필터
+            addressTagCondition(language, addressTags))
+        .groupBy(experience.id)
         .fetch();
 
     // 해시태그 값을 matchedCount에 더해줌
@@ -444,6 +465,25 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
         .fetchOne();
   }
 
+  /**
+   * 이색체험 게시물 한국어 주소 조회
+   *
+   * @param postId 게시물 ID
+   * @return 한국어 주소 Optional String 객체
+   */
+  @Override
+  public Optional<String> findKoreanAddress(Long postId) {
+    return Optional.ofNullable(
+        queryFactory
+            .select(experienceTrans.address)
+            .from(experience)
+            .innerJoin(experience.experienceTrans, experienceTrans)
+            .where(experience.id.eq(postId),
+                experienceTrans.language.eq(Language.KOREAN))
+            .fetchOne()
+    );
+  }
+
   private List<String> splitKeyword(String keyword) {
     String[] tokens = keyword.split("\\s+");
     List<String> tokenList = new ArrayList<>();
@@ -455,7 +495,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   private BooleanExpression addressTagCondition(Language language, List<AddressTag> addressTags) {
-    if (addressTags.isEmpty()) {
+    if (addressTags == null || addressTags.isEmpty()) {
       return null;
     } else {
       List<String> addressTagFilters = addressTags.stream()
@@ -465,7 +505,7 @@ public class ExperienceRepositoryImpl implements ExperienceRepositoryCustom {
   }
 
   private BooleanExpression keywordCondition(List<ExperienceTypeKeyword> keywordFilterList) {
-    if (keywordFilterList.isEmpty()) {
+    if (keywordFilterList == null || keywordFilterList.isEmpty()) {
       return null;
     } else {
       return experienceKeyword.experienceTypeKeyword.in(keywordFilterList);

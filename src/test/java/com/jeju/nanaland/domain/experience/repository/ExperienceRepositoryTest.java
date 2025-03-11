@@ -26,6 +26,7 @@ import com.jeju.nanaland.domain.hashtag.entity.Keyword;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ class ExperienceRepositoryTest {
     Language language = Language.KOREAN;
     // 지상레저 이색체험 게시물 1개 생성
     List<Experience> experienceList =
-        getActivityList(language, List.of(LAND_LEISURE), "서귀포시", 1);
+        getActivityList(language, List.of(LAND_LEISURE), "서귀포시", "주소", 1);
 
     // when
     ExperienceCompositeDto result = experienceRepository.findCompositeDtoById(
@@ -76,11 +77,11 @@ class ExperienceRepositoryTest {
     Pageable pageable = PageRequest.of(0, 12);
     List<Experience> experienceList = new ArrayList<>();
     experienceList.addAll(  // 액티비티 - 지상레저 2개
-        getActivityList(language, List.of(LAND_LEISURE), "제주시", 2));
+        getActivityList(language, List.of(LAND_LEISURE), "제주시", "주소", 2));
     experienceList.addAll(  // 액티비티 - 수상레저 3개
-        getActivityList(language, List.of(WATER_LEISURE), "서귀포시", 3));
+        getActivityList(language, List.of(WATER_LEISURE), "서귀포시", "주소", 3));
     experienceList.addAll(  // 문화예술 - 역사, 박물관 1개
-        getCultureAndArtsList(language, List.of(HISTORY, MUSEUM), "제주시", 1));
+        getCultureAndArtsList(language, List.of(HISTORY, MUSEUM), "제주시", "주소", 1));
 
     // when
     Page<ExperienceThumbnail> result = experienceRepository.findExperienceThumbnails(language,
@@ -98,11 +99,11 @@ class ExperienceRepositoryTest {
     Pageable pageable = PageRequest.of(0, 12);
     List<Experience> experienceList = new ArrayList<>();
     experienceList.addAll(  // 액티비티 - 지상레저 2개
-        getActivityList(language, List.of(LAND_LEISURE), "제주시", 2));
+        getActivityList(language, List.of(LAND_LEISURE), "제주시", "주소", 2));
     experienceList.addAll(  // 액티비티 - 수상레저 2개
-        getActivityList(language, List.of(WATER_LEISURE), "서귀포시", 2));
+        getActivityList(language, List.of(WATER_LEISURE), "서귀포시", "주소", 2));
     experienceList.addAll(  // 문화예술 - 역사, 박물관 1개
-        getCultureAndArtsList(language, List.of(HISTORY, MUSEUM), "제주시", 1));
+        getCultureAndArtsList(language, List.of(HISTORY, MUSEUM), "제주시", "주소", 1));
 
     // when
     Page<ExperienceThumbnail> result = experienceRepository.findExperienceThumbnails(language,
@@ -119,7 +120,7 @@ class ExperienceRepositoryTest {
   void getExperienceTypeKeywordSetTest() {
     // given
     Experience experience = getActivityList(Language.KOREAN,
-        List.of(LAND_LEISURE, WATER_LEISURE, HISTORY), "제주시", 1).get(0);
+        List.of(LAND_LEISURE, WATER_LEISURE, HISTORY), "제주시", "주소", 1).get(0);
 
     // when
     Set<ExperienceTypeKeyword> keywordSet = experienceRepository.getExperienceTypeKeywordSet(
@@ -142,15 +143,15 @@ class ExperienceRepositoryTest {
     // given
     Pageable pageable = PageRequest.of(0, 10);
     List<Experience> experiences1 =
-        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", "주소", 2);
     initHashtags(experiences1, List.of("keyword1", "kEyWoRd2"), language);
     List<Experience> experiences2 =
-        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", "주소", 3);
     initHashtags(experiences2, List.of("keyword2", "kEyWoRd3"), language);
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsUnion(
-        ExperienceType.ACTIVITY, List.of("keyword2", "keyword3"), language, pageable);
+        ExperienceType.ACTIVITY, List.of("keyword2", "keyword3"), null, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(2);
@@ -164,15 +165,16 @@ class ExperienceRepositoryTest {
     // given
     Pageable pageable = PageRequest.of(0, 10);
     List<Experience> experiences1 =
-        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", "주소", 2);
     initHashtags(experiences1, List.of("keyword1", "kEyWoRd2"), language);
     List<Experience> experiences2 =
-        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", "주소", 3);
     initHashtags(experiences2, List.of("keyword2", "kEyWoRd3"), language);
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsUnion(
-        ExperienceType.CULTURE_AND_ARTS, List.of("keyword2", "keyword3"), language, pageable);
+        ExperienceType.CULTURE_AND_ARTS, List.of("keyword2", "keyword3"), null, null, language,
+        pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
@@ -187,15 +189,15 @@ class ExperienceRepositoryTest {
     Pageable pageable = PageRequest.of(0, 10);
     List<String> keywords = List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5");
     List<Experience> experiences1 =
-        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", "주소", 2);
     initHashtags(experiences1, keywords, language);
     List<Experience> experiences2 =
-        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", "주소", 3);
     initHashtags(experiences2, keywords, language);
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
-        ExperienceType.ACTIVITY, keywords, language, pageable);
+        ExperienceType.ACTIVITY, keywords, null, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(2);
@@ -209,22 +211,50 @@ class ExperienceRepositoryTest {
     Pageable pageable = PageRequest.of(0, 10);
     List<String> keywords = List.of("keyword1", "keyword2", "keyword3", "keyword4", "keyword5");
     List<Experience> experiences1 =
-        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", 2);
+        getActivityList(language, List.of(LAND_LEISURE, WATER_LEISURE), "제주시", "주소", 2);
     initHashtags(experiences1, keywords, language);
     List<Experience> experiences2 =
-        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", 3);
+        getCultureAndArtsList(language, List.of(EXHIBITION, MUSEUM, ART_MUSEUM), "서귀포시", "주소", 3);
     initHashtags(experiences2, keywords, language);
 
     // when
     Page<ExperienceSearchDto> resultDto = experienceRepository.findSearchDtoByKeywordsIntersect(
-        ExperienceType.CULTURE_AND_ARTS, keywords, language, pageable);
+        ExperienceType.CULTURE_AND_ARTS, keywords, null, null, language, pageable);
 
     // then
     assertThat(resultDto.getTotalElements()).isEqualTo(3);
   }
 
+  @Test
+  @DisplayName("이색체험 한국어 주소 조회")
+  void findKoreanAddressTest() {
+    // given
+    Experience experience = getActivityList(Language.KOREAN, List.of(LAND_LEISURE), "제주시", "주소", 1)
+        .get(0);
+
+    // when
+    Optional<String> koreanAddress = experienceRepository.findKoreanAddress(experience.getId());
+
+    // then
+    assertThat(koreanAddress.get()).isEqualTo("주소");
+  }
+
+  @Test
+  @DisplayName("주소가 null인 경우 한국어 주소 조회")
+  void findKoreanAddressFailedTest() {
+    // given - 주소가 null
+    Experience experience = getActivityList(Language.KOREAN, List.of(LAND_LEISURE), "제주시", null, 1)
+        .get(0);
+
+    // when
+    Optional<String> koreanAddress = experienceRepository.findKoreanAddress(experience.getId());
+
+    // then
+    assertThat(koreanAddress.isPresent()).isFalse();
+  }
+
   private List<Experience> getActivityList(Language language,
-      List<ExperienceTypeKeyword> keywordList, String addressTag, int size) {
+      List<ExperienceTypeKeyword> keywordList, String addressTag, String address, int size) {
     List<Experience> experienceList = new ArrayList<>();
     for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
@@ -243,6 +273,7 @@ class ExperienceRepositoryTest {
           .title("activity title " + i)
           .language(language)
           .addressTag(addressTag)
+          .address(address)
           .build();
       em.persist(experienceTrans);
 
@@ -261,7 +292,7 @@ class ExperienceRepositoryTest {
   }
 
   private List<Experience> getCultureAndArtsList(Language language,
-      List<ExperienceTypeKeyword> keywordList, String addressTag, int size) {
+      List<ExperienceTypeKeyword> keywordList, String addressTag, String address, int size) {
     List<Experience> cultureAndArtsList = new ArrayList<>();
     for (int i = 1; i <= size; i++) {
       ImageFile imageFile = ImageFile.builder()
@@ -280,6 +311,7 @@ class ExperienceRepositoryTest {
           .title("culture and arts title " + i)
           .language(language)
           .addressTag(addressTag)
+          .address(address)
           .build();
       em.persist(experienceTrans);
 
