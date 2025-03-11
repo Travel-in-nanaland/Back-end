@@ -278,7 +278,7 @@ public class SearchService {
       thumbnails.add(
           ThumbnailDto.builder()
               .id(dto.getId())
-              .category(EXPERIENCE.name())
+              .category(experienceType.name())
               .firstImage(dto.getFirstImage())
               .title(dto.getTitle())
               .isFavorite(favoriteIds.contains(dto.getId()))
@@ -583,7 +583,8 @@ public class SearchService {
               postId, memberInfoDto.getLanguage());
 
           searchVolumeDtoList.add(
-              getSearchVolumeDto(memberInfoDto, experienceCompositeDto.getExperienceType().name(), experienceCompositeDto));
+              getSearchVolumeDto(memberInfoDto, experienceCompositeDto.getExperienceType().name(),
+                  experienceCompositeDto));
         }
         case RESTAURANT -> {
           CompositeDto restaurantCompositeDto = restaurantRepository.findCompositeDtoById(
