@@ -365,7 +365,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
             .and(festivalTrans.language.eq(language))
             .and(festivalTrans.language.eq(language))
             .and(festival.status.eq(Status.ACTIVE)))
-        .orderBy(festival.endDate.asc())// 종료일 오름차 순 (곧 종료되는)
+        .orderBy(festival.endDate.desc())// 종료일 내림차순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
@@ -422,7 +422,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                     .and(addressTagCondition(language, addressTags)))
                 .and(festival.status.eq(Status.ACTIVE))
         )
-        .orderBy(festival.endDate.asc()) // 종료일 오름차 순 (곧 종료되는)
+        .orderBy(festival.endDate.desc()) // 종료일 내림차순 (곧 종료되는)
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
