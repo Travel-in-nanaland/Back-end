@@ -1,6 +1,6 @@
 name: (build, test) -> deploy - Main branch CI/CD to EC2 when push to Main
 
-# develop 브런치에 push가 되면 아래의 flow가 실행됩니다.
+# main 브런치에 push가 되면 아래의 flow가 실행됩니다.
 on:
   push:
     branches: [ "main" ]
